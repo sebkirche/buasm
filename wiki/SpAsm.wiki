@@ -1,0 +1,4 @@
+----
+* Spécifique Assembleur *
+
+||fut le premier nom du projet RosAsm. Spécifique à de nombreux points de vues, surtout le fait qu'il soit construit autour d'un éditeur de source et non un éditeur de texte.||
