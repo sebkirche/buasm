@@ -12,8 +12,6 @@
 
 	- Vérifier qu'il ne manque pas de préfixe dans le TITLE DATAS
 
- 	- Diffuser la convention sur le forum: http://www.quanta-it.com/RosForum/
-
         - Choisir un TITLE à reformater (pas à maintenir, pour le moment ;))
 
         - Ranger toutes les EQUATEs dans le TITLE EQUATES (essayer de les regrouper par catégories)
