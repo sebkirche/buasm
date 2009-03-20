@@ -55,8 +55,7 @@ Proc WriteCheckerThread: ; 'CharMessage'
     pushad
 
       ; The Pointer is given when user hits CRLF, Space or Comma:
-        Mov esi D$WriteCheckPointer | dec esi
-        Mov D$BlockEndTextPtr esi
+        Mov esi D$WriteCheckPointer | sub esi (1*ASCII) | Mov D$LP.BlockEndText esi
 
       ; We go to start of the word:
 L0:     dec esi | cmp B$esi ',' | je L1>
@@ -76,7 +75,7 @@ L1:     Mov ebx esi | While B$ebx = SPC | dec ebx | End_While
             Mov eax 2
         End_If
 
-        inc esi | Mov D$BlockStartTextPtr esi
+        inc esi | Mov D$LP.BlockStartText esi
 
       ; Must be a Statement > Color = Statememts Color (1) ?
         Mov ebx esi | sub ebx D$CodeSource | add ebx D$ColorsMap
@@ -88,8 +87,11 @@ L1:     Mov ebx esi | While B$ebx = SPC | dec ebx | End_While
 
           ; If Instruction:
             ..Else_If eax = 1
-                Mov ecx D$BlockEndTextPtr | sub ecx D$BlockStartTextPtr
+
+                Mov ecx D$LP.BlockEndText | sub ecx D$LP.BlockStartText
+
                 Mov eax &FALSE
+
                 If ecx < 15
                     Call CheckMnemonic
                 End_If
@@ -128,8 +130,10 @@ ________________________________________________________________________________
 CheckMnemonic:
     Mov B$WeAreChecking &TRUE
 
-    Mov edi MnemonicCopy, esi D$BlockStartTextPtr, D$LineStart esi
-    Mov ecx D$BlockEndTextPtr | sub ecx esi | inc ecx
+    Mov edi MnemonicCopy, esi D$LP.BlockStartText, D$LineStart esi
+
+    Mov ecx D$LP.BlockEndText | sub ecx esi | add ecx (1*ASCII)
+
 L0: lodsb | and eax (not 32) | stosb | loop L0<
     Mov B$edi 0
 
@@ -138,11 +142,16 @@ L0: lodsb | and eax (not 32) | stosb | loop L0<
     Mov B$WeAreChecking &FALSE
 
 
-    .If B$CompileErrorHappend = &TRUE
+    .If D$FL.CompileErrorHappend = &TRUE
+
         If eax = NotAnOpcode
+
             Mov eax &FALSE
+
         Else
+
             Mov eax &TRUE
+
         End_If
 
     .Else
@@ -184,8 +193,9 @@ L1: std
 
 L0:                     cld
                         Pop esi
-                        inc edi | Mov D$BlockStartTextPtr edi
-                        Mov eax D$STRUCT.EditData@CurrentWritingPos | dec eax | Mov D$BlockEndTextPtr eax
+                        inc edi | Mov D$LP.BlockStartText edi
+
+                        Mov eax D$STRUCT.EditData@CurrentWritingPos | sub eax (1*ASCII) | Mov D$LP.BlockEndText eax
 
                         Call Beep | ret
 

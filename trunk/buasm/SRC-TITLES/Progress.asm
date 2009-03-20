@@ -83,7 +83,7 @@ EndP
 
 BarProgress:
 
-    On B$WeAreUnfolding = &TRUE ret
+    On D$FL.WeAreUnfolding = &TRUE ret
 
     pushad
 

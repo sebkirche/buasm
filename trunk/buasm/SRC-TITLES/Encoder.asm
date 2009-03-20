@@ -98,26 +98,26 @@ L1: ; Two Letters mnemonics:
       ifnot op1 'B', L1>
         ifnot op2 'T', L2>                       ; BT
           Mov op1 001111
-          ifnot B$Operands ImmToReg, L3>
+          ifnot B$Operands IMM_TO_REG L3>
             Mov op2 00_1011_1010,  op3 00_1110_0000 | jmp op_op_reg1_imm8
-L3:       ifnot B$Operands ImmToMem, L3>
+L3:       ifnot B$Operands IMM_TO_MEM L3>
             Mov op2 00_1011_1010,  op3 00_0010_0000 | jmp op_op_modRm_imm8
-L3:       ifnot B$Operands RegToReg, L3>
+L3:       ifnot B$Operands REG_TO_REG L3>
             Mov op2 00_1010_0011,  op3 00_1100_0000 | jmp op_op_reg2reg1
-L3:       ifnot B$Operands RegToMem, L3>
+L3:       ifnot B$Operands REG_TO_MEM L3>
             Mov op2 00_1010_0011 | jmp op_op_modReg2Rm
 L3:       BadOperand
 L2:     BadMnemonic
 L1:   ifnot op1 'I', L1>
         ifnot op2 'N', L2>                        ; IN
-          ifnot B$FirstGender reg, L4>
+          ifnot B$FirstGender GENERAL_REG L4>
             ifnot B$FirstReg 0, L4>           ; reg = 0  for eax, ax, al
-          ifnot B$SecondGender imm, L3>
+          ifnot B$SecondGender IMM_VALUE L3>
             Mov op1 00_1110_0100 | jmp w_imm8
-L3:       ifnot B$SecondGender reg, L4>
-            ifnot B$SecondReg RegDX, L4>
-              ifnot B$SecondOperandwBit WordSize, L4>
-                If B$FirstOperandwBit = ByteSize
+L3:       ifnot B$SecondGender GENERAL_REG L4>
+            ifnot B$SecondReg REG_DX L4>
+              ifnot B$SecondOperandwBit WORD_SIZE L4>
+                If B$FirstOperandwBit = BYTE_SIZE
                     LastOpCode 0EC
                 Else                 ; Direct output because of "in al/eax DX".
                     LastOpcode 0ED
@@ -126,22 +126,22 @@ L4:       BadOperand
 L2:     BadMnemonic
 L1:   ifnot op1 'O', L1>>
         ifnot op2 'R', L2>>                                 ; OR
-          ifnot B$Operands RegToReg, L3>
+          ifnot B$Operands REG_TO_REG L3>
             Mov op1 00_1010,  op2 00_1100_0000 | jmp w_reg1reg2
-L3:       ifnot B$Operands MemToReg, L3>
+L3:       ifnot B$Operands MEM_TO_REG L3>
             Mov op1 00_1010 | jmp w_modReg1Rm
-L3:       ifnot B$Operands RegToMem, L3>
+L3:       ifnot B$Operands REG_TO_MEM L3>
             Mov op1 00_1000 | jmp w_modReg2Rm
-L3:       ifnot B$Operands ImmToReg, L3>
-            ifnot B$FirstReg RegEAX, L4>
-              If B$FirstOperandwBit > ByteSize
+L3:       ifnot B$Operands IMM_TO_REG L3>
+            ifnot B$FirstReg REG_EAX L4>
+              If B$FirstOperandwBit > BYTE_SIZE
                 cmp B$LabelInside &TRUE | je L5>
                 cmp B$SignedImm8 &TRUE | je L4>
                 ;cmp D$ABSimm32 080 | jb L4>
               End_If
 L5:           Mov op1 00_1100 | jmp w_imm
 L4:         Mov op1 00_1000_0000,  op2 00_1100_1000 | jmp sw_reg1_imm
-L3:       ifnot B$Operands ImmToMem, L3>
+L3:       ifnot B$Operands IMM_TO_MEM L3>
             Mov op1 00_1000_0000,  op2 00_1000 | jmp sw_modRm_imm
 L3:       BadOperand
 L2:     ;BadMnemonic
@@ -172,35 +172,35 @@ L3:         ifnot op3 'S', L3>
 L3:         BadMnemonic
 L2:       ifnot op2 'D', L2>>
             ifnot op3 'C', L3>>  ; >                                  ; ADC
-              ifnot B$Operands RegToReg, L4>
+              ifnot B$Operands REG_TO_REG L4>
                 Mov op1 0001_0010,  op2 00_1100_0000 | jmp w_reg1reg2
-L4:           ifnot B$Operands MemToReg, L4>
+L4:           ifnot B$Operands MEM_TO_REG L4>
                 Mov op1 0001_0010 | jmp w_modReg1Rm
-L4:           ifnot B$Operands RegToMem, L4>
+L4:           ifnot B$Operands REG_TO_MEM L4>
                 Mov op1 0001_0000 | jmp w_modReg2Rm
-L4:           ifnot B$Operands ImmToReg, L4>
-                ifnot B$FirstReg RegEAX, L5>
-                  If B$FirstOperandwBit > ByteSize
+L4:           ifnot B$Operands IMM_TO_REG L4>
+                ifnot B$FirstReg REG_EAX L5>
+                  If B$FirstOperandwBit > BYTE_SIZE
                     cmp B$LabelInside &TRUE | je L6>
                     cmp B$SignedImm8 &TRUE | je L5>
                     ;cmp D$ABSimm32 080 | jb L5>
                   End_If
 L6:               Mov op1 0001_0100 | jmp w_imm
 L5:             Mov op1 00_1000_0000,  op2 00_1101_0000 | jmp sw_reg1_imm
-L4:           ifnot B$Operands ImmToMem, L4>
+L4:           ifnot B$Operands IMM_TO_MEM L4>
                 Mov op1 00_1000_0000,  op2 0001_0000 | jmp sw_modRm_imm
 L4:           BadOperand
 
 L3:         ifnot op3 'D', L3>>                               ; ADD  ; sub
-              ifnot B$Operands RegToReg, L4>
+              ifnot B$Operands REG_TO_REG L4>
                 Mov op1 0010,  op2 00_1100_0000 | jmp w_reg1reg2
-L4:           ifnot B$Operands MemToReg, L4>
+L4:           ifnot B$Operands MEM_TO_REG L4>
                 Mov op1 0010 | jmp w_modReg1Rm
-L4:           ifnot B$Operands RegToMem, L4>
+L4:           ifnot B$Operands REG_TO_MEM L4>
                 Mov op1 0 | jmp w_modReg2Rm
-L4:           ifnot B$Operands ImmToReg, L4>
-                ifnot B$FirstReg RegEAX, L5>
-                  If B$FirstOperandwBit > ByteSize
+L4:           ifnot B$Operands IMM_TO_REG L4>
+                ifnot B$FirstReg REG_EAX L5>
+                  If B$FirstOperandwBit > BYTE_SIZE
                     cmp B$LabelInside &TRUE | je L6>
                     cmp B$SignedImm8 &TRUE | je L5>
                     ;cmp D$ABSimm32 080 | jb L5>
@@ -209,29 +209,29 @@ L6:               Mov op1 00_0100 | jmp w_imm
 
 L5:             Mov op1 00_1000_0000,  op2 00_1100_0000 | jmp sw_reg1_imm
 
-L4:           ifnot B$Operands ImmToMem, L4>
+L4:           ifnot B$Operands IMM_TO_MEM L4>
                 Mov op1 00_1000_0000,  op2 0 | jmp sw_modRm_imm
 L4:           BadOperand
 L3:         BadMnemonic
 L2:       ifnot op2 'N', L2>>
             ifnot op3 'D', L3>>                        ; AND
-              ifnot B$Operands RegToReg, L4>
+              ifnot B$Operands REG_TO_REG L4>
                 Mov op1 0010_0010,  op2 00_1100_0000 | jmp w_reg1reg2
-L4:           ifnot B$Operands MemToReg, L4>
+L4:           ifnot B$Operands MEM_TO_REG L4>
                 Mov op1 0010_0010 | jmp w_modReg1Rm
-L4:           ifnot B$Operands RegToMem, L4>
+L4:           ifnot B$Operands REG_TO_MEM L4>
                 Mov op1 0010_0000 | jmp w_modReg2Rm
-L4:           ifnot B$Operands ImmToReg, L4>
-                ifnot B$FirstReg RegEAX, L5>
-                  If B$FirstOperandwBit > ByteSize
+L4:           ifnot B$Operands IMM_TO_REG L4>
+                ifnot B$FirstReg REG_EAX L5>
+                  If B$FirstOperandwBit > BYTE_SIZE
                     cmp B$LabelInside &TRUE | je L6>
                     cmp B$SignedImm8 &TRUE | je L5>
                     ;cmp D$ABSimm32 080 | jb L5>
                   End_If
 L6:               Mov op1 0010_0100 | jmp w_imm
-                ; immToreg missing in intel doc > verify:
+                ; IMM_TO_REG missing in intel doc > verify:
 L5:             Mov op1 00_1000_0000,  op2 00_1110_0000 | jmp sw_Reg1_imm
-L4:           ifnot B$Operands ImmToMem, L4>
+L4:           ifnot B$Operands IMM_TO_MEM L4>
                 Mov op1 00_1000_0000,  op2 0010_0000 | jmp sw_modRm_imm
 L4:           BadOperand
 L3:         BadMnemonic
@@ -240,53 +240,53 @@ L2:       BadMnemonic
 L1:     ifnot op1 'B', L1>>
           ifnot op2 'S', L2>>
             ifnot op3 'F', L3>                         ; BSF
-              ifnot B$Operands RegToReg, L4>
+              ifnot B$Operands REG_TO_REG L4>
                 Mov op1 00_1111,  op2 00_1011_1100,  op3 00_1100_0000
                 jmp op_op_reg1reg2                         ; intel doc: reverse order (???)
-L4:           ifnot B$Operands MemToReg, L4>
+L4:           ifnot B$Operands MEM_TO_REG L4>
                 Mov op1 00_1111,  op2 00_1011_1100 | jmp op_op_modreg1Rm
 L4:           BadOperand
 L3:         ifnot op3 'R', L3>                                     ; BSR
-              ifnot B$Operands RegToreg, L4>
+              ifnot B$Operands REG_TO_REG L4>
                 Mov op1 00_1111,  op2 00_1011_1101,  op3 00_1100_0000
                 jmp op_op_reg1reg2                         ; intel doc: reverse order (???)
-L4:           ifnot B$Operands MemToreg, L4>
+L4:           ifnot B$Operands MEM_TO_REG L4>
                 Mov op1 00_1111,  op2 00_1011_1101 | jmp op_op_modReg1Rm
 L4:           BadOperand
 L3:         BadMnemonic
 L2:       ifnot op2 'T', L2>>
             ifnot op3 'C', L3>                          ; BTC
               Mov op1 00_1111,  op2 00_1011_1010
-              ifnot B$Operands ImmToReg, L4>
+              ifnot B$Operands IMM_TO_REG L4>
                 Mov op3 00_1111_1000 | jmp op_op_reg1_imm8
-L4:           ifnot B$Operands ImmToMem, L4>
+L4:           ifnot B$Operands IMM_TO_MEM L4>
                 Mov op3 0011_1000 | jmp op_op_modRm_imm8
 L4:           Mov op2 00_1011_1011
-              ifnot B$Operands RegToreg, L4>
+              ifnot B$Operands REG_TO_REG L4>
                 Mov op3 00_1100_0000 | jmp op_op_reg2reg1
-L4:           ifnot B$Operands RegToMem, L4>
+L4:           ifnot B$Operands REG_TO_MEM L4>
                 jmp op_op_modReg2Rm
 L4:           BadOperand
 L3:         ifnot op3 'R', L3>                          ; BTR
               Mov op1 00_1111
-              ifnot B$Operands ImmToreg, L4>
+              ifnot B$Operands IMM_TO_REG L4>
                 Mov op2 00_1011_1010,  op3 00_1111_0000 | jmp op_op_reg1_imm8
-L4:           ifnot B$Operands ImmToMem, L4>
+L4:           ifnot B$Operands IMM_TO_MEM L4>
                 Mov op2 00_1011_1010,  op3 0011_0000 | jmp op_op_modRm_imm8
-L4:           ifnot B$Operands RegToreg, L4>
+L4:           ifnot B$Operands REG_TO_REG L4>
                 Mov op2 00_1011_0011,  op3 00_1100_0000 | jmp op_op_reg2reg1
-L4:           ifnot B$Operands RegToMem, L4>
+L4:           ifnot B$Operands REG_TO_MEM L4>
                 Mov op2 00_1011_0011 | jmp op_op_modReg2Rm
 L4:           BadOperand
 L3:         ifnot op3 'S', L3>                          ; BTS
               Mov op1 00_1111
-              ifnot B$Operands ImmToreg, L4>
+              ifnot B$Operands IMM_TO_REG L4>
                 Mov op2 00_1011_1010,  op3 00_1110_1000 | jmp op_op_reg1_imm8
-L4:           ifnot B$Operands ImmToMem, L4>
+L4:           ifnot B$Operands IMM_TO_MEM L4>
                 Mov op2 00_1011_1010,  op3 0010_1000 | jmp op_op_modRm_imm8
-L4:           ifnot B$Operands RegToreg, L4>
+L4:           ifnot B$Operands REG_TO_REG L4>
                 Mov op2 00_1010_1011,  op3 00_1100_0000 | jmp op_op_reg2reg1
-L4:           ifnot B$Operands RegToMem, L4>
+L4:           ifnot B$Operands REG_TO_MEM L4>
                 Mov op2 00_1010_1011 | jmp op_op_modReg2Rm
 L4:           BadOperand
 L3:         ;BadMnemonic
@@ -313,16 +313,16 @@ L2:       ifnot op2 'M', L2>>
             ifnot op3 'C', L3>                 ; CMC
               Mov op1 00_1111_0101 | jmp op
 L3:         ifnot op3 'P',  L3>>                 ; CMP
-              ifnot B$Operands RegToReg, L4>
+              ifnot B$Operands REG_TO_REG L4>
                 Mov op1 0011_1010,  op2 00_1100_0000 | jmp w_reg1reg2
-L4:           ifnot B$Operands MemToReg, L4>
+L4:           ifnot B$Operands MEM_TO_REG L4>
                 Mov op1 0011_1010 | jmp w_modReg1Rm
-L4:           ifnot B$Operands RegToMem, L4>
+L4:           ifnot B$Operands REG_TO_MEM L4>
                 Mov op1 0011_1000 | jmp w_modReg2Rm
-L4:           ifnot B$Operands ImmToReg, L4>
+L4:           ifnot B$Operands IMM_TO_REG L4>
 
-                ifnot B$FirstReg RegEAX, L5>
-                  If B$FirstOperandwBit = ByteSize
+                ifnot B$FirstReg REG_EAX L5>
+                  If B$FirstOperandwBit = BYTE_SIZE
                      Mov op1 03C
                   Else
                       cmp B$LabelInside &TRUE | je L6>
@@ -333,7 +333,7 @@ L6:                   Mov op1 03D
                   jmp w_imm
 
 L5:             Mov op1 00_1000_0000,  op2 00_1111_1000 | jmp sw_reg1_imm
-L4:           ifnot B$Operands ImmToMem, L4>
+L4:           ifnot B$Operands IMM_TO_MEM L4>
                 Mov op1 00_1000_0000,  op2 0011_1000 | jmp sw_modRm_imm
 L4:           BadOperand
 L3:         BadMnemonic
@@ -351,20 +351,20 @@ L3:         ifnot op3 'S', L3>
 L3:         BadMnemonic
 L2:     ifnot op2 'E', L2>
           ifnot op3 'C', L3>                  ; DEC
-            ifnot B$FirstGender reg, L4>
-              cmp B$wBit ByteSize | jne L5>
+            ifnot B$FirstGender GENERAL_REG L4>
+              cmp B$wBit BYTE_SIZE | jne L5>
               Mov op1 00_1111_1110,  op2 00_1100_1000 | jmp w_reg1    ; alternate shorter >
 L5:           Mov op1 0_0100_1000 | jmp reg1_in_op                     ; only full size
-L4:         ifnot B$FirstGender mem, L4>
+L4:         ifnot B$FirstGender MEM_LABEL L4>
               Mov op1 00_1111_1110,  op2 00_1000 | jmp w_modRm
 L4:         BadOperand
 L3:       BadMnemonic
 L2:     ifnot op2 'I', L2>
           ifnot op3 'V', L3>                  ; DIV
             Mov op1 00_1111_0110
-            ifnot B$FirstGender reg, L4>
+            ifnot B$FirstGender GENERAL_REG L4>
               Mov op2 00_1111_0000 | jmp w_reg1
-L4:         ifnot B$FirstGender mem, L4>
+L4:         ifnot B$FirstGender MEM_LABEL L4>
               Mov op2 0011_0000 | jmp w_modRm
 L4:         BadOperand
 L3:       ;BadMnemonic
@@ -378,11 +378,11 @@ L2:     BadMnemonic
 L1:   ifnot op1 'I', L1>
         ifnot op2 'N', L2>
           ifnot op3 'C', L3>                 ; INC
-            ifnot B$FirstGender Reg, L4>
-              cmp B$wBit ByteSize | jne L5>
+            ifnot B$FirstGender GENERAL_REG L4>
+              cmp B$wBit BYTE_SIZE | jne L5>
               Mov op1 00_1111_1110 | Mov op2 00_1100_0000 | jmp w_reg1 ; alternate shorter >
 L5:           Mov op1 0_0100_0000 | jmp reg1_in_op                      ; only full size
-L4:         ifnot B$FirstGender mem, L4>
+L4:         ifnot B$FirstGender MEM_LABEL L4>
               Mov op1 00_1111_1110 | Mov op2 0 | jmp w_modRm
 L4:         BadOperand
 ;L3:       ifnot op3 'S', L3>                  ; INS
@@ -398,39 +398,39 @@ L1:   ifnot op1 'L', L1>>
         ifnot op2 'A', L2>
           ifnot op3 'R', L3>                  ; LAR
             Mov op1 00_1111,  op2 0010
-            ifnot B$Operands RegToReg, L4>
+            ifnot B$Operands REG_TO_REG L4>
               Mov op3 00_1100_0000 | jmp op_op_reg1reg2
-L4:         ifnot B$Operands MemToreg, L4>
+L4:         ifnot B$Operands MEM_TO_REG L4>
               jmp op_op_modReg1Rm
 L4:         BadOperand
 L3:       BadMnemonic
 L2:     ifnot op2 'D', L2>
           ifnot op3 'S', L3>                     ; LDS
-            ifnot B$Operands MemToReg, L4>
+            ifnot B$Operands MEM_TO_REG L4>
               Mov op1 00_1100_0101 | jmp op_modReg1Rm
 L4:         BadOperand
 L3:       BadMnemonic
 L2:     ifnot op2 'E', L2>
           ifnot op3 'A', L3>                       ; LEA
-            ifnot B$Operands MemToReg, L4>
-            On B$FirstOperandwBit = ByteSize, error D$LeaSizePtr
+            ifnot B$Operands MEM_TO_REG L4>
+            On B$FirstOperandwBit = BYTE_SIZE error D$LeaSizePtr
               Mov op1 00_1000_1101 | jmp op_modReg1Rm
 L4:         Error D$LeaTypesPtr
 L3:       ifnot op3 'S', L3>                       ; LES
-            ifnot B$Operands MemToReg, L4>
+            ifnot B$Operands MEM_TO_REG L4>
               Mov op1 00_1100_0100 | jmp op_modReg1Rm
 L4:         BadOperand
 L3:       BadMnemonic
 L2:     ifnot op2 'F', L2>
           ifnot op3 'S', L3>                       ; LFS
-            ifnot B$Operands MemToReg, L4>
+            ifnot B$Operands MEM_TO_REG L4>
               Mov op1 00_1111
                Mov op2 00_1011_0100 | jmp op_op_modReg1Rm
 L4:         BadOperand
 L3:       BadMnemonic
 L2:     ifnot op2 'G', L2>
           ifnot op3 'S', L3>                       ; LGS
-            ifnot B$Operands MemToReg, L4>
+            ifnot B$Operands MEM_TO_REG L4>
               Mov op1 00_1111
                Mov op2 00_1011_0101 | jmp op_op_modReg1Rm
 L4:         BadOperand
@@ -438,22 +438,22 @@ L3:       BadMnemonic
 L2:     ifnot op2 'S', L2>
           ifnot op3 'L', L3>
             Mov op1 00_1111,  op2 0011
-            ifnot B$Operands RegToReg, L4>             ; LSL
+            ifnot B$Operands REG_TO_REG L4>             ; LSL
               Mov op3 00_1100_0000 | jmp op_op_reg1reg2
-L4:         ifnot B$Operands MemToReg, L4>
+L4:         ifnot B$Operands MEM_TO_REG L4>
               jmp op_op_modreg1Rm
 L4:         BadOperand
 L3:       ifnot op3 'S', L3>                          ; LSS
-            ifnot B$Operands MemToReg, L4>
+            ifnot B$Operands MEM_TO_REG L4>
             Mov op1 00_1111, op2 00_1011_0010 | jmp op_op_modReg1Rm
 L4:         BadOperand
 L3:       BadMnemonic
 L2:     ifnot op2 'T', L2>
           ifnot op3 'R', L3>                        ; LTR
             Mov op1 00_1111,  op2 0
-            ifnot B$FirstGender reg, L4>
+            ifnot B$FirstGender GENERAL_REG L4>
               Mov op3 00_1101_1000 | jmp op_op_reg16
-L4:         ifnot B$FirstGender mem, L4>
+L4:         ifnot B$FirstGender MEM_LABEL L4>
               Mov op3 0001_1000 | jmp op_op_modRm16
 L4:         BadOperand
 L3:       ;BadMnemonic
@@ -462,9 +462,9 @@ L1:   ifnot op1 'M', L1>
         ifnot op2 'U', L2>
           ifnot op3 'L', L3>                     ; MUL
             Mov op1 00_1111_0110
-            ifnot B$FirstGender reg, L4>
+            ifnot B$FirstGender GENERAL_REG L4>
               Mov op2 00_1110_0000 | jmp w_reg1
-L4:         ifnot B$FirstGender mem, L4>
+L4:         ifnot B$FirstGender MEM_LABEL L4>
               Mov op2 0010_0000 | jmp w_modRm
 L4:         BadOperand
 L3:       ;BadMnemonic
@@ -473,9 +473,9 @@ L1:   ifnot op1 'N', L1>>
         ifnot op2 'E', L2>
           ifnot op3 'G', L3>                   ; NEG
             Mov op1 00_1111_0110
-            ifnot B$FirstGender reg, L4>
+            ifnot B$FirstGender GENERAL_REG L4>
               Mov op2 00_1101_1000 | jmp w_reg1
-L4:         ifnot B$FirstGender mem, L4>
+L4:         ifnot B$FirstGender MEM_LABEL L4>
               Mov op2 0001_1000 | jmp w_modRm
 L4:         BadOperand
 L3:       BadMnemonic
@@ -484,9 +484,9 @@ L2:     ifnot op2 'O', L2>
             Mov op1 00_1001_0000 | jmp op
 L3:       ifnot op3 'T', L3>                   ; NOT
             Mov op1 00_1111_0110
-            ifnot B$FirstGender reg, L4>
+            ifnot B$FirstGender GENERAL_REG L4>
               Mov op2 00_1101_0000 | jmp w_reg1
-L4:         ifnot B$FirstGender mem, L4>
+L4:         ifnot B$FirstGender MEM_LABEL L4>
               Mov op2 0001_0000 | jmp w_modRm
 L4:         BadOperand
 L3:       ;BadMnemonic
@@ -495,20 +495,20 @@ L2:     BadMnemonic
 L1:   ifnot op1 'O', L1>
         ifnot op2 'U', L2>
           ifnot op3 'T', L3>                   ; OUT
-            ifnot B$Operands RegToImm, L4>
+            ifnot B$Operands REG_TO_IMM L4>
               Mov op1 0E6
-              If B$SecondOperandwBit > ByteSize
+              If B$SecondOperandwBit > BYTE_SIZE
                 inc op1
-                On B$SecondOperandwBit = WordSize, ToOpcode 066
+                On B$SecondOperandwBit = WORD_SIZE ToOpcode 066
               End_If
               jmp w_imm8
-L4:         ifnot B$Operands RegToReg, L4>
-              Ifnot B$secondReg RegEax, L5>
-              Ifnot B$FirstReg RegDx, L5>
+L4:         ifnot B$Operands REG_TO_REG L4>
+              Ifnot B$secondReg REG_EAX L5>
+              Ifnot B$FirstReg REG_DX L5>
               Mov op1 0EE
-              If B$SecondOperandwBit > ByteSize
+              If B$SecondOperandwBit > BYTE_SIZE
                 inc op1
-                On B$SecondOperandwBit = WordSize, ToOpcode 066
+                On B$SecondOperandwBit = WORD_SIZE ToOpcode 066
               End_If
               jmp w_P2
 L5:
@@ -518,16 +518,16 @@ L2:     BadMnemonic
 L1:   ifnot op1 'P', L1>>
         ifnot op2 'O', L2>
           ifnot op3 'P', L3>                     ; Pop
-            ifnot B$FirstGender reg, L4>
-              On B$wBit = ByteSize, BadOperand
-              ifnot B$FirstRegGender sReg, L5>             ; max. G.P.regs = 00111
-                cmp B$FirstReg 0010_0000 | jae L6>         ; regFS is 00100000; GS, 00101000
+            ifnot B$FirstGender GENERAL_REG L4>
+              On B$wBit = BYTE_SIZE BadOperand
+              ifnot B$FirstRegGender SEGMENT_REG L5>             ; max. G.P.regs = 00111
+                cmp B$FirstReg 0010_0000 | jae L6>         ; REG_FS is 00100000; GS, 00101000
                   Mov op1 00_0111 | jmp sReg2                         ; CS / DS / ES / SS
 L6:             Mov op1 00_1111, op2 00_1000_0001 | jmp op_sreg3      ; FS / GS
 L5:          ; Mov op1 00_1000_1111,  op2 00_1100_0000 | jmp op_reg1   ; G.P.
               Mov op1 0_0101_1000 | jmp reg1_in_op                      ; register alternate
-L4:         ifnot B$FirstGender mem, L4>
-              On B$wBit = ByteSize, BadOperand
+L4:         ifnot B$FirstGender MEM_LABEL L4>
+              On B$wBit = BYTE_SIZE BadOperand
               Mov op1 00_1000_1111,  op2 0 | jmp op_modRm
 L4:         BadOperand
 L3:       ifnot op3 'R', L3>                       ; POR - Bitwise Or N N N Y
@@ -537,45 +537,45 @@ L2:     BadMnemonic
 L1:   ifnot op1 'R', L1>>
         ifnot op2 'C', L2>>
           ifnot op3 'L', L3>>                      ; RCL
-              ifnot B$Operands RegToReg, L4>
-                ifnot B$SecondReg RegCL, L5>
+              ifnot B$Operands REG_TO_REG L4>
+                ifnot B$SecondReg REG_CL L5>
                   Mov op1 00_1101_0010,  op2 00_1101_0000 | jmp w_reg1_P2cl
-L4:           ifnot B$Operands RegToMem, L4>
-                ifnot B$SecondReg RegCL, L5>
+L4:           ifnot B$Operands REG_TO_MEM L4>
+                ifnot B$SecondReg REG_CL L5>
                   Mov op1 00_1101_0010,  op2 0001_0000 | jmp w_modRm_P2cl
 L5:           BadOperand
-L4:         ifnot B$SecondGender imm, L4>
+L4:         ifnot B$SecondGender IMM_VALUE L4>
               ifnot D$imm32 1, L5>
-                ifnot B$Operands ImmToReg, L6>
+                ifnot B$Operands IMM_TO_REG L6>
                   Mov op1 00_1101_0000, op2 00_1101_0000 | jmp w_reg1_P2
-L6:             ifnot B$Operands ImmToMem, L6>
+L6:             ifnot B$Operands IMM_TO_MEM L6>
                   Mov op1 00_1101_0000, op2 0001_0000 | jmp w_modRm_P2
 L6:             BadOperand
-L5:           ifnot B$Operands ImmToReg, L5>
+L5:           ifnot B$Operands IMM_TO_REG L5>
                 Mov op1 00_1100_0000, op2 00_1101_0000 | jmp w_reg1_imm8
-L5:           ifnot B$Operands ImmToMem, L5>
+L5:           ifnot B$Operands IMM_TO_MEM L5>
                 Mov op1 00_1100_0000,  op2 0001_0000 | jmp w_modRm_imm8
 L5:           ;BadOperand
 L4:         BadOperand
 
 L3:       ifnot op3 'R', L3>>                            ; RCR
-              ifnot B$Operands RegToReg, L4>
-                ifnot B$SecondReg RegCL, L5>
+              ifnot B$Operands REG_TO_REG L4>
+                ifnot B$SecondReg REG_CL L5>
                   Mov op1 00_1101_0010,  op2 00_1101_1000 | jmp w_reg1_P2cl
-L4:           ifnot B$Operands RegToMem, L4>
-                ifnot B$SecondReg RegCL, L5>
+L4:           ifnot B$Operands REG_TO_MEM L4>
+                ifnot B$SecondReg REG_CL L5>
                   Mov op1 00_1101_0010,  op2 0001_1000 | jmp w_modRm_P2cl
 L5:           BadOperand
-L4:         ifnot B$SecondGender imm, L4>
+L4:         ifnot B$SecondGender IMM_VALUE L4>
               ifnot D$imm32 1, L5>
-                ifnot B$Operands ImmToReg, L6>
+                ifnot B$Operands IMM_TO_REG L6>
                   Mov op1 00_1101_0000,  op2 00_1101_1000 | jmp w_reg1_P2
-L6:             ifnot B$Operands ImmToMem, L6>
+L6:             ifnot B$Operands IMM_TO_MEM L6>
                   Mov op1 00_1101_0000,  op2 0001_1000 | jmp w_modRm_P2
 L6:             BadOperand
-L5:           ifnot B$Operands ImmToReg, L5>
+L5:           ifnot B$Operands IMM_TO_REG L5>
                 Mov op1 00_1100_0000,  op2 00_1101_1000 | jmp w_reg1_imm8
-L5:           ifnot B$Operands ImmToMem, L5>
+L5:           ifnot B$Operands IMM_TO_MEM L5>
                 Mov op1 00_1100_0000,  op2 0001_1000 | jmp w_modRm_imm8
 L5:           ;BadOperand
 L4:         BadOperand
@@ -584,7 +584,7 @@ L2:     ifnot op2 'E', L2>
           ifnot op3 'T', L3>                    ; RET same segment only
             ifnot B$ParametersNumber 0, L5>
 L6:           Mov op1 00_1100_0011 | jmp op
-L5:         ifnot B$FirstGender imm, L4>
+L5:         ifnot B$FirstGender IMM_VALUE L4>
               If D$imm32 = 0
                   Mov B$DisInside &False
                   Mov B$ParametersNumber 0
@@ -596,46 +596,46 @@ L3:       BadMnemonic
 
 L2:     ifnot op2 'O', L2>>
           ifnot op3 'L', L3>>                    ; ROL
-              ifnot B$Operands RegToReg, L4>
-                ifnot B$SecondReg RegCL, L5>
+              ifnot B$Operands REG_TO_REG L4>
+                ifnot B$SecondReg REG_CL L5>
                   Mov op1 00_1101_0010,  op2 00_1100_0000 | jmp w_reg1_P2cl
-L4:           ifnot B$Operands RegToMem, L4>
-                ifnot B$SecondReg RegCL, L5>
+L4:           ifnot B$Operands REG_TO_MEM L4>
+                ifnot B$SecondReg REG_CL L5>
                   Mov op1 00_1101_0010,  op2 0 | jmp w_modRm_P2cl
 L5:           BadOperand
-L4:         ifnot B$SecondGender imm, L4>
+L4:         ifnot B$SecondGender IMM_VALUE L4>
               ifnot B$imm32 1,  L5>
-                ifnot B$Operands ImmToReg, L6>
+                ifnot B$Operands IMM_TO_REG L6>
                   Mov op1 00_1101_0000,  op2 00_1100_0000 | jmp w_reg1_P2
-L6:             ifnot B$Operands ImmToMem, L6>
+L6:             ifnot B$Operands IMM_TO_MEM L6>
                   Mov op1 00_1101_0000,  op2 0 | jmp w_modRm_P2
 L6:             BadOperand
-L5:           ifnot B$Operands ImmToReg, L5>
+L5:           ifnot B$Operands IMM_TO_REG L5>
                 Mov op1 00_1100_0000,  op2 00_1100_0000 | jmp w_reg1_imm8
-L5:           ifnot B$Operands ImmToMem, L5>
+L5:           ifnot B$Operands IMM_TO_MEM L5>
                 Mov op1 00_1100_0000,  op2 0 | jmp w_modRm_imm8
 L5:           ;BadOperand
 L4:         BadOperand
 
 
 L3:       ifnot op3 'R', L3>>                   ; ROR
-              ifnot B$Operands RegToReg, L4>
-                ifnot B$SecondReg RegCL, L5>
+              ifnot B$Operands REG_TO_REG L4>
+                ifnot B$SecondReg REG_CL L5>
                   Mov op1 00_1101_0010,  op2 00_1100_1000 | jmp w_reg1_P2cl
-L4:           ifnot B$Operands RegToMem, L4>
-                ifnot B$SecondReg RegCL, L5>
+L4:           ifnot B$Operands REG_TO_MEM L4>
+                ifnot B$SecondReg REG_CL L5>
                   Mov op1 00_1101_0010,  op2 00_1000 | jmp w_modRm_P2cl
 L5:           BadOperand
-L4:         ifnot B$SecondGender imm, L4>
+L4:         ifnot B$SecondGender IMM_VALUE L4>
               ifnot D$imm32 1, L5>
-                ifnot B$Operands ImmToReg, L6>
+                ifnot B$Operands IMM_TO_REG L6>
                   Mov op1 00_1101_0000,  op2 00_1100_1000 | jmp w_reg1_P2
-L6:             ifnot B$Operands ImmToMem, L6>
+L6:             ifnot B$Operands IMM_TO_MEM L6>
                   Mov op1 00_1101_0000,  op2 00_1000 | jmp w_modRm_P2
 L6:             BadOperand
-L5:           ifnot B$Operands ImmToReg, L5>
+L5:           ifnot B$Operands IMM_TO_REG L5>
                 Mov op1 00_1100_0000, op2 00_1100_1000 | jmp w_reg1_imm8
-L5:           ifnot B$Operands ImmToMem, L5>
+L5:           ifnot B$Operands IMM_TO_MEM L5>
                 Mov op1 00_1100_0000,  op2 00_1000 | jmp w_modRm_imm8
 L5:           ;BadOperand
 L4:         BadOperand
@@ -651,87 +651,87 @@ L1:   ifnot op1 'S', L1>>
             Mov op2 'H'
                jmp SHL2              ; SAL same instruction as SHL
 L3:       ifnot op3 'R', L3>>                ; SAR
-              ifnot B$Operands RegToReg L4>
-                ifnot B$SecondReg RegCL, L5>
+              ifnot B$Operands REG_TO_REG L4>
+                ifnot B$SecondReg REG_CL L5>
                   Mov op1 00_1101_0010,  op2 00_1111_1000 | jmp w_reg1_P2cl
-L4:           ifnot B$Operands RegToMem, L4>
-                ifnot B$SecondReg RegCL, L5>
+L4:           ifnot B$Operands REG_TO_MEM L4>
+                ifnot B$SecondReg REG_CL L5>
                   Mov op1 00_1101_0010, op2 0011_1000 | jmp w_modRm_P2cl
 L5:           BadOperand
-L4:         ifnot B$SecondGender imm, L4>
+L4:         ifnot B$SecondGender IMM_VALUE L4>
               ifnot D$imm32 1, L5>
-                ifnot B$Operands ImmToReg, L6>
+                ifnot B$Operands IMM_TO_REG L6>
                   Mov op1 00_1101_0000,  op2 00_1111_1000 | jmp w_reg1_P2
-L6:             ifnot B$Operands ImmToMem, L6>
+L6:             ifnot B$Operands IMM_TO_MEM L6>
                   Mov op1 00_1101_0000,  op2 0011_1000 | jmp w_modRm_P2
 L6:             BadOperand
-L5:           ifnot B$Operands ImmToReg, L5>
+L5:           ifnot B$Operands IMM_TO_REG L5>
                 Mov op1 00_1100_0000,  op2 00_1111_1000 | jmp w_reg1_imm8
-L5:           ifnot B$Operands ImmToMem, L5>
+L5:           ifnot B$Operands IMM_TO_MEM L5>
                 Mov op1 00_1100_0000,  op2 0011_1000 | jmp w_modRm_imm8
 L5:           ;BadOperand
 L4:         BadOperand
 L3:       BadMnemonic
 L2:     ifnot op2 'B', L2>>
           ifnot op3 'B', L3>>             ; SBB
-            ifnot B$Operands RegToReg, L4>
+            ifnot B$Operands REG_TO_REG L4>
               Mov op1 0001_1010,  op2 00_1100_0000 | jmp w_Reg1Reg2
-L4:         ifnot B$Operands MemToReg, L4>
+L4:         ifnot B$Operands MEM_TO_REG L4>
               Mov op1 0001_1010 | jmp w_modReg1Rm
-L4:         ifnot B$Operands RegToMem, L4>
+L4:         ifnot B$Operands REG_TO_MEM L4>
               Mov op1 0001_1000 | jmp w_modReg2Rm
-L4:         ifnot B$Operands ImmToReg, L4>
-              ifnot B$FirstReg RegEAX, L5>
-                If B$FirstOperandwBit > ByteSize
+L4:         ifnot B$Operands IMM_TO_REG L4>
+              ifnot B$FirstReg REG_EAX L5>
+                If B$FirstOperandwBit > BYTE_SIZE
                     cmp D$ABSimm32 080 | jb L5>
                 End_If
                 Mov op1 0001_1100 | jmp w_imm
 L5:           Mov op1 00_1000_0000,  op2 00_1101_1000 | jmp sw_reg1_imm
-L4:         ifnot B$Operands ImmToMem, L4>
+L4:         ifnot B$Operands IMM_TO_MEM L4>
               Mov op1 00_1000_0000,  op2 0001_1000 | jmp sw_modRm_imm
 L4:         BadOperand
 L3:       BadMnemonic
 
 L2:     ifnot op2 'H', L2>>
           ifnot op3 'L', L3>>                             ; SHL/SAL
-SHL2:         ifnot B$Operands RegToReg, L4>
-                ifnot B$SecondReg RegCL, L5>
+SHL2:         ifnot B$Operands REG_TO_REG L4>
+                ifnot B$SecondReg REG_CL L5>
                   Mov op1 00_1101_0010,  op2 00_1110_0000 | jmp w_reg1_P2cl
-L4:           ifnot B$Operands RegToMem, L4>
-                ifnot B$SecondReg RegCL, L5>
+L4:           ifnot B$Operands REG_TO_MEM L4>
+                ifnot B$SecondReg REG_CL L5>
                   Mov op1 00_1101_0010,  op2 0010_0000 | jmp w_modRm_P2cl
 L5:           BadOperand
-L4:         ifnot B$SecondGender imm, L4>
+L4:         ifnot B$SecondGender IMM_VALUE L4>
               ifnot D$imm32 1, L5>
-                ifnot B$Operands ImmToReg, L6>
+                ifnot B$Operands IMM_TO_REG L6>
                   Mov op1 00_1101_0000,  op2 00_1110_0000 | jmp w_reg1_P2
-L6:             ifnot B$Operands ImmToMem, L6>
+L6:             ifnot B$Operands IMM_TO_MEM L6>
                   Mov op1 00_1101_0000,  op2 0010_0000 | jmp w_modRm_P2
 L6:             BadOperand
-L5:           ifnot B$Operands ImmToReg, L5>
+L5:           ifnot B$Operands IMM_TO_REG L5>
                 Mov op1 00_1100_0000,  op2 00_1110_0000 | jmp w_reg1_imm8
-L5:           ifnot B$Operands ImmToMem, L5>
+L5:           ifnot B$Operands IMM_TO_MEM L5>
                 Mov op1 00_1100_0000,  op2 0010_0000 | jmp w_modRm_imm8
 L5:           ;BadOperand
 L4:         BadOperand
 L3:       ifnot op3 'R', L3>>                                 ; SHR
-            ifnot B$Operands RegToReg, L4>
-              ifnot B$SecondReg RegCL, L5>
+            ifnot B$Operands REG_TO_REG L4>
+              ifnot B$SecondReg REG_CL L5>
                 Mov op1 00_1101_0010,  op2 00_1110_1000 | jmp w_reg1_P2cl
-L4:         ifnot B$Operands RegToMem, L4>
-              ifnot B$SecondReg RegCL, L5>
+L4:         ifnot B$Operands REG_TO_MEM L4>
+              ifnot B$SecondReg REG_CL L5>
                 Mov op1 00_1101_0010,  op2 0010_1000 | jmp w_modRm_P2cl
 L5:           BadOperand
-L4:         ifnot B$SecondGender imm, L4>
+L4:         ifnot B$SecondGender IMM_VALUE L4>
               ifnot B$imm32 1, L5>
-                ifnot B$Operands ImmToReg, L6>
+                ifnot B$Operands IMM_TO_REG L6>
                   Mov op1 00_1101_0000,  op2 00_1110_1000 | jmp w_reg1_P2
-L6:             ifnot B$Operands ImmToMem,  L6>
+L6:             ifnot B$Operands IMM_TO_MEM  L6>
                   Mov op1 00_1101_0000,  op2 0010_1000 | jmp w_modRm_P2
 L6:             BadOperand
-L5:           ifnot B$Operands ImmToReg, L5>
+L5:           ifnot B$Operands IMM_TO_REG L5>
                 Mov op1 00_1100_0000,  op2 00_1110_1000 | jmp w_reg1_imm8
-L5:           ifnot B$Operands ImmToMem, L5>
+L5:           ifnot B$Operands IMM_TO_MEM L5>
                 Mov op1 00_1100_0000,  op2 0010_1000 | jmp w_modRm_imm8
 L5:           ;BadOperand
 L4:         BadOperand
@@ -745,30 +745,30 @@ L3:       ifnot op3 'I', L3>              ; STI
             Mov op1 00_1111_1011 | jmp op
 L3:       ifnot op3 'R', L3>              ; STR ("ax" or "W$edi")
               dec edi ; Because there is no need of 066 override here
-              On B$FirstOperandwbit <> WordSize, BadOperandSize
+              On B$FirstOperandwbit <> WORD_SIZE BadOperandSize
               Mov op1 0F, Op2 0
-            ifnot B$FirstGender reg, L4>
+            ifnot B$FirstGender GENERAL_REG L4>
               Mov op3 00_1100_1000 | jmp op_op_reg1
-L4:         ifnot B$FirstGender mem, L4>
+L4:         ifnot B$FirstGender MEM_LABEL L4>
               Mov op3 00_1000 | jmp op_op_modRm
 L4:         BadOperand
 L3:       BadMnemonic
 L2:     ifnot op2 'U', L2>>
           ifnot op3 'B', L3>>                         ; SUB
-            ifnot B$Operands RegToReg, L4>
+            ifnot B$Operands REG_TO_REG L4>
               Mov op1 0010_1010,  op2 00_1100_0000 | jmp w_reg1reg2
-L4:         ifnot B$Operands MemToReg, L4>
+L4:         ifnot B$Operands MEM_TO_REG L4>
               Mov op1 0010_1010 | jmp w_modReg1Rm
-L4:         ifnot B$Operands RegToMem, L4>
+L4:         ifnot B$Operands REG_TO_MEM L4>
               Mov op1 0010_1000 | jmp w_modReg2Rm
-L4:         ifnot B$Operands ImmToReg, L4>
-              ifnot B$FirstReg RegEAX, L5>
-                If B$FirstOperandwBit > ByteSize
+L4:         ifnot B$Operands IMM_TO_REG L4>
+              ifnot B$FirstReg REG_EAX L5>
+                If B$FirstOperandwBit > BYTE_SIZE
                     cmp D$ABSimm32 080 | jb L5>
                 End_If
                 Mov op1 0010_1100 | jmp w_imm
 L5:           Mov op1 00_1000_0000,  op2 00_1110_1000 | jmp sw_reg1_imm
-L4:         ifnot B$Operands ImmtoMem, L4>
+L4:         ifnot B$Operands IMM_TO_MEM L4>
               Mov op1 00_1000_0000,  op2 0010_1000 | jmp sw_modRm_imm
 L4:         BadOperand
 L3:       ;BadMnemonic
@@ -784,21 +784,21 @@ L2:     BadMnemonic
 L1:   ifnot op1 'X', L1>>
         ifnot op2 'O', L2>>
           ifnot op3 'R', L3>>             ; XOR
-            ifnot B$Operands RegToreg, L4>
+            ifnot B$Operands REG_TO_REG L4>
               Mov op1 0011_0010,  op2 00_1100_0000 | jmp w_reg1reg2
-L4:         ifnot B$Operands MemToReg, L4>
+L4:         ifnot B$Operands MEM_TO_REG L4>
               Mov op1 0011_0010 | jmp w_modReg1Rm
-L4:         ifnot B$Operands RegToMem, L4>
+L4:         ifnot B$Operands REG_TO_MEM L4>
               Mov op1 0011_0000 | jmp w_modReg2Rm
-L4:         ifnot B$Operands ImmToReg, L4>
-              ifnot B$FirstReg RegEAX, L5>
-                If B$FirstOperandwBit > ByteSize
+L4:         ifnot B$Operands IMM_TO_REG L4>
+              ifnot B$FirstReg REG_EAX L5>
+                If B$FirstOperandwBit > BYTE_SIZE
                     cmp D$ABSimm32 080 | jb L5>
                 End_If
                 Mov op1 0011_0100 | jmp w_imm
 L5:           Mov op1 00_1000_0000
                     Mov op2 00_1111_0000 | jmp sw_reg1_imm
-L4:         ifnot B$Operands ImmToMem, L4>
+L4:         ifnot B$Operands IMM_TO_MEM L4>
               Mov op1 00_1000_0000,  op2 0011_0000 | jmp sw_modRm_imm
 L4:         BadOperand
 L3:       ;BadMnemonic
@@ -813,12 +813,12 @@ FourLetters:    On op5 > Separators,  jmp FiveLetters
           ifnot op2 'R', L2>
             ifnot op3 'P', L3>
               ifnot op4 'L', L4>          ; ARPL  ; BadOperandSize
-                On B$FirstOperandwbit <> WordSize, BadOperandSize
+                On B$FirstOperandwbit <> WORD_SIZE BadOperandSize
                ; dec edi ; Kill 066 or not ??? Should work the same in both cases...
                 Mov op1 00_0110_0011
-                ifnot B$Operands RegToreg, L5>
+                ifnot B$Operands REG_TO_REG L5>
                   Mov op2 00_1100_0000 | jmp op_reg2reg1
-L5:             ifnot B$Operands regToMem, L5>
+L5:             ifnot B$Operands REG_TO_MEM L5>
                   jmp op_modReg2Rm
 L5:             BadOperand
 L4:           ;BadMnemonic
@@ -829,14 +829,14 @@ L1:     ifnot op1 'C', L1>>
           ifnot op2 'A', L2>
             ifnot op3 'L', L3>
               ifnot op4 'L', L4>           ; Call
-                ifnot B$FirstGender dis, L5>
+                ifnot B$FirstGender DISPLACEMENT L5>
                   On B$LocalSize <> 0, error D$NoLocalCallPtr
                   Mov D$Relative RelativeFlag
                   Mov op1 00_1110_1000
                   jmp op_dis
-L5:             ifnot B$FirstGender Reg, L5>
+L5:             ifnot B$FirstGender GENERAL_REG L5>
                   Mov op1 00_1111_1111,  op2 00_1101_0000 | jmp op_reg1
-L5:             ifnot B$FirstGender mem, L5>
+L5:             ifnot B$FirstGender MEM_LABEL L5>
                   Mov op1 00_1111_1111,  op2 0001_0000 | jmp op_modRm
                                          ; 015 > 10101
 L5:             BadOperand
@@ -886,9 +886,9 @@ L1:     ifnot op1 'I', L1>>
             ifnot op3 'I', L3>
               ifnot op4 'V', L4>               ; IDIV
                 Mov op1 00_1111_0110
-                ifnot B$FirstGender reg, L5>
+                ifnot B$FirstGender GENERAL_REG L5>
                   Mov op2 00_1111_1000 | jmp w_reg1
-L5:             ifnot B$FirstGender mem, L5>
+L5:             ifnot B$FirstGender MEM_LABEL L5>
                   Mov op2 0011_1000 | jmp w_modRm
 L5:             BadOperand
 L4:           ;BadMnemonic
@@ -900,27 +900,27 @@ L2:       ifnot op2 'M', L2>>
                 cmp B$ParametersNumber 2 | je L6>
                 cmp B$ParametersNumber 3 | je L7>
 
-                  ifnot B$FirstGender reg, L5>
+                  ifnot B$FirstGender GENERAL_REG L5>
                     Mov op1 00_1111_0110,  op2 00_0111_01000 | jmp w_reg1
-L5:               ifnot B$FirstGender mem, L5>
+L5:               ifnot B$FirstGender MEM_LABEL L5>
                     Mov op1 00_1111_0110,  op2 0010_1000 | jmp w_modRm
 L5:               BadOperand
 
-L6:             cmp B$wBit ByteSize | je L5>
-                ifnot B$Operands RegToReg, L6>
+L6:             cmp B$wBit BYTE_SIZE | je L5>
+                ifnot B$Operands REG_TO_REG L6>
                     Mov op1 00_1111,  op2 00_1010_1111,  op3 00_1100_0000 | jmp op_op_reg1reg2
 ; 3 Parameters:
-L7:             On B$ThirdGender <> imm, jmp L5>
-                cmp B$wBit ByteSize | je L5>
-                IfNot B$Operands RegToReg, L6> ; imul eax ebx 0-1
+L7:             On B$ThirdGender <> IMM_VALUE jmp L5>
+                cmp B$wBit BYTE_SIZE | je L5>
+                IfNot B$Operands REG_TO_REG L6> ; imul eax ebx 0-1
 L8:               Mov op1 00_0110_1001,  op2 00_1100_0000 | jmp s_reg1reg2_imm
-L6:             ifnot B$Operands MemToReg, L6>
+L6:             ifnot B$Operands MEM_TO_REG L6>
 
                   cmp B$immInside &TRUE | je L7>
                   Mov op1 00_1111,  op2 00_1010_1111 | jmp op_op_modReg1Rm
                   ; 069 (ou 06B)
 L7:               Mov op1 00_0110_1001 | jmp s_modReg1Rm_imm
-L6:             ifnot B$Operands ImmToReg, L6>
+L6:             ifnot B$Operands IMM_TO_REG L6>
                   Mov B$ParametersNumber 3
                   Mov dh, B$FirstReg, B$SecondReg dh | jmp L8<  ; add: "> imul eax 213"
 L6:             ;BadOperand
@@ -975,7 +975,7 @@ L3:         BadMnemonic
 L2:       ifnot op2 'G', L2>
             ifnot op3 'D', L3>
               ifnot op4 'T', L4>                 ; LGDT
-                ifnot B$FirstGender mem, L5>
+                ifnot B$FirstGender MEM_LABEL L5>
                   Mov op1 00_1111,  op2 1,  op3 0001_0000 | jmp op_op_modRm
 L5:             BadOperand
 L4:           ;BadMnemonic
@@ -983,7 +983,7 @@ L3:         BadMnemonic
 L2:       ifnot op2 'I', L2>
             ifnot op3 'D', L3>
               ifnot op4 'T', L4>                       ; LIDT
-                ifnot B$FirstGender mem, L5>
+                ifnot B$FirstGender MEM_LABEL L5>
                 Mov op1 00_1111,  op2 1,  op3 0001_1000 | jmp op_op_modRm
 L5:             BadOperand
 L4:           ;BadMnemonic
@@ -991,9 +991,9 @@ L3:         BadMnemonic
 L2:       ifnot op2 'L', L2>
             ifnot op3 'D', L3>
               ifnot op4 'T', L4>                      ; LLDT
-                ifnot B$FirstGender mem, L4>
+                ifnot B$FirstGender MEM_LABEL L4>
                 Mov op1 00_1111,  op2 0,  op3 0001_0000 | jmp op_op_modRm16
-L4:             ifnot B$FirstGender reg, L5>
+L4:             ifnot B$FirstGender GENERAL_REG L5>
                 Mov op1 00_1111,  op2 0,  op3 001101_0000 | jmp op_op_reg16
 L5:             BadOperand
 L4:           ;BadMnemonic
@@ -1001,9 +1001,9 @@ L3:         BadMnemonic
 L2:       ifnot op2 'D', L2>
             ifnot op3 'T', L3>
               ifnot op4 'R', L4>                      ; LDTR
-                ifnot B$FirstGender reg, L5>
+                ifnot B$FirstGender GENERAL_REG L5>
                   Mov op1 00_1111,  op2 0,  op3 00_1101_0000 | jmp op_op_reg16
-L5:              ifnot B$FirstGender mem, L5>
+L5:              ifnot B$FirstGender MEM_LABEL L5>
                   Mov op1 00_1111,  op2 0,  op3 0001_0000 | jmp op_op_modRm16
 L5:             BadOperand
 L4:           ;BadMnemonic
@@ -1011,9 +1011,9 @@ L3:         BadMnemonic
 L2:       ifnot op2 'M', L2>
             ifnot op3 'S', L3>
               ifnot op4 'W',  L4>
-                ifnot B$FirstGender Reg, L5>               ; LMSW
+                ifnot B$FirstGender GENERAL_REG L5>               ; LMSW
                   Mov op1 00_1111,  op2 1,  op3 00_1111_0000 | jmp op_op_reg1
-L5:             ifnot B$FirstGender mem, L5>
+L5:             ifnot B$FirstGender MEM_LABEL L5>
                   Mov op1 00_1111,  op2 1,  op3 0011_0000 | jmp op_op_modRm
 L5:             BadOperand
 L4:           ;BadMnemonic
@@ -1026,8 +1026,8 @@ L2:       ifnot op2 'O', L4>
 L4:           BadMnemonic
 L3:         ifnot op3 'O', L3>
               ifnot op4 'P', L4>                     ; LOOP
-                ;On B$LocalSize <> UpShort, error D$NoPlainLabelForLoopPtr
-                cmp B$LocalSize UpShort | je L7> | cmp B$LocalSize DownShort | je L7> ; jE! allowed down loop!
+                ;On B$LocalSize <> JMP_UP_SHORT error D$NoPlainLabelForLoopPtr
+                cmp B$LocalSize JMP_UP_SHORT | je L7> | cmp B$LocalSize JMP_DOWN_SHORT | je L7> ; jE! allowed down loop!
                 error D$NoPlainLabelForLoopPtr
           L7:   Mov op1 00_1110_0010 | jmp op_dis8
 L4:           ;BadMnemonic
@@ -1069,9 +1069,9 @@ L4:           BadMnemonic
 L3:        ifnot op3 'N', L3>
               ifnot op4 'D', L4>                   ; PAND
                 Mov op1 00_11011011
-                If B$FirstRegGender = XmmReg
+                If B$FirstRegGender = REG_XMM
                     ToOpcode 066 | jmp XmmMemXmm
-                Else_If B$FirstRegGender = mmReg
+                Else_If B$FirstRegGender = REG_MMX
                     jmp mmTwo
                 End_If
                 BadOperand
@@ -1107,20 +1107,20 @@ L3:         BadMnemonic
 L2:       ifnot op2 'U', L2>>
             ifnot op3 'S', L3>>
               ifnot op4 'H', L4>>                         ; Push
-                ifnot B$FirstGender reg, L5>
-                  On B$wBit = ByteSize, BadOperand
-                  ifnot B$FirstRegGender sReg, L6>       ; max. G.P.regs = 00111
-                    cmp B$FirstReg 0010_0000 | jae L7>   ; regFS is 00100000; GS, 00101000
+                ifnot B$FirstGender GENERAL_REG L5>
+                  On B$wBit = BYTE_SIZE BadOperand
+                  ifnot B$FirstRegGender SEGMENT_REG L6>       ; max. G.P.regs = 00111
+                    cmp B$FirstReg 0010_0000 | jae L7>   ; REG_FS is 00100000; GS, 00101000
                       Mov op1 00_0110 | jmp sReg2                        ; CS / DS / ES / SS
 L7:                 Mov op1 00_1111,  op2 00_1000_0000 | jmp op_sreg3    ; FS / GS
 L6:              ;Mov op1 00_1111_1111,  op2 00_1111_0000 | jmp op_reg1  ; G.P.
                   Mov op1 0_0101_0000 | jmp reg1_in_op                    ; register alternate
-L5:             ifnot B$FirstGender mem, L5>
-                  On B$wBit = ByteSize, BadOperand
+L5:             ifnot B$FirstGender MEM_LABEL L5>
+                  On B$wBit = BYTE_SIZE BadOperand
                     Mov op1 00_1111_1111,  op2 0011_0000 | jmp op_modRm
-L5:             ifnot B$FirstGender imm, L5>
+L5:             ifnot B$FirstGender IMM_VALUE L5>
                   Mov op1 00_0110_1000 | jmp s_imm
-L5:             ifnot B$FirstGender dis, L5>
+L5:             ifnot B$FirstGender DISPLACEMENT L5>
                    Mov op1 00_0110_1000 | jmp op_P1
 L5:             BadOperand
 L4:           ;BadMnemonic
@@ -1139,7 +1139,7 @@ L1: ifnot op1 'R', L1>
           ifnot op4 'F', L2>                    ; RETF
             ifnot B$ParametersNumber 0, L5>
 L6:           Mov op1 00_1100_1011 | jmp op
-L5:         ifnot B$FirstGender imm, L4>
+L5:         ifnot B$FirstGender IMM_VALUE L4>
               If D$imm32 = 0
                   Mov B$DisInside &False
                   Mov B$ParametersNumber 0
@@ -1170,7 +1170,7 @@ L3:         BadMnemonic
 L2:       ifnot op2 'G', L2>
             ifnot op3 'D', L3>
               ifnot op4 'T', L4>                ; SGDT
-                ifnot B$FirstGender mem, L5>
+                ifnot B$FirstGender MEM_LABEL L5>
                   Mov op1 00_1111,  op2 1,  op3 0 | jmp op_op_modRm
 L5:             BadOperand
 L4:           ;BadMnemonic
@@ -1183,24 +1183,24 @@ L9:           BadMnemonic
 L7:           Mov op2 00_1010_0100 | jmp L5>
 L6:           Mov op2 00_1010_1100
 L5:           ifnot op4 'D', L9<                 ; SHLD / SHRD
-                ifnot B$Operands RegToReg, L3>
+                ifnot B$Operands REG_TO_REG L3>
                   Mov op3 00_1100_0000
-                  ifnot B$ThirdGender imm, L4>
+                  ifnot B$ThirdGender IMM_VALUE L4>
                     jmp op_op_reg2reg1_imm8
-L4:               ifnot B$ThirdGender Reg, L9<
-                    ifnot B$ThirdReg RegCl, L9<
+L4:               ifnot B$ThirdGender GENERAL_REG L9<
+                    ifnot B$ThirdReg REG_CL L9<
                       or op2 1 | jmp op_op_reg2reg1_cl
-L3:             ifnot B$Operands RegToMem, L9<
-                  ifnot B$ThirdGender imm, L4>
+L3:             ifnot B$Operands REG_TO_MEM L9<
+                  ifnot B$ThirdGender IMM_VALUE L4>
                     jmp op_op_ModReg2Rm_imm8
-L4:               ifnot B$ThirdGender Reg, L9<
-                    ifnot B$ThirdReg RegCl, L9<
+L4:               ifnot B$ThirdGender GENERAL_REG L9<
+                    ifnot B$ThirdReg REG_CL L9<
                     or op2 1 | jmp op_op_modReg2Rm_cl
 
 L2:      ifnot op2 'I', L2>
            ifnot op3 'D', L3>
              ifnot op4 'T', L4>                      ; SIDT
-               ifnot B$FirstGender mem, L5>
+               ifnot B$FirstGender MEM_LABEL L5>
                  Mov op1 00_1111,  op2 1, op3 00_1_000 | jmp op_op_modRm
 L5:            BadOperand
 L4:          ;BadMnemonic
@@ -1209,9 +1209,9 @@ L2:      ifnot op2 'L', L2>
            ifnot op3 'D', L3>
              ifnot op4 'T', L4>                      ; SLDT
                Mov op1 00_1111,  op2 0
-               ifnot B$FirstGender reg, L5>
+               ifnot B$FirstGender GENERAL_REG L5>
                  Mov op3 00_1100_0000 | jmp op_op_reg1
-L5:            ifnot B$FirstGender mem, L5>
+L5:            ifnot B$FirstGender MEM_LABEL L5>
                  Mov op3 0 | jmp op_op_modRm
 L5:            ;BadOperand
 L4:          ;BadMnemonic
@@ -1220,9 +1220,9 @@ L2:      ifnot op2 'M', L2>
            ifnot op3 'S', L3>
              ifnot op4 'W', L4>                 ; SMSW
                Mov op1 00_1111,  op2 1
-               ifnot B$FirstGender Reg, L5>
+               ifnot B$FirstGender GENERAL_REG L5>
                  Mov op3 00_1110_0000 | jmp op_op_reg1
-L5:            ifnot B$FirstGender mem, L5>
+L5:            ifnot B$FirstGender MEM_LABEL L5>
                  Mov op3 0010_0000 | jmp op_op_modRm
 L5:            BadOperand
 L4:          ;BadMnemonic
@@ -1239,17 +1239,17 @@ L1:    ifnot op1 'T', L1>
          ifnot op2 'E', L2>
            ifnot op3 'S', L3>
              ifnot op4 'T', L4>                      ; TEST
-               ifnot B$Operands RegToReg, L5>
+               ifnot B$Operands REG_TO_REG L5>
                  Mov op1 00_1000_0100,  op2 00_1100_0000 | jmp w_reg2reg1
-L5:            ifnot B$Operands memToReg, L5>
+L5:            ifnot B$Operands MEM_TO_REG L5>
                  Mov op1 00_1000_0100 | jmp w_modReg1Rm
-L5:            ifnot B$Operands RegToMem, L5>
+L5:            ifnot B$Operands REG_TO_MEM L5>
                  Mov op1 00_1000_0100 | jmp w_modReg2Rm
-L5:            ifnot B$Operands immToReg, L5>
-                 ifnot B$FirstReg RegEax, L6>
+L5:            ifnot B$Operands IMM_TO_REG L5>
+                 ifnot B$FirstReg REG_EAX L6>
                    Mov op1 00_1010_1000 | jmp w_imm
 L6:                Mov op1 00_1111_0110,  op2 00_1100_0000 | jmp w_reg1_imm
-L5:            ifnot B$Operands immToMem, L5>
+L5:            ifnot B$Operands IMM_TO_MEM L5>
                    Mov op1 00_1111_0110,  op2 0 | jmp w_modRm_imm
 L5:            BadOperand
 L4:          ;BadMnemonic
@@ -1260,16 +1260,16 @@ L1:    ifnot op1 'V', L1>
            ifnot op3 'R', L3>
              ifnot op4 'R', L4>                    ; VERR
                Mov op1 00_1111,  op2 0
-               ifnot B$FirstGender reg, L5>
+               ifnot B$FirstGender GENERAL_REG L5>
                  Mov op3 00_1110_0000 | jmp op_op_reg16
-L5:            ifnot B$FirstGender mem, L5>
+L5:            ifnot B$FirstGender MEM_LABEL L5>
                  Mov op3 0010_0000 | jmp op_op_modRm16
 L5:            BadOperand
 L4:          ifnot op4 'W', L4>                     ; VERW
                Mov op1 00_1111,  al 0
-               ifnot B$FirstGender reg, L5>
+               ifnot B$FirstGender GENERAL_REG L5>
                  Mov op3 00_1110_1000 | jmp op_op_reg16
-L5:            ifnot B$FirstGender mem, L5>
+L5:            ifnot B$FirstGender MEM_LABEL L5>
                  Mov op3 0010_1000 | jmp op_op_modRm16
 L5:            BadOperand
 L4:          ;BadMnemonic
@@ -1288,9 +1288,9 @@ L1:    ifnot op1 'X', L1>>
            ifnot op3 'D', L3>
              ifnot op4 'D', L4>                        ; XADD
                Mov op1 00_1111,  op2 00_1100_0000
-               ifnot B$Operands RegToReg, L5>
+               ifnot B$Operands REG_TO_REG L5>
                  Mov op3 00_1100_0000 | jmp op_w_reg2reg1
-L5:            ifnot B$Operands RegToMem, L5>
+L5:            ifnot B$Operands REG_TO_MEM L5>
                  jmp op_w_modReg2Rm
 L5:            BadOperand
 L4:          ;BadMnemonic
@@ -1298,18 +1298,18 @@ L3:        BadMnemonic
 L2:      ifnot op2 'C', L2>>
            ifnot op3 'H', L3>>
              ifnot op4 'G', L4>>                   ; XCHG
-               ifnot B$Operands RegToReg, L5>
-                 ifnot B$FirstReg RegEax, L6>
+               ifnot B$Operands REG_TO_REG L5>
+                 ifnot B$FirstReg REG_EAX L6>
                    Mov op2 B$FirstReg,  op1 B$SecondReg
                    Mov B$FirstReg op1,  B$SecondReg op2  ; exchange the regs order
-L6:              ifnot B$SecondReg RegEax, L6>
-                   cmp B$SecondOperandwBit ByteSize | jne L7>
+L6:              ifnot B$SecondReg REG_EAX L6>
+                   cmp B$SecondOperandwBit BYTE_SIZE | jne L7>
                       Mov op1 086, op2 00_11_000_000 | jmp op_reg2reg1
 L7:                Mov op1 00_1001_0000 | jmp XOPreg1
 L6:                Mov op1 00_1000_0110,  op2 00_1100_0000 | jmp w_reg1reg2
-L5:            ifnot B$Operands MemToReg, L5>
+L5:            ifnot B$Operands MEM_TO_REG L5>
                    Mov op1 00_1000_0110 | jmp w_modReg1Rm
-L5:            ifnot B$Operands RegToMem, L5>
+L5:            ifnot B$Operands REG_TO_MEM L5>
                    Mov op1 00_1000_0110 | jmp w_modReg2Rm
 L5:            BadOperand
 L4:          ;BadMnemonic
@@ -1330,7 +1330,7 @@ FiveLetters:     On op6 > Separators,  jmp SixLetters
 
 
 
-; Align: One imm parameter. Here, i just fill with NOPs up to whished adress.
+; Align: One IMM_VALUE parameter. Here, i just fill with NOPs up to whished adress.
 ; I disagree with alignment use. Do what you want here, according your own
 ; whishes:
 
@@ -1340,7 +1340,7 @@ FiveLetters:     On op6 > Separators,  jmp SixLetters
              ifnot op4 'G', L3>>
                ifnot op5 'N', L3>>                    ; ALIGN
                  cmp B$ParametersNumber 1 | jne L6>
-                 cmp B$FirstGender imm | jne L6>
+                 cmp B$FirstGender IMM_VALUE | jne L6>
                     cmp D$imm32 4 | jl L6>
                     cmp D$imm32 0100 | ja L6>
                     Mov ecx D$imm32 | bsr eax ecx | bsf ebx ecx
@@ -1389,7 +1389,7 @@ L1:    ifnot op1 'B', L1>
            ifnot op3 'U', L3>
              ifnot op4 'N', L4>
                ifnot op5 'D', L5>                     ; BOUND
-                 ifnot B$Operands memToreg, L6>
+                 ifnot B$Operands MEM_TO_REG L6>
                    Mov op1 00_0110_0010 | jmp op_modReg1Rm
 L6:              BadOperand
 L5:            ;BadMnemonic
@@ -1399,7 +1399,7 @@ L2:      ifnot op2 'S', L2>
            ifnot op3 'W', L3>
              ifnot op4 'A', L4>
                ifnot op5 'P', L5>                        ; BSWAP
-                 ifnot B$FirstGender reg, L6>
+                 ifnot B$FirstGender GENERAL_REG L6>
                    Mov op1 00_1111,  op2 00_1100_1000 | jmp op_reg1
 L6:              BadOperand
 L5:            ;BadMnemonic
@@ -1412,9 +1412,9 @@ L1:     ifnot op1 'C', L1>>
             ifnot op3 'L', L3>>
               ifnot op4 'L', L3>>
                ifnot op5 'F', L3>>
-L5:             ifnot B$FirstGender mem, L4>
+L5:             ifnot B$FirstGender MEM_LABEL L4>
                 ifnot B$ParametersNumber 2, L5>             ; CALLF jE! added
-                ifnot B$SecondGender imm, L4>
+                ifnot B$SecondGender IMM_VALUE L4>
                 cmp B$EregInside 0 | jne L4>
                 ToOpcode  09A
                 cmp B$FirstParaMem 'W' | je L2>
@@ -1448,7 +1448,7 @@ L5:            ifnot op5 'W', L5>
                  ToOpcode 066
                  Mov op1 00_1010_0111 | jmp op
 L5:            ifnot op5 'D', L5>
-                 If B$FirstRegGender = XmmReg     ; CMPSD SSE2
+                 If B$FirstRegGender = REG_XMM     ; CMPSD SSE2
                     ; Alternate
                     ToOpcode 0011110010 | Mov op1 0011000010 | jmp XmmMemXmmImm7
                  End_If
@@ -1555,7 +1555,7 @@ L1:    ifnot op1 'L', L1>>
            ifnot op3 'D', L3>
              ifnot op4 'Q', L4>
                ifnot op5 'U', L5>       ; LDDQU
-                IfNot B$Operands MemToReg, L6>
+                IfNot B$Operands MEM_TO_REG L6>
                 ToOpcode 0F2 | Mov Op1 0F0 | jmp MMXmemXMM
 L6: BadOperand
 L2:      ifnot op2 'E', L2>
@@ -1581,7 +1581,7 @@ L4:          BadMnemonic
 L3:        ifnot op3 'O', L3>
              ifnot op4 'P', L4>
                ifnot op5 'Z', L6>                 ; LOOPZ  /  E
-L5:              On B$LocalSize <> UpShort, error D$NoPlainLabelForLoopPtr
+L5:              On B$LocalSize <> JMP_UP_SHORT error D$NoPlainLabelForLoopPtr
                  Mov op1 00_1110_0001 | jmp op_dis8
 L6:            cmp op5, 'E' | je L5<
                BadMnemonic
@@ -1828,7 +1828,7 @@ L2:      ifnot op2 'U', L2>
 L5:            ifnot op5 'F', L5>                 ; PUSHF
                  Mov op1 00_0100_11100 | jmp op
 L5:            ifnot op5 'W', L5>                 ; PUSHW
-                  ifnot B$FirstGender imm, L6>
+                  ifnot B$FirstGender IMM_VALUE L6>
                     Mov op1 00_0110_1000 | jmp s_imm16
 L6:               BadOperand
 L5:            ;BadMnemonic
@@ -2011,7 +2011,7 @@ L1:    ifnot op1 'I', L1>
              ifnot op4 'L', L4>
                ifnot op5 'P', L5>
                  ifnot op6 'G', L6>     ; INVLPG
-                   ifnot B$FirstGender mem, L7>
+                   ifnot B$FirstGender MEM_LABEL L7>
                      Mov op1 00_1111,  op2 1,  op3 00_111_000 | jmp op_op_modRm
 L7:                BadOperand
 L6:              ;BadMnemonic
@@ -2035,7 +2035,7 @@ L2:      ifnot op2 'O', L2>
              ifnot op4 'P', L4>
                ifnot op5 'N', L5>
                  ifnot op6 'Z', L6>                 ; LOOPNZ /  E
-L7:                On B$LocalSize <> UpShort, error D$NoPlainLabelForLoopPtr
+L7:                On B$LocalSize <> JMP_UP_SHORT error D$NoPlainLabelForLoopPtr
                    Mov op1 00_1110_0000 | jmp op_dis8
 L6:              cmp op6 'E' | je L7<
 L5:            ;BadMnemonic
@@ -2180,7 +2180,7 @@ L3:        ifnot op3 'L', L3>
                  ifnot op6 'Q', L6>>                         ; PSLLDQ
                      If B$ImmInside = &FALSE
                         error D$MissingOperandPtr
-                     Else_If B$FirstRegGender <> XmmReg
+                     Else_If B$FirstRegGender <> REG_XMM
                         BadOperand
                      End_If
                      Imm8Size
@@ -2191,8 +2191,8 @@ L3:        ifnot op3 'R', L3>
                ifnot op5 'D', L5>
                  ifnot op6 'Q', L6>                         ; PSRLDQ
                      ToOpcode 001100110, 00001111, 001110011
-                     On B$Operands <> ImmToReg, jmp L7>
-                     On B$FirstRegGender <> XmmReg, jmp L7>
+                     On B$Operands <> IMM_TO_REG jmp L7>
+                     On B$FirstRegGender <> REG_XMM jmp L7>
                      Imm8Size
                          Mov op1 0011_011_000 | or op1 B$FirstReg | LastOpcode op1
 L7:                  BadOperand
@@ -2296,8 +2296,8 @@ SevenLetters:        On op8 > Separators,  jmp heightLetters
                  ifnot op6 'S', L6>
                    ifnot op7 'H', L7>                      ; CLFLUSH
                        Parms 1
-                       On B$FirstGender <> mem, BadOperand
-                       On B$FirstOperandwbit <> ByteSize, BadOperandSize
+                       On B$FirstGender <> MEM_LABEL BadOperand
+                       On B$FirstOperandwbit <> BYTE_SIZE BadOperandSize
                        ToOpcode 00001111 | Mov op1 0010101110, op2 00_111_000 | jmp op_modRm
 
 ; CLFLUSH: intel doc says one time "00001111:10101110:mod r/m"
@@ -2316,14 +2316,14 @@ L2:      ifnot op2 'M', L2>
                  ifnot op6 'H', L6>
                    ifnot op7 'G', L7>                      ; CMPXCHG
                      Mov op1 00_1111,  op2 00_1011_0000
-                 ;    cmp B$SecondReg RegEax | jne L0         ; ???????????????
-                 ;    cmp B$SecondOperandWbit DoubleSize
+                 ;    cmp B$SecondReg REG_EAX | jne L0         ; ???????????????
+                 ;    cmp B$SecondOperandWbit DWORD_SIZE
                   ;          jne CMPXCHG8  ; ???????????????????
-                       ifnot B$Operands RegToReg, L0>
+                       ifnot B$Operands REG_TO_REG L0>
                          Mov op3 00_1100_0000 | jmp op_w_reg2reg1
-L0:                    ifnot B$Operands RegToMem, L9>
+L0:                    ifnot B$Operands REG_TO_MEM L9>
                          jmp op_w_modReg2Rm
-L9:                    ifnot B$Operands MemToReg, L8>    ; ???????
+L9:                    ifnot B$Operands MEM_TO_REG L8>    ; ???????
                          jmp op_w_modReg1Rm
 L8:                  BadOperand
 L7:                ;BadMnemonic
@@ -2339,8 +2339,8 @@ L1:    ifnot op1 'L', L1>
                ifnot op5 'C', L5>
                  ifnot op6 'S', L6>
                    ifnot op7 'R', L7>                               ; LDMXCSR
-                     ifnot B$FirstGender mem, L8>
-                       ifnot B$FirstOperandwbit DoubleSize, L9>
+                     ifnot B$FirstGender MEM_LABEL L8>
+                       ifnot B$FirstOperandwbit DWORD_SIZE L9>
                          ToOpcode 0F | Mov op1 0AE, op2 00_010_000 | jmp op_ModRm
 L9:                    error D$OperandSizePtr
 L8:                  BadOperand
@@ -2446,9 +2446,9 @@ L2:        ifnot op2 'M', L2>>
                    ifnot op6 'W', L6>
                      ifnot op7 'D', L7>                      ; PMADDWD
                         Mov op1 0F5
-                        If B$FirstRegGender = XmmReg
+                        If B$FirstRegGender = REG_XMM
                             ToOpcode 066 | jmp XmmMemXmm
-                        Else_If B$FirstRegGender = mmReg
+                        Else_If B$FirstRegGender = REG_MMX
                             jmp mmTwo
                         End_If
 L7: BadMnemonic
@@ -2551,8 +2551,8 @@ L2:      ifnot op2 'T', L2>
                  ifnot op6 'S', L6>
                    ifnot op7 'R', L7>                ;  STMXCSR
                        parms 1
-                       On B$FirstGender <> mem, BadOperand  ; xmmmemxmm
-                       On B$FirstOperandWbit <> DoubleSize, BadOperandSize
+                       On B$FirstGender <> MEM_LABEL BadOperand  ; xmmmemxmm
+                       On B$FirstOperandWbit <> DWORD_SIZE BadOperandSize
                        ToOpcode 0F, 0AE
                        Mov al 00_011_000 | or al B$ModBits | or al B$RmBits | LastOpcode al
 L7:                ;BadMnemonic
@@ -2721,20 +2721,20 @@ L1:  ifnot op1 'P', L1>>
                ifnot op6 'S', L6>>
                  ifnot op7 'D', L7>
                    ifnot op8 'W', L8>                 ; PACKSSDW
-                       .If B$FirstRegGender = XmmReg
-                           ToOpcode 001100110 | Mov B$FirstRegGender mmReg
-                           If B$Operands = RegToReg
-                               On B$SecondRegGender = XmmReg, Mov B$SecondRegGender mmReg
+                       .If B$FirstRegGender = REG_XMM
+                           ToOpcode 001100110 | Mov B$FirstRegGender REG_MMX
+                           If B$Operands = REG_TO_REG
+                               On B$SecondRegGender = REG_XMM Mov B$SecondRegGender REG_MMX
                            End_If
                        .End_If
                        Mov op1 00_01101011 | jmp mmTwo
 L8:                BadMnemonic
 L7:              ifnot op7 'W', L7>
                    ifnot op8 'B', L8>                 ; PACKSSWB
-                       .If B$FirstRegGender = XmmReg
-                           ToOpcode 001100110 | Mov B$FirstRegGender mmReg
-                           If B$Operands = RegToReg
-                               On B$SecondRegGender = XmmReg, Mov B$SecondRegGender mmReg
+                       .If B$FirstRegGender = REG_XMM
+                           ToOpcode 001100110 | Mov B$FirstRegGender REG_MMX
+                           If B$Operands = REG_TO_REG
+                               On B$SecondRegGender = REG_XMM Mov B$SecondRegGender REG_MMX
                            End_If
                        .End_If
                      Mov op1 00_01100011 | jmp mmTwo
@@ -2745,10 +2745,10 @@ L5:          ifnot op5 'U', L5>
                ifnot op6 'S', L6>
                  ifnot op7 'W', L7>
                    ifnot op8 'B', L8>                 ; PACKUSWB
-                       .If B$FirstRegGender = XmmReg
-                           ToOpcode 001100110 | Mov B$FirstRegGender mmReg
-                           If B$Operands = RegToReg
-                               On B$SecondRegGender = XmmReg, Mov B$SecondRegGender mmReg
+                       .If B$FirstRegGender = REG_XMM
+                           ToOpcode 001100110 | Mov B$FirstRegGender REG_MMX
+                           If B$Operands = REG_TO_REG
+                               On B$SecondRegGender = REG_XMM Mov B$SecondRegGender REG_MMX
                            End_If
                        .End_If
                        Mov op1 00_01100111 | jmp mmTwo
@@ -2783,8 +2783,8 @@ L2:      ifnot op2 'R', L2>
                    ifnot op7 'C', L7>
                      ifnot op8 'H', L8>                   ; PREFETCH (AMD).
                          cmp B$ParametersNumber 1 | jne L9>
-                         cmp B$FirstGender mem | jne L9>
-                         cmp B$FirstOperandwBit ByteSize | jne L9>
+                         cmp B$FirstGender MEM_LABEL | jne L9>
+                         cmp B$FirstOperandwBit BYTE_SIZE | jne L9>
                        ;  cmp B$SIBinside &TRUE | je L9>
                        ;  cmp B$EregInside &TRUE | je L9>
                              Mov al 0F | stosb | Mov al 0D | stosb
@@ -2908,7 +2908,7 @@ NineLetters:   cmp B$esi+9 Separators | ja TenLetters
                    ifnot op7 'G', L3>>
                      ifnot op8 '8', L3>>
                        ifnot B$esi+8 'B', L3>>             ; CMPXCHG8B
-                         On B$FirstOperandwbit <> QuadSize, error D$OperandSizePtr
+                         On B$FirstOperandwbit <> QWORD_SIZE error D$OperandSizePtr
                          Mov op1 0F, op2 0C7, op3 00_001_000
                          jmp Op_Op_ModRm
 
@@ -2974,8 +2974,8 @@ L1:    ifnot op1 'P', L3>>
                        cmp bl 3 | ja L3>>                 ; Same as PREFETCHT0/1/2 (alternate).
                        cmp bl 0 | je L3>>
                        cmp B$ParametersNumber 1 | jne L1>
-                         cmp B$FirstGender mem | jne L1>
-                         cmp B$FirstOperandwBit ByteSize | jne L1>
+                         cmp B$FirstGender MEM_LABEL | jne L1>
+                         cmp B$FirstOperandwBit BYTE_SIZE | jne L1>
                        ;  cmp B$SIBinside &TRUE | je L1>
                        ;  cmp B$EregInside &TRUE | je L1>
                              Mov al 0F | stosb
@@ -3039,8 +3039,8 @@ L1:    ifnot op1 'P', L3>>
                        cmp bl 3 | ja L3>>
                        cmp bl 0 | je L3>>
                        cmp B$ParametersNumber 1 | jne L1>
-                         cmp B$FirstGender mem | jne L1>
-                         cmp B$FirstOperandwBit ByteSize | jne L1>
+                         cmp B$FirstGender MEM_LABEL | jne L1>
+                         cmp B$FirstOperandwBit BYTE_SIZE | jne L1>
                        ;  cmp B$SIBinside &TRUE | je L1>
                        ;  cmp B$EregInside &TRUE | je L1>
                              Mov al 0F | stosb
@@ -3079,8 +3079,8 @@ L1:    ifnot op1 'P', L3>>
                          ifnot B$esi+9 'T', L3>>
                            ifnot B$esi+10 'A', L3>>
                              cmp B$ParametersNumber 1 | jne L1>
-                               cmp B$FirstGender mem | jne L1>
-                               cmp B$FirstOperandwBit ByteSize | jne L1>
+                               cmp B$FirstGender MEM_LABEL | jne L1>
+                               cmp B$FirstOperandwBit BYTE_SIZE | jne L1>
                              ;  cmp B$SIBinside &TRUE | je L1>
                              ;  cmp B$EregInside &TRUE | je L1>
                                    Mov al 0F | stosb | Mov al 018 | stosb
@@ -3120,8 +3120,8 @@ L2:      ifnot op2 'E', L1>
              ifnot op4 'X', L1>
                ifnot op5 'Z', L1>                   ; JECXZ
                  cmp op6 Separators | ja L1>
-X0:                cmp B$LocalSize DownShort | je R1>
-                   cmp B$LocalSize UpShort | jne R0>
+X0:                cmp B$LocalSize JMP_DOWN_SHORT | je R1>
+                   cmp B$LocalSize JMP_UP_SHORT | jne R0>
 R1:                  Mov op1 00_1110_0011 | jmp op_dis8
 R0:                error D$NoPlainLabelForJECXPtr
 
@@ -3133,13 +3133,13 @@ L1:      Push esi
       ;   Call Store8Cars
 
 ; JCC:
-    On B$FirstGender <> Dis, BadOperand
+    On B$FirstGender <> DISPLACEMENT BadOperand
 
-    cmp B$LocalSize DownShort | je L1>
-    cmp B$LocalSize UpShort | jne L2>
+    cmp B$LocalSize JMP_DOWN_SHORT | je L1>
+    cmp B$LocalSize JMP_UP_SHORT | jne L2>
 L1:   Mov op1 00_0111_0000 | or op1 B$tttnBits | jmp op_dis8
-L2: cmp B$LocalSize DownLong | je L3>
-    cmp B$LocalSize Uplong | jne L4>
+L2: cmp B$LocalSize JMP_DOWN_LONG | je L3>
+    cmp B$LocalSize JMP_UP_LONG | jne L4>
 L3:   Mov D$Relative RelativeFlag
       On B$ShortenJumpsWanted = &TRUE, Call SetShortenJmpFlag
       Mov op1 00_1111,  op2 00_1000_0000 | or op2 B$tttnBits | jmp op_op_dis
@@ -3152,20 +3152,20 @@ JMPmnemo:
             ifnot op3 'P', L9>>
               cmp op4 Separators | ja L1>>
               Mov D$Relative RelativeFlag
-              cmp B$LocalSize DownShort | Je L4>
-              cmp B$LocalSize UpShort | jne L5>
+              cmp B$LocalSize JMP_DOWN_SHORT | Je L4>
+              cmp B$LocalSize JMP_UP_SHORT | jne L5>
 
               ;On B$ShortenJumpsWanted = &TRUE, Call SetShortenJmpFlag
 
 L4:           Mov op1 00_1110_1011 | jmp op_dis8     ; Short
-L5:           cmp B$FirstGender dis | jne L6>        ; Long
-                cmp B$LocalSize DownLong | je K0>
-                cmp B$LocalSize UpLong | jne K1>
+L5:           cmp B$FirstGender DISPLACEMENT | jne L6>        ; Long
+                cmp B$LocalSize JMP_DOWN_LONG | je K0>
+                cmp B$LocalSize JMP_UP_LONG | jne K1>
 K0:                  On B$ShortenJumpsWanted = &TRUE, Call SetJMPShortenJmpFlag
 K1:                  Mov op1 00_1110_1001 | jmp op_dis
-L6:           cmp B$FirstGender Reg | jne L7>
+L6:           cmp B$FirstGender GENERAL_REG | jne L7>
                 Mov op1 00_1111_1111,  op2 00_11_100_000 | jmp op_reg1
-L7:           ifnot B$FirstGender mem, L8>
+L7:           ifnot B$FirstGender MEM_LABEL L8>
                 Mov D$Relative 0
                 Mov op1 00_1111_1111,  op2 00_100_000 | jmp op_modRm
 L8:           BadOperand
@@ -3173,9 +3173,9 @@ L9:    BadMnemonic
 
 L1:         ifnot op4 'F', L3>>
              cmp op5 Separators | ja L3>>
-L5:             ifnot B$FirstGender mem, L4>
+L5:             ifnot B$FirstGender MEM_LABEL L4>
                 ifnot B$ParametersNumber 2, L5>             ; JMPF jE! added
-                ifnot B$SecondGender imm, L4>
+                ifnot B$SecondGender IMM_VALUE L4>
                 cmp B$EregInside 0 | jne L4>
                 ToOpcode  0EA
                 cmp B$FirstParaMem 'W' | je L2>
@@ -3202,41 +3202,41 @@ L7:       error D$OverWordPtr
 MOVinstructions:                                        ; killing exceptions !!!
                  On op4 <> Space,  jmp MOVsMnemo
 
-      ifnot B$Operands RegToreg, L1>>
-        ifnot B$SecondRegGender sReg, L2>               ; general purpose? yes > L2
-          On B$FirstRegGender <> Reg,  error D$GPregisterPtr
+      ifnot B$Operands REG_TO_REG L1>>
+        ifnot B$SecondRegGender SEGMENT_REG L2>               ; general purpose? yes > L2
+          On B$FirstRegGender <> GENERAL_REG error D$GPregisterPtr
           GPreg1
           Mov op1 00_1000_1100,  op2 00_1100_0000
           or op2 B$SecondReg | or op2 B$FirstReg | jmp op_op_P2     ; reg2 is an sreg
-L2:     ifnot B$FirstRegGender sReg, L2>               ; general purpose? yes > L2
+L2:     ifnot B$FirstRegGender SEGMENT_REG L2>               ; general purpose? yes > L2
           GPreg2
-          ifnot B$FirstReg RegSS, L3>
-            Mov op1 00_1000_1110,  op2 00_1100_0000           ; reg1 is an RegSS
+          ifnot B$FirstReg REG_SS L3>
+            Mov op1 00_1000_1110,  op2 00_1100_0000           ; reg1 is an REG_SS
             or op2 B$FirstReg | or op2 B$SecondReg | jmp op_op_P2
 L3:       Mov op1 00_1000_1110,  op2 00_1100_0000             ; reg1 is an sreg
           or op2 B$FirstReg | or op2 B$SecondReg | jmp op_op_P2
 
-L2:   ifnot B$SecondRegGender dReg, L2>               ; Debug Register2?
-        On B$FirstRegGender <> Reg,  error D$GPregisterPtr
+L2:   ifnot B$SecondRegGender DEBUG_REG L2>               ; Debug Register2?
+        On B$FirstRegGender <> GENERAL_REG error D$GPregisterPtr
         GPreg1
         ToOpcode 0F, 0010_0001  ; 0000 1111 : 0010 0001 : 11 eee reg
         Mov al B$SecondReg | shl al 3 | or al B$FirstReg | or al 0011_000_000
         LastOpcode al
 
-L2:   ifnot B$FirstRegGender dReg, L2>               ; Debug Register1?
+L2:   ifnot B$FirstRegGender DEBUG_REG L2>               ; Debug Register1?
         GPreg2
         ToOpcode 0F, 0010_0011  ; 0000 1111 : 0010 0011 : 11 eee reg
         Mov al B$FirstReg | shl al 3 | or al B$SecondReg | or al 0011_000_000
         LastOpcode al
 
-L2:   ifnot B$SecondRegGender cReg, L2>               ; Control Register2?
-        On B$FirstRegGender <> Reg,  error D$GPregisterPtr
+L2:   ifnot B$SecondRegGender CONTROL_REG L2>               ; Control Register2?
+        On B$FirstRegGender <> GENERAL_REG error D$GPregisterPtr
         GPreg1
         ToOpcode 0F, 0010_0000  ; 0000 1111 : 0010 0000 : 11 eee reg
         Mov al B$SecondReg | shl al 3 | or al B$FirstReg | or al 0011_000_000
         LastOpcode al
 
-L2:   ifnot B$FirstRegGender cReg, L2>               ; Control Register1?
+L2:   ifnot B$FirstRegGender CONTROL_REG L2>               ; Control Register1?
         GPreg2
         ToOpcode 0F, 0010_0010  ; 0000 1111 : 0010 0010 : 11 eee reg
         Mov al B$FirstReg | shl al 3 | or al B$SecondReg | or al 0011_000_000
@@ -3244,36 +3244,36 @@ L2:   ifnot B$FirstRegGender cReg, L2>               ; Control Register1?
 
 L2:     Mov op1 00_1000_1010,  op2 00_1100_0000 | jmp w_reg1reg2 ; 1/2 general P.
 
-L1:   ifnot B$Operands MemToReg, L1>
-        ifnot B$FirstRegGender sReg, L2> | Mov B$wBitDisagree &FALSE ; jE!
-          ifnot B$FirstReg RegSS, L3>
+L1:   ifnot B$Operands MEM_TO_REG L1>
+        ifnot B$FirstRegGender SEGMENT_REG L2> | Mov B$wBitDisagree &FALSE ; jE!
+          ifnot B$FirstReg REG_SS L3>
             Mov op1 00_1000_1110
               Mov op2 B$FirstReg | jmp op_modRm_P2
 L3:       Mov op1 00_1000_1110,  op2 B$FirstReg | jmp op_modRm_P2
 L2:     GPreg1
-        cmp B$FirstReg RegEAX | jne L3>
+        cmp B$FirstReg REG_EAX | jne L3>
           cmp B$ModBits 0 | jne L3>
             cmp B$RmBits 00101 | jne L3>
               Mov op1 00_1010_0000 | jmp w_dis  ;!!!!!!!!! simple label only !!!!!!!!
 
 L3:     Mov op1 00_1000_1010 | jmp w_modReg1Rm
 
-L1:   ifnot B$Operands RegToMem, L1>
-        ifnot B$SecondRegGender sReg, L2> | Mov B$wBitDisagree &FALSE ; jE!
+L1:   ifnot B$Operands REG_TO_MEM L1>
+        ifnot B$SecondRegGender SEGMENT_REG L2> | Mov B$wBitDisagree &FALSE ; jE!
           Mov op1 00_1000_1100,  op2 B$SecondReg | jmp op_modRm_P2
 L2:    GPreg2
-       cmp B$SecondReg RegEAX | jne L3>
+       cmp B$SecondReg REG_EAX | jne L3>
           cmp B$ModBits 0 | jne L3>
             cmp B$RmBits 00101 | jne L3>
                Mov op1 00_1010_0010 | jmp w_dis  ;!!!!!!!!! simple label only !!!!!!!!
 
 L3:     Mov op1 00_1000_1000 | jmp w_modreg2Rm
 
-L1:  ifnot B$Operands ImmToreg, L1>
+L1:  ifnot B$Operands IMM_TO_REG L1>
        ;Mov op1 00_1100_0110,  op2 00_1100_0000 | jmp w_reg1_imm ; alternate shorter >
         Mov op1 B$wBit | shl op1 3 | or op1 00_1011_0000 | jmp reg_in_op_imm
-L1:  ifnot B$Operands ImmToMem, L1>
-        On B$FirstOperandwbit >= QuadSize, jmp L1>
+L1:  ifnot B$Operands IMM_TO_MEM L1>
+        On B$FirstOperandwbit >= QWORD_SIZE jmp L1>
 
         Mov op1 00_1100_0110,  op2 0 | jmp w_modRm_imm
 
@@ -3299,24 +3299,24 @@ L1:  BadOperand
 MOVsMnemo:
     On op5 > Separators, jmp L0>>
       ifnot op4 'D', L4>                                ; MOVD
-        If B$FirstGender = mem
-            On B$FirstOperandwBit <> DoubleSize, BadOperandSize
-        Else_If B$SecondGender = mem
-            On B$SecondOperandwBit <> DoubleSize, BadOperandSize
+        If B$FirstGender = MEM_LABEL
+            On B$FirstOperandwBit <> DWORD_SIZE BadOperandSize
+        Else_If B$SecondGender = MEM_LABEL
+            On B$SecondOperandwBit <> DWORD_SIZE BadOperandSize
         End_If
           Mov op1 00_01101110
-          cmp B$FirstRegGender XmmReg | je XmmFour
-          cmp B$SecondRegGender XmmReg | je XmmFour
+          cmp B$FirstRegGender REG_XMM | je XmmFour
+          cmp B$SecondRegGender REG_XMM | je XmmFour
           jmp mmFour
 L4:   ifnot op4 'Q', L4>                                ; MOVQ ; THE HELL!!!!!!!!!!!!!!
-         If B$FirstRegGender = XmmReg
+         If B$FirstRegGender = REG_XMM
              ToOpcode 0F3 | Mov op1 07E | jmp MovqXMMmemXMMmem ;XMMtoFromMem ; MovqXMMmemXMMmem
-         Else_If B$SecondRegGender = XmmReg
+         Else_If B$SecondRegGender = REG_XMM
              ToOpcode 066 | Mov op1 0C6 | jmp MovqXMMmemXMMmem; XMMtoFromMem ; MovqXMMmemXMMmem
            ; This 0C6 will be 0D6 by the xor in the 'MovqXMMmemXMMmem' Routine.
            ; This encodage is not fully sure. May be an error in Intel Doc. Not
            ; implemented in NASM...
-         Else_If B$Operands = RegToMem
+         Else_If B$Operands = REG_TO_MEM
             Mov op1 07F | jmp MMregToMem ;mmTwo ;mmFour
          Else
             Mov op1 06F | jmp mmTwo ;mmFour
@@ -3336,9 +3336,9 @@ L5:     ifnot op5 'W', L5>                  ; MOVSW
           ToOpcode 066
           Mov op1 00_1010_0101 | jmp op
 L5:     ifnot op5 'D', L5>                  ; MOVSD
-          If B$FirstRegGender = XmmReg
+          If B$FirstRegGender = REG_XMM
             ; down there
-          Else_If B$SecondRegGender = XmmReg
+          Else_If B$SecondRegGender = REG_XMM
             ; down there
           Else
               Mov op1 00_0101_00101 | jmp op
@@ -3351,9 +3351,9 @@ L5:     ifnot op5 'S', L5>                      ; MOVSS (SSE SIMD)
           Mov op1 010 | jmp XMMmem32XMMmem32
 L5:     ifnot op5 'X', L5>
           Mov op1 00_1111,  op2 00_1011_1110    ; MOVSX
-          ifnot B$Operands RegToreg, L6>
+          ifnot B$Operands REG_TO_REG L6>
             Mov op3 00_1100_0000 | jmp op_w_reg1reg2X
-L6:       ifnot B$Operands MemToreg, L6>
+L6:       ifnot B$Operands MEM_TO_REG L6>
             jmp op_w_modReg1RmX
 L6:       ;BadOperand
 L5:     BadMnemonic
@@ -3361,9 +3361,9 @@ L4:     ifnot op4 'Z', L4>                      ; MOVZX
           ifnot op5 'X', L4>
             Mov op1 00_1111
             Mov op2 00_1011_0110
-            ifnot B$Operands RegToReg, L7>
+            ifnot B$Operands REG_TO_REG L7>
               Mov op3 00_1100_0000 | jmp op_w_reg1reg2X
-L7:         ifnot B$Operands MemToReg, L7>
+L7:         ifnot B$Operands MEM_TO_REG L7>
               jmp op_w_modReg1RmX
 L7:         BadOperand
 L6:       ;BadMnemonic
@@ -3488,15 +3488,15 @@ MovHeightLetters: On B$esi+8 > Separators, BadMnemonic
           ifnot op6 'K', L6>
             ifnot op7 'P', L7>
               ifnot op8 'D', L8>                     ; MOVMSKPD
-                ; 01100110:00001111:01010000:11 r32 xmmreg
+                ; 01100110:00001111:01010000:11 r32 REG_XMM
                 ToOpcode 001100110 | jmp L9>
 L8:           ifnot op8 'S', L8>                     ; MOVMSKPS
-                ; 00001111:01010000:11 r32 xmmreg    ; (unique)
+                ; 00001111:01010000:11 r32 REG_XMM    ; (unique)
 L9:             ToOpcode 001111, 001010000
-                cmp B$Operands RegToReg | jne L9>
-                cmp B$FirstRegGender Reg | jne L9>>
-                cmp B$SecondRegGender XMMreg | jne L9>>
-                On B$FirstOperandwBit <> DoubleSize, BadOperandSize
+                cmp B$Operands REG_TO_REG | jne L9>
+                cmp B$FirstRegGender GENERAL_REG | jne L9>>
+                cmp B$SecondRegGender REG_XMM | jne L9>>
+                On B$FirstOperandwBit <> DWORD_SIZE BadOperandSize
                 Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
                 LastOpcode al
 L9:             BadOperand
@@ -3534,9 +3534,9 @@ SETinstructions:
 
     Mov op1 00_1111,  op2 00_1001_0000 | or op2 B$tttnBits
     On B$FirstOperandWbit <> 0,  error D$NeedByteSizePtr
-    ifnot B$FirstGender Reg, L1>
+    ifnot B$FirstGender GENERAL_REG L1>
       Mov op3 00_1100_0000 | jmp op_op_reg1
-L1: ifnot B$FirstGender mem, L2>
+L1: ifnot B$FirstGender MEM_LABEL L2>
      Mov op3 0 | jmp op_op_modRm
 L2: BadOperand
 
@@ -3550,9 +3550,9 @@ CMOVinstructions:                      ; CMOVcc
 
     Mov op1 00_1111,  op2 00_0100_0000 | or op2 B$tttnBits
 
-    ifnot B$Operands RegToReg, L1>
+    ifnot B$Operands REG_TO_REG L1>
       Mov op3 00_1100_0000 | jmp op_op_reg1reg2
-L1: ifnot B$Operands MemToreg, L2>
+L1: ifnot B$Operands MEM_TO_REG L2>
       jmp op_op_modReg1Rm                           ; Intel doc says: ModMemRm (???!!!)
 L2: BadOperand
 
@@ -3565,7 +3565,7 @@ ________________________________________________________________________________
 ; Encodage is ended by a 8 bit imm (from 0 to 7) specifying the comparison mode.
 
 XMMcomparePS: ; CMPPS... encounted.
-    Mov B$imm32 0FF, B$immInside &TRUE, B$TrueSize ByteSize
+    Mov B$imm32 0FF, B$immInside &TRUE, B$TrueSize BYTE_SIZE
 
     ...If B$esi+7 < Separators             ; B$esi+7 = op8 > 7 Chars mnemonic
         ..If op6 = 'E'
@@ -3674,22 +3674,22 @@ Math:
     On op4 > Separators, jmp M4>>
       ifnot op2 'L', L2>
         ifnot op3 'D', L3>                      ; FLD – Load Real
-          ifnot B$FirstGender mem, L4>
-            ifnot B$FirstOperandWbit DoubleSize, L5>
+          ifnot B$FirstGender MEM_LABEL L4>
+            ifnot B$FirstOperandWbit DWORD_SIZE L5>
               Mov op1 00_11011_001, op2 0 | jmp op_ModRm
-L5:         ifnot B$FirstOperandWbit QuadSize, L5>
+L5:         ifnot B$FirstOperandWbit QWORD_SIZE L5>
               Mov op1 00_11011_101, op2 0 | jmp op_ModRm
-L5:         ifnot B$FirstOperandWbit TenSize, L5>
+L5:         ifnot B$FirstOperandWbit TBYTE_SIZE L5>
               Mov op1 00_11011_011, op2 00101_000 | jmp op_ModRm
 L5:         BadOperandSize
 L4:       Mov op1 00_1101_1001, op2 00_11000_000 | jmp op_STregP1
 L3:     BadMnemonic
 L2:   ifnot op2 'S', L2>
         ifnot op3 'T', L3>                        ; FST – Store Real
-          ifnot B$FirstGender mem, L4>
-            ifnot B$FirstOperandWbit DoubleSize, L5>
+          ifnot B$FirstGender MEM_LABEL L4>
+            ifnot B$FirstOperandWbit DWORD_SIZE L5>
               Mov op1 00_11011_001, op2 00010_000 | jmp op_ModRm
-L5:         ifnot B$FirstOperandWbit QuadSize, L5>
+L5:         ifnot B$FirstOperandWbit QWORD_SIZE L5>
               Mov op1 00_11011_101, op2 00010_000 | jmp op_ModRm
 L5:         BadOperandSize
 L4:       Mov op1 00_11011_101, op2 00_11010_000 | jmp op_STregP1
@@ -3705,10 +3705,10 @@ M4: On op5 > Separators, jmp M5>>
 L4:       BadMnemonic
 L3:     ifnot op3 'D', L3>
           ifnot op4 'D', L4>                    ; FADD – Add
-            ifnot B$FirstGender mem, L5>
-              ifnot B$FirstOperandWbit DoubleSize, L6>
+            ifnot B$FirstGender MEM_LABEL L5>
+              ifnot B$FirstOperandWbit DWORD_SIZE L6>
                 Mov op1 00_11011_000, op2 0 | jmp op_ModRm
-L6:           ifnot B$FirstOperandWbit QuadSize, L6>
+L6:           ifnot B$FirstOperandWbit QWORD_SIZE L6>
                 Mov op1 00_11011_100, op2 0 | jmp op_ModRm
 L6:           BadOperandSize
 L5:         Mov op1 0011011_000, op2 00_11_000_000 | jmp d_STreg
@@ -3717,8 +3717,8 @@ L3:       BadMnemonic
 L2:     ifnot op2 'B', L2>
           ifnot op3 'L', L3>
             ifnot op4 'D', L4>                     ; FBLD – Load Binary Coded Decimal
-              ifnot B$FirstGender mem, L5>
-                  ifnot B$FirstOperandwbit TenSize, L6>
+              ifnot B$FirstGender MEM_LABEL L5>
+                  ifnot B$FirstOperandwbit TBYTE_SIZE L6>
                   Mov op1 0DF, op2 00_100_000 | jmp op_modRm
 L6:             BadOperandSize
 L5:           BadOperand
@@ -3731,10 +3731,10 @@ L2:     ifnot op2 'C', L2>>
 L4:         BadMnemonic
 L3:       ifnot op3 'O', L3>
             ifnot op4 'M', L4>                     ; FCOM – Compare Real
-L5:           ifnot B$FirstGender mem, L5>
-                ifnot B$FirstOperandWbit DoubleSize, L6>
+L5:           ifnot B$FirstGender MEM_LABEL L5>
+                ifnot B$FirstOperandWbit DWORD_SIZE L6>
                   Mov op1 00_11011_000, op2 00_010_000 | jmp op_ModRm
-L6:             ifnot B$FirstOperandWbit QuadSize, L6>
+L6:             ifnot B$FirstOperandWbit QWORD_SIZE, L6>
                   Mov op1 00_11011_100, op2 00_010_000 | jmp op_ModRM
 L6:             BadOperandSize
 L5:           Mov op1 00_11011_000, op2 00_11_010_000 | jmp op_STreg
@@ -3745,10 +3745,10 @@ L3:       BadMnemonic
 L2:     ifnot op2 'D', L2>
           ifnot op3 'I', L3>
             ifnot op4 'V', L4>
-              ifnot B$FirstGender mem, L5>                 ; FDIV – Divide
-                ifnot B$FirstOperandWbit DoubleSize, L6>
+              ifnot B$FirstGender MEM_LABEL L5>                 ; FDIV – Divide
+                ifnot B$FirstOperandWbit DWORD_SIZE L6>
                   Mov op1 00_11011_000, op2 00_110_000 | jmp op_ModRm
-L6:             ifnot B$FirstOperandWbit QuadSize, L6>
+L6:             ifnot B$FirstOperandWbit QWORD_SIZE, L6>
                   Mov op1 00_11011_100, op2 00_110_000 | jmp op_ModRm
 L6:             BadOperandSize
 L5:           Mov op1 00_11011_000, op2 00_1111_0_000 | jmp d_RSTreg
@@ -3757,22 +3757,22 @@ L3:       BadMnemonic
 L2:     ifnot op2 'I', L2>>
           ifnot op3 'L', L3>
             ifnot op4 'D', L4>                ; FILD – Load Integer
-              ifnot B$FirstGender mem, L5>
-                ifnot B$FirstOperandWbit WordSize, L6>
+              ifnot B$FirstGender MEM_LABEL L5>
+                ifnot B$FirstOperandWbit WORD_SIZE L6>
                   Mov op1 00_11011_111, op2 0 | jmp op_ModRm
-L6:             ifnot B$FirstOperandWbit DoubleSize, L6>
+L6:             ifnot B$FirstOperandWbit DWORD_SIZE L6>
                   Mov op1 00_11011_011, op2 0 | jmp op_ModRm
-L6:             ifnot B$FirstOperandWbit QuadSize, L6>
+L6:             ifnot B$FirstOperandWbit QWORD_SIZE L6>
                   Mov op1 00_11011_111, op2 00_101_000 | jmp op_ModRm
 L6:             BadOperandSize
 L5:           BadOperand
 L4:         BadMnemonic
 L3:       ifnot op3 'S', L3>
             ifnot op4 'T', L4>
-              ifnot B$FirstGender mem, L5>               ; FIST – Store Integer
-                ifnot B$FirstOperandWbit WordSize, L6>
+              ifnot B$FirstGender MEM_LABEL L5>               ; FIST – Store Integer
+                ifnot B$FirstOperandWbit WORD_SIZE L6>
                   Mov op1 00_11011_111, op2 00_010_000 | jmp op_ModRm
-L6:             ifnot B$FirstOperandWbit DoubleSize, L6>
+L6:             ifnot B$FirstOperandWbit DWORD_SIZE L6>
                   Mov op1  00_11011_011, op2 00_010_000 | jmp op_ModRm
 L6:             BadOperandSize
 L5:           BadOperand
@@ -3789,10 +3789,10 @@ L3:       BadMnemonic
 L2:     ifnot op2 'M', L2>
           ifnot op3 'U', L3>
             ifnot op4 'L', L4>
-              ifnot B$FirstGender mem, L5>              ; FMUL – Multiply
-                ifnot B$FirstOperandWbit DoubleSize, L6>
+              ifnot B$FirstGender MEM_LABEL L5>              ; FMUL – Multiply
+                ifnot B$FirstOperandWbit DWORD_SIZE L6>
                   Mov op1 00_11011_000, op2 00_001_000 | jmp op_ModRm
-L6:             ifnot B$FirstOperandWbit QuadSize, L6>
+L6:             ifnot B$FirstOperandWbit QWORD_SIZE L6>
                   Mov op1 00_11011_100, op2 00_001_000 | jmp op_ModRm
 L6:             BadOperandSize
 L5:           Mov op1 00_11011_000, op2 00_1100_1_000 | jmp d_STreg
@@ -3811,22 +3811,22 @@ L2:     ifnot op2 'S', L2>>
 L4:         BadMnemonic
 L3:       ifnot op3 'T', L3>>
             ifnot op4 'P', L4>                 ; FSTP – Store Real and Pop
-              ifnot B$FirstGender mem, L5>
-                ifnot B$FirstOperandWbit DoubleSize, L6>
+              ifnot B$FirstGender MEM_LABEL L5>
+                ifnot B$FirstOperandWbit DWORD_SIZE L6>
                   Mov op1 00_11011_001, op2 00_011_000 | jmp op_ModRm
-L6:             ifnot B$FirstOperandWbit QuadSize, L6>
+L6:             ifnot B$FirstOperandWbit QWORD_SIZE L6>
                   Mov op1 00_11011_101, op2 00_011_000 | jmp op_ModRm
-L6:             ifnot B$FirstOperandWbit TenSize, L6>
+L6:             ifnot B$FirstOperandWbit TBYTE_SIZE L6>
                   Mov op1 00_11011_011, op2 00_111_000 | jmp op_ModRm
 L6:             BadOperandSize
 L5:           Mov op1 00_11°11_101, op2 00_11__011_000 | jmp op_STregP1
 L4:         BadMnemonic
 L3:       ifnot op3 'U', L3>
             ifnot op4 'B', L4>                          ; FSUB – Subtract
-              ifnot B$FirstGender mem, L5>
-                ifnot B$FirstOperandWbit DoubleSize, L6>
+              ifnot B$FirstGender MEM_LABEL L5>
+                ifnot B$FirstOperandWbit DWORD_SIZE L6>
                   Mov op1 00_11011_000, op2 00_100_000 | jmp op_ModRm
-L6:             ifnot B$FirstOperandWbit QuadSize, L6>
+L6:             ifnot B$FirstOperandWbit QWORD_SIZE L6>
                   Mov op1 00_11011_100, op2 00_100_000 | jmp op_ModRm
 L6:             BadOperandSize
 L5:           Mov op1 00_11011_000, op2 00_1110_0_000 | jmp d_RSTreg ; d_STreg
@@ -3876,8 +3876,8 @@ L2:   ifnot op2 'B', L2>
         ifnot op3 'S', L3>
           ifnot op4 'T', L4>
             ifnot op5 'P', L5>             ; FBSTP – Store Binary Coded Decimal and Pop
-              ifnot B$FirstGender mem, L6>
-                ifnot B$FirstOperandwbit TenSize, L7>
+              ifnot B$FirstGender MEM_LABEL L6>
+                ifnot B$FirstOperandwbit TBYTE_SIZE L7>
                 Mov op1 0DF, op2 00_110_000 | jmp op_modRm
 L7:             BadOperandSize
 L6:           BadOperand
@@ -3894,10 +3894,10 @@ L4:       BadMnemonic
 L3:     ifnot op3 'O', L3>
           ifnot op4 'M', L4>
             ifnot op5 'P', L5>              ; FCOMP – Compare Real and Pop
-              ifnot B$FirstGender mem, L6>
-                ifnot B$FirstOperandWbit DoubleSize, L7>
+              ifnot B$FirstGender MEM_LABEL L6>
+                ifnot B$FirstOperandWbit DWORD_SIZE L7>
                   Mov op1 00_11011_000, op2 00_011_000 | jmp op_ModRm
-L7:             ifnot B$FirstOperandWbit QuadSize, L7>
+L7:             ifnot B$FirstOperandWbit QWORD_SIZE L7>
                   Mov op1 00_11011_100, op2 00_011_000 | jmp op_ModRm
 L7:             BadOperandSize
 L6:           Mov op1 00_11011_000, op2 00_11_011_000 | jmp op_STreg
@@ -3913,10 +3913,10 @@ L2:   ifnot op2 'D', L2>
               On B$ParametersNumber <> 2, NoFpAssume
               Mov op1 00_11011_110, op2 00_1111_1_000 | jmp opSTreg
 L5:         ifnot op5 'R', L5>                    ; FDIVR – Reverse Divide
-              ifnot B$FirstGender mem, L6>
-                ifnot B$FirstOperandWbit DoubleSize, L7>
+              ifnot B$FirstGender MEM_LABEL L6>
+                ifnot B$FirstOperandWbit DWORD_SIZE L7>
                   Mov op1 00_11011_000, op2 00_111_000 | jmp op_ModRm
-L7:             ifnot B$FirstOperandWbit QuadSize, L7>
+L7:             ifnot B$FirstOperandWbit QWORD_SIZE L7>
                   Mov op1 00_11011_100, op2 00_111_000 | jmp op_ModRm
 L7:             BadOperandSize
 L6:           Mov op1 00_11011_000, op2 00_1111_1_000 | jmp d_RSTreg
@@ -3943,10 +3943,10 @@ L2:   ifnot op2 'I', L2>>
         ifnot op3 'A', L3>
           ifnot op4 'D', L4>
             ifnot op5 'D', L5>                      ; FIADD – Add Integer
-              ifnot B$FirstGender mem, L6>
-                ifnot B$FirstOperandWbit WordSize, L7>
+              ifnot B$FirstGender MEM_LABEL L6>
+                ifnot B$FirstOperandWbit WORD_SIZE L7>
                   Mov op1 00_11011_110, op2 0 | jmp op_ModRm
-L7:             ifnot B$FirstOperandWbit DoubleSize, L7>
+L7:             ifnot B$FirstOperandWbit DWORD_SIZE L7>
                   Mov op1 00_11011_010, op2 0 | jmp op_ModRm
 L7:             BadOperandSize
 L6:           BadOperand
@@ -3955,10 +3955,10 @@ L4:       BadMnemonic
 L3:     ifnot op3 'C', L3>
           ifnot op4 'O', L4>
             ifnot op5 'M', L5>               ; FICOM – Compare Integer
-              ifnot B$FirstGender mem, L6>
-                ifnot B$FirstOperandWbit WordSize, L7>
+              ifnot B$FirstGender MEM_LABEL L6>
+                ifnot B$FirstOperandWbit WORD_SIZE L7>
                   Mov op1 00_11011_110, op2 00_010_000 | jmp op_ModRm
-L7:             ifnot B$FirstOperandWbit DoubleSize, L7>
+L7:             ifnot B$FirstOperandWbit DWORD_SIZE L7>
                   Mov op1 00_11011_010, op2 00_010_000 | jmp op_ModRm
 L7:             BadOperandSize
 L6:           BadOperand
@@ -3967,10 +3967,10 @@ L4:       BadMnemonic
 L3:     ifnot op3 'D', L3>
           ifnot op4 'I', L4>
             ifnot op5 'V', L5>                               ; FIDIV
-              ifnot B$FirstGender mem, L6>
-                ifnot B$FirstOperandWbit WordSize, L7>
+              ifnot B$FirstGender MEM_LABEL L6>
+                ifnot B$FirstOperandWbit WORD_SIZE L7>
                   Mov op1 00_11011_110, op2 00_110_000 | jmp op_modRm
-L7:             ifnot B$FirstOperandWbit DoubleSize, L7>
+L7:             ifnot B$FirstOperandWbit DWORD_SIZE L7>
                   Mov op1 00_11011_010, op2 00_110_000 | jmp op_ModRm
 L7:             BadOperandSize
 L6:           BadOperand
@@ -3979,10 +3979,10 @@ L4:       BadMnemonic
 L3:     ifnot op3 'M', L3>
           ifnot op4 'U', L4>
             ifnot op5 'L', L5>                              ; FIMUL
-              ifnot B$FirstGender mem, L6>
-                ifnot B$FirstOperandWbit WordSize, L7>
+              ifnot B$FirstGender MEM_LABEL L6>
+                ifnot B$FirstOperandWbit WORD_SIZE L7>
                   Mov op1 00_11011_110, op2 00_001_000 | jmp op_ModRm
-L7:             ifnot B$FirstOperandWbit DoubleSize, L7>
+L7:             ifnot B$FirstOperandWbit DWORD_SIZE L7>
                   Mov op1 00_11011_010, op2 00_001_000 | jmp op_ModRm
 L7:             BadOperandSize
 L6:           Badoperand
@@ -3997,23 +3997,23 @@ L4:       BadMnemonic
 L3:     ifnot op3 'S', L3>>
           ifnot op4 'T', L4>
             ifnot op5 'P', L5>                         ; FISTP – Store Integer and Pop
-              ifnot B$FirstGender mem, L6>
-                ifnot B$FirstOperandWbit WordSize, L7>
+              ifnot B$FirstGender MEM_LABEL L6>
+                ifnot B$FirstOperandWbit WORD_SIZE L7>
                   Mov op1 00_11011_111, op2 00_011_000 | jmp op_ModRm
-L7:             ifnot B$FirstOperandWbit DoubleSize, L7>
+L7:             ifnot B$FirstOperandWbit DWORD_SIZE L7>
                   Mov op1 00_11011_011, op2 00_011_000 | jmp op_ModRm
-L7:             ifnot B$FirstOperandWbit QuadSize, L7>
+L7:             ifnot B$FirstOperandWbit QWORD_SIZE L7>
                   Mov op1 00_11011_111, op2 00_111_000 | jmp op_ModRm
 L7:             BadOperandSize
 L6:           BadOperand
 L5:         BadMnemonic
 L4:       ifnot op4 'U', L4>
             ifnot op5 'B', L5>                         ; FISUB
-              ifnot B$FirstGender mem, L6>
-                ifnot B$FirstOperandWbit WordSize, L7>
+              ifnot B$FirstGender MEM_LABEL L6>
+                ifnot B$FirstOperandWbit WORD_SIZE L7>
                   dec edi       ; No need 066 here.
                   Mov op1 00_11011_110, op2 00_100_000 | jmp op_ModRm
-L7:             ifnot B$FirstOperandWbit DoubleSize, L7>
+L7:             ifnot B$FirstOperandWbit DWORD_SIZE L7>
                   Mov op1 00_11011_010, op2 00_100_000 | jmp op_ModRm
 L7:             BadOperandSize
 L6:           BadOperand
@@ -4024,8 +4024,8 @@ L2:   ifnot op2 'L', L2>
         ifnot op3 'D', L3>
           ifnot op4 'C', L4>
             ifnot op5 'W', L5>                      ; FLDCW – Load Control Word
-              ifnot B$FirstGender mem, L6>
-                ifnot B$FirstOperandWbit WordSize, L7>
+              ifnot B$FirstGender MEM_LABEL L6>
+                ifnot B$FirstOperandWbit WORD_SIZE L7>
                   dec edi                             ; scratch 066 prefix (no use)
                   Mov op1 00_11011_001, op2 00_101_000 | jmp op_ModRm
 L7:             BadOperandSize
@@ -4064,8 +4064,8 @@ L2:   ifnot op2 'S', L2>>
         ifnot op3 'A', L3>
           ifnot op4 'V', L4>
             ifnot op5 'E', L5>                  ; FSAVE – Store FPU State 108 Bytes
-              ifnot B$FirstGender mem, L6>
-                ifnot B$FirstOperandWbit xSize, L7>
+              ifnot B$FirstGender MEM_LABEL L6>
+                ifnot B$FirstOperandWbit USO_SIZE L7>
                   ToOpcode 09B
                   Mov op1 00_11011_101, op2 00_110_000 | jmp op_ModRm
 L7:             error D$XmarkerPtr
@@ -4081,8 +4081,8 @@ L4:       BadMnemonic
 L3:  ifnot op3 'T', L3>>
           ifnot op4 'C', L4>
             ifnot op5 'W', L5>                  ; FSTCW – Store Control Word
-              ifnot B$FirstGender mem, L6>
-                ifnot B$FirstOperandWbit WordSize, L7>
+              ifnot B$FirstGender MEM_LABEL, L6>
+                ifnot B$FirstOperandWbit WORD_SIZE L7>
                   dec edi                               ; scratch 066 prefix (no use here)
                   ToOpcode 09B
                   Mov op1 00_11011_001, op2 00_111_000 | jmp op_ModRm
@@ -4093,13 +4093,13 @@ L4:     ifnot op4 'S', L4>
            ifnot op5 'W', L5>                  ; FSTSW – Store Status Word into AX or mem
              dec edi                               ; scratch 066 prefix (no use here)
              ToOpcode 09B
-             ifnot B$FirstGender mem, L6>
-                ifnot B$FirstOperandWbit WordSize, L7>
+             ifnot B$FirstGender MEM_LABEL L6>
+                ifnot B$FirstOperandWbit WORD_SIZE L7>
                   Mov op1 0DD, op2 00_111_000 | jmp op_ModRm
 L7:             BadOperandSize
-L6:          ifnot B$FirstGender reg, L6>
-               ifnot B$FirstOperandWbit WordSize, L7>
-                 ifnot B$FirstReg regAX, L6>
+L6:          ifnot B$FirstGender GENERAL_REG L6>
+               ifnot B$FirstOperandWbit WORD_SIZE L7>
+                 ifnot B$FirstReg REG_AX L6>
                    Mov op1 0DF, op2 00_11100000 | jmp op_op_P1
 L7:            BadOperandSize
 L6:          BadOperand
@@ -4109,13 +4109,13 @@ L3:    ifnot op3 'U', L3>
          ifnot op4 'B', L4>
            ifnot op5 'P', L5>                   ; FSUBP – Subtract and Pop
              On B$ParametersNumber <> 2, NoFpAssume
-             On B$SecondReg <> RegSt0, error D$FSUBPreg0Ptr  ; FADDPreg0
+             On B$SecondReg <> REG_ST0 error D$FSUBPreg0Ptr  ; FADDPreg0
              Mov op1 00_11011_110, op2 00_1110_1_000 | jmp d_STreg  ;;;op_STreg
 L5:        ifnot op5 'R', L5>                   ; FSUBR – Reverse Subtract
-             ifnot B$FirstGender mem, L6>
-               ifnot B$FirstOperandWbit DoubleSize, L7>
+             ifnot B$FirstGender MEM_LABEL L6>
+               ifnot B$FirstOperandWbit DWORD_SIZE L7>
                  Mov op1 00_11011_000, op2 00_101_000 | jmp op_ModRm
-L7:            ifnot B$FirstOperandWbit QuadSize, L7>
+L7:            ifnot B$FirstOperandWbit QWORD_SIZE L7>
                  Mov op1 00_11011_100, op2 00_101_000 | jmp op_ModRm
 L7:            BadOperandSize
 L6:          Mov op1 00_11011_000, op2 00_1110_1_000 | jmp d_RSTreg
@@ -4196,10 +4196,10 @@ L2:   ifnot op2 'I', L2>>
           ifnot op4 'O', L4>
             ifnot op5 'M', L5>
               ifnot op6 'P', L6>           ; FICOMP – Compare Integer and Pop
-                ifnot B$FirstGender mem, L7>
-                  ifnot B$FirstOperandWbit WordSize, L8>
+                ifnot B$FirstGender MEM_LABEL L7>
+                  ifnot B$FirstOperandWbit WORD_SIZE L8>
                     Mov op1 00_11011_110, op2 00_011_000 | jmp op_ModRm
-L8:               ifnot B$FirstOperandWbit DoubleSize, L8>
+L8:               ifnot B$FirstOperandWbit DWORD_SIZE L8>
                     Mov op1 00_11011_010, op2 00_011_000 | jmp op_ModRm
 L8:               BadOperandSize
 L7:             BadOperand
@@ -4210,10 +4210,10 @@ L3:     ifnot op3 'D', L3>
           ifnot op4 'I', L4>
             ifnot op5 'V', L5>
               ifnot op6, 'R', L6>                           ; FIDIVR
-                ifnot B$FirstGender mem, L7>
-                  ifnot B$FirstOperandWbit WordSize, L8>
+                ifnot B$FirstGender MEM_LABEL L7>
+                  ifnot B$FirstOperandWbit WORD_SIZE L8>
                     Mov op1 00_11011_110, op2 00_111_000 | jmp op_ModRm
-L8:               ifnot B$FirstOperandWbit DoubleSize, L8>
+L8:               ifnot B$FirstOperandWbit DWORD_SIZE L8>
                     Mov op1 00_11011_010, op2 00_111_000 | jmp op_ModRm
 L8:               BadOperandSize
 L7:             BadOperand
@@ -4224,12 +4224,12 @@ L3:     ifnot op3 'S', L3>>
           ifnot op4 'T', L4>
             ifnot op5 'T', L5>>
               ifnot op6 'P', L6>>       ; FISTTP
-                ifnot B$FirstGender mem, L7>
-                If B$FirstOperandWbit = WordSize
+                ifnot B$FirstGender MEM_LABEL L7>
+                If B$FirstOperandWbit = WORD_SIZE
                     Mov op1 0DF
-                Else_If B$FirstOperandWbit = doubleSize
+                Else_If B$FirstOperandWbit = DWORD_SIZE
                     Mov op1 0DB
-                Else_If B$FirstOperandWbit = QuadSize
+                Else_If B$FirstOperandWbit = QWORD_SIZE
                     Mov op1 0DD
                 Else
                     BadOperand
@@ -4239,11 +4239,11 @@ L3:     ifnot op3 'S', L3>>
 L4:       ifnot op4 'U', L4>
             ifnot op5 'B', L5>
               ifnot op6 'R', L6>                       ; FISUBR
-                ifnot B$FirstGender mem, L7>
-                  ifnot B$FirstOperandWbit WordSize, L8>
+                ifnot B$FirstGender MEM_LABEL L7>
+                  ifnot B$FirstOperandWbit WORD_SIZE L8>
                     dec edi         ; No need of 066 here.
                     Mov op1 00_11011_110, op2 00_101_000 | jmp op_ModRm
-L8:               ifnot B$FirstOperandWbit DoubleSize, L8>
+L8:               ifnot B$FirstOperandWbit DWORD_SIZE L8>
                     Mov op1 00_11011_010, op2 00_101_000 | jmp op_ModRm
 L8:               BadOperandSize
 L7:             BadOperand
@@ -4256,8 +4256,8 @@ L2:    ifnot op2 'L', L2>>
            ifnot op4 'E', L4>
              ifnot op5 'N', L5>
                ifnot op6 'V', L6>                ; FLDENV – Load FPU Environment
-                 ifnot B$FirstGender mem, L7>
-                   ifnot B$FirstOperandWbit xSize, L8>
+                 ifnot B$FirstGender MEM_LABEL L7>
+                   ifnot B$FirstOperandWbit USO_SIZE L8>
                      Mov op1 00_11011_001, op2 00_100_000 | jmp op_ModRm  ;  m28 bytes
 L8:                error D$XmarkerPtr
 L7:              BadOperand
@@ -4302,8 +4302,8 @@ L3:     ifnot op3 'S', L3>>
           ifnot op4 'A', L4>
             ifnot op5 'V', L5>                  ; FNSAVE – Store FPU Environ. 108 Bytes
               ifnot op6 'E', L6>
-                ifnot B$FirstGender mem, L7>
-                  ifnot B$FirstOperandWbit xSize, L8>
+                ifnot B$FirstGender MEM_LABEL L7>
+                  ifnot B$FirstOperandWbit USO_SIZE L8>
                     Mov op1 0D9, op2 00_111_000 | jmp op_ModRm
 L8:               error D$XmarkerPtr
 L7:           BadOperand
@@ -4312,8 +4312,8 @@ L5:       BadMnemonic
 L4:       ifnot op4 'T', L4>>
             ifnot op5 'C', L5>                  ; FNSTCW  ; 'FSTCW'
               ifnot op6 'W', L6>
-                ifnot B$FirstGender mem, L7>
-                  ifnot B$FirstOperandWbit wordSize, L8>
+                ifnot B$FirstGender MEM_LABEL L7>
+                  ifnot B$FirstOperandWbit WORD_SIZE L8>
                     dec edi                             ; scratch 066 prefix (no use here)
                     Mov op1 00_11011_001, op2 00_111_000 | jmp op_ModRm
                     ;Mov op1 00_11011_101, op2 00_110_000 | jmp op_ModRm
@@ -4323,12 +4323,12 @@ L6:         BadMnemonic
 L5:         ifnot op5 'S', L5>                  ; FNSTSW
               ifnot op6 'W', L6>
                 dec edi ; No need of 066 here.
-                ifnot B$FirstGender mem, L7>
-                  ifnot B$FirstOperandWbit wordSize, L8>
+                ifnot B$FirstGender MEM_LABEL L7>
+                  ifnot B$FirstOperandWbit WORD_SIZE L8>
                     Mov op1 0DD, op2 00_111_000 | jmp op_ModRm
-L7:             ifnot B$FirstGender reg, L7>
-                  ifnot B$FirstOperandWbit wordSize, L8>
-                    ifnot B$FirstReg regAX, L7>
+L7:             ifnot B$FirstGender GENERAL_REG L7>
+                  ifnot B$FirstOperandWbit WORD_SIZE L8>
+                    ifnot B$FirstReg REG_AX L7>
                       Mov op1 0DF, op2 0E0 | jmp op_op_P1
 L8:               BadOperandSize
 L7:           BadOperand
@@ -4359,8 +4359,8 @@ L2:   ifnot op2 'R', L2>
           ifnot op4 'T', L4>
             ifnot op5 'O', L5>
               ifnot op6 'R', L6>            ; FRSTOR – Restore FPU State
-                 ifnot B$FirstGender mem, L7>
-                   ifnot B$FirstOperandWbit xSize, L8>
+                 ifnot B$FirstGender MEM_LABEL L7>
+                   ifnot B$FirstOperandWbit USO_SIZE L8>
                      Mov op1 00_11011_101, op2 00_100_000 | jmp op_ModRm ; 180 bytes
 L8:                error D$XmarkerPtr
 L7:              BadOperand
@@ -4381,8 +4381,8 @@ L3:     ifnot op3 'T', L3>
           ifnot op4 'E', L4>
             ifnot op5 'N', L5>
               ifnot op6 'V', L6>            ; FSTENV – Store FPU Environment
-                ifnot B$FirstGender mem, L7>
-                  ifnot B$FirstOperandWbit xSize, L8>
+                ifnot B$FirstGender MEM_LABEL L7>
+                  ifnot B$FirstOperandWbit USO_SIZE L8>
                     Mov op1 00_11011_001, op2 00_110_000 | jmp op_ModRm  ; 28 bytes
 L8:               error D$XmarkerPtr
 L7:             BadOperand
@@ -4417,8 +4417,8 @@ L2:   ifnot op2 'X', L2>
           ifnot op4 'A', L4>
             ifnot op5 'V', L5>
               ifnot op6 'E', L6>                      ; FXSAVE
-                ifnot B$FirstGender mem, L7>
-                  ifnot B$FirstOperandwbit XSize, L7>
+                ifnot B$FirstGender MEM_LABEL L7>
+                  ifnot B$FirstOperandwbit USO_SIZE L7>
                       Mov al 0F | stosb | Mov op1 0AE, op2 0 | jmp op_ModRm
 L7:               error D$XmarkerPtr
 L6:           ;BadMnemonic
@@ -4456,7 +4456,7 @@ L2:   ifnot op2 'N', L2>
             ifnot op5 'E', L7>
               ifnot op6 'N', L7>
                 ifnot op7 'V', L7>         ; FNSTENV
-                  ifnot B$FirstOperandwbit XSize, L8>
+                  ifnot B$FirstOperandwbit USO_SIZE L8>
                     Mov op1 0D9, op2 00_110_000 | jmp op_ModRm
 L8:               error D$XmarkerPtr
 L7:     BadMnemonic
@@ -4498,8 +4498,8 @@ L2:   ifnot op2 'X', L2>
             ifnot op5 'T', L7>
               ifnot op6 'O', L7>
                 ifnot op7 'R', L7>       ; FXRSTOR
-                  ifnot B$FirstGender mem, L8>
-                     ifnot B$FirstOperandwbit XSize, L8>
+                  ifnot B$FirstGender MEM_LABEL L8>
+                     ifnot B$FirstOperandwbit USO_SIZE L8>
                          ToOpcode 0F | Mov op1 0AE, op2 00_001_000 | jmp op_ModRm
 L8:                  error D$XmarkerPtr
 L7:     BadMnemonic
@@ -4598,12 +4598,12 @@ ret
 Xparams:                                         ; used by for MOVSX / MOVZX
     Call ParamsAny
 
-    cmp B$FirstOperandWbit WordSize | jne L8>
+    cmp B$FirstOperandWbit WORD_SIZE | jne L8>
       ToOpcode 066
-      On B$SecondOperandWbit = WordSize,  error D$MixTypePtr
+      On B$SecondOperandWbit = WORD_SIZE error D$MixTypePtr
 
-L8: On B$FirstOperandWbit = ByteSize,  error D$MixTypePtr
-    On B$SecondOperandWbit = DoubleSize,  error D$MixTypePtr
+L8: On B$FirstOperandWbit = BYTE_SIZE error D$MixTypePtr
+    On B$SecondOperandWbit = DWORD_SIZE error D$MixTypePtr
     Mov dl B$SecondOperandWbit | and dl 1 | Mov B$wBit dl
     ret
 
@@ -4612,22 +4612,22 @@ L8: On B$FirstOperandWbit = ByteSize,  error D$MixTypePtr
 im8Size:
     On B$ImmInside = &False, BadOperand
     On D$imm32 > 0FF,  error D$OverBytePtr
-    Mov B$TrueSize ByteSize     ; for 'StoreImm' in case of bigger sized first parameter
+    Mov B$TrueSize BYTE_SIZE     ; for 'StoreImm' in case of bigger sized first parameter
   ret
 
 [imm8Size | Call im8Size]
 
 im16Size:
     On D$imm32 >= 010000,  error D$OverWordPtr
-    Mov B$TrueSize WordSize
+    Mov B$TrueSize WORD_SIZE
   ret
 
 [imm16Size | Call im16Size]
 
 ds8Size:
     On D$dis32 >= 0100,  error D$OverBytePtr
-    cmp B$LocalSize DownLong | je L1>
-    cmp B$LocalSize UpLong | jne L2>
+    cmp B$LocalSize JMP_DOWN_LONG | je L1>
+    cmp B$LocalSize JMP_UP_LONG | jne L2>
 L1:   error D$LongDisPtr
 L2: Mov B$LongRelative &FALSE,  D$Relative RelativeFlag
     ret
@@ -4636,12 +4636,12 @@ L2: Mov B$LongRelative &FALSE,  D$Relative RelativeFlag
 
 GPrg1:                                    ; test a reg to be a general purpose
   On B$FirstReg > 00_0111,  error D$GPregisterPtr
-  On B$FirstRegGender > reg,  error D$GPregisterPtr
+  On B$FirstRegGender > GENERAL_REG error D$GPregisterPtr
 ret
 
 GPrg2:
   On B$SecondReg > 00_0111,  error D$GPregisterPtr
-  On B$SecondRegGender > reg,  error D$GPregisterPtr
+  On B$SecondRegGender > GENERAL_REG error D$GPregisterPtr
 ret
 
 GPrg1_2:
@@ -4670,7 +4670,7 @@ L1:         Mov B$sBit 0010
         On B$sBit = 0010, Call CkeckPossibleImmLabel
     Pop eax
     If B$sBit = 0010
-        Mov B$TrueSize ByteSize | and D$imm32 0FF | Mov B$immSign &FALSE
+        Mov B$TrueSize BYTE_SIZE | and D$imm32 0FF | Mov B$immSign &FALSE
       ; &FALSE, because we will not check the dWord High Bit in StoreImm
     End_If
 L9: ret
@@ -4702,8 +4702,8 @@ ret
 [signImm | Call sIm]
 
 
-STrg12: On B$SecondRegGender <> STreg, error D$STwishedPtr
-STrg1: On B$FirstRegGender <> STreg, error D$STwishedPtr  | ret
+STrg12: On B$SecondRegGender <> REG_FPU error D$STwishedPtr
+STrg1: On B$FirstRegGender <> REG_FPU error D$STwishedPtr  | ret
 
 [STregs1_2 | Call STrg12]
 
@@ -4729,17 +4729,17 @@ op_STreg:
 L1: ifnot B$ParametersNumber 1,  L2>
       STreg1 | ToOpcode op1 | or op2 B$FirstReg | LastOpcode op2
 L2: ifnot B$ParametersNumber 2,  L3>
- ;    ;;; On B$FirstReg <> RegST0, error ST0wished
- ;     On B$SecondReg <> RegST0, error ST0wished
+ ;    ;;; On B$FirstReg <> REG_ST0 error ST0wished
+ ;     On B$SecondReg <> REG_ST0 error ST0wished
  ;   ;;STregs1_2 | ToOpcode op1 | or op2 B$SecondReg | LastOpcode op2
  ;     STregs1_2 | ToOpcode op1 | or op2 B$FirstReg | LastOpcode op2
 
  ; Last choice > more flexibility:
 
         STregs1_2 | ToOpcode op1
-        If B$FirstReg = RegST0
+        If B$FirstReg = REG_ST0
             or op2 B$SecondReg
-        Else_If B$SecondReg = RegST0
+        Else_If B$SecondReg = REG_ST0
             or op2 B$FirstReg
         Else
             error D$ST0wishedPtr
@@ -4755,9 +4755,9 @@ d_STreg:
 L1: ifnot B$ParametersNumber 1,  L2>
       STreg1 | ToOpcode op1 | or op2 B$FirstReg | LastOpcode op2
 L2: ifnot B$ParametersNumber 2, L8>
-      STregs1_2 | cmp B$FirstReg RegST0 | jne L3>
+      STregs1_2 | cmp B$FirstReg REG_ST0 | jne L3>
         or op2 B$SecondReg | ToOpcode op1 | LastOpcode op2
-L3:   On B$SecondReg <> RegST0, error D$ST0wishedPtr
+L3:   On B$SecondReg <> REG_ST0 error D$ST0wishedPtr
         or op1 00_100 | ToOpcode op1                        ; 00_100 = direction bit
         or op2 B$FirstReg | LastOpcode op2
 L8: Error D$TooMuchPtr
@@ -4771,9 +4771,9 @@ d_RSTreg:
 L1: ifnot B$ParametersNumber 1,  L2>
       STreg1 | ToOpcode op1 | or op2 B$FirstReg | LastOpcode op2
 L2: ifnot B$ParametersNumber 2,  L8<
-    STregs1_2 | cmp B$FirstReg RegST0 | jne L1>
+    STregs1_2 | cmp B$FirstReg REG_ST0 | jne L1>
 L0:   or op2 B$SecondReg | ToOpcode op1 | LastOpcode op2
-L1: On B$SecondReg <> RegST0, error D$ST0wishedPtr
+L1: On B$SecondReg <> REG_ST0 error D$ST0wishedPtr
       or op1 00_0100 | ToOpcode op1                          ; 00_0100 = direction bit
       xor op2 00_1000 | or op2 B$FirstReg | LastOpcode op2   ; 00_1000 = Reverse bit
 
@@ -4812,24 +4812,24 @@ L1: On B$SecondReg <> RegST0, error D$ST0wishedPtr
 ;;
 
 mmFour: ParmsAny 2 | ToOpcode 00_1111
-     cmp B$Operands RegToReg | jne L1>
-      cmp B$FirstRegGender mmReg | jne L2>
+     cmp B$Operands REG_TO_REG | jne L1>
+      cmp B$FirstRegGender REG_MMX | jne L2>
         ToOpcode op1                                                 ; case 1
         GPreg2 | Mov op1 B$FirstReg | shl op1 3 | or op1 B$SecondReg
         or op1 00_11000000 | LastOpcode op1
-L2:   cmp B$SecondRegGender mmReg | jne L2>
+L2:   cmp B$SecondRegGender REG_MMX | jne L2>
         or op1 00_10000 | toOpcode op1                               ; case 2
         GPreg1 | Mov op1 B$SecondReg | shl op1 3 | or op1 B$FirstReg
         or op1 00_11000000 | LastOpcode op1
 L2:   BadOperand
-L1: cmp B$Operands MemToReg | jne L1>
+L1: cmp B$Operands MEM_TO_REG | jne L1>
       ToOpcode op1 | Mov op1 B$ModBits | or op1 B$RmBits             ; case 3
-      On B$FirstRegGender <> mmReg, error D$OperandsTypesPtr
+      On B$FirstRegGender <> REG_MMX error D$OperandsTypesPtr
       Mov op2 B$FirstReg | shl op2 3 | or op1 op2 | LastOpcode op1
-L1: cmp B$Operands RegToMem | jne L1>
+L1: cmp B$Operands REG_TO_MEM | jne L1>
       or op1 00_10000 | ToOpcode op1                                 ; case 4
       Mov op1 B$ModBits | or op1 B$RmBits
-      On B$SecondRegGender <> mmReg, error D$OperandsTypesPtr
+      On B$SecondRegGender <> REG_MMX error D$OperandsTypesPtr
       Mov op2 B$SecondReg | shl op2 3 | or op1 op2 | LastOpcode op1
 L1: BadOperand
 
@@ -4841,10 +4841,10 @@ L1: BadOperand
 
 gg2: gg_Value    ; >>> mm2:
 
-    .If B$FirstRegGender = XmmReg
-        ToOpcode 066 | Mov B$FirstRegGender mmReg
-        If B$SecondRegGender = XmmReg
-            Mov B$SecondRegGender mmReg
+    .If B$FirstRegGender = REG_XMM
+        ToOpcode 066 | Mov B$FirstRegGender REG_MMX
+        If B$SecondRegGender = REG_XMM
+            Mov B$SecondRegGender REG_MMX
         End_If
     .End_If
 
@@ -4855,14 +4855,14 @@ gg2: gg_Value    ; >>> mm2:
 mmTwo:
 
 ParmsAny 2 | ToOpcode 00_1111, op1
-L0: cmp B$Operands RegToReg | jne L1>
-      cmp B$FirstRegGender  mmReg | jne L8>
-      cmp B$SecondRegGender mmReg | jne L8>
+L0: cmp B$Operands REG_TO_REG | jne L1>
+      cmp B$FirstRegGender  REG_MMX | jne L8>
+      cmp B$SecondRegGender REG_MMX | jne L8>
         Mov op1 B$FirstReg | shl op1 3 | or op1 B$SecondReg
         or op1 00_11000000 | LastOpcode op1
 L1: Mov op1 B$ModBits | or op1 B$RmBits
-    cmp B$Operands MemToReg | jne L8>
-      cmp B$FirstRegGender mmReg | jne L8>
+    cmp B$Operands MEM_TO_REG | jne L8>
+      cmp B$FirstRegGender REG_MMX | jne L8>
       Mov op2 B$FirstReg | shl op2 3 | or op1 op2 | LastOpcode op1
 L8: BadOperand
 
@@ -4870,14 +4870,14 @@ mmTwoImm8:
     ParmsAny 3 | ToOpcode 00_1111, op1
     On B$immInside = &FALSE, error D$EndingImmPtr
     On D$imm32 > 0FF, BadOperandSize
-        Mov B$TrueSize ByteSize                 ; to ajust imm size to 8 bits storage
+        Mov B$TrueSize BYTE_SIZE                 ; to ajust imm size to 8 bits storage
         jmp L0<<
 
 mmOne:
     ParmsAny 2
-    cmp B$Operands RegToReg | jne L9>
-        cmp B$FirstRegGender MMreg | jne L9>
-            cmp B$SecondRegGender MMreg | jne L9>
+    cmp B$Operands REG_TO_REG | jne L9>
+        cmp B$FirstRegGender REG_MMX | jne L9>
+            cmp B$SecondRegGender REG_MMX | jne L9>
                 ToOpcode 0F, op1
                 Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
                 LastOpcode al
@@ -4889,10 +4889,10 @@ L9: BadOperand
 
 MMregToMem:
     ParmsAny 2
-    cmp B$Operands RegToMem | jne L9>
-        cmp B$SecondRegGender mmReg | jne L9>
-            cmp B$FirstOperandWbit Xsize | je L7>
-            cmp B$FirstOperandWbit QuadSize | jne L8>
+    cmp B$Operands REG_TO_MEM | jne L9>
+        cmp B$SecondRegGender REG_MMX | jne L9>
+            cmp B$FirstOperandWbit USO_SIZE | je L7>
+            cmp B$FirstOperandWbit QWORD_SIZE | jne L8>
 L7:             ToOpcode 0F, op1
                 Mov al B$SecondReg | shl al 3 | or al B$ModBits | or al B$RmBits
                 LastOpcode al
@@ -4910,29 +4910,29 @@ L9: BadOperand
 ;;
 
 gg3:
-    .If B$FirstRegGender = XmmReg
-        ToOpcode 066 | Mov B$FirstRegGender mmReg
-        If B$SecondRegGender = XmmReg
-            Mov B$SecondRegGender mmReg
+    .If B$FirstRegGender = REG_XMM
+        ToOpcode 066 | Mov B$FirstRegGender REG_MMX
+        If B$SecondRegGender = REG_XMM
+            Mov B$SecondRegGender REG_MMX
         End_If
     .End_If
 
     Push ecx
         ParmsAny 2 | ToOpcode 00_1111
     Pop ecx
-    cmp B$Operands RegToReg | jne L1>
-      cmp B$FirstRegGender  mmReg | jne L8>>
-      cmp B$SecondRegGender mmReg | jne L8>>
+    cmp B$Operands REG_TO_REG | jne L1>
+      cmp B$FirstRegGender  REG_MMX | jne L8>>
+      cmp B$SecondRegGender REG_MMX | jne L8>>
         gg_Value | ToOpcode op1                                 ; case 1
         Mov op1 B$FirstReg | shl op1 3 | or op1 B$SecondReg
         or op1 00_11000000 | LastOpcode op1
-L1: cmp B$Operands MemToReg | jne L1>
-      cmp B$FirstRegGender mmReg | jne L8>
+L1: cmp B$Operands MEM_TO_REG | jne L1>
+      cmp B$FirstRegGender REG_MMX | jne L8>
         gg_Value | ToOpcode op1                                 ; case 2
         Mov op1 B$ModBits | or op1 B$RmBits
         Mov op2 B$FirstReg | shl op2 3 | or op1 op2 | LastOpcode op1
-L1: cmp B$Operands immToReg | jne L8>
-      cmp B$FirstRegGender mmReg | jne L8>
+L1: cmp B$Operands IMM_TO_REG | jne L8>
+      cmp B$FirstRegGender REG_MMX | jne L8>
       ; xor op1 00_010_000_000 (???!!!...)
        Mov op1 070 | gg_Value | ToOpcode op1         ; case 3
         imm8Size | or op2 B$FirstReg | LastOpcode op2
@@ -4948,9 +4948,9 @@ ________________________________________________________________________________
 XMMXMM:
     ParmsAny 2
     ToOpcode 0F, op1
-    cmp B$Operands RegToReg | jne L8>
-        cmp B$FirstRegGender  XmmReg | jne L8>>
-        cmp B$SecondRegGender XmmReg | jne L8>>
+    cmp B$Operands REG_TO_REG | jne L8>
+        cmp B$FirstRegGender  REG_XMM | jne L8>>
+        cmp B$SecondRegGender REG_XMM | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
             LastOpcode al
 L8: BadOperand
@@ -4960,7 +4960,7 @@ XmmMemXmmImm7:
 ParmsAny 3
     On B$immInside = &FALSE, error D$EndingImmPtr
     On D$imm32 > 00111, BadOperandSize
-        Mov B$TrueSize ByteSize                 ; to ajust imm size to 8 bits storage
+        Mov B$TrueSize BYTE_SIZE                 ; to ajust imm size to 8 bits storage
         jmp L0>>
 
 
@@ -4968,20 +4968,20 @@ XmmMemXmmImm8:
 ParmsAny 3
     On B$immInside = &FALSE, error D$EndingImmPtr
     On D$imm32 > 0FF, BadOperandSize
-        Mov B$TrueSize ByteSize                 ; to ajust imm size to 8 bits storage
+        Mov B$TrueSize BYTE_SIZE                 ; to ajust imm size to 8 bits storage
         jmp L0>
 
 XmmMemXmmImm3:
 ParmsAny 3
     On B$immInside = &FALSE, error D$EndingImmPtr
     On D$imm32 > 0011, BadOperandSize
-        Mov B$TrueSize ByteSize                 ; to ajust imm size to 8 bits storage
+        Mov B$TrueSize BYTE_SIZE                 ; to ajust imm size to 8 bits storage
         jmp L0>
 
 XmmMemXmmImmFF:
 ParmsAny 3
     On B$immInside = &FALSE, error D$EndingImmPtr
-        Mov B$TrueSize ByteSize                 ; to ajust imm size to 8 bits storage
+        Mov B$TrueSize BYTE_SIZE                 ; to ajust imm size to 8 bits storage
         jmp L0>
 
 
@@ -4990,16 +4990,16 @@ ParmsAny 3
 XMMmemXMM:
     ParmsAny 2
 L0: ToOpcode 0F, op1
-    cmp B$Operands RegToReg | jne L2>
-        cmp B$FirstRegGender  XmmReg | jne L8>>
-        cmp B$SecondRegGender XmmReg | jne L8>>
+    cmp B$Operands REG_TO_REG | jne L2>
+        cmp B$FirstRegGender  REG_XMM | jne L8>>
+        cmp B$SecondRegGender REG_XMM | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
             LastOpcode al
 
-L2: cmp B$Operands MemToReg | jne L8>
-        cmp B$SecondOperandwbit xSize | je L1>
-        cmp B$SecondOperandwbit OctoSize | jne L7>
-L1:     cmp B$FirstRegGender XmmReg | jne L8>>
+L2: cmp B$Operands MEM_TO_REG | jne L8>
+        cmp B$SecondOperandwbit USO_SIZE | je L1>
+        cmp B$SecondOperandwbit OWORD_SIZE | jne L7>
+L1:     cmp B$FirstRegGender REG_XMM | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al B$ModBits | or al B$RmBits
             LastOpcode al
 
@@ -5010,16 +5010,16 @@ L8: BadOperand
 MMXmemXMM:
     ParmsAny 2
 L0: ToOpcode 0F, op1
-    cmp B$Operands RegToReg | jne L2>
-        cmp B$FirstRegGender  mmReg | jne L8>>
-        cmp B$SecondRegGender XmmReg | jne L8>>
+    cmp B$Operands REG_TO_REG | jne L2>
+        cmp B$FirstRegGender  REG_MMX | jne L8>>
+        cmp B$SecondRegGender REG_XMM | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
             LastOpcode al
 
-L2: cmp B$Operands MemToReg | jne L8>
-        cmp B$SecondOperandwbit xSize | je L1>
-        cmp B$SecondOperandwbit OctoSize | jne L7>
-L1:     cmp B$FirstRegGender mmReg | jne L8>>
+L2: cmp B$Operands MEM_TO_REG | jne L8>
+        cmp B$SecondOperandwbit USO_SIZE | je L1>
+        cmp B$SecondOperandwbit OWORD_SIZE | jne L7>
+L1:     cmp B$FirstRegGender REG_MMX | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al B$ModBits | or al B$RmBits
             LastOpcode al
 
@@ -5030,9 +5030,9 @@ L8: BadOperand
 mmXmm:
     ParmsAny 2
 L0: ToOpcode 0F, op1
-    cmp B$Operands RegToReg | jne L8>
-        cmp B$FirstRegGender  mmReg | jne L8>>
-        cmp B$SecondRegGender XmmReg | jne L8>>
+    cmp B$Operands REG_TO_REG | jne L8>
+        cmp B$FirstRegGender  REG_MMX | jne L8>>
+        cmp B$SecondRegGender REG_XMM | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
             LastOpcode al
 
@@ -5043,9 +5043,9 @@ L8: BadOperand
 Xmmmm:
     ParmsAny 2
 L0: ToOpcode 0F, op1
-    cmp B$Operands RegToReg | jne L8>
-        cmp B$FirstRegGender  XmmReg | jne L8>>
-        cmp B$SecondRegGender mmReg | jne L8>>
+    cmp B$Operands REG_TO_REG | jne L8>
+        cmp B$FirstRegGender  REG_XMM | jne L8>>
+        cmp B$SecondRegGender REG_MMX | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
             LastOpcode al
 
@@ -5059,15 +5059,15 @@ L8: BadOperand
 DwordToLowXMM:
     ParmsAny 2
     ToOpcode 00_11110011, 001111, op1
-    cmp B$Operands RegToReg | jne L2>
-        cmp B$FirstRegGender  XmmReg | jne L8>>
-        cmp B$SecondRegGender Reg | jne L8>>
+    cmp B$Operands REG_TO_REG | jne L2>
+        cmp B$FirstRegGender  REG_XMM | jne L8>>
+        cmp B$SecondRegGender GENERAL_REG | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
             LastOpcode al
 
-L2: cmp B$Operands MemToReg | jne L8>
-        cmp B$SecondOperandwbit doubleSize | jne L7>
-        cmp B$FirstRegGender XmmReg | jne L8>>
+L2: cmp B$Operands MEM_TO_REG | jne L8>
+        cmp B$SecondOperandwbit DWORD_SIZE | jne L7>
+        cmp B$FirstRegGender REG_XMM | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al B$ModBits | or al B$RmBits
             LastOpcode al
 
@@ -5078,15 +5078,15 @@ L8: BadOperand
 DwordToLowXMMWithF2:
     ParmsAny 2
     ToOpcode 00_11110010, 001111, op1
-    cmp B$Operands RegToReg | jne L2>
-        cmp B$FirstRegGender  XmmReg | jne L8>>
-        cmp B$SecondRegGender Reg | jne L8>>
+    cmp B$Operands REG_TO_REG | jne L2>
+        cmp B$FirstRegGender  REG_XMM | jne L8>>
+        cmp B$SecondRegGender GENERAL_REG | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
             LastOpcode al
 
-L2: cmp B$Operands MemToReg | jne L8>
-        cmp B$SecondOperandwbit doubleSize | jne L7>
-        cmp B$FirstRegGender XmmReg | jne L8>>
+L2: cmp B$Operands MEM_TO_REG | jne L8>
+        cmp B$SecondOperandwbit DWORD_SIZE | jne L7>
+        cmp B$FirstRegGender REG_XMM | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al B$ModBits | or al B$RmBits
             LastOpcode al
 
@@ -5100,16 +5100,16 @@ L8: BadOperand
 LowXMMtoDword:
     ParmsAny 2
     ToOpcode 00_11110011, 001111, op1
-    cmp B$Operands RegToReg | jne L2>
-        cmp B$FirstRegGender  Reg | jne L8>>
-        cmp B$SecondRegGender XmmReg | jne L8>>
+    cmp B$Operands REG_TO_REG | jne L2>
+        cmp B$FirstRegGender GENERAL_REG | jne L8>>
+        cmp B$SecondRegGender REG_XMM | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
             LastOpcode al
 
-L2: cmp B$Operands MemToReg | jne L8>
-        cmp B$SecondOperandwbit OctoSize | je L1>
-        cmp B$SecondOperandwbit XSize | jne L7>
-L1:     cmp B$FirstRegGender Reg | jne L8>>
+L2: cmp B$Operands MEM_TO_REG | jne L8>
+        cmp B$SecondOperandwbit OWORD_SIZE | je L1>
+        cmp B$SecondOperandwbit USO_SIZE | jne L7>
+L1:     cmp B$FirstRegGender GENERAL_REG | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al B$ModBits | or al B$RmBits
             LastOpcode al
 
@@ -5120,16 +5120,16 @@ L8: BadOperand
 LowXMMtoDwordWithF2:
     ParmsAny 2
     ToOpcode 00_11110010, 001111, op1
-    cmp B$Operands RegToReg | jne L2>
-        cmp B$FirstRegGender  Reg | jne L8>>
-        cmp B$SecondRegGender XmmReg | jne L8>>
+    cmp B$Operands REG_TO_REG | jne L2>
+        cmp B$FirstRegGender  GENERAL_REG | jne L8>>
+        cmp B$SecondRegGender REG_XMM | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
             LastOpcode al
 
-L2: cmp B$Operands MemToReg | jne L8>
-        cmp B$SecondOperandwbit OctoSize | je L1>
-        cmp B$SecondOperandwbit XSize | jne L7>
-L1:     cmp B$FirstRegGender Reg | jne L8>>
+L2: cmp B$Operands MEM_TO_REG | jne L8>
+        cmp B$SecondOperandwbit OWORD_SIZE | je L1>
+        cmp B$SecondOperandwbit USO_SIZE | jne L7>
+L1:     cmp B$FirstRegGender GENERAL_REG | jne L8>>
             Mov al B$FirstReg | shl al 3 | or al B$ModBits | or al B$RmBits
             LastOpcode al
 
@@ -5140,25 +5140,25 @@ L8: BadOperand
 XMMmemXMMmem:
     ParmsAny 2
     ToOpcode 0F
-    cmp B$Operands RegToReg | jne L2>
-        cmp B$FirstRegGender  XmmReg | jne L8>>
-        cmp B$SecondRegGender XmmReg | jne L8>>
+    cmp B$Operands REG_TO_REG | jne L2>
+        cmp B$FirstRegGender  REG_XMM | jne L8>>
+        cmp B$SecondRegGender REG_XMM | jne L8>>
             ToOpcode op1
             Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
             LastOpcode al
 
-L2: cmp B$Operands MemToReg | jne L2>
-        cmp B$SecondOperandwbit xSize | je L1>
-        cmp B$SecondOperandwbit OctoSize | jne L7>
-L1:     cmp B$FirstRegGender XmmReg | jne L8>>
+L2: cmp B$Operands MEM_TO_REG | jne L2>
+        cmp B$SecondOperandwbit USO_SIZE | je L1>
+        cmp B$SecondOperandwbit OWORD_SIZE | jne L7>
+L1:     cmp B$FirstRegGender REG_XMM | jne L8>>
             ToOpcode op1
             Mov al B$FirstReg | shl al 3 | or al B$ModBits | or al B$RmBits
             LastOpcode al
 
-L2: cmp B$Operands RegToMem | jne L8>
-        cmp B$FirstOperandwbit xSize | je L1>
-        cmp B$FirstOperandwbit OctoSize | jne L7>
-L1:     cmp B$SecondRegGender XmmReg | jne L8>>
+L2: cmp B$Operands REG_TO_MEM | jne L8>
+        cmp B$FirstOperandwbit USO_SIZE | je L1>
+        cmp B$FirstOperandwbit OWORD_SIZE | jne L7>
+L1:     cmp B$SecondRegGender REG_XMM | jne L8>>
             or op1 1 | ToOpcode op1
             Mov al B$SecondReg | shl al 3 | or al B$ModBits | or al B$RmBits
             LastOpcode al
@@ -5172,27 +5172,27 @@ L8: BadOperand
 XMMmem32XMMmem32:
     ParmsAny 2
     ToOpcode 0F
-    cmp B$Operands RegToReg | jne L2>
-        cmp B$FirstRegGender  XmmReg | jne L8>>
-        cmp B$SecondRegGender XmmReg | jne L8>>
+    cmp B$Operands REG_TO_REG | jne L2>
+        cmp B$FirstRegGender  REG_XMM | jne L8>>
+        cmp B$SecondRegGender REG_XMM | jne L8>>
             ToOpcode op1
             Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
             LastOpcode al
 
-L2: cmp B$Operands MemToReg | jne L2>
-        cmp B$SecondOperandwbit doubleSize | je L1>
-        cmp B$SecondOperandwbit xSize | je L1>
-        cmp B$SecondOperandwbit OctoSize | jne L7>
-L1:     cmp B$FirstRegGender XmmReg | jne L8>>
+L2: cmp B$Operands MEM_TO_REG | jne L2>
+        cmp B$SecondOperandwbit DWORD_SIZE | je L1>
+        cmp B$SecondOperandwbit USO_SIZE | je L1>
+        cmp B$SecondOperandwbit OWORD_SIZE | jne L7>
+L1:     cmp B$FirstRegGender REG_XMM | jne L8>>
             ToOpcode op1
             Mov al B$FirstReg | shl al 3 | or al B$ModBits | or al B$RmBits
             LastOpcode al
 
-L2: cmp B$Operands RegToMem | jne L8>
-        cmp B$FirstOperandwbit doubleSize | je L1>
-        cmp B$FirstOperandwbit xSize | je L1>
-        cmp B$FirstOperandwbit OctoSize | jne L7>
-L1:     cmp B$SecondRegGender XmmReg | jne L8>>
+L2: cmp B$Operands REG_TO_MEM | jne L8>
+        cmp B$FirstOperandwbit DWORD_SIZE | je L1>
+        cmp B$FirstOperandwbit USO_SIZE | je L1>
+        cmp B$FirstOperandwbit OWORD_SIZE | jne L7>
+L1:     cmp B$SecondRegGender REG_XMM | jne L8>>
             or op1 1 | ToOpcode op1
             Mov al B$SecondReg | shl al 3 | or al B$ModBits | or al B$RmBits
             LastOpcode al
@@ -5207,25 +5207,25 @@ L8: BadOperand
 MovqXMMmemXMMmem:
     ParmsAny 2
     ToOpcode 0F
-    cmp B$Operands RegToReg | jne L2>
-        cmp B$FirstRegGender  XmmReg | jne L8>>
-        cmp B$SecondRegGender XmmReg | jne L8>>
+    cmp B$Operands REG_TO_REG | jne L2>
+        cmp B$FirstRegGender  REG_XMM | jne L8>>
+        cmp B$SecondRegGender REG_XMM | jne L8>>
             ToOpcode op1
             Mov al B$FirstReg | shl al 3 | or al 00_11_000_000 | or al B$SecondReg
             LastOpcode al
 
-L2: cmp B$Operands MemToReg | jne L2>
-        cmp B$SecondOperandwbit xSize | je L1>
-        cmp B$SecondOperandwbit QuadSize | jne L7>
-L1:     cmp B$FirstRegGender XmmReg | jne L8>>
+L2: cmp B$Operands MEM_TO_REG | jne L2>
+        cmp B$SecondOperandwbit USO_SIZE | je L1>
+        cmp B$SecondOperandwbit QWORD_SIZE | jne L7>
+L1:     cmp B$FirstRegGender REG_XMM | jne L8>>
             ToOpcode op1
             Mov al B$FirstReg | shl al 3 | or al B$ModBits | or al B$RmBits
             LastOpcode al
 
-L2: cmp B$Operands RegToMem | jne L8>
-        cmp B$FirstOperandwbit xSize | je L1>
-        cmp B$FirstOperandwbit QuadSize | jne L7>
-L1:     cmp B$SecondRegGender XmmReg | jne L8>>
+L2: cmp B$Operands REG_TO_MEM | jne L8>
+        cmp B$FirstOperandwbit USO_SIZE | je L1>
+        cmp B$FirstOperandwbit QWORD_SIZE | jne L7>
+L1:     cmp B$SecondRegGender REG_XMM | jne L8>>
             xor op1 0010000 | ToOpcode op1
             Mov al B$SecondReg | shl al 3 | or al B$ModBits | or al B$RmBits
             LastOpcode al
@@ -5238,18 +5238,18 @@ XMMtoFromMem:
     ParmsAny 2
     ToOpcode 0F
 
-    cmp B$Operands MemToReg | jne L2>
-        cmp B$SecondOperandwbit xSize | je L1>
-        cmp B$SecondOperandwbit OctoSize | jne L7>
-L1:     cmp B$FirstRegGender XmmReg | jne L8>>
+    cmp B$Operands MEM_TO_REG | jne L2>
+        cmp B$SecondOperandwbit USO_SIZE | je L1>
+        cmp B$SecondOperandwbit OWORD_SIZE | jne L7>
+L1:     cmp B$FirstRegGender REG_XMM | jne L8>>
             ToOpcode op1
             Mov al B$FirstReg | shl al 3 | or al B$ModBits | or al B$RmBits
             LastOpcode al
 
-L2: cmp B$Operands RegToMem | jne L8>
-        cmp B$FirstOperandwbit xSize | je L1>
-        cmp B$FirstOperandwbit OctoSize | jne L7>
-L1:     cmp B$SecondRegGender XmmReg | jne L8>
+L2: cmp B$Operands REG_TO_MEM | jne L8>
+        cmp B$FirstOperandwbit USO_SIZE | je L1>
+        cmp B$FirstOperandwbit OWORD_SIZE | jne L7>
+L1:     cmp B$SecondRegGender REG_XMM | jne L8>
             or op1 1 | ToOpcode op1
             Mov al B$SecondReg | shl al 3 | or al B$ModBits | or al B$RmBits
             LastOpcode al
@@ -5277,10 +5277,10 @@ XMMtoMem:
 
 XmmFour:
     ToOpcode 066
-    cmp B$FirstRegGender XmmReg | jne L1>
-        Mov B$FirstRegGender mmReg | jmp mmFour
-L1: cmp B$SecondRegGender XmmReg | jne L1>
-        Mov B$SecondRegGender mmReg | jmp mmFour
+    cmp B$FirstRegGender REG_XMM | jne L1>
+        Mov B$FirstRegGender REG_MMX | jmp mmFour
+L1: cmp B$SecondRegGender REG_XMM | jne L1>
+        Mov B$SecondRegGender REG_MMX | jmp mmFour
 L1: BadOperand
 
 
@@ -5292,17 +5292,17 @@ ____________________________________
 
 OQregMemToReg:
     ParmsAny 2
-    ..If B$Operands = RegToReg
-        .If B$FirstRegGender = MMreg
-            If B$SecondRegGender = MMreg
+    ..If B$Operands = REG_TO_REG
+        .If B$FirstRegGender = REG_MMX
+            If B$SecondRegGender = REG_MMX
                 ToOpcode 0F, op1
                 Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
                 LastOpcode al
             End_If
             BadOperand
 
-        .Else_If B$FirstRegGender = XMMreg
-            If B$SecondRegGender = XMMreg
+        .Else_If B$FirstRegGender = REG_XMM
+            If B$SecondRegGender = REG_XMM
                 ToOpcode 066, 0F, op1
                 Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
                 LastOpcode al
@@ -5312,17 +5312,17 @@ OQregMemToReg:
         .End_If
         BadOperand
 
-    ..Else_If B$Operands = MemToReg
-        On B$SecondOperandwbit = xSize, Mov B$SecondOperandwbit Octosize
-        .If B$FirstRegGender = MMreg
-            If B$SecondOperandwbit = QuadSize
+    ..Else_If B$Operands = MEM_TO_REG
+        On B$SecondOperandwbit = USO_SIZE Mov B$SecondOperandwbit OWORD_SIZE
+        .If B$FirstRegGender = REG_MMX
+            If B$SecondOperandwbit = QWORD_SIZE
                 ToOpcode 0F, op1
                 Mov al B$FirstReg | shl al 3 | or al B$ModBits | or al B$RmBits
                 LastOpcode al
             End_If
             BadOperandSize
-        .Else_If B$FirstRegGender = XMMreg
-            If B$SecondOperandwbit = OctoSize
+        .Else_If B$FirstRegGender = REG_XMM
+            If B$SecondOperandwbit = OWORD_SIZE
                 ToOpcode 066, 0F, op1
                 Mov al B$FirstReg | shl al 3 | or al B$ModBits | or al B$RmBits
                 LastOpcode al
@@ -5348,13 +5348,13 @@ OQregMemToReg:
 OQregRegImm8:
     ParmsAny 3
     On B$immInside = &FALSE, error D$EndingImmPtr
-    cmp B$Operands RegToReg | jne L9>
-        cmp B$FirstRegGender reg | jne L9>
-            Mov B$TrueSize ByteSize                 ; to ajust imm size to 8 bits storage
-            cmp B$SecondRegGender XMMreg | jne L1>
+    cmp B$Operands REG_TO_REG | jne L9>
+        cmp B$FirstRegGender GENERAL_REG | jne L9>
+            Mov B$TrueSize BYTE_SIZE                 ; to ajust imm size to 8 bits storage
+            cmp B$SecondRegGender REG_XMM | jne L1>
                 cmp D$Imm32, 00111 | ja L8>
                 ToOpcode 066 | jmp L2>
-L1:         cmp B$SecondRegGender MMreg | jne L9>
+L1:         cmp B$SecondRegGender REG_MMX | jne L9>
                 cmp D$Imm32, 0011 | ja L8>
 L2:                 ToOpcode 0F, op1
                     ;Mov al B$SecondReg | shl al 3 | or al 0011_000_000 | or al B$FirstReg ;!!!!
@@ -5373,10 +5373,10 @@ L9: BadOperand
 OQregMemImm8:
     ParmsAny 3
     On B$immInside = &FALSE, error D$EndingImmPtr
-    Mov B$TrueSize ByteSize                 ; to ajust imm size to 8 bits storage
-    ..If B$Operands = RegToReg
-        .If B$FirstRegGender = MMreg
-            If B$SecondRegGender = reg
+    Mov B$TrueSize BYTE_SIZE                 ; to ajust imm size to 8 bits storage
+    ..If B$Operands = REG_TO_REG
+        .If B$FirstRegGender = REG_MMX
+            If B$SecondRegGender = GENERAL_REG
                 cmp D$Imm32, 0011 | ja L8>>
                 ToOpcode 0F, op1
                 Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
@@ -5384,8 +5384,8 @@ OQregMemImm8:
             End_If
             BadOperand
 
-        .Else_If B$FirstRegGender = XMMreg
-            If B$SecondRegGender = reg
+        .Else_If B$FirstRegGender = REG_XMM
+            If B$SecondRegGender = GENERAL_REG
                 cmp D$Imm32, 00111 | ja L8>>
                 ToOpcode 066, 0F, op1
                 Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$SecondReg
@@ -5397,14 +5397,14 @@ OQregMemImm8:
         BadOperand
 
 
-    ..Else_If B$Operands = MemToReg
-        cmp B$SecondOperandwbit Wordsize | jne L8>>
-        .If B$FirstRegGender = MMreg
+    ..Else_If B$Operands = MEM_TO_REG
+        cmp B$SecondOperandwbit WORD_SIZE | jne L8>>
+        .If B$FirstRegGender = REG_MMX
                 cmp D$Imm32, 0011 | ja L8>>
                 ToOpcode 0F, op1
                 Mov al B$FirstReg | shl al 3 | or al B$ModBits | or al B$RmBits
                 LastOpcode al
-        .Else_If B$FirstRegGender = XMMreg
+        .Else_If B$FirstRegGender = REG_XMM
                 cmp D$Imm32, 00111 | ja L8>>
                 ToOpcode 066, 0F, op1
                 Mov al B$FirstReg | shl al 3 | or al B$ModBits | or al B$RmBits
@@ -5417,16 +5417,16 @@ OQregMemImm8:
 L8: BadOperandSize
 
 
-; Example: MOVMSKB reg32  mmreg
-;          MOVMSKB reg32 Xmmreg   ; here also dest at last
+; Example: MOVMSKB reg32  REG_MMX
+;          MOVMSKB reg32 REG_XMM   ; here also dest at last
 
 OQReg32Reg:
     ParmsAny 2
-    cmp B$Operands RegToReg | jne L9>
-        cmp B$FirstRegGender reg | jne L9>
-            cmp B$SecondRegGender XMMreg | jne L1>
+    cmp B$Operands REG_TO_REG | jne L9>
+        cmp B$FirstRegGender GENERAL_REG | jne L9>
+            cmp B$SecondRegGender REG_XMM | jne L1>
                 ToOpcode 066 | jmp L2>
-L1:         cmp B$SecondRegGender MMreg | jne L9>
+L1:         cmp B$SecondRegGender REG_MMX | jne L9>
 L2:             ToOpcode 0F, op1
                 Mov al B$FirstReg | shl al 3 | or al 0011_000_000 | or al B$secondReg
                 LastOpcode al
@@ -5448,13 +5448,13 @@ ________________________________________________________________________________
 
 mm3D:
     ParmsAny 2 | ToOpcode 0F, 0F | Mov B$mm3Dsuffix op1
-    cmp B$FirstRegGender mmReg | jne L8>>
-    cmp B$Operands RegToReg | jne L1>
-        cmp B$SecondRegGender mmReg | jne L8>>
+    cmp B$FirstRegGender REG_MMX | jne L8>>
+    cmp B$Operands REG_TO_REG | jne L1>
+        cmp B$SecondRegGender REG_MMX | jne L8>>
             Mov op1 B$FirstReg | shl op1 3 | or op1 B$SecondReg
             or op1 00_11_000_000 | LastOpcode op1
-L1: cmp B$Operands MemToReg | jne L8>
-        On B$SecondOperandwBit <> QuadSize, error D$Mem3DPtr
+L1: cmp B$Operands MEM_TO_REG | jne L8>
+        On B$SecondOperandwBit <> QWORD_SIZE error D$Mem3DPtr
         Mov op1 B$FirstReg | shl op1 3 | or op1 B$ModBits | or op1 B$RmBits | LastOpcode op1
 L8: BadOperand
 
@@ -5538,7 +5538,7 @@ op_op_reg1:
   or op3 B$FirstReg | LastOpcode op3
 
 op_op_reg16:
-  Parms 1 | GPreg1 | On B$FirstOperandWbit <> WordSize,  error D$VERRwordPtr
+  Parms 1 | GPreg1 | On B$FirstOperandWbit <> WORD_SIZE error D$VERRwordPtr
   ToOpcode op1, op2 | or op3 B$FirstReg | LastOpcode op3
 
 op_op_reg1reg2:
@@ -5554,7 +5554,7 @@ op_op_reg2reg1:
 
 op_op_reg2reg1_cl:
   Parms 3 | GPreg1_2
-  On B$ThirdOperandWbit <> ByteSize,  error D$NeedByteSizePtr
+  On B$ThirdOperandWbit <> BYTE_SIZE error D$NeedByteSizePtr
   ToOpcode op1, op2
   Mov op1 B$SecondReg | shl op1 3 | or op3 op1 | or op3 B$FirstReg | LastOpcode op3
 
@@ -5567,7 +5567,7 @@ op_op_modRm:
 
 op_op_modRm16:
   Parms 1
-  On B$FirstOperandWbit <> WordSize,  error D$VERRwordPtr
+  On B$FirstOperandWbit <> WORD_SIZE error D$VERRwordPtr
   ToOpcode op1 | ToOpcode op2 | or op3 B$ModBits | or op3 B$RmBits | LastOpcode op3
 
 
@@ -5581,7 +5581,7 @@ op_op_modReg2Rm:
 
 op_op_modReg2Rm_cl:
   Parms 3 | GPreg2 | ToOpcode op1, op2
-  On B$ThirdOperandWbit <> ByteSize,  error D$NeedByteSizePtr
+  On B$ThirdOperandWbit <> BYTE_SIZE error D$NeedByteSizePtr
   Mov op3 B$SecondReg | shl op3 3 | or op3 B$ModBits | or op3 B$RmBits | LastOpcode op3
 
 op_op_modReg2Rm_imm8:
@@ -5599,7 +5599,7 @@ OPw: Parms 0 | or op1 B$wBit | LastOpcode op1
 w_P2: ParmsAny 2 | or op1 B$wBit | LastOpcode op1
 
 w_imm8:
-  Parms 2 | imm8Size | On B$SecondReg <> RegEax,  error D$OnlyAccPtr
+  Parms 2 | imm8Size | On B$SecondReg <> REG_EAX error D$OnlyAccPtr
   or op1 B$wBit | LastOpcode op1
 
 w_imm: Parms 2 | or op1 B$wBit | lastOpcode op1
@@ -5619,8 +5619,8 @@ w_reg1_P2:
 
 w_reg1_P2cl:
     ParmsAny 2 | GPreg1
-    cmp B$SecondReg RegCL | jne L1>
-    cmp B$SecondOperandWbit ByteSize | je L2>
+    cmp B$SecondReg REG_CL | jne L1>
+    cmp B$SecondOperandWbit BYTE_SIZE | je L2>
 L1:   error D$MixTypePtr
 L2: or op1 B$FirstOperandWbit | ToOpcode op1 | or op2 B$FirstReg | LastOpcode op2
 
@@ -5650,9 +5650,9 @@ w_modRm_P2:
 
 w_modRm_P2cl:
     ParmsAny 2
-    On B$FirstOperandWbit = WordSize, ToOpcode 066
-    cmp B$SecondReg RegCL | jne L1>
-    cmp B$SecondOperandWbit ByteSize | je L2>
+    On B$FirstOperandWbit = WORD_SIZE ToOpcode 066
+    cmp B$SecondReg REG_CL | jne L1>
+    cmp B$SecondOperandWbit BYTE_SIZE | je L2>
 L1:   error D$MixTypePtr
 L2: or op1 B$FirstOperandWbit | ToOpcode op1
     or op2 B$ModBits | or op2 B$RmBits | LastOpcode op2
@@ -5679,14 +5679,14 @@ w_modRm_imm:
 sw_reg1_imm:
   Parms 2 | GPreg1 | signImm
  ; On B$wBitDisagr&TRUEee = , or op1 B$sBit
-  On B$FirstOperandWbit <> ByteSize,  or op1 B$sBit
+  On B$FirstOperandWbit <> BYTE_SIZE or op1 B$sBit
   or op1 B$wBit | ToOpcode op1
   or op2 B$FirstReg | LastOpcode op2
 
 sw_modRm_imm:
   Parms 2 | signImm
   ;On B$wBitDisagree = &TRUE,  or op1 B$sBit
-  On B$FirstOperandWbit <> ByteSize,  or op1 B$sBit
+  On B$FirstOperandWbit <> BYTE_SIZE or op1 B$sBit
   or op1 B$wBit | ToOpcode op1
   or op2 B$ModBits | or op2 B$RmBits | LastOpcode op2
 
@@ -5695,7 +5695,7 @@ sw_modRm_imm:
 s_reg1reg2_imm:      ; imul only: pb: can be 8 or 16 or 32 bits imm >>> sbts (?)
   Parms 3 | signImm | GPreg1_2
  ; On B$wBitDisagree = &TRUE,  or op1 B$sBit
- ;  On B$FirstOperandWbit <> ByteSize,  or op1 B$sBit     ; supposed of no use...
+ ;  On B$FirstOperandWbit <> BYTE_SIZE or op1 B$sBit     ; supposed of no use...
   or op1 B$sBit | ToOpcode op1
   Mov op1 B$FirstReg | shl op1 3 | or op2 op1 | or op2 B$SecondReg | LastOpcode op2
 
@@ -5706,9 +5706,9 @@ s_modReg1Rm_imm:     ; idem
   Mov op2 B$FirstReg | shl op2 3 | or op2 B$ModBits | or op2 B$RmBits | LastOpcode op2
 
  ; used by 'Push imm' only:
-s_imm: Parms 1 | Mov B$TrueSize DoubleSize | signImm | or op1 B$sBit | LastOpcode op1
+s_imm: Parms 1 | Mov B$TrueSize DWORD_SIZE | signImm | or op1 B$sBit | LastOpcode op1
 
-s_imm16: Parms 1 | ToOpcode 066 | Mov B$TrueSize wordSize | signImm | or op1 B$sBit
+s_imm16: Parms 1 | ToOpcode 066 | Mov B$TrueSize WORD_SIZE | signImm | or op1 B$sBit
          LastOpcode op1
 
  _________________________________________________________________________________________

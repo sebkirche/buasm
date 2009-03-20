@@ -652,10 +652,19 @@ L9: dec edi | cmp B$edi SPC | jbe L9<                   ; suppress lasting space
     inc edi | Mov al ']' | stosb | Mov al 0 | stosb     ; and close Bracket
 
     dec edi                                             ; reuse 'ControlC' for clip:
-    Push D$BlockStartTextPtr, D$BlockEndTextPtr, D$FL.BlockInside
-      Mov D$BlockStartTextPtr DataForClipEquates, D$BlockEndTextPtr edi
-      Mov D$FL.BlockInside &TRUE | Call ControlC
-    Pop D$FL.BlockInside, D$BlockEndTextPtr, D$BlockStartTextPtr
+
+    Push D$LP.BlockStartText,
+         D$LP.BlockEndText,
+         D$FL.BlockInside
+
+        Mov D$LP.BlockStartText DataForClipEquates,
+            D$LP.BlockEndText edi
+
+        Mov D$FL.BlockInside &TRUE | Call ControlC
+
+    Pop D$FL.BlockInside,
+        D$LP.BlockEndText,
+        D$LP.BlockStartText
 ret
 ____________________________________________________________________________________________
 ; As i get no end problems with this damned Edit Controls when i need to know if there
@@ -874,7 +883,7 @@ Proc MenuEditProc:
         End_If
 
     ...Else_If D@msg = &WM_CTLCOLOREDIT
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     ...Else
@@ -1526,12 +1535,22 @@ L9: Call 'USER32.CallWindowProcA' D$PreviousEditProc D$mEditAdressee,
 [TabForEditControl: D$ TAB]
 
 StoreTabInClipBoard:
+
     pushad
-        Push D$BlockStartTextPtr, D$BlockEndTextPtr, D$FL.BlockInside
-            Mov D$BlockStartTextPtr TabForEditControl, D$BlockEndTextPtr TabForEditControl
+
+        Push D$LP.BlockStartText,
+             D$LP.BlockEndText,
+             D$FL.BlockInside
+
+            Mov D$LP.BlockStartText TabForEditControl,
+                D$LP.BlockEndText TabForEditControl
+
             Mov D$FL.BlockInside &TRUE | Call ControlC | Mov D$FL.BlockInside &FALSE
-        Pop D$FL.BlockInside, D$BlockEndTextPtr, D$BlockStartTextPtr
+
+        Pop D$FL.BlockInside, D$LP.BlockEndText, D$LP.BlockStartText
+
     popad
+
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________

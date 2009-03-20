@@ -56,11 +56,39 @@ ________________________________________________________________________________
 
 Proc MainWindowProc:
 
-;;
+; [TOPCODE]
 
+;;
+    
+    TEXT
+    –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+    TEXT
+    ___________________________________________________________________________
+    ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+    TEXT
+
+    ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+    ___________________________________________________________________________
+    ¦TEXT¦TEXT¦ ...  *** /// <TEXT> | TEXT |^^^^^|----| (0123456789) |{texte}|
+    ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+   
+    TEXT
+    _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+    ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯
+    TEXT
+    _ _ _ _ _ _ _ _ _ 
+     ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯ ¯
+    TEXT
+     
+    SYMBOLS: 45×6= ¼½¾  ÷ ± ø ^² ^³ ^¹ ^° º
+
+    
+    
+    
+    
     [MAIN]
     
-    [TOPCODE]
+    
 
     MAJ:
     
@@ -242,7 +270,11 @@ S3: Mov eax D@msg
 
                 Mov eax D$edx+NMMOUSE_HitInfo
 
-                Mov edx TABLE.StatusPartsPos, ecx D$edx-4 | sub ecx (2*DWORD)
+                ; Ecx = Nombre byte dans table StatusPartsPos
+                Mov edx TABLE.StatusPartsPos,
+                    ecx D$edx-(1*DWORD)
+
+                sub ecx (2*DWORD)
 
                 jmp S1>
 
@@ -250,7 +282,8 @@ S3: Mov eax D@msg
 
             S1: Comp eax D$edx+ecx < L0<
 
-                shr ecx 2 | On ecx = (ID_STATUS_BAR_TITLE-1) Call TITLESOnOff
+                ; Si selection de l'ID 1 ouvrir la fenêtre TITLEs
+                On ecx = ((ID_STATUS_BAR_TITLE-1)*DWORD) Call TITLESOnOff
 
             End_If
 
@@ -1098,7 +1131,7 @@ Compile:
 
     Call AsmMain | Mov D$OldStackPointer &NULL
 
-    If B$CompileErrorHappend = &FALSE
+    If D$FL.CompileErrorHappend = &FALSE
 
         Mov D$FL.ReadyToRun &TRUE, D$FL.SourceHasChanged &FALSE
 
@@ -1136,14 +1169,18 @@ Run:
         Mov D$OldStackPointer &NULL
         Mov D$FL.UnusedSymbolsDialogWanted &FALSE
 
-        On B$CompileErrorHappend = &FALSE, Mov D$FL.ReadyToRun &TRUE
+        On D$FL.CompileErrorHappend = &FALSE Mov D$FL.ReadyToRun &TRUE
+
     End_If
 
     Call SetPartialEditionFromPos
 
-    If B$CompileErrorHappend = &FALSE
+    If D$FL.CompileErrorHappend = &FALSE
+
         Mov D$FL.SourceHasChanged &FALSE
+
         Call Debugger
+
     End_If
 
     Mov D$FL.Compiling &FALSE | Call ResetKeys
@@ -1282,7 +1319,7 @@ Security:
 
                 Call AsmMain | Mov D$OldStackPointer &NULL
 
-                If B$CompileErrorHappend = &FALSE
+                If D$FL.CompileErrorHappend = &FALSE
 
                     Mov D$FL.ReadyToRun &TRUE,
                         D$FL.SourceHasChanged &FALSE,
@@ -1449,11 +1486,12 @@ SimulateBlockForBackIndent:
     Push esi
         Mov esi D$STRUCT.EditData@CurrentWritingPos
         While B$esi-1 <> LF | dec esi | End_While
-        Mov D$BlockStartTextPtr esi
+        Mov D$LP.BlockStartText esi
 
         Mov esi D$STRUCT.EditData@CurrentWritingPos
         While B$esi <> CR | inc esi | End_While | dec esi
-        Mov D$BlockEndTextPtr esi
+
+        Mov D$LP.BlockEndText esi
 
         Mov B$OldBlockInside &TRUE, B$SimulatedBlock &TRUE
     Pop esi
@@ -1466,7 +1504,7 @@ IsItBlockIndent:
     Mov B$BlockIndent &FALSE
 
   ; Verify that the Block includes a start of Line (accept non included Labels):
-    Mov esi D$BlockStartTextPtr
+    Mov esi D$LP.BlockStartText
     While B$esi <> LF
         dec esi
         If B$esi = ':'
@@ -1477,18 +1515,23 @@ IsItBlockIndent:
     End_While
 
   ; Verify that the Block is not empty:
-L2: Mov esi D$BlockStartTextPtr
-    While esi < D$BlockEndTextPtr
-        On B$esi > SPC, jmp L2>
-        inc esi
+L2: Mov esi D$LP.BlockStartText
+
+    While esi < D$LP.BlockEndText
+
+        On B$esi > SPC jmp L2>
+
+        add esi (1*ASCII)
+
     End_While
+
     jmp L9>>
 
   ; Verify that the last selected line is complete (does not stop before CRLF):
-L2: Mov esi D$BlockEndTextPtr
+L2: Mov esi D$LP.BlockEndText
 
     While W$esi+1 <> CRLF
-        On esi < D$BlockStartTextPtr, jmp L9>>
+        On esi < D$LP.BlockStartText jmp L9>>
         dec esi
     EndWhile
 
@@ -1496,9 +1539,10 @@ L2: Mov esi D$BlockEndTextPtr
   ; Insert or retrieve as many TAB as Lines (but preserve Labels):
 L2: On B$keys+&VK_SHIFT = &TRUE, jmp RetrieveBlockIndent
 
-L2: Mov esi D$BlockStartTextPtr, B$FirstBlockLine &TRUE
+L2: Mov esi D$LP.BlockStartText, B$FirstBlockLine &TRUE
 
-    ..While esi < D$BlockEndTextPtr
+    ..While esi < D$LP.BlockEndText
+
       ; Go to Start of Line:
         Mov ebx esi | While B$ebx <> LF | dec ebx | End_While
       ; Go to Start of first member, and save in eax:
@@ -1517,7 +1561,7 @@ L2: Mov esi D$BlockStartTextPtr, B$FirstBlockLine &TRUE
         .End_While
       ; eax > real first member to move. Adjust Block Start if necessary:
         If B$FirstBlockLine = &TRUE
-            Mov D$BlockStartTextPtr eax
+            Mov D$LP.BlockStartText eax
             Mov B$FirstBlockLine &FALSE
         End_If
         Push eax, D$SourceLen
@@ -1526,14 +1570,16 @@ L2: Mov esi D$BlockStartTextPtr, B$FirstBlockLine &TRUE
         Pop ecx, esi
       ; Next Line:
         While B$esi <> CR | inc esi | End_While | inc esi
-        Mov eax D$SourceLen | sub eax ecx | add D$BlockEndTextPtr eax
+
+        Mov eax D$SourceLen | sub eax ecx | add D$LP.BlockEndText eax
+
     ..End_While
 
-    Mov eax D$BlockStartTextPtr
+    Mov eax D$LP.BlockStartText
     While B$eax = SPC | inc eax | End_While
-    Mov D$BlockStartTextPtr eax
+    Mov D$LP.BlockStartText eax
 
-    Call SetCaret D$BlockEndTextPtr | Mov D$STRUCT.EditData@RightScroll 0
+    Call SetCaret D$LP.BlockEndText | Mov D$STRUCT.EditData@RightScroll 0
 
   ; 'KeyMessage'
   ;  Move D$ShiftBlockCol D$CaretRow
@@ -1552,8 +1598,10 @@ L9: ret
 RetrieveBlockIndent:
     Mov B$BlockIndent &TRUE, D$NewCaretBlockPos 0
   ; Are there enough free Spaces to be deleted on each Line? If not, abort:
-    Mov esi D$BlockStartTextPtr
-    ..While esi < D$BlockEndTextPtr
+    Mov esi D$LP.BlockStartText
+
+    ..While esi < D$LP.BlockEndText
+
       ; Go to Start of Line:
         Mov ebx esi | While B$ebx <> LF | dec ebx | End_While
       ; Go to Start of first member, and save in eax:
@@ -1586,8 +1634,10 @@ L0:         dec eax
     ..End_While
 
   ; OK, enough Spaces on each Line > Delete:
-    Mov esi D$BlockStartTextPtr, B$FirstBlockLine &TRUE
-    ..While esi < D$BlockEndTextPtr
+    Mov esi D$LP.BlockStartText, B$FirstBlockLine &TRUE
+
+    ..While esi < D$LP.BlockEndText
+
       ; Go to Start of Line:
         Mov ebx esi | While B$ebx <> LF | dec ebx | End_While
       ; Go to Start of first member, and save in eax:
@@ -1608,13 +1658,15 @@ L0:         dec eax
         On D$NewCaretBlockPos = 0, Mov D$NewCaretBlockPos eax
 
         If B$FirstBlockLine = &TRUE
-            Mov D$BlockStartTextPtr eax, B$FirstBlockLine &FALSE
+            Mov D$LP.BlockStartText eax, B$FirstBlockLine &FALSE
         End_If
         Push eax, D$SourceLen
             Call SetCaret eax | sub D$STRUCT.EditData@CaretRow ASCII | Move D$STRUCT.EditData@PhysicalCaretRow D$STRUCT.EditData@CaretRow
             Mov ecx D$TabIs
 L0:         Push ecx
-                Mov al TAB | Call BackSpace | dec D$BlockEndTextPtr
+
+                Mov al TAB | Call BackSpace | sub D$LP.BlockEndText (1*ASCII)
+
             Pop ecx | loop L0<
         Pop ecx, esi
       ; Next Line:
@@ -1622,7 +1674,7 @@ L0:         Push ecx
         While B$esi <> CR | inc esi | End_While | inc esi
     ..End_While
 
-    Mov eax D$TabIs | sub D$BlockStartTextPtr eax
+    Mov eax D$TabIs | sub D$LP.BlockStartText eax
     Mov eax D$NewCaretBlockPos | sub eax D$TabIs | dec eax | Call SetCaret eax
 
    ; Move D$ShiftBlockCol D$CaretRow
@@ -2495,10 +2547,19 @@ SetShiftBlock:
         .End_If
 
         If eax < D$ShiftDown
-            Move D$BlockStartTextPtr eax, D$BlockEndTextPtr D$ShiftDown
-            dec D$BlockEndTextPtr
+
+            Mov D$LP.BlockStartText eax
+
+            Move D$LP.BlockEndText D$ShiftDown
+
+            sub D$LP.BlockEndText (1*ASCII)
+
         Else
-            Move D$BlockStartTextPtr D$ShiftDown, D$BlockEndTextPtr eax
+
+            Move D$LP.BlockStartText D$ShiftDown
+
+            Mov D$LP.BlockEndText eax
+
         End_If
 
         Mov D$FL.BlockInside &TRUE, B$ShiftBlockInside &TRUE

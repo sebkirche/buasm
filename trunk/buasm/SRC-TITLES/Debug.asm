@@ -801,7 +801,7 @@ Proc Debugger_OnException:
         If eax = 1
             Move D$SourcePosCodeAddress D$C.regEip
         Else
-            Call ScanStackForCodePointer D$C.regEsp
+            Call ScanStackForCodePointer D$C.REG_ESP
             dec eax
             Mov D$SourcePosCodeAddress eax
         End_If
@@ -864,7 +864,7 @@ Proc Debugger_OnException:
                 Mov ebx D$C.regEip | add ebx D$InstructionLength
                 Call AddProcessBreakpoint ebx, BP_ONESHOT, BP_ENABLED, 0
             Else_If D$ContinueMode = CONTINUE_RETURNTOCALLER
-                Call ScanStackForCodePointer D$C.regEsp
+                Call ScanStackForCodePointer D$C.REG_ESP
                 On eax <> 0,
                     Call AddProcessBreakpoint eax, BP_ONESHOT, BP_ENABLED, 0
             End_If
@@ -1252,7 +1252,7 @@ Proc EncounterException:
 
     Call IsProcessCode D$C.regEip
     If eax = 0
-        Call ScanStackForCodePointer D$C.regEsp
+        Call ScanStackForCodePointer D$C.REG_ESP
         dec eax
         Mov D$SourcePosCodeAddress eax
     End_If
@@ -1318,7 +1318,7 @@ Proc EncounterException:
         If D$E.FirstChance = 0
             or D$ExceptionFlags E_MUSTEXIT            
             
-            Call ScanStackForCodePointer D$C.regEsp
+            Call ScanStackForCodePointer D$C.REG_ESP
             dec eax
             Mov D$SourcePosCodeAddress eax
             
@@ -1476,7 +1476,7 @@ Proc GenerateCallStack:
     On D$ProcNameHeap = 0, Call 'KERNEL32.HeapCreate' 0, 01000, 0
     Mov D$ProcNameHeap eax
 
-    Call ReadApplicationStack D$C.regEsp
+    Call ReadApplicationStack D$C.REG_ESP
     On eax = &FALSE, ExitP
     On D$CallStackDesc = 0 Call VirtualAlloc CallStackDesc,
                                              04000
@@ -1627,7 +1627,7 @@ Proc CallStack.Pass2:
     Uses esi, edi, ebx
 
     Mov esi D$StackBuffer, edi D$CallStackDesc, ecx D$CallStackEntries
-    Mov edx esi | sub edx D$C.regEsp
+    Mov edx esi | sub edx D$C.REG_ESP
 
     Mov ebx D$C.regEbp | add ebx edx
 
@@ -2050,7 +2050,7 @@ Proc ScanLabelListForCodeLabel:
             Mov esi edi
             Mov al EOI
             repne scasb | jne L9>>
-            test B$edi+4 DataLabelFlag NOT_ZERO L0>
+            test B$edi+4 FLAG_DATA_LABEL NOT_ZERO L0>
             Mov eax D$edi | add eax D$CodeAjust
             If eax = edx
                 Call CopyStringFromLabelList
@@ -2072,7 +2072,7 @@ L0:         add edi 6 | sub ecx 6
             Mov al EOI
             repne scasb | jne L9>
             Mov cl B$edi+4
-            test cl DataLabelFlag NOT_ZERO L0>
+            test cl FLAG_DATA_LABEL NOT_ZERO L0>
             Mov eax D$edi | add eax D$CodeAjust
             If eax <= edx
                 On eax > D@NearestProc, Mov D@NearestProc eax, D@NearestProcName esi
@@ -2982,7 +2982,7 @@ Proc HaltThread:
         .If eax = &TRUE
             Call AddProcessBreakpoint D$C.regEip, BP_ONESHOT, BP_ENABLED, 0
         .Else
-            Call ScanStackForCodePointer D$C.regEsp
+            Call ScanStackForCodePointer D$C.REG_ESP
             If eax <> 0
                 Call AddProcessBreakpoint eax, BP_ONESHOT, BP_ENABLED, 0
             End_If
@@ -3253,10 +3253,10 @@ Proc IsProcessStack:
     Arguments @Address
 
         Mov eax D@Address
-        .If eax >= D$C.regEsp
-            Call IsProcessMemory D$C.regEsp
+        .If eax >= D$C.REG_ESP
+            Call IsProcessMemory D$C.REG_ESP
             Mov edx D@Address
-            sub edx D$C.regEsp
+            sub edx D$C.REG_ESP
             If edx < eax
                 Mov eax &TRUE
             Else

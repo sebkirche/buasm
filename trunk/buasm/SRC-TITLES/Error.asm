@@ -35,10 +35,8 @@ ________________________________________________________________________________
  InsideComment: D$ ?
  InsideMLC: D$ ?]
 
-[Error | pushad | CookedError #2>L | popad | Mov eax, #1 | jmp OutOnError]
-
-[CookedError | Mov esi #1 | Call ViewCookedError]
- ________________________________________________________________________________________
+[Error | Call ViewCookedError #2>L | Mov eax #1 | jmp OutOnError]
+________________________________________________________________________________________
 
 [LinesCounter: D$ ?
  DontCountNext: D$ ?
@@ -141,11 +139,16 @@ L1:         Mov B$edi 0
         End_If
 
         Mov esi D$OldCharPos, al B$OldChar, B$esi al
-        dec esi | Mov D$BlockEndTextPtr esi
+
+        sub esi 1 | Mov D$LP.BlockEndText esi
+
     popad
+
     pushad
+
       ;Call ErrorMessageBox Trash2, eax
       Call ReleaseAsmTables
+
     popad
 
     Call SetDebuggeeText
@@ -155,13 +158,13 @@ ret
 
 
 SetDebuggeeText:
-    Mov D$BlockStartTextPtr esi, D$STRUCT.EditData@UpperLine esi, D$STRUCT.EditData@CurrentWritingPos esi
+    Mov D$LP.BlockStartText esi, D$STRUCT.EditData@UpperLine esi, D$STRUCT.EditData@CurrentWritingPos esi
 
     Call TryToMove
 
     Mov ebx 0, esi D$STRUCT.EditData@UpperLine               ; Where is the block at screen?
 L0: lodsb | On al = LF, inc ebx
-    cmp esi D$BlockStartTextPtr | jb L0<
+    cmp esi D$LP.BlockStartText | jb L0<
 
     Mov ecx D$STRUCT.EditData@LineNumber | shr ecx 1         ; if higher than half screen,
     shr ecx 1
@@ -184,7 +187,8 @@ L3: Mov D$FL.BlockInside &TRUE
     Mov esi D$OldCharPos, al B$OldChar, B$esi al
 
     Call SearchForEndOfErrorBlock
-    Call SetCaret D$BlockEndTextPtr
+
+    Call SetCaret D$LP.BlockEndText
 
   ; Clear possible previous ShiftPos, in case user first hit [Shift] right after
   ; the error isq pointed out:
@@ -197,7 +201,7 @@ ret
 [LastErrorBlockPipe: D$ ?]
 
 SearchForEndOfErrorBlock:
-    Mov esi D$BlockStartTextPtr, ecx 0, D$LastErrorBlockPipe 0
+    Mov esi D$LP.BlockStartText, ecx 0, D$LastErrorBlockPipe 0
     On B$esi = '[', jmp SearchForEndOfErrorBracketBlock
 
 L0: lodsb | On esi = D$STRUCT.EditData@SourceEnd, jmp L2>>
@@ -227,12 +231,13 @@ L0: lodsb | On esi = D$STRUCT.EditData@SourceEnd, jmp L2>>
     End_If
     jmp L0<<
 
-L2: sub esi 2 | Mov D$BlockEndTextPtr esi
+L2: sub esi 2 | Mov D$LP.BlockEndText esi
+
     If D$LastErrorBlockPipe <> 0
-        Mov eax D$LastErrorBlockPipe | sub eax 2 | Mov D$BlockEndTextPtr eax
+        Mov eax D$LastErrorBlockPipe | sub eax 2 | Mov D$LP.BlockEndText eax
     End_If
 
-    Move D$STRUCT.EditData@CurrentWritingPos D$BlockEndTextPtr
+    Move D$STRUCT.EditData@CurrentWritingPos D$LP.BlockEndText
 ret
 
 
@@ -250,22 +255,26 @@ L0: lodsb | On esi = D$STRUCT.EditData@SourceEnd, jmp L2>
     End_If
     jmp L0<
 
-L2: Mov D$BlockEndTextPtr esi
+L2: Mov D$LP.BlockEndText esi
+
 ret
+_________________________________________________________________________________________
 
- _________________________________________________________________________________________
-
-[CompileErrorHappend: D$ ?
+[FL.CompileErrorHappend: D$ ?
  FirstPass: D$ ?]
 
 OutOnError:
+
     Mov D$ErrorMessagePtr eax
 
-    Mov B$CompileErrorHappend &TRUE, D$NextSearchPos 0
+    Mov D$FL.CompileErrorHappend &TRUE,
+        D$NextSearchPos 0
 
-    On B$WeAreChecking = &TRUE, ret
-    On B$WeAreUnfolding = &TRUE, jmp UnfoldingError
-   ; Error in the second part of the Encode-DecodeBox 'B$Errorlevel 7'
+    On B$WeAreChecking = &TRUE ret
+
+    On D$FL.WeAreUnfolding = &TRUE jmp UnfoldingError
+
+    ; Error in the second part of the Encode-DecodeBox 'B$Errorlevel 7'
     On B$Errorlevel = 7,  jmp EncodeError
     On B$WeAreInTheCodeBox = &TRUE, jmp EncodeBoxError
 
@@ -304,8 +313,6 @@ L1: pushad
 
 ____________________________________________________________________________________________
 
-[DashLine: B$ '___________________' EOS]
-
 ;;
   To YeoH: '.zh' should be the extension of your 'RosAsmStrings' File.
   
@@ -314,34 +321,59 @@ ________________________________________________________________________________
 ;;
 
 Proc ErrorMessageBox:
-    Arguments @Text1, @Text2
+
+    Arguments @Text1,
+              @Text2
 
         ...If D$StringsLanguage = '.zh'
-          ; Unicode:
-            Mov esi D@Text1, edi Trash1, ecx 0
-            If esi <> 0
-                While W$esi > 0
-                    movsw | inc ecx | cmp ecx 400 | ja L1>
-                End_While
-            End_If
-L1:         Mov W$edi 0
 
-            .If D@Text2 <> 0
-                Mov esi D@Text2, edi Trash2, ecx 0
-                If esi <> 0
-                    While W$esi > 0
+            ; Unicode:
+            Mov esi D@Text1,
+                edi Trash1,
+                ecx 0
+
+            If esi <> &NULL
+
+                While W$esi > EOS
+
+                    movsw | inc ecx | cmp ecx 400 | ja L1>
+
+                End_While
+
+            End_If
+
+L1:         Mov W$edi EOS
+
+            .If D@Text2 <> &NULL
+
+                Mov esi D@Text2,
+                    edi Trash2,
+                    ecx 0
+
+                If esi <> &NULL
+
+                    While W$esi > EOS
+
                         movsw | inc ecx | cmp ecx 400 | ja L1>
+
                     End_While
+
                 End_If
-L1:             Mov W$edi 0
+L1:
+                Mov W$edi EOS
+
             .Else
-                Mov W$Trash2 0
+
+                Mov W$Trash2 EOS
+
             .End_If
 
-          ; Tag Dialog 10
-
-            Call 'USER32.DialogBoxIndirectParamW' D$H.Instance, ErrorUnicodeDialog,
-                                                  &NULL, ErrorMessageProcW, &NULL
+            ; Tag Dialog 10
+            Call 'USER32.DialogBoxIndirectParamW' D$H.Instance,
+                                                  ErrorUnicodeDialog,
+                                                  &NULL,
+                                                  ErrorMessageDialogW,
+                                                  &NULL
 
         ...Else
           ; Ascii:
@@ -368,7 +400,7 @@ L1:             Mov B$edi 0
             Mov al B$Trash1+2 | or al B$Trash2
           ; Tag Dialog 10
             On al <> 0,
-            Call 'USER32.DialogBoxParamA' D$H.Instance, 10, D$H.MainWindow, ErrorMessageProcA, &NULL
+            Call 'USER32.DialogBoxParamA' D$H.Instance, 10, D$H.MainWindow, ErrorMessageDialogA, &NULL
 
         ...End_If
 EndP
@@ -402,130 +434,177 @@ EndP
  0]                            ; No creation data
 
 
-[uError: U$ 'Error' EOS]
-
 ; Tag Dialog 10
 
-Proc ErrorMessageProcW:
-    Arguments @hwnd, @msg, @wParam, @lParam
+Proc ErrorMessageDialogW:
 
-    pushad
+    Arguments @hwnd,
+              @msg,
+              @wParam,
+              @lParam
 
-    ...If D@msg = &WM_INITDIALOG
-        Call 'USER32.SetClassLongW' D@hwnd, &GCL_HICON, D$STRUC.WINDOWCLASS@hIcon
+    If D@msg = &WM_INITDIALOG
 
-        Call 'USER32.SendDlgItemMessageW' D@hwnd, 10, &WM_SETFONT,
-                                              D$H.Font1, &FALSE
+        Call WM_INITDIALOG_ErrorMessageDialogW
 
-        On D$H.NationalFont <> 0,
-            Call 'USER32.SendDlgItemMessageW' D@hwnd, 20, &WM_SETFONT,
-                                              D$H.NationalFont, &FALSE
+    Else_If D@msg = &WM_CTLCOLOREDIT
 
-        Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &EM_SETMARGINS,
-                                          &EC_LEFTMARGIN__&EC_RIGHTMARGIN, 10
-        Call 'USER32.SendDlgItemMessageW' D@hwnd, 20, &EM_SETMARGINS,
-                                          &EC_LEFTMARGIN__&EC_RIGHTMARGIN, 10
+        Call WM_CTLCOLOREDIT | ExitP
 
-        Call 'USER32.SendMessageW' D@hwnd, &WM_SETTEXT, &NULL, uError
-                                   ;D$ErrorMessageTitlePtr
+    Else_If D@msg = &WM_COMMAND
 
-        Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &WM_SETTEXT, 0, Trash1
+        On W@wParam = HIDE_PUSHBUTTON_OK Call WM_CLOSE_ErrorMessageDialog
 
-        On B$trash2 <> 0,
-        Call 'USER32.SendDlgItemMessageW' D@hwnd, 20, &WM_SETTEXT, 0, Trash2
+    Else_If D@msg = &WM_CLOSE
 
-        Call 'USER32.GetDlgItem' D@hwnd, 1
-        Call 'USER32.SetFocus' eax
+        Call WM_CLOSE_ErrorMessageDialog
 
-        jmp L8>>
-;;
-    ...Else_If D@msg = &WM_SETFONT
-        If D$NationalFont <> 0
-            popad | Mov eax D$H.NationalFont | ExitP
-        End_If
-;;
-    ...Else_If D@msg = &WM_COMMAND
-        Mov eax D@wParam | and D@wParam 0FFFF | shr eax 16
+    Else
 
-        If D@wParam = &IDCANCEL
-            Call 'USER32.EndDialog' D@hwnd, &NULL
+         Return &FALSE
 
-        Else_If D@wParam = &IDOK
-            Call 'USER32.EndDialog' D@hwnd, &NULL
+    End_If
 
-        End_If
+    Mov eax &TRUE
 
-    ...Else_If D@msg = &WM_CTLCOLOREDIT
-        Call 'USER32.SendMessageW' D@lParam, &EM_SETSEL, 0-1, 0
-        Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
-        popad | Mov eax D$H.DialogsBackGroundBrush | ExitP
-
-    ...Else
-L8:     popad | Mov eax &FALSE | ExitP
-
-    ...End_If
-
-    popad | Mov eax &TRUE
 EndP
 
 
-Proc ErrorMessageProcA:
-    Arguments @hwnd, @msg, @wParam, @lParam
+WM_INITDIALOG_ErrorMessageDialogW:
 
-    pushad
+    Call SetIconDialog
 
-    ...If D@msg = &WM_INITDIALOG
-        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$STRUC.WINDOWCLASS@hIcon
+    Call 'USER32.SendDlgItemMessageA' D$HWND,
+                                      10,
+                                      &WM_SETFONT,
+                                      D$H.Font1,
+                                      &FALSE
 
-        Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &EM_SETMARGINS,
-                                        &EC_LEFTMARGIN__&EC_RIGHTMARGIN, 10
+    On D$H.NationalFont <> &NULL Call 'USER32.SendDlgItemMessageW' D$HWND,
+                                                                   20,
+                                                                   &WM_SETFONT,
+                                                                   D$H.NationalFont,
+                                                                   &FALSE
 
-        Call 'USER32.SendMessageA' D@hwnd, &WM_SETTEXT, &NULL,
+    Call 'USER32.SendDlgItemMessageA' D$HWND,
+                                      10,
+                                      &EM_SETMARGINS,
+                                      &EC_LEFTMARGIN+&EC_RIGHTMARGIN,
+                                      10
+
+    Call 'USER32.SendDlgItemMessageA' D$HWND,
+                                      20,
+                                      &EM_SETMARGINS,
+                                      &EC_LEFTMARGIN+&EC_RIGHTMARGIN,
+                                      10
+
+    Call 'USER32.SendMessageA' D$HWND,
+                               &WM_SETTEXT,
+                               &NULL,
+                               D$ErrorMessageTitlePtr
+
+    Call 'USER32.SendDlgItemMessageA' D$HWND,
+                                      10,
+                                      &WM_SETTEXT,
+                                      0,
+                                      Trash1
+
+    On B$trash2 <> EOS Call 'USER32.SendDlgItemMessageW' D$HWND,
+                                                         20,
+                                                         &WM_SETTEXT,
+                                                         0,
+                                                         Trash2
+
+ret
+
+
+Proc ErrorMessageDialogA:
+
+    Arguments @hwnd,
+              @msg,
+              @wParam,
+              @lParam
+
+    If D@msg = &WM_INITDIALOG
+
+        Call WM_INITDIALOG_ErrorMessageDialogA
+
+    Else_If D@msg = &WM_CTLCOLOREDIT
+
+        Call WM_CTLCOLOREDIT | ExitP
+
+    Else_If D@msg = &WM_COMMAND
+
+        On W@wParam = HIDE_PUSHBUTTON_OK Call WM_CLOSE_ErrorMessageDialog
+
+    Else_If D@msg = &WM_CLOSE
+
+        Call WM_CLOSE_ErrorMessageDialog
+
+    Else
+
+        Return &FALSE
+
+    End_If
+
+    Mov eax &TRUE
+
+EndP
+
+WM_INITDIALOG_ErrorMessageDialogA:
+
+        Call SetIconDialog
+
+        Call 'USER32.SendDlgItemMessageA' D$HWND,
+                                          10,
+                                          &EM_SETMARGINS,
+                                          &EC_LEFTMARGIN+&EC_RIGHTMARGIN,
+                                          10
+
+        Call 'USER32.SendMessageA' D$HWND,
+                                   &WM_SETTEXT,
+                                   &NULL,
                                    D$ErrorMessageTitlePtr
 
-        Call 'USER32.SendDlgItemMessageA' D@hwnd, 20, &EM_SETMARGINS,
-                                        &EC_LEFTMARGIN__&EC_RIGHTMARGIN, 10
+        Call 'USER32.SendDlgItemMessageA' D$HWND,
+                                          20,
+                                          &EM_SETMARGINS,
+                                          &EC_LEFTMARGIN+&EC_RIGHTMARGIN,
+                                          10
 
 
-        Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &WM_SETTEXT, 0, Trash1
+        Call 'USER32.SendDlgItemMessageA' D$HWND,
+                                          10,
+                                          &WM_SETTEXT,
+                                          0,
+                                          Trash1
 
-        On D$H.NationalFont <> 0,
-            Call 'USER32.SendDlgItemMessageA' D@hwnd, 20, &WM_SETFONT,
-                                              D$H.NationalFont, &FALSE
+        On D$H.NationalFont <> &NULL Call 'USER32.SendDlgItemMessageA' D$HWND,
+                                                                       20,
+                                                                       &WM_SETFONT,
+                                                                       D$H.NationalFont,
+                                                                       &FALSE
 
-        Call 'USER32.SendDlgItemMessageW' D@hwnd, 10, &WM_SETFONT,
-                                              D$H.Font1, &FALSE
+        Call 'USER32.SendDlgItemMessageW' D$HWND,
+                                          10,
+                                          &WM_SETFONT,
+                                          D$H.Font1,
+                                          &FALSE
 
-        On B$trash2 <> 0,
-            Call 'USER32.SendDlgItemMessageA' D@hwnd, 20, &WM_SETTEXT, 0, Trash2
+        On B$trash2 <> EOS Call 'USER32.SendDlgItemMessageA' D$HWND,
+                                                             20,
+                                                             &WM_SETTEXT,
+                                                             0,
+                                                             Trash2
 
-        Call 'USER32.GetDlgItem' D@hwnd, 1
-        Call 'USER32.SetFocus' eax
+ret
 
-        jmp L8>>
+WM_CLOSE_ErrorMessageDialog:
 
-    ...Else_If D@msg = &WM_COMMAND
+    Call 'USER32.EndDialog' D$HWND,
+                            &NULL
 
-        If W@wParam = &IDCANCEL
-            Call 'USER32.EndDialog' D@hwnd, &NULL
-        Else_If W@wParam = &IDOK
-            Call 'USER32.EndDialog' D@hwnd, &NULL
-        End_If
-
-    ...Else_If D@msg = &WM_CTLCOLOREDIT
-        Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0-1, 0
-        Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
-        popad | Mov eax D$H.DialogsBackGroundBrush | ExitP
-
-    ...Else
-L8:     popad | Mov eax &FALSE | ExitP
-
-    ...End_If
-
-    popad | Mov eax &TRUE
-EndP
-
-
+ret
 ____________________________________________________________________________________________
 
 [CookedErrorMessage: D$ ? # 20]
@@ -541,61 +620,68 @@ ________________________________________________________________________________
   Would probably require SEH...
 ;;
 
-ViewCookedError:
-    pushad
-        While B$esi > EOI | dec esi | End_While | inc esi
+Proc ViewCookedError:
+
+    Argument @STR.A
+
+    Uses esi,
+         edi
+
+        While B$esi > EOI | sub esi (1*ASCII) | End_While | add esi (1*ASCII)
 
         Mov edi CookedErrorMessage
 
-L0:     lodsb
-        .If al = TextSign
+L1:     lodsb
+        ; TODO TABLE !!!
+        .If al = TextSign ; 30
+
             Mov al '"'
-        .Else_If al = numSign
+
+        .Else_If al = numSign ; 28
             Mov al '#'
-        .Else_If al = CommaSign
+        .Else_If al = CommaSign ; 23
             Mov al ','
-        .Else_If al = OpenVirtual
+        .Else_If al = OpenVirtual ; 22
             Mov al '{'
-        .Else_If al = CloseVirtual
+        .Else_If al = CloseVirtual ; 21
             Mov al '}'
-        .Else_If al = Openbracket
+        .Else_If al = Openbracket ; 20
             Mov al '['
-        .Else_If al = Closebracket
+        .Else_If al = Closebracket ; 19
             Mov al ']'
-        .Else_If al = memMarker
+        .Else_If al = memMarker ; 15
             Mov al '$'
-        .Else_If al = colonSign
+        .Else_If al = colonSign ; 14
             Mov al ':'
-        .Else_If al = openSign
+        .Else_If al = openSign ; 13
             Mov al '('
-        .Else_If al = closeSign
+        .Else_If al = closeSign ; 12
             Mov al ')'
-        .Else_If al = addSign
+        .Else_If al = addSign ; 10
             Mov al '+'
-        .Else_If al = subSign
+        .Else_If al = subSign ; 9
             Mov al '-'
-        .Else_If al = mulSign
+        .Else_If al = mulSign ; 8
             Mov al '*'
-        .Else_If al = divSign
+        .Else_If al = divSign ; 7
             Mov al '/'
-        .Else_If al = expSign
+        .Else_If al = expSign ; 6
             Mov al '^'
-        .Else_If al = Space
+        .Else_If al = Space ;  3
             Mov al SPC
-        .Else_If al = EOI
-            Mov al '|' | jmp L9>
-        .Else_If al = meEOI
+        .Else_If al = EOI ;  2
+            Mov al '|' | jmp S0>
+        .Else_If al = meEOI ; 1
             Mov al '|'
         .End_If
 
         stosb
 
-        On edi < EndOfCookedErrorMessage, jmp L0<<
+        On edi < EndOfCookedErrorMessage jmp L1<<
 
-L9:     Mov B$edi 0
+S0:     Mov B$edi EOS
 
-    popad
-ret
+EndP
 
  _________________________________________________________________________________________
 
@@ -644,7 +730,9 @@ L0:     lodsb
             loop L0<
         End_If
         Mov al B$esi, B$OldChar al, B$esi 0FF, D$OldCharPos esi
-        dec esi | Mov D$BlockEndTextPtr esi  ;, D$CurrentWritingPos esi ; ?Case of Bad Pos?
+
+        dec esi | Mov D$LP.BlockEndText esi  ;, D$CurrentWritingPos esi ; ?Case of Bad Pos?
+
     Pop eax esi
 
     Call VerifyNotOneChar
@@ -656,14 +744,24 @@ ret
 
 VerifyNotOneChar:
     Push esi, eax
-        Mov eax D$BlockEndTextPtr
-        cmp eax D$BlockStartTextPtr | ja L9>
-            inc D$BlockEndTextPtr
-            Mov eax D$BlockEndTextPtr, al B$eax
-                On al = CR, inc D$BlockEndTextPtr
-                Mov esi D$OldCharPos, al B$OldChar, B$esi al
-                Mov esi D$BlockEndTextPtr | inc esi
-                Mov al B$esi, B$OldChar al, B$esi 0FF, D$OldCharPos esi
+
+        Mov eax D$LP.BlockEndText
+
+        cmp eax D$LP.BlockStartText | ja L9>
+
+            add D$LP.BlockEndText 1
+
+            Mov eax D$LP.BlockEndText,
+                al B$eax
+
+            On al = CR add D$LP.BlockEndText 1
+
+            Mov esi D$OldCharPos, al B$OldChar, B$esi al
+
+            Mov esi D$LP.BlockEndText | add esi 1
+
+            Mov al B$esi, B$OldChar al, B$esi 0FF, D$OldCharPos esi
+
 L9: Pop eax, esi
 ret
 
@@ -778,7 +876,7 @@ Error3:
 L0:         Call StringSearch | On D$FL.BlockInside = &FALSE, jmp L7>>
 
           ; just in case the searched word is too inside a comment:
-            Mov esi D$BlockStartTextPtr | dec esi
+            Mov esi D$LP.BlockStartText | dec esi
             .While B$esi > LF
                 If B$esi = '"'
                     dec esi
@@ -796,8 +894,11 @@ L0:         Call StringSearch | On D$FL.BlockInside = &FALSE, jmp L7>>
                 dec esi
             .End_While
 
-            Mov esi D$BlockStartTextPtr, edi Trash2, ecx D$BlockEndTextPtr
-            sub ecx D$BlockStartTextPtr | inc ecx | rep movsb | Mov al 0 | stosb
+            Mov esi D$LP.BlockStartText,
+                edi Trash2,
+                ecx D$LP.BlockEndText
+
+            sub ecx D$LP.BlockStartText | inc ecx | rep movsb | Mov al 0 | stosb
 
 L7: Pop D$NextSearchPos
     Pop D$STRUCT.EditData@CurrentWritingPos, D$WholeWordSearch, D$CaseSearch, D$DownSearch
@@ -819,7 +920,8 @@ ________________________________________________________________________________
 ; Error in DLL name:
 
 Error4:
-    Mov B$CompileErrorHappend &TRUE
+
+    Mov D$FL.CompileErrorHappend &TRUE
 
     Push esi
 
@@ -852,7 +954,8 @@ ret
 ; error in function name:
 
 Error5:
-    Mov B$CompileErrorHappend &TRUE
+
+    Mov D$FL.CompileErrorHappend &TRUE
 
     ;Push esi
 
@@ -886,7 +989,8 @@ ret
 
 Error6: ; Mov B$ErrorLevel 6
     Push esi
-    Mov B$CompileErrorHappend &TRUE
+
+    Mov D$FL.CompileErrorHappend &TRUE
 
 L9: ;pushad
       ;Call 'USER32.MessageBoxA' D$H.MainWindow, esi, eax, &MB_SYSTEMMODAL
@@ -915,7 +1019,8 @@ ret
 ; For Bad Win32 Equate Name:
 
 Error8:
-    Mov B$CompileErrorHappend &TRUE
+
+    Mov D$FL.CompileErrorHappend &TRUE
 
     Push esi
 
@@ -937,7 +1042,8 @@ L0:     inc ecx | lodsb | stosb | cmp al 0 | jne L0<
 
 
 L1:     Call StringSearch | cmp B$StringFound &FALSE | je L2>
-        Mov esi D$BlockEndTextPtr | Mov al B$esi+1
+
+        Mov esi D$LP.BlockEndText | Mov al B$esi+1
 
       ; Next Char Must be some separator, or some '_':
         If al = '_'
@@ -963,7 +1069,8 @@ ret
 
 
 Error11:
-    Mov B$CompileErrorHappend &TRUE
+
+    Mov D$FL.CompileErrorHappend &TRUE
 
     Push esi
 
@@ -980,17 +1087,18 @@ L0: inc ecx | lodsb | stosb | cmp al 0 | jne L0<
     dec ecx | Mov D$LenOfSearchedString ecx
 
 L1: Call StringSearch
-    Mov esi D$BlockStartTextPtr | dec esi
+    Mov esi D$LP.BlockStartText | dec esi
     While B$esi = SPC | dec esi | End_While
     Mov eax D$esi-4 | and eax (not 020202020)
 
   ;  On eax <> 'CLAS', jmp L1<
   ;  On B$esi-5 <> '5', jmp L1<
 
-    sub esi 5 | Mov D$BlockStartTextPtr esi
+    sub esi 5 | Mov D$LP.BlockStartText esi
 
     While B$esi <> ']' | inc esi | End_While
-    Mov D$BlockEndTextPtr esi
+
+    Mov D$LP.BlockEndText esi
 
     Call ReleaseAsmTables
     Call AskforRedraw

@@ -94,11 +94,17 @@ RightClick: ; 'InternSearch'
     Pop D$FL.BlockInside
 
     ..If D$FL.BlockInside = &TRUE
-       .If eax >= D$BlockStartTextPtr
-            If eax <= D$BlockEndTextPtr
+
+       .If eax >= D$LP.BlockStartText
+
+            If eax <= D$LP.BlockEndText
+
                jmp RightClickOnBlock
+
             End_If
+
        .End_If
+
     ..End_If
 
     Call LeftButtonSimulation | Call LeftButtonUp | Call AskForRedraw
@@ -340,8 +346,15 @@ C2: If B$MacroDeclaration = &TRUE
               End_If
 
 L4: dec esi                                                    ; found
-    Mov D$BlockStartTextPtr esi, D$RCstart esi                 ; RCstart/End used by
-    add esi ebx | Mov D$BlockEndTextPtr esi, D$RCend esi       ; 'BackClick'
+
+    Mov D$LP.BlockStartText esi,
+        D$RCstart esi                 ; RCstart/End used by
+
+    add esi ebx
+
+    Mov D$LP.BlockEndText esi,
+        D$RCend esi       ; 'BackClick'
+
     Mov D$FL.BlockInside &TRUE
     inc esi | Mov D$STRUCT.EditData@CurrentWritingPos esi
 
@@ -366,9 +379,16 @@ L5:     lodsb | inc ecx
     Mov D$STRUCT.EditData@RightScroll 0 | Call AskForRedraw
 
     If B$PossibleOpCode = &TRUE
-        Mov esi D$BlockStartTextPtr, ah B$esi, edx esi, ebx D$BlockEndTextPtr
-        or ah 32 | inc edx | sub ebx esi
+
+        Mov esi D$LP.BlockStartText,
+            ah B$esi,
+            edx esi,
+            ebx D$LP.BlockEndText
+
+        or ah SPC | add edx (1*ASCII) | sub ebx esi
+
         Call SearchMneMonic
+
     End_If
 
 L9: ret
@@ -512,21 +532,24 @@ ret
 ____________________________________________________________________________________________
 
 SelectDoubleQuotedText:
-    Mov D$BlockStartTextPtr esi | inc D$BlockStartTextPtr
+    Mov D$LP.BlockStartText esi | inc D$LP.BlockStartText
 
     Mov B$TextGoingOn &FALSE | lodsb | Call IsItFirstText
 
 L1: lodsb | On esi >= D$STRUCT.EditData@SourceEnd, ret
             Call IsItFirstText | je L1<
 
-    sub esi 2
-    Mov D$BlockEndTextPtr esi, D$FL.BlockInside &TRUE
+    sub esi (2*ASCII)
+
+    Mov D$LP.BlockEndText esi,
+        D$FL.BlockInside &TRUE
+
     Call AskForRedraw
 ret
 
 
 SelectDataBlock:
-    inc esi | Mov D$BlockStartTextPtr esi, B$TextGoingOn &FALSE
+    inc esi | Mov D$LP.BlockStartText esi, B$TextGoingOn &FALSE
     .While B$esi <> ']'
 
         .If B$esi = ';'
@@ -545,8 +568,11 @@ L1:     lodsb | On esi >= D$STRUCT.EditData@SourceEnd, ret
                 Call IsItFirsttext | je L1<
     .End_While
 
-L9: dec esi
-    Mov D$BlockEndTextPtr esi, D$FL.BlockInside &TRUE
+L9: sub esi (1*ASCII)
+
+    Mov D$LP.BlockEndText esi,
+        D$FL.BlockInside &TRUE
+
     Call AskForRedraw
 ret
 
@@ -615,7 +641,11 @@ L0:     Call 'USER32.AppendMenuA' D$H.MenuFloatBreakPoint, &MF_SEPARATOR, &NULL,
     End_If
 
     .If D$FL.IsDebugging = &FALSE
-        Mov ecx D$BlockEndTextPtr | sub ecx D$BlockStartTextPtr
+
+        Mov ecx D$LP.BlockEndText
+
+        sub ecx D$LP.BlockStartText
+
         If ecx > 50
             Call 'USER32.AppendMenuA' D$H.MenuFloatBreakPoint, &MF_SEPARATOR, &NULL, &NUll
             Call 'USER32.AppendMenuA' D$H.MenuFloatBreakPoint, &MF_STRING, Float_SelReplace,
@@ -653,9 +683,11 @@ ret
 
 
 IsItDisassembledLabel:
-    Mov esi D$BlockEndTextPtr | On B$esi+1 <> ':', jmp L7>
 
-    Mov esi D$BlockStartTextPtr
+    Mov esi D$LP.BlockEndText | On B$esi+1 <> ':' jmp L7>
+
+    Mov esi D$LP.BlockStartText
+
     If D$esi = 'Code'
         Mov D$DisLabelTypeWas CODEFLAG
         Call GetDisLabelHexaValue
@@ -678,7 +710,7 @@ GetDisLabelHexaValue:
   The "On B$esi = '_', jmp L1>" are for cases of Label that are appended with a "_Symbol"
   taken from the 'StringsMap'.
 ;;
-    Mov esi D$BlockStartTextPtr, edi CopyOfLabelHexa | add esi 4
+    Mov esi D$LP.BlockStartText, edi CopyOfLabelHexa | add esi 4
     While B$esi <> ':'
         movsb | On B$esi = '_', jmp L1>
     End_While
@@ -740,15 +772,22 @@ ret
 
 
 SetFloatSearch:
-    Mov esi D$BlockStartTextPtr, edi SearchString, ecx D$BlockEndTextPtr
+
+    Mov esi D$LP.BlockStartText,
+        edi SearchString,
+        ecx D$LP.BlockEndText
+
     sub ecx esi | inc ecx
+
     Mov D$LenOfSearchedString ecx
+
     rep movsb
+
 ret
 
 SearchUpFromFloatMenu:
     Mov B$DownSearch &FALSE
-    Call SetFloatSearch | Call SetCaret D$BlockStartTextPtr | Call StringSearch
+    Call SetFloatSearch | Call SetCaret D$LP.BlockStartText | Call StringSearch
 ret
 
 SearchFromTopFromFloatMenu:
@@ -765,18 +804,29 @@ ret
 
 
 RightClickedNumber:
-    inc esi
-    Push D$BlockStartTextPtr, D$BlockEndTextPtr
-        Mov D$BlockStartTextPtr esi
+
+    add esi (1*ASCII)
+
+    Push D$LP.BlockStartText,
+         D$LP.BlockEndText
+
+        Mov D$LP.BlockStartText esi
+
         Push esi
+
 L0:         lodsb | Call WordEdge | cmp B$Edge &TRUE | jne L0<
-            sub esi 2 | Mov D$BlockEndTextPtr esi
+
+            sub esi (2*ASCII) | Mov D$LP.BlockEndText esi
+
         Pop esi
+
         Call IsItaNumber
-    Pop D$BlockEndTextPtr, D$BlockStartTextPtr
-    If eax <> 0
-        Call ViewClickedNumber
-    End_If
+
+    Pop D$LP.BlockEndText,
+        D$LP.BlockStartText
+
+    On eax <> 0 Call ViewClickedNumber
+
 ret
 
 
@@ -787,7 +837,7 @@ ret
 [NumberCopy: D$ ? # 25]
 
 IsItaNumber:
-    Mov eax 0, esi D$BlockStartTextPtr, bl B$esi
+    Mov eax 0, esi D$LP.BlockStartText, bl B$esi
     Mov B$HexaInBlock &FALSE, B$BinaryInBlock &TRUE
 
     cmp bl '0' | jb L9>>
@@ -801,13 +851,16 @@ L0: inc esi
     cmp B$esi '9' | ja L2>
 L1: jmp L0<
 
-L2: Mov ecx esi | sub ecx D$BlockStartTextPtr
+L2: Mov ecx esi | sub ecx D$LP.BlockStartText
     If ecx > 50
         Mov eax 0 | jmp L9>>
     End_If
-    Mov esi D$BlockStartTextPtr, edi NumberCopy
 
-    While esi <= D$BlockEndTextPtr
+    Mov esi D$LP.BlockStartText,
+        edi NumberCopy
+
+    While esi <= D$LP.BlockEndText
+
 L3:     lodsb
         If al >= 'a'
             On al <= 'f', sub al 32
@@ -1095,30 +1148,49 @@ EndP
             While B$esi > 0 | inc esi | inc D$LenOfReplaceString | End_While
 
             .If ecx > 0
-                Push D$STRUCT.EditData@UpperLine, D$STRUCT.EditData@CaretRow, D$STRUCT.EditData@CaretLine
-                Push D$DownSearch, D$CaseSearch, D$WholeWordSearch
+
+                Push D$STRUCT.EditData@UpperLine,
+                     D$STRUCT.EditData@CaretRow,
+                     D$STRUCT.EditData@CaretLine,
+                     D$DownSearch,
+                     D$CaseSearch,
+                     D$WholeWordSearch
+
                     Mov D$FL.BlockInside &FALSE
 
                     Mov D$LenOfSearchedString ecx
-                  ; No 'String not found" Message at the end:
+                    ; No 'String not found" Message at the end:
                     Mov B$OnReplaceAll &TRUE
-                    Move D$NextSearchPos D$BlockStartTextPtr
+                    Move D$NextSearchPos D$LP.BlockStartText
                     Move D$CaseSearch D$BlockFrCase, D$WholeWordSearch D$BlockWwSearch
                     Mov B$DownSearch &TRUE
-                    Move D@StartOfBlock D$BlockStartTextPtr, D@EndOfBlock D$BlockEndTextPtr
+
+                    Move D@StartOfBlock D$LP.BlockStartText,
+                         D@EndOfBlock D$LP.BlockEndText
 
 L0:                 Call StringSearch
 
                     If D$FL.BlockInside = &TRUE
-                        Mov eax D@EndOfBlock | cmp D$BlockStartTextPtr eax | ja L1>
+                        Mov eax D@EndOfBlock | cmp D$LP.BlockStartText eax | ja L1>
                         Call StringReplace | jmp L0<
                     End_If
 
-L1:                 Mov B$OnReplaceAll &FALSE, B$Disassembling &FALSE, D$FL.BlockInside &TRUE
-                    Move D$BlockStartTextPtr D@StartOfBlock, D$BlockEndTextPtr D@EndOfBlock
-                Pop D$WholeWordSearch, D$CaseSearch, D$DownSearch
-                Pop D$STRUCT.EditData@CaretLine, D$STRUCT.EditData@CaretRow, D$STRUCT.EditData@UpperLine
+L1:                 Mov B$OnReplaceAll &FALSE,
+                        B$Disassembling &FALSE,
+                        D$FL.BlockInside &TRUE
+
+                    Move D$LP.BlockStartText D@StartOfBlock,
+                         D$LP.BlockEndText D@EndOfBlock
+
+                Pop D$WholeWordSearch,
+                    D$CaseSearch,
+                    D$DownSearch,
+                    D$STRUCT.EditData@CaretLine,
+                    D$STRUCT.EditData@CaretRow,
+                    D$STRUCT.EditData@UpperLine
+
                 Call AskForRedraw
+
             .End_If
 
             Call 'USER32.EndDialog' D@hwnd, 0
@@ -1142,7 +1214,8 @@ ________________________________________________________________________________
 ; 'RightClickOnBlock'.
 
 IsItaMacro:
-    Mov esi D$BlockStartTextPtr
+
+    Mov esi D$LP.BlockStartText
 
   ; Verify we are not pointing a Declaration:
     Push esi
@@ -1156,7 +1229,8 @@ IsItaMacro:
     End_If
 
     Mov edi D$CodeSource, al '[', ecx D$SourceLen
-    Mov edx D$BlockEndTextPtr | sub edx D$BlockStartTextPtr | inc edx
+
+    Mov edx D$LP.BlockEndText | sub edx D$LP.BlockStartText | add edx (1*ASCII)
 
   ; Search for '[' in user Source:
 L0: repne scasb | jne L8>
@@ -1186,8 +1260,7 @@ L9: While B$edi = SPC
 
 L9: Pop edi, esi, ecx, eax
 
-    Move D$InstructionToUnfold D$BlockStartTextPtr
-    dec edi | Mov eax edi, D$UnfoldedMacro eax
+    dec edi | Mov eax edi
 ret
 
 
@@ -1197,16 +1270,14 @@ ret
 [ASCII_DOLLAR 024, ASCII_PARAGRAPH 0A7]
 
 IsItAnEqual:
-    Mov esi D$BlockStartTextPtr, eax 0, B$UnfoldEqual &FALSE
+    Mov esi D$LP.BlockStartText eax 0
     If B$esi-1 = ASCII_DOLLAR
         sub esi 2
     Else_If B$esi-1 = ASCII_PARAGRAPH
         sub esi 2
     End_If
 
-    Mov D$InstructionToUnfold esi
-
-  ; Go to the start of the Statement:
+    ; Go to the start of the Statement:
 L0: dec esi
     If B$esi = '|'
         jmp L1>
@@ -1218,8 +1289,9 @@ L0: dec esi
         ret
     End_If
 
-  ; OK, the Selection is the first Member of a Statement. Go to next Component:
-L1: Mov esi D$BlockEndTextPtr
+    ; OK, the Selection is the first Member of a Statement. Go to next Component:
+L1: Mov esi D$LP.BlockEndText
+
 L0: inc esi
     If B$esi = SPC
         jmp L1>
@@ -1234,9 +1306,7 @@ L1: While B$esi = SPC | inc esi | End_While
 
     .If B$esi = '='
         If B$esi+1 = SPC
-            Mov B$UnfoldEqual &TRUE
-            Move D$UnfoldedMacro D$CodeSource
-            dec D$UnfoldedMacro
+
             Mov eax &TRUE | ret
         End_If
     .End_If
@@ -1254,19 +1324,23 @@ ________________________________________________________________________________
 
 IsItaLabel:
   ; If not a Label, we abort:
-    Mov esi D$BlockEndTextPtr
-    If B$esi+1 <> ':'
+
+    Mov esi D$LP.BlockEndText
+
+    If B$esi+(1*ASCII) <> ':'
+
         Mov eax 0 | ret
+
     End_If
 
   ; Local Label, we abort:
-    Mov esi D$BlockStartTextPtr
+    Mov esi D$LP.BlockStartText
     If B$esi+2 = ':'
         Mov eax 0 | ret
     End_If
 
   ; If It is a Local Symbol, we extend. If it is a Local Label we abort:
-    Mov esi D$BlockStartTextPtr, edi ToBeBookMarked
+    Mov esi D$LP.BlockStartText edi ToBeBookMarked
 
     If B$esi-1 = '@'
         Push edi | Call SearchUpperMainLabel | Pop edi | On eax = 0, ret
@@ -1275,10 +1349,10 @@ IsItaLabel:
             movsb
         End_While
         Mov B$edi '@' | inc edi
-        Mov esi D$BlockStartTextPtr
+        Mov esi D$LP.BlockStartText
     End_If
 
-    While esi < D$BlockEndTextPtr | movsb | End_While | movsb | Mov B$edi 0
+    While esi < D$LP.BlockEndText | movsb | End_While | movsb | Mov B$edi 0
 
     sub edi ToBeBookMarked | Mov D$BookMarkLen edi
     Mov esi ToBeBookMarked
@@ -1310,7 +1384,9 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 SearchUpperMainLabel:
-    Mov edi D$BlockStartTextPtr
+
+    Mov edi D$LP.BlockStartText
+
 L0: dec edi
     While B$edi <> ':'
         dec edi
@@ -1454,256 +1530,322 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
-[UnfoldedMacro: D$ ?
- InstructionToUnfold: D$ ?
- StackBeforeUnfolding: D$ ?
- WeAreUnfolding: D$ ?]
+[LP.EspStackBeforeUnfolding: D$ ?
+ FL.WeAreUnfolding: D$ ?]
 
 [H.ShowUnfoldDialog: D$ ?]
 
-ShowUnfoldMacro:
-    If D$H.DebugDialog <> 0
-        Call CloseDebuggerOrIgnore | On eax = &IDNO ret
-    End_If
-
-    .If D$H.ShowUnfoldDialog = 0
-        Mov B$CompileErrorHappend &FALSE
-        Call 'USER32.DialogBoxParamA' D$H.Instance, 23000, &NULL, ShowUnfoldDialog, &NULL
-
-    .Else
-        Call Beep
-
-    .End_If
-ret
-____________________________________________________________________________________________
-
-[UnfoldTitle: B$ 'Macro Unfolding' EOS]
+[DIALOG_SHOW_UNFLODING_MACRO   23000
+ EDIT_UNFOLDIND_DIALOG         101]
 
 ; Tag Dialog 23000
 
+ShowUnfoldMacro:
+
+   Test D$H.DebugDialog NA ZERO S1>
+
+        Call CloseDebuggerOrIgnore
+
+        Comp eax &IDNO <> S1>
+
+ret
+
+S1: Test D$H.ShowUnfoldDialog NA NOT_ZERO S2>
+
+        Mov D$FL.CompileErrorHappend &FALSE
+
+        Call 'USER32.DialogBoxParamA' D$H.Instance,
+                                      DIALOG_SHOW_UNFLODING_MACRO,
+                                      &NULL,
+                                      ShowUnfoldDialog,
+                                      &NULL
+
+ret
+
+S2: Call Beep
+
+ret
+____________________________________________________________________________________________
+
 Proc ShowUnfoldDialog:
-    Arguments @hwnd, @msg, @wParam, @lParam
 
-    pushad
+    Arguments @hwnd,
+              @msg,
+              @wParam,
+              @lParam
 
-    .If D@msg = &WM_COMMAND
-         If W@wParam = &IDCANCEL
-L0:         Mov D$H.ShowUnfoldDialog 0
-            Call 'USER32.EndDialog' D@hwnd, 0
+    If D@msg = &WM_INITDIALOG
 
-         Else_If W@wParam = &IDOK
-            jmp L0<
-
-         End_If
-
-    .Else_If D@msg = &WM_SIZE
-        Call ResizeEditControl
-
-    .Else_If D@msg = &WM_INITDIALOG
         Move D$H.ShowUnfoldDialog D@hwnd
-        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$STRUC.WINDOWCLASS@hIcon
+
+        Call SetIconDialog
 
         Call UnfoldMacro
 
-        If B$UnfoldCompleted = &FALSE
-            jmp L0<
-        Else
-            Call 'USER32.SendMessageA' D@hwnd, &WM_SETTEXT, &NULL, UnfoldTitle
-            Mov B$FirstCTLCOLOREDIT &TRUE
-        End_If
+        On D$FL.UnfoldCompleted = &FALSE Call WM_CLOSE_ShowUnfoldDialog
 
-    .Else_If D@msg = &WM_CTLCOLOREDIT
-        If B$FirstCTLCOLOREDIT = &TRUE
-            Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0, 0
-            Mov B$FirstCTLCOLOREDIT &FALSE
-        End_If
-        Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
-        popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
+    Else_If D@msg = &WM_CTLCOLOREDIT
 
-    .Else_If B$CompileErrorHappend = &TRUE
-        Mov D$H.ShowUnfoldDialog 0
-        Call 'USER32.EndDialog' D@hwnd, 0
+        Call WM_CTLCOLOREDIT | ExitP
 
-    .Else
-        popad | Mov eax &FALSE | jmp L9>
+    Else_If D@msg = &WM_COMMAND
 
-    .End_If
+         On W@wParam = HIDE_PUSHBUTTON_OK Call WM_CLOSE_ShowUnfoldDialog
 
-    popad | Mov eax &TRUE
+    Else_If D@msg = &WM_CLOSE
 
-L9: EndP
+        Call WM_CLOSE_ShowUnfoldDialog
 
+    Else
 
-Proc ResizeEditControl:
-    Structure @RECT 16, @RECT_leftDis 0, @RECT_topDis 4, @RECT_rightDis 8, @RECT_bottomDis 12
+        Mov eax &FALSE | jmp P9> ; TODO ExitP
 
-        Call 'USER32.GetClientRect' D$H.ShowUnfoldDialog, D@RECT
+    End_If
 
-        Call 'USER32.GetDlgItem' D$H.ShowUnfoldDialog, 101
+    Mov eax &TRUE
 
-        Mov ebx D@RECT_rightDis | sub ebx D@RECT_leftDis
-        Mov ecx D@RECT_bottomDis | sub ecx D@RECT_topDis
-
-        Call 'USER32.MoveWindow' eax, 0, 0, ebx, ecx, &FALSE
 EndP
 ____________________________________________________________________________________________
 
-[UnfoldEqual: D$ ?
- UnfoldCompleted: D$ ?]
+WM_CLOSE_ShowUnfoldDialog:
+
+    Call EndDialog
+
+    Mov D$H.ShowUnfoldDialog &NULL
+
+ret
+____________________________________________________________________________________________
+
+[FL.UnfoldCompleted: D$ ?]
 
 UnfoldMacro:
-    Call 'USER32.SetCursor' D$H.CursorWAIT | Call AskForRedrawNow
 
-    Mov B$WeAreUnfolding &TRUE, B$UnfoldStepIndice '0'
-    Mov D$TrashPointer Trash3
+    Call 'USER32.SetCursor' D$H.CursorWAIT
 
-    Push D$SourceLen, D$STRUCT.EditData@SourceEnd
+    Mov D$FL.WeAreUnfolding &TRUE,
+        B$ID.UnfoldStep '0',
+        D$LP.Trash Trash3
 
-        Mov D$StackBeforeUnfolding esp
+    Push D$SourceLen,
+         D$STRUCT.EditData@SourceEnd
 
+        Mov D$LP.EspStackBeforeUnfolding esp
+
+        ; [AsmMain] S'arrête si [FL.WeAreUnfolding] TRUE
         Call AsmMain
-      ; 'AsmMain' stops after the Macros jobs, in cases when "B$WeAreUnfolding = &TRUE".
 
         Call 'USER32.SetCursor' D$H.CurrentCursor
 
         Call UnfoldOutput
 
-        Mov D$edi CRLF2, B$edi+4 0
+        Mov D$edi CRLFEOS0,
+            eax D$CodeSourceB
 
-      ; Show the result:
-        Mov eax D$CodeSourceB
-        If D$eax <> 0
-            Call 'USER32.SetDlgItemTextA' D$H.ShowUnfoldDialog, 101, Trash3
-            Mov B$UnfoldCompleted &TRUE
+        Test D$eax NA NULL S1>
 
-        Else
-            Mov B$UnfoldCompleted &FALSE
+            Call 'USER32.SetDlgItemTextA' D$H.ShowUnfoldDialog,
+                                          EDIT_UNFOLDIND_DIALOG,
+                                          Trash3
 
-        End_If
+            Mov D$FL.UnfoldCompleted &TRUE
 
-L8: Pop D$STRUCT.EditData@SourceEnd, D$SourceLen
+        jmp L1>
+
+S1:     Mov D$FL.UnfoldCompleted &FALSE
+
+L1: Pop D$STRUCT.EditData@SourceEnd,
+        D$SourceLen
 
     Call ReleaseAsmTables
 
-    Mov B$WeAreUnfolding &FALSE, D$FL.ReadyToRun &FALSE
+    Mov D$FL.WeAreUnfolding &FALSE,
+        D$FL.ReadyToRun &FALSE
 
     Call ReleaseAsmTables
 ret
 
 UnfoldingError:
-    Mov D$UnfoldErrorMessage eax, B$CompileErrorHappend &TRUE, B$UnfoldCompleted &FALSE
+
+    Mov D$UnfoldErrorMessage eax,
+        D$FL.CompileErrorHappend &TRUE,
+        D$FL.UnfoldCompleted &FALSE
 
     Call 'USER32.SetCursor' D$H.CurrentCursor
 
-    While esp <> D$StackBeforeUnfolding
-        Pop ebx
+    While esp <> D$LP.EspStackBeforeUnfolding
+
+        Pop ebx ; !!! TODO
+
     End_While
 
-    jmp L8<<
+    jmp L1<
 ____________________________________________________________________________________________
 
 [UnfoldErrorMessage: D$ ?]
 
 GetUnfoldStatement:
-    Push esi, ebx, ecx
-        Mov esi D$CodeSourceA, eax 0
-        Mov edx esi | add edx D$SourceLen
+
+    Push esi,
+         ebx,
+         ecx
+
+        Mov esi D$CodeSourceA,
+            eax 0,
+            edx esi
+
+        add edx D$SourceLen
 
         While eax <> ecx
+
             .If B$esi = EOI
-                If B$esi+1 = OpenBracket
-                    ;
-                Else_If B$esi+1 = OpenVirtual
-                    ;
+
+                If B$esi+(1*ASCII) = OpenBracket
+
+                Else_If B$esi+(1*ASCII) = OpenVirtual
+
                 Else
-                    inc eax
+
+                    add eax 1
+
                 End_If
 
             .Else_If B$esi = OpenBracket
-                inc eax
+
+                add eax 1
 
             .Else_If B$esi = OpenVirtual
-                inc eax
+
+                add eax 1
 
             .End_If
 
-            inc esi | On esi > edx, jmp L8>>
+            add esi (1*ASCII) | On esi > edx jmp S0>
+
         End_While
 
-      ; Translate into normal Ascii form:
-        Mov edi D$TrashPointer
+        ; Translate into normal Ascii form:
+        Mov edi D$LP.Trash
 
-        If B$esi-1 = OpenVirtual ; 016
-            dec esi | Call TranslateDeclarationToNormalAscii
+        If B$esi-(1*ASCII) = OpenVirtual ; 016
 
-        Else_If B$esi-1 = OpenBracket ; 014
-            dec esi | Call TranslateDeclarationToNormalAscii
+            sub esi (1*ASCII) | Call TranslateDeclarationToNormalAscii
+
+        Else_If B$esi-(1*ASCII) = OpenBracket ; 014
+
+            sub esi (1*ASCII)| Call TranslateDeclarationToNormalAscii
 
         Else
+
             Call TranslateCodeToNormalAscii
 
         End_If
 
-L8: Pop ecx, ebx, esi
+S0: Pop ecx,
+        ebx,
+        esi
 ret
 ____________________________________________________________________________________________
 
 TranslateDeclarationToNormalAscii:
-L0: lodsb
 
-    .If al = Space
-        Mov al SPC
-    .Else_If al = EOI
-        jmp L2>>
-    .Else_If al = meEOI
-        Mov al CR | stosb | Mov al LF
-    .Else_If al = TextSign
-        Mov B$edi '"' | inc edi
-        While B$esi <> TextSign
-            lodsb
-            If al = CR
-                Mov W$edi CRLF | add edi 2 | add esi 2
-            Else
-                stosb
-            End_If
-        End_While
-        inc esi | Mov al '"'
+L1: lodsb
 
-    .Else_If al = MemMarker
-        Mov al '$'
-    .Else_If al = OpenBracket
-        Mov al '['
-    .Else_If al = CloseVirtual
-        Mov al ']' | stosb
-        Mov al CR | stosb | Mov al LF | stosb | jmp L2>>
-    .Else_If al = CloseBracket
-        Mov al ']' | stosb
-        Mov al CR | stosb | Mov al LF | stosb | jmp L2>>
-    .Else_If al = OpenVirtual
-        Mov al '['
-    .Else_If al = AddSign
-        Mov al '+'
-    .Else_If al = SubSign
-        Mov al '-'
-    .Else_If al = MulSign
-        Mov al '*'
-    .Else_If al = DivSign
-        Mov al '/'
-    .Else_If al = numSign
-        Mov al '#'
-    .Else_If al = colonSign
-        Mov al ':' | stosb | Mov al SPC | stosb
-    .End_If
+        .If al = Space
 
-    stosb
+            Mov al SPC
 
-    If al = LF
-        Mov D$edi '    ' | add edi 4
-    End_If
+        .Else_If al = EOI
 
-    jmp L0<<
+            jmp S0>>
 
-L2: Mov ax CRLF | stosw ;| Mov al 0 | stosb
+        .Else_If al = meEOI
+
+            Mov al CR | stosb | Mov al LF
+
+        .Else_If al = TextSign
+
+            Mov B$edi '"' | add edi (1*ASCII)
+
+            While B$esi <> TextSign
+
+                lodsb
+
+                If al = CR
+
+                    Mov W$edi CRLF | add edi (2*ASCII) | add esi (2*ASCII)
+
+                Else
+
+                    stosb
+
+                End_If
+
+            End_While
+
+            add esi (1*ASCII) | Mov al '"'
+
+        .Else_If al = MemMarker
+
+            Mov al '$'
+
+        .Else_If al = OpenBracket
+
+            Mov al '['
+
+        .Else_If al = CloseVirtual
+
+            Mov al ']' | stosb
+
+            Mov al CR | stosb | Mov al LF | stosb | jmp S0>>
+
+        .Else_If al = CloseBracket
+
+            Mov al ']' | stosb
+
+            Mov al CR | stosb | Mov al LF | stosb | jmp S0>>
+
+        .Else_If al = OpenVirtual
+
+            Mov al '['
+
+        .Else_If al = AddSign
+
+            Mov al '+'
+
+        .Else_If al = SubSign
+
+            Mov al '-'
+
+        .Else_If al = MulSign
+
+            Mov al '*'
+
+        .Else_If al = DivSign
+
+            Mov al '/'
+
+        .Else_If al = numSign
+
+            Mov al '#'
+
+        .Else_If al = colonSign
+
+            Mov al ':' | stosb | Mov al SPC | stosb
+
+        .End_If
+
+        stosb
+
+        If al = LF
+
+            Mov D$edi '    ' | add edi (4*ASCII)
+
+        End_If
+
+    jmp L1<<
+
+S0: Mov ax CRLF | stosw ;| Mov al 0 | stosb
+
 ret
 ____________________________________________________________________________________________
 
@@ -1761,59 +1903,81 @@ L2: Mov ax CRLF | stosw ;| Mov al 0 | stosb
 ret
 ____________________________________________________________________________________________
 
-; pos '0' = 31
-[UnfoldSteps: B$ "
-******************************
-*    Macros-Engine Pass "
+; Pos '0' = 31
+[STR.A.UnfoldStepsTitle: B$ "
+______________________________________________________________________
 
-UnfoldStepIndice: B$ "0    *
-******************************
+                      Unfold Macro Pass "
+
+ID.UnfoldStep: B$ "0 
+______________________________________________________________________
 
     " EOS]
 
 UnfoldOutput:
-    inc B$UnfoldStepIndice
 
-    Mov edi D$TrashPointer
+    add B$ID.UnfoldStep 1
 
-    Mov esi UnfoldSteps | L0: test B$esi 0_FF ZERO P0> | movsb | jmp L0< | P0:
+    Mov edi D$LP.Trash,
+        esi STR.A.UnfoldStepsTitle
 
-    Mov esi D$CodeSourceA
-    Mov D$TrashPointer edi
+L0: movsb | Test B$esi NA NOT_EOS L0<
 
-  ; Count how many Statements, in the 'StatementsTable', down to our Line:
-    Mov ebx D$BlockStartTextPtr, esi D$StatementsTable, ecx 1
+    Mov D$LP.Trash edi
 
-  ; For "some reason", leading Labels must be included in the Statement:
-    Mov eax ebx | dec eax | While B$eax = SPC | dec eax | End_While
+    ; Count how many Statements, in the 'StatementsTable', down to our Line:
+    Mov ebx D$LP.BlockStartText,
+        esi D$StatementsTable
+
+    ; For "some reason", leading Labels must be included in the Statement:
+    Mov eax ebx | sub eax (1*ASCII) | While B$eax = SPC | sub eax (1*ASCII) | End_While
+
     If B$eax = ':'
-        While B$eax-1 > SPC | dec eax | End_While
+
+        While B$eax-(1*ASCII) > SPC | sub eax (1*ASCII) | End_While
+
         Mov ebx eax
+
     End_If
 
-  ; Unfold upon an Equal Pre-Parser Statement:
-    If B$ebx-1 = 024 ;'$' ; CharMessage
-        sub ebx 2
-    Else_If B$ebx-1 = 0A7 ;'$'
-        sub ebx 2
+    ; Unfold upon an Equal Pre-Parser Statement:
+    If B$ebx-(1*ASCII) = 024 ;'$' ; CharMessage
+
+        sub ebx (2*ASCII)
+
+    Else_If B$ebx-(1*ASCII) = 0A7 ;'$'
+
+        sub ebx (2*ASCII)
+
     End_If
 
-  ; Several Statements are possible. Example, in Data and in Code with a Para-Macro:
-    While D$esi <> 0
+    ; Several Statements are possible. Example, in Data and in Code with a Para-Macro:
+    Mov ecx 1
+
+    While D$esi <> EOS
+
         If D$esi = ebx
+
             Call GetUnfoldStatement
-            Mov D$edi '    ' | add edi 4
-            Mov D$TrashPointer edi
+
+            Mov D$edi '    ' | add edi (4*ASCII)
+
+            Mov D$LP.Trash edi
+
         End_If
 
-        add esi 4 | inc ecx
+        add esi (4*ASCII) | inc ecx
+
     End_While
+
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
 EncodeBoxError:
-    Call ErrorMessageBox 0, D$ErrorMessagePtr
+
+    Call ErrorMessageBox 0,
+                         D$ErrorMessagePtr
     Mov esp D$OldStackPointer | sub esp 4
 ret
 ____________________________________________________________________________________________
@@ -1839,13 +2003,21 @@ ret
 ____________________________________________________________________________________________
 
 DoubleClick:
+
     Call MouseTextPos
 
-    Mov D$STRUCT.EditData@PhysicalCaretRow eax, D$STRUCT.EditData@CaretRow eax, D$StartBlockCol eax, D$EndBlockCol eax,
-        D$STRUCT.EditData@CaretLine ebx, D$StartBlockLine ebx, D$EndBlockLine ebx
+    Mov D$STRUCT.EditData@PhysicalCaretRow eax,
+        D$STRUCT.EditData@CaretRow eax,
+        D$StartBlockCol eax,
+        D$EndBlockCol eax,
+        D$STRUCT.EditData@CaretLine ebx,
+        D$StartBlockLine ebx,
+        D$EndBlockLine ebx
 
     If D$DBPMenuOn = DOUBLE_CLICK_ACTION
-        On B$ClickOnMargin = &TRUE, jmp DoubleClickMarginAction
+
+        On B$ClickOnMargin = &TRUE jmp DoubleClickMarginAction
+
     End_If
 
     Call SearchTxtPtr
@@ -1853,18 +2025,25 @@ DoubleClick:
     Mov al B$esi | Call WordEdge | On B$Edge = &TRUE, ret
 
     Push esi
+
         std
+
 L0:       lodsb | Call WordEdge | cmp B$Edge &TRUE | jne L0<         ; search start
+
         cld
-        add esi 2 | Mov D$BlockStartTextPtr esi
+
+        add esi (2*ASCII) | Mov D$LP.BlockStartText esi
+
     Pop esi
 
 L0: lodsb | Call WordEdge | cmp B$Edge &TRUE | jne L0<               ; search end
 
-    sub esi 2 | Mov D$BlockEndTextPtr esi
+    sub esi (2*ASCII) | Mov D$LP.BlockEndText esi
 
     Mov D$FL.BlockInside &TRUE | Call SetCaret esi
+
     Call AskForRedraw | Call RightClickOnBlock
+
 ret
 ____________________________________________________________________________________________
 

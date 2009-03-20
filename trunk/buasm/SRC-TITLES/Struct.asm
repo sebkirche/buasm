@@ -132,7 +132,7 @@ L1:         Mov D$H.Struct 0
         jmp L1>
 
     ...Else_If D@msg = &WM_CTLCOLORLISTBOX
-L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+L1:     Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     ...Else
@@ -721,25 +721,38 @@ ________________________________________________________________________________
 [ClipStructureMemory: D$ ?]
 
 ClipStructure:
-    Push D$BlockStartTextPtr, D$BlockEndTextPtr, D$FL.BlockInside
+
+    Push D$LP.BlockStartText,
+         D$LP.BlockEndText,
+         D$FL.BlockInside
 
         Call VirtualAlloc ClipStructureMemory,
                           4000
 
-        Move D$BlockStartTextPtr D$ClipStructureMemory
+        Move D$LP.BlockStartText D$ClipStructureMemory
 
-        Call 'USER32.SendMessageA' D$H.StructEdit, &WM_GETTEXT, 4000, D$ClipStructureMemory
+        Call 'USER32.SendMessageA' D$H.StructEdit,
+                                   &WM_GETTEXT,
+                                   4000,
+                                   D$ClipStructureMemory
 
         If eax > 0
-            add eax D$BlockStartTextPtr
-            Mov D$FL.BlockInside &TRUE, D$BlockEndTextPtr eax
+
+            add eax D$LP.BlockStartText
+
+            Mov D$FL.BlockInside &TRUE,
+                D$LP.BlockEndText eax
+
             Call ControlC
 
             Call VirtualFree ClipStructureMemory
 
         End_If
 
-L9: Pop D$FL.BlockInside, D$BlockEndTextPtr, D$BlockStartTextPtr
+L9: Pop D$FL.BlockInside,
+        D$LP.BlockEndText,
+        D$LP.BlockStartText
+
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________

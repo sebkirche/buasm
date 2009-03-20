@@ -51,8 +51,8 @@ ______________________________________________________________________
 ;                           cl B$ah+(3*BYTE)
 ______________________________________________________________________
 
-[ASCII    1  ; Need the A suffix in some APIS (See also Tools menu -> Ascii Table)
- BYTE     1  ; 0-128/+127 or 0/255 00/00_FF
+[BYTE     1  ; 0-128/+127 or 0/255 00/00_FF
+ ASCII    1  ; Need the A suffix in some APIS (See also Tools menu -> Ascii Table)
  DWORD    4  ; 0-2147483648/+2147483647 or 0/4294967295 00/00_FFFF_FFFF
  FLOAT    4  ; http://en.wikipedia.org/wiki/IEEE_754-1985
  QWORD    8  ; 00/00_FFFF_FFFF_FFFF_FFFF
@@ -60,20 +60,6 @@ ______________________________________________________________________
  UNICODE  2  ; Need the W suffix in some APIs
  WORD     2  ; 0-32768/32767 ou 0/65535 00/00_FFFF
  XWORD   16] ; For SSE
-
-;;
-
-[ASCII   (01*BYTE)  ; Nécessite le suffixe A dans certaines API (Voir menu Tools -> Ascii Table)
- BYTE    1          ; 0-128/+127 ou 0/255 00/00_FF
- DWORD   (04*BYTE)  ; 0-2147483648/+2147483647 ou 0/4294967295 00/00_FFFF_FFFF
- FLOAT   (04*BYTE)  ; http://en.wikipedia.org/wiki/IEEE_754-1985
- QWORD   (08*BYTE)  ; 00/00_FFFF_FFFF_FFFF_FFFF
- REEL    (08*BYTE)  ; http://en.wikipedia.org/wiki/IEEE_754-1985
- UNICODE (02*BYTE)  ; Nécessite le suffixe W dans certaines API
- WORD    (02*BYTE)  ; 0-32768/32767 ou 0/65535 00/00_FFFF
- XWORD   (16*BYTE)] ; Pour SSE
-
-;;
 ______________________
 
 ; Equates for strings
@@ -81,16 +67,18 @@ ______________________
 ; Equates chaînes
 ______________________
 
-[EOS    0_0         ; End of String
- TAB    0_9
- CR     0_D         ; Carriage return
- CRCR   0_D0D       ; Double Carriage return
- LF     0_A         ; Line feed
- LFLF   0_A0A       ; Double line feed
- CRLF   0_A0D
- CRLF2  0_A0D0A0D
- SPC    0_20
- ]
+[EOS      0_0           ; End of string (BYTE)
+ SPC      0_20          ; Space (BYTE)
+ TAB      0_9           ; Tabulation (BYTE)
+ CR       0_D           ; Carriage return (BYTE)
+ CRCR     0_D_0D        ; Double carriage return (WORD)
+ LF       0_A           ; Line feed (BYTE)
+ LFLF     0_A_0A        ; Double line feed (WORD)
+ CRLF     0_A_0D        ; Carriage return + line feed (WORD)
+ LFCR     0_D_0A        ; Line feed + carriage return (WORD)
+ CRLF2    0_A_0D_0A_0D  ; Double carriage return + line feed (DWORD)
+ CRLFEOS0 0_A_0D_00     ; Carriage return + line feed + EOS + 0 (DWORD)
+ MLC      0_D_3B_3B_0A] ; MLC: Multi-Lines Comment: LF;;CR (DWORD)
 ___________________
 
 ; Equates for HLL
@@ -105,10 +93,12 @@ ___________________
         <s l    >s g    =<s le  <=s le  =>s ge  >=s ge
         s< l    s> g    s=< le  s<= le  s=> ge  s>= ge
 
-        ZERO z          NOT_ZERO nz
-        FALSE z         TRUE nz
-        NOT_FALSE nz    NOT_TRUE z
-        NEGATIVE s      POSITIVE ns]
+ FIND_EOS z   NOT_EOS  nz ; End Of String Search
+ ZERO     z   NOT_ZERO nz ; Numérique
+ NULL     z   NOT_NULL nz ; Lp
+ FALSE    z   TRUE     nz ; Flags
+ ODD      po  EVEN     pe ; Parité Impair/Pair
+ NEGATIVE s   POSITIVE ns]; Sign
 ______________________________________
 
 ; Coordinates equate structures
@@ -138,9 +128,9 @@ _______________
 ; Flag equates
 _______________
 
-[NA  0_FFFF_FFFF ; 0-1 00_11111111_11111111_11111111_1111111
- NO  0_FFFF_FFFF ; 0-1 00_11111111_11111111_11111111_1111111
- YES 0+1]        ; 1   00_00000000_00000000_00000000_0000000 0_1 &TRUE
+[NA         0-1         ; 0-1 00_11111111_11111111_11111111_11111111 BYTE/WORD/DWORD
+ NO         0_FFFF_FFFF ; 0-1 00_11111111_11111111_11111111_11111111 DWORD
+ YES        0+1]        ; 1   00_00000000_00000000_00000000_00000001 0_1 &TRUE BYTE/WORD/DWORD
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 ; EOT

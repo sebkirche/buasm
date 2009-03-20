@@ -217,9 +217,9 @@ L0:     dec eax | cmp B$eax SPC | jb L0<
 
     If D$FL.BlockInside = &TRUE
 
-        add D$BlockStartTextPtr eax
+        add D$LP.BlockStartText eax
 
-        add D$BlockEndTextPtr eax
+        add D$LP.BlockEndText eax
 
     End_If
 
@@ -240,7 +240,7 @@ ret
 
 TITLESOnOff:
 
-    test D$CodeSource NA ZERO S1>
+    test D$CodeSource NA NOT_ZERO S1>
 
 ret
 
@@ -383,8 +383,6 @@ ________________________________________________________________________________
 
 ;;
 
-[TooLongTitle: B$ 'Part too long:' EOS]
-
 [TITLE_MAX 1_000_000]
 
 ; Sets the Actual Part Variables, depending on the Writing Position.
@@ -456,8 +454,11 @@ SetActualPartFromPos:
     add D$STRUCT.EditData@CurrentWritingPos eax | add D$STRUCT.EditData@UpperLine eax
 
     If D$FL.BlockInside = &TRUE
-        add D$BlockStarttextPtr eax | add D$BlockEndTextPtr eax
-        Move D$STRUCT.EditData@CurrentWritingPos D$BlockEndTextPtr
+
+        add D$LP.BlockStartText eax | add D$LP.BlockEndText eax
+
+        Move D$STRUCT.EditData@CurrentWritingPos D$LP.BlockEndText
+
         Call SetCaret D$STRUCT.EditData@CurrentWritingPos
     End_If
 

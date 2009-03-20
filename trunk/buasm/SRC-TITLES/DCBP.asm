@@ -547,7 +547,11 @@ EndP
 
 DeleteBreakPointInBlock:
     pushad
-        Mov ebx D$BlockStartTextPtr, edx D$BlockEndTextPtr | inc edx
+
+        Mov ebx D$LP.BlockStartText,
+            edx D$LP.BlockEndText
+
+        add edx (1*ASCII)
 ;;
   The user is deleting a Selected Block with BreakPoints inside. Remove these BPs.
   

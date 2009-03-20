@@ -139,7 +139,7 @@ Proc StringsProc:
                 Mov B$StringEditFirstRun &FALSE
             End_If
         .End_If
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>>
 
     ...Else_If D@msg = &WM_COMMAND

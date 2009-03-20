@@ -1502,7 +1502,7 @@ ________________________________________________________________________________
 [CopyString | #=1 | Mov esi #1 | R9: | cmp B$esi 0 | je R9> | movsb | jmp R9< | R9:]
 ____________________________________________________________________________________________
 
-[GPRRegMap: C.regEax C.regEbx C.regEcx C.regEdx C.regEsi C.regEdi C.regEbp C.regEsp]
+[GPRRegMap: C.regEax C.regEbx C.regEcx C.RegEdx C.regEsi C.regEdi C.regEbp C.regEsp]
 [SegRegMap: C.regCs C.regDs C.regEs C.regFs C.regGs C.regSs]
 [DbgRegMap: C.regEip C.iDr0 C.iDr1 C.iDr2 C.iDr3 C.iDr6 C.iDr7]
 
@@ -1773,13 +1773,13 @@ ________________________________________________________________________________
 
 ; Create the tabs for the different register types. First check if they are available.
 
-[RegGeneral: B$ 'General' EOS]
-[RegFPU: B$ 'FPU' EOS]
-[RegMMX: B$ 'MMX' EOS]
-[RegSSE: B$ 'SSE' EOS]
-[RegSSE2: B$ 'SSE2' EOS]
-[RegSegment: B$ 'Segment' EOS]
-[RegDebug: B$ 'Debug' EOS]
+[STR.A.RegistreGeneral: B$ 'General' EOS]
+[STR.A.RegistreFPU: B$ 'FPU' EOS]
+[STR.A.RegistreMMX: B$ 'MMX' EOS]
+[STR.A.RegistreSSE: B$ 'SSE' EOS]
+[STR.A.RegistreSSE2: B$ 'SSE2' EOS]
+[STR.A.RegistreSegment: B$ 'Segment' EOS]
+[STR.A.RegistreDebug: B$ 'Debug' EOS]
 
 [H.DebugFormatCombo: D$ ?]
 
@@ -1871,7 +1871,7 @@ Proc DebugDialog_CreateRegisterTabs:
         Mov D@Index 0
         Mov D$TabItem@imask &TCIF_TEXT+&TCIF_PARAM
 
-        Mov D$TabItem@pszText RegGeneral
+        Mov D$TabItem@pszText STR.A.RegistreGeneral
         Mov D$TabItem@lParam 0
         SendMessage ebx, &TCM_INSERTITEM, D@Index, TabItem
         On eax = 0-1, Call ReportWinError {B$ 'TCM_INSERTITEM' EOS}
@@ -1879,21 +1879,21 @@ Proc DebugDialog_CreateRegisterTabs:
 
         test D$CPUFlags FLAG_FPU ZERO L0>
 
-        Mov D$TabItem@pszText RegFPU
+        Mov D$TabItem@pszText STR.A.RegistreFPU
         Mov D$TabItem@lParam 1
         SendMessage ebx, &TCM_INSERTITEM, D@Index, TabItem
         inc D@Index
 
 L0:     test D$CPUFlags FLAG_MMX ZERO L0>
 
-        Mov D$TabItem@pszText RegMMX
+        Mov D$TabItem@pszText STR.A.RegistreMMX
         Mov D$TabItem@lParam 2
         SendMessage ebx, &TCM_INSERTITEM, D@Index, TabItem
         inc D@Index
 
 L0:     test D$CPUFlags FLAG_SSE ZERO L0>
 
-        Mov D$TabItem@pszText RegSSE
+        Mov D$TabItem@pszText STR.A.RegistreSSE
         Mov D$TabItem@lParam 3
         SendMessage ebx, &TCM_INSERTITEM, D@Index, TabItem
         inc D@Index
@@ -1920,12 +1920,12 @@ Proc DebugDialog_ShowAdvancedTabs:
         .If D@Show = &TRUE
             Mov D$TabItem@imask &TCIF_TEXT+&TCIF_PARAM
 
-            Mov D$TabItem@pszText RegSegment
+            Mov D$TabItem@pszText STR.A.RegistreSegment
             Mov D$TabItem@lParam 4
             SendMessage D@H.Tab, &TCM_INSERTITEM, D@Index, TabItem
             inc D@Index
 
-            Mov D$TabItem@pszText RegDebug
+            Mov D$TabItem@pszText STR.A.RegistreDebug
             Mov D$TabItem@lParam 5
             SendMessage D@H.Tab, &TCM_INSERTITEM, D@Index, TabItem
         .Else
@@ -3906,7 +3906,7 @@ ________________________________________________________________________________
 
 Proc DebugDialog_ShowCaller:
     If D$CurrentStackPointer = 0
-        Move D$CurrentStackPointer D$C.regEsp
+        Move D$CurrentStackPointer D$C.REG_ESP
     End_If
 
     Call ScanStackForCodePointer D$CurrentStackPointer
@@ -5281,7 +5281,7 @@ L0:     Call 'USER32.GetDlgItem' D@hwnd, EXCEPTINFO_DESC | Mov ebx eax
     ..Else_if D@msg = &WM_CTLCOLORSTATIC
         Call 'USER32.GetDlgItem' D@hwnd, EXCEPTINFO_DESC
         If eax = D@lParam
-            Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
+            Call 'GDI32.SetBkColor' D@wParam, D$ARVB.DialogsBackColor
             Mov eax D$H.DialogsBackGroundBrush
 
 EndP
@@ -5290,7 +5290,7 @@ EndP
         Call 'USER32.GetDlgItem' D@hwnd, EXCEPTINFO_INSTRUCTION
         If eax = D@lParam
             Call 'GDI32.SetTextColor' D@wParam, 099
-            Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
+            Call 'GDI32.SetBkColor' D@wParam, D$ARVB.DialogsBackColor
             Mov eax D$H.DialogsBackGroundBrush
 
 EndP
@@ -5298,7 +5298,7 @@ EndP
         End_If
         Call 'USER32.GetDlgItem' D@hwnd, EXCEPTINFO_ADDRESS
         If eax = D@lParam
-            Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
+            Call 'GDI32.SetBkColor' D@wParam, D$ARVB.DialogsBackColor
             Mov eax D$H.DialogsBackGroundBrush
 
 EndP
@@ -5567,7 +5567,7 @@ L0: Mov ebx esi
     While B$esi <> 2
         inc esi
     End_While
-    test B$esi+5 DataLabelFlag ZERO L2>
+    test B$esi+5 FLAG_DATA_LABEL ZERO L2>
 
         Mov edi ItemString, esi ebx
         While B$esi <> 2

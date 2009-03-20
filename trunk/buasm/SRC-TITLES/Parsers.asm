@@ -163,7 +163,8 @@ L9: ;ERROR! Unpaired textdelimiter.
     End_While
 L2: Mov B$edi 0
 
-    Mov B$Errorlevel 9 | error D$OpenTextPtr
+    Mov B$Errorlevel 9 | Error D$OpenTextPtr
+
 ret
 ____________________________________________________________________________________________
 ; Multiline comments are converted to spaces.
@@ -456,7 +457,7 @@ L1: While B$edi = SPC | inc edi | End_While
 
     Mov B$edi-1 0, esi edi
     While B$edi > SPC | inc edi | End_While | Mov B$edi 0
-    Mov B$ErrorLevel 9 | error D$BadPreParsePtr, esi
+    Mov B$ErrorLevel 9 | Error D$BadPreParsePtr, esi
 
 L8:  On B$edi >= SPC, jmp L1<<
 
@@ -665,9 +666,15 @@ L9: ; Pointing the unpairing error:
         Mov eax esi
         While B$esi > LF | dec esi | End_While | inc esi
         While B$eax > LF | inc eax | End_While | dec eax
-        Mov D$BlockStartTextPtr esi, D$BlockEndTextPtr eax, D$FL.BlockInside &TRUE
+
+        Mov D$LP.BlockStartText esi,
+            D$LP.BlockEndText eax,
+            D$FL.BlockInside &TRUE
+
         Mov D$STRUCT.EditData@UpperLine esi
+
         Call UpOneLine | Call UpOneLine | Call UpOneLine
+
     Pop esi
 
   ; Set the Error Message Text:
@@ -706,9 +713,12 @@ L9: ; Pointing the unpairing error:
 
     .End_If
 
-    Mov edi CookedErrorMessage, esi D$BlockStartTextPtr
-    While esi < D$BlockEndTextPtr
+    Mov edi CookedErrorMessage, esi D$LP.BlockStartText
+
+    While esi < D$LP.BlockEndText
+
         movsb | On edi = EndOfCookedErrorMessage, jmp L2>
+
     End_While
 
 L2: Mov B$edi 0
@@ -847,7 +857,7 @@ L9: If D$LinesCounter = 0
                                   {B$ ' Sorry' EOS},
                                   &MB_OK
 
-        Mov B$CompileErrorHappend &TRUE
+        Mov D$FL.CompileErrorHappend &TRUE
 
         Mov esp D$OldStackPointer | ret ; direct error
        ; Pop eax | ret                  ; Abort, Pop caller and return to Message Loop
@@ -973,20 +983,20 @@ ________________________________________________________________________________
                              ; 0 is used as erase sign inside treatements
 
 
-[MyAsciiTable: B$ 0,1,2,3,4,5,6,7,8,Space,EOI,11,12,EOI,14,15,16,17,18,19,20,21,
- 22,23,24,25,26,27,28,29,30,31,Space,'!','"',NumSign,memMarker,'%','&',39,OpenSign,
- CloseSign, MulSign,AddSign,CommaSign,SubSign,'.',DivSign,48,49,50,51,52,53,54,
- 55,56,57, ColonSign,';','<',61,'>','?','@'
- 65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90 ; (A > Z)
- Openbracket,'\',Closebracket,expSign,95,96
- 65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90 ; (A > Z)
- '{',EOI,'}',126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143
- 144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164
- 165,166,memMarker,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,
- 184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,
- 205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,
- 226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,
- 247,248,249,250,251,252,253,254,255]
+[MyAsciiTable: B$ 0 1 2 3 4 5 6 7 8 Space EOI 11 12 EOI 14 15 16 17 18 19 20 21,
+ 22 23 24 25 26 27 28 29 30 31 Space '!' '"' NumSign memMarker '%' '&' 39 OpenSign,
+ CloseSign MulSign AddSign CommaSign SubSign '.' DivSign 48 49 50 51 52 53 54,
+ 55 56 57 ColonSign ';' '<' 61 '>' '?' '@', ; !!! pas de virgule au départ à chaque !!!
+ 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90, ;!!! ; (A > Z)
+ Openbracket '\' Closebracket expSign 95 96, ;!!!
+ 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90, ;!!! ; (A > Z)
+ '{' EOI '}' 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143, ; !!!
+ 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164, ; !!!
+ 165 166 memMarker 168 169 170 171 172 173 174 175 176 177 178 179 180 181 182 183,
+ 184 185 186 187 188 189 190 191 192 193 194 195 196 197 198 199 200 201 202 203 204,
+ 205 206 207 208 209 210 211 212 213 214 215 216 217 218 219 220 221 222 223 224 225,
+ 226 227 228 229 230 231 232 233 234 235 236 237 238 239 240 241 242 243 244 245 246,
+ 247 248 249 250 251 252 253 254 255]
 
 TranslateAsciiToMyAscii:
     Mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen, ebx 0
@@ -1685,7 +1695,9 @@ FromDataToStructure:
 
     Mov B$WeAreInTheCodeBox &TRUE
 ;    Push D$CodeSource, D$SourceLen, D$SourceEnd
-        Mov eax esp, D$OldStackPointer eax, B$CompileErrorHappend &FALSE
+        Mov eax esp,
+            D$OldStackPointer eax,
+            D$FL.CompileErrorHappend &FALSE
 
         Mov eax D$DataTextTable
         While B$eax > 0
@@ -1704,9 +1716,9 @@ FromDataToStructure:
 
         Call NewCountStatements
 
-        On B$CompileErrorHappend = &TRUE, jmp L9>>
+        On D$FL.CompileErrorHappend = &TRUE jmp L9>>
 
-        Call Hotparsers | On B$CompileErrorHappend = &TRUE, jmp L9>>
+        Call Hotparsers | On D$FL.CompileErrorHappend = &TRUE jmp L9>>
 
 
         Mov esi D$CodeSourceA, edi D$StructureTextTable, D$FirstDataLabel 0
@@ -1788,7 +1800,8 @@ EncodeDecode:
     Mov B$WeAreInTheCodeBox &TRUE
 ;    Push D$CodeSource, D$SourceLen, D$SourceEnd
       ; ('AsmMain' 'OutOnError')
-        Mov D$OldStackPointer esp, B$CompileErrorHappend &FALSE
+        Mov D$OldStackPointer esp,
+            D$FL.CompileErrorHappend &FALSE
 
 ; What on earth is EncodeSource???
         Mov eax EncodeSource ;, D$CodeSource eax
@@ -1811,11 +1824,12 @@ EncodeDecode:
 
         Call ClearQwordCheckSum
 
-        On B$CompileErrorHappend = &TRUE, jmp L9>>
+        On D$FL.CompileErrorHappend = &TRUE jmp L9>>
 
         Call Hotparsers
 
-        On B$CompileErrorHappend = &TRUE, jmp L9>>
+        On D$FL.CompileErrorHappend = &TRUE jmp L9>>
+
         Call InitIndex1 | Call InitIndex2
 
         Exchange D$CodeSourceA D$CodesourceB
@@ -1828,11 +1842,12 @@ EncodeDecode:
 
         Call BuildData                          ; result 'CodeSourceB' > 'CodeSourceB'
 
-        On B$CompileErrorHappend = &TRUE, jmp L9>>
+        On D$FL.CompileErrorHappend = &TRUE jmp L9>>
+
         Call InitDebugIpTable
         Mov B$ErrorLevel 7                      ; For outOnError, Error
 
-        Call ReCodeLine | On B$CompileErrorHappend = &TRUE, jmp L9>>
+        Call ReCodeLine | On D$FL.CompileErrorHappend = &TRUE jmp L9>>
 
       ; Prepare Text to show in the Code Hexa view:
         Mov esi D$CodeOrigine, edi HexaCodeText

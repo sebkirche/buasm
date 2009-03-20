@@ -43,127 +43,176 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 ;;
 
-; some basic equates:
-                    ; > (As concerned tables have 3 dwords per pointed resource),
-                    ; > Allow 100 differents...
-
-[MAXDIALOG 2100]     ; ... Dialogs.
-[MAXMENU 2100]       ; ... Menus.
-[MAXBITMAP 2100]     ; ... BitMaps
-[MAXSTRINGS 2100]
-[MAXFONT 2100]
-[MAXWAVE 2100]
-[MAXAVI 2100]
-[MAXRCDATA 2100]
-[MAXCURSOR 2100]
-[MAXICON 2100]
-
-[MAXRESOURCE 3500]   ; Allow, as a whole, 1000 different resources in one PE
-
-
-[LINKERDEFAULT 0400000
- DRIVERDEFAULT 010000]
-
 [LinkerDllDefault: D$ 0_1000_0000]
+
 [FL.RelocsWanted: D$ ?]
+; some basic equates:
+                        ; As concerned tables have 3 dwords per pointed resource
+                        ; Allow 100
+[MAXDIALOG      2100    ; Dialogs
+ MAXMENU        2100    ; Menus
+ MAXBITMAP      2100    ; BitMaps
+ MAXSTRINGS     2100    ; ...
+ MAXFONT        2100
+ MAXWAVE        2100
+ MAXAVI         2100
+ MAXRCDATA      2100
+ MAXCURSOR      2100
+ MAXICON        2100
 
-[PAGE_SIZE 01_000
- ;PAGE_MASK 00_1111_0000_0000_0000   ; to check if a pointer reach next page
- PAGE_MASK 0FFFF_F000
- ByteHighbit  080
- WordHighbit  08000
- dWordHighBit 08000_0000]
+ MAXRESOURCE    3500    ; Allow, as a whole, 1000 different resources in one PE
 
-; For Encoding of reg field:
-[regEax  00_0000  regAx   00_0000  regAl   00_0000  regEcx  00_0001  regCx   00_0001
- regCl   00_0001  regEdx  00_0010  regDx   00_0010  regDl   00_0010  regEbx  00_0011
- regBx   00_0011  regBl   00_0011  regEsp  00_0100  regSp   00_0100  regAh   00_0100
- regEbp  00_0101  regBp   00_0101  regCh   00_0101  regEsi  00_0110  regSi   00_0110
- regDh   00_0110  regEdi  00_0111  regDi   00_0111  regBh   00_0111]
+ LINKERDEFAULT  0_40_0000
+ DRIVERDEFAULT  0_1_0000
 
-; For Encoding of the Segment Register (sreg) Field:
-[regEs  0000_0000  regCs  0000_1000  regSs  0001_0000  regDs  0001_1000
- regFs  0010_0000  regGs  0010_1000]
+ PAGE_SIZE      0_1000
+ PAGE_MASK      0_FFFF_F000
+ DWORD_HIGH_BIT 0_8000_0000
 
-; For Encoding of Special-Purpose Register (eee) Field
-; (Control Registers and Debug Registers cannot be used in applications. There need
-;  privilege 0 and are for system - not implemented in 'Encode:' Mov to/from Debug/Control
-;  registers))
-[regCr0  00_0000  regCr2  00_0010  regCr3  00_0011  regCr4  00_0100
- regDr0  00_0000  regDr1  00_0001  regDr2  00_0010
- regDr3  00_0011  regDr6  00_0110  regDr7  00_0111]
+ ; For Encoding of reg field
+ REG_EAX    00_0000
+ REG_AX     00_0000
+ REG_AL     00_0000
+ REG_ECX    00_0001
+ REG_CX     00_0001
+ REG_CL     00_0001
+ REG_EDX    00_0010
+ REG_DX     00_0010
+ REG_DL     00_0010
+ REG_EBX    00_0011
+ REG_BX     00_0011
+ REG_BL     00_0011
+ REG_ESP    00_0100
+ REG_SP     00_0100
+ REG_AH     00_0100
+ REG_EBP    00_0101
+ REG_BP     00_0101
+ REG_CH     00_0101
+ REG_ESI    00_0110
+ REG_SI     00_0110
+ REG_DH     00_0110
+ REG_EDI    00_0111
+ REG_DI     00_0111
+ REG_BH     00_0111
 
-; For encoding of FPU regs:
-[regST0 0  regST1 1  regST2 2  regST3 3  regST4 4  regST5 5  regST6 6  regST7 7]
+ ; For Encoding of the Segment Register (sreg) Field
+ REG_ES     00_00_0000
+ REG_CS     00_00_1000
+ REG_SS     00_01_0000
+ REG_DS     00_01_1000
+ REG_FS     00_10_0000
+ REG_GS     00_10_1000
 
-; For encoding of MMX registers:
-[regMM0 0  regMM1 1  regMM2 2  regMM3 3  regMM4 4  regMM5 5  regMM6 6  regMM7 7]
+ ; For Encoding of Special-Purpose Register (eee) Field
+ ; (Control Registers and Debug Registers cannot be used in applications. There need
+ ; privilege 0 and are for system - not implemented in 'Encode:' Mov to/from Debug/Control
+ ; registers))
+ REG_CR0    00_0000
+ REG_CR2    00_0010
+ REG_CR3    00_0011
+ REG_CR4    00_0100
+ REG_DR0    00_0000
+ REG_DR1    00_0001
+ REG_DR2    00_0010
+ REG_DR3    00_0011
+ REG_DR6    00_0110
+ REG_DR7    00_0111
 
+ ; For encoding of FPU regs
+ REG_ST0 0
+ REG_ST1 1
+ REG_ST2 2
+ REG_ST3 3
+ REG_ST4 4
+ REG_ST5 5
+ REG_ST6 6
+ REG_ST7 7
 
-; For Encoding of Operand Size (w) Bit
+ ; For encoding of MMX registers
+ REG_MM0 0
+ REG_MM1 1
+ REG_MM2 2
+ REG_MM3 3
+ REG_MM4 4
+ REG_MM5 5
+ REG_MM6 6
+ REG_MM7 7
 
-[ByteSize    0000        ; true wBit, when encoding, can only be 0 (byte size) or
- wordSize    0011        ; 1 (full size). Word / Double size discrimination
- doubleSize  0001        ; will be done by Operand-size override (066 if bit 2 set)
- QuadSize  000100        ; for FPU
- TenSize   001000        ; for FPU
- HalfSize  001111        ; for Packed BCD
- FPUsize   001010        ; for 108 bytes of FPU image > now X$ !!!!!
- OctoSize 0010000        ; for XMM memories
- Xsize        0FF]       ; for 'Fitting' with specific unregular size Opcodes
+ ; For Encoding of Operand Size (w) Bit
+ BYTE_SIZE  00_00000000  ; True wBit, when encoding, can only be 0 (byte size) or
+ WORD_SIZE  00_00000011  ; 1 (full size). Word / Double size discrimination
+ DWORD_SIZE 00_00000001  ; Will be done by Operand-size override (066 if bit 2 set)
+ QWORD_SIZE 00_00000100  ; FPU
+ TBYTE_SIZE 00_00001000  ; FPU
+; BCD_SIZE   00_00001111  ; Packed BCD
+; FPU_SIZE   00_00001010  ; 108 bytes of FPU image > now X$ !!!!!
+ OWORD_SIZE 00_00010000  ; XMM memories
+ USO_SIZE   00_11111111  ; Fitting with specific Unregular Size Opcodes
+
 ;;
- following are to fill 'Operands', which is a global image of what operands in a line.
- in some unregular cases, AL, AX and EAX may have specific encodage we can't' guess
- while analysing parameters. having symbols in order allow tests like:
-    cmp Operands, RegToMem | ja >L1    instead of:
-    cmp operands, RegToMem | je >L1    which solves this problem in case of no use
- of possible Areg by an instruction encodage.
+ 
+    Following are to fill 'Operands', which is a global image of what operands in a line.
+    In some unregular cases, AL, AX and EAX may have specific encodage we can't' guess
+    while analysing parameters. having symbols in order allow tests like:
+    cmp Operands, REG_TO_MEM | ja >L1    instead of:
+    cmp operands, REG_TO_MEM | je >L1    which solves this problem in case of no use of
+    possible Areg by an instruction encodage.
+
 ;;
-[RegToReg  1
- MemToReg  2
- RegToMem  3
- ImmToReg  4
- ImmToMem  5
- RegToImm  6  ; yes...: for 'out imm8, accum'
- ImmToImm  7  ; for ENTER and OUT
- ;;;  MemToMem  8  ; for FPU ???
 
- reg   1    ; for general registers
- sReg  2    ; for segment register
- cReg  3    ; for control registers
- dReg  4    ; for debug registers
- imm   5    ; immediate values
- mem   6    ; for memory symbolic adresses (.$ Labels)
- dis   7
- STreg 8    ; for FPU regs
- MMreg 9    ; for MMX regs
- XMMreg 10] ; for XMM regs
+ REG_TO_REG  1
+ MEM_TO_REG  2
+ REG_TO_MEM  3
+ IMM_TO_REG  4
+ IMM_TO_MEM  5
+ REG_TO_IMM  6    ; OUT imm8 accum
+ IMM_TO_IMM  7    ; ENTER and OUT
+ ;  MEM_TO_MEM  8  ; for FPU ???
 
-[bMem  'B'  ; byte sized memory
- uMem  'U'  ; Unicode string
- wMem  'W'  ; word size memory
- dMem  'D'  ; double word size memory
- qMem  'Q'  ; height bytes size memory
- rMem  'R'  ; height bytes size for FPU real numbers
- tMem  'T'  ; Ten bytes size  for FPU real numbers
- hMem  'H'  ; Height bytes size for FPU real numbers (to keep a while....)
- fMem  'F'  ; Four bytes size for FPU real numbers
- oMem  'O'  ; OctoWords XMM sizes
- xMem  'X'  ; Weird and XMM sizes
+ GENERAL_REG  1   ; General registers
+ SEGMENT_REG  2   ; Segment register
+ CONTROL_REG  3   ; Control registers
+ DEBUG_REG    4   ; Debug registers
+ IMM_VALUE    5   ; Immediate values
+ MEM_LABEL    6   ; Memory symbolic adresses (.$ Labels)
+ DISPLACEMENT 7
+ REG_FPU      8   ; FPU regs
+ REG_MMX      9   ; MMX regs
+ REG_XMM     10   ; XMM regs
 
- NotFound 0FF]
 
-; Where to jump:
-[DownLong   00_1000  ; ja L9>>
- DownShort  00_0100  ; jmp L7>
- UpLong     00_0010  ; jz L0<<
- UpShort    00_0001] ; loop L5<
+ BYTE_MEM    'B' ; Byte sized memory
+ UNICODE_MEM 'U' ; Unicode string
+ WORD_MEM    'W' ; Word size memory
+ DWORD_MEM   'D' ; Dword size memory
+ QWORD_MEM   'Q' ; Qword bytes size memory
+ REEL_MEM    'R' ; Reel 8 bytes size for FPU real numbers
+ TBYTE_MEM   'T' ; Ten bytes size  for FPU real numbers
+ REEL2_MEM   'H' ; Height bytes size for FPU real numbers (to keep a while....)
+ FLOAT_MEM   'F' ; Four bytes size for FPU real numbers
+ OWORD_MEM   'O' ; OctoWords XMM sizes
+ XWORD_MEM   'X' ; Weird and XMM sizes
+
+ ; Where to jump:
+ JMP_DOWN_LONG  00_1000 ; ja L9>>
+ JMP_DOWN_SHORT 00_0100 ; jmp L7>
+ JMP_UP_LONG    00_0010 ; jz L0<<
+ JMP_UP_SHORT   00_0001 ; loop L5<
+
+]
+;;
+ ; Labels flags:
+ FLAG_CODE_LABEL 00_0100
+ FLAG_DATA_LABEL 00_0010
+ FLAG_DONE       00_0001]
+;;
+
 
 ; Labels flags:
 
-[DataLabelFlag 00_0010
- CodeLabelFlag 00_0100
- DoneFlag      00_0001]
+[FLAG_CODE_LABEL 00_0100
+ FLAG_DATA_LABEL 00_0010
+ FLAG_DONE      00_0001]
 
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -425,7 +474,7 @@ ________________________________________________________________________________
 ; 'LabelList' is: Dword | ... // ...| Name | Dword1 Byte | // ....
 ; Where dWord is the Table Size.
 ; In the Records, Dword1 is the Pointer to CodeList, and Byte can be either/or:
-; 'CodeLabelFlag', 'DataLabelFlag' , 'DoneFlag'
+; [FLAG_CODE_LABEL] [FLAG_DATA_LABEL] [FLAG_DONE]
 
 [DataRefLimit: D$ ?
  EquateListLimit: D$ ?
@@ -726,19 +775,24 @@ IncludeSource:
 
     std | rep movsb | cld
 
-    Move D$BlockStartTextPtr D$STRUCT.EditData@CurrentWritingPos
+    Move D$LP.BlockStartText D$STRUCT.EditData@CurrentWritingPos
 
 
-    Call 'KERNEL32.ReadFile' D$H.Source, D$BlockStartTextPtr, D$IncludeLen, NumberOfReadBytes, 0
+    Call 'KERNEL32.ReadFile' D$H.Source, D$LP.BlockStartText, D$IncludeLen, NumberOfReadBytes, 0
     Call 'KERNEL32.CloseHandle' D$H.Source | Mov D$H.Source 0
 
     Mov edi D$STRUCT.EditData@CurrentWritingPos | add edi D$IncludeLen | Mov W$edi CRLF
-    Mov D$BlockEndTextPtr edi | dec D$BlockEndTextPtr
+
+    Mov D$LP.BlockEndText edi | sub D$LP.BlockEndText 1
 
     Mov eax D$IncludeLen | add eax 2 | add D$SourceLen eax | add D$STRUCT.EditData@SourceEnd eax
     Mov D$FL.BlockInside &TRUE
 
-    Mov esi D$BlockStartTextPtr, ecx D$BlockEndTextPtr | sub ecx esi
+    Mov esi D$LP.BlockStartText,
+        ecx D$LP.BlockEndText
+
+    sub ecx esi
+
     Call BlockCleaner
 ret
 
@@ -1972,7 +2026,9 @@ OpenDestinationFile:
                                 &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
         Call MessageBox D$BusyFilePtr
-        Mov B$CompileErrorHappend &TRUE
+
+        Mov D$FL.CompileErrorHappend &TRUE
+
       ; Pop return adress of caller and ret to Callback:
         Pop eax | ret
 
@@ -4034,8 +4090,7 @@ L9: Mov bl al                               ; save lasting sign for ending test
     cmp bl Separators | jb L0<<             ; one more equate > store again
 ret
 
-[Equateee "merde agaa"  ] ; grande classe ;)
- _______________________________________________________________________________________
+_______________________________________________________________________________________
 
 StoreMacros:
     Mov edi D$MacroListPtr,  B$esi-1 0
@@ -4116,7 +4171,7 @@ StripDoneStatementsPointers:
     Mov esi D$StatementsTable, edi esi
 
 L0: lodsd
-    If eax = DoneFlag
+    If eax = FLAG_DONE
         jmp L0<
     Else_If eax > 0
         stosd | jmp L0<
@@ -4174,7 +4229,7 @@ L2:     lodsb | cmp al, OpenParaMacro | ja L2<
         Mov esi, ecx | jmp L0<
 L3: cmp al Space | jne L3>                          ; equate?
         Call StoreEquates
-            Mov eax D$StatementsPtr, D$eax DoneFlag
+            Mov eax D$StatementsPtr, D$eax FLAG_DONE
         jmp L0<
 L3: cmp al meEOI | je L0<                           ; macro?
 
@@ -4209,7 +4264,7 @@ L2:         lodsb | cmp al, LowSigns | ja L2<
 L3: cmp al meEOI | jne L0<                          ; macro?
         On B$esi = meEOI, error D$UnexpectedCRLFPtr
         Call storeMacros
-            Mov eax D$StatementsPtr, D$eax DoneFlag
+            Mov eax D$StatementsPtr, D$eax FLAG_DONE
         jmp L0<
 
 L8: lodsb | cmp al 0 | je L8<
@@ -4404,7 +4459,7 @@ SearchForEntryPoint:
         End_If
 
         While B$eax <> EOI | inc eax | End_While | inc eax
-        or B$eax+4 DoneFlag
+        or B$eax+4 FLAG_DONE
         Mov eax D$eax
 
     Mov B$SearchMain &FALSE
@@ -6353,7 +6408,10 @@ L5: lodsb | cmp al EOI | jne L0<<
             {B$ "Are you sure you want to continue assemblying this?" EOS},
             D$NoApiPtr, &MB_SYSTEMMODAL__&MB_ICONEXCLAMATION__&MB_YESNO
             If eax = &IDNO
-                Mov B$CompileErrorHappend &TRUE, D$NextSearchPos 0
+
+                Mov D$FL.CompileErrorHappend &TRUE,
+                    D$NextSearchPos 0
+
                 Call CloseProgressBar
                 cld | Mov esp D$OldStackPointer
                 Call ReleaseAsmTables
@@ -8435,7 +8493,7 @@ ret
 TranslateText:
     lodsb                        ; strip first text sign
 
-    On B$DefSize = uMem, jmp TranslateUnicode
+    On B$DefSize = UNICODE_MEM jmp TranslateUnicode
 
 L0: lodsb | cmp al TextSign | je L9>
       stosb | jmp L0<
@@ -8733,7 +8791,7 @@ ret
     !!! Perso je soupçonne un problème d'alignement ;))
 ;;
 
-[HeadLenPtr: 0    HeadLenFlag: 0    HeadLenSize: dMem]
+[HeadLenPtr: 0    HeadLenFlag: 0    HeadLenSize: DWORD_MEM]
 
 StoreOneData:
     Mov B$DataSign &FALSE
@@ -8758,12 +8816,12 @@ L0:     cmp al 'L' | jne L0>>
 
                   ; Store dummy zero. Will be overwritten, after, at the top of 'StoreDatas'
                   ; HeadLen may be W$ for some Win32 Structures. Byte should be no use:
-                    If B$DefSize = dMem
-                        stosd | Mov D$HeadLenSize dMem, D$LenOfDataSet 4
-                    Else_If B$DefSize = wMem
-                        stosw | Mov D$HeadLenSize wMem, D$LenOfDataSet 2
-                    Else_If B$DefSize = bMem
-                        stosb | Mov D$HeadLenSize bMem, D$LenOfDataSet 1
+                    If B$DefSize = DWORD_MEM
+                        stosd | Mov D$HeadLenSize DWORD_MEM D$LenOfDataSet 4
+                    Else_If B$DefSize = WORD_MEM
+                        stosw | Mov D$HeadLenSize WORD_MEM D$LenOfDataSet 2
+                    Else_If B$DefSize = BYTE_MEM
+                        stosb | Mov D$HeadLenSize BYTE_MEM D$LenOfDataSet 1
                     Else
                         error D$LenSizePtr
                     End_If
@@ -8948,16 +9006,16 @@ L9: ret
 StoreDatas:
     Mov esi D$CodeSourceB
     Mov B$ErrorLevel 0,  D$bracketCounter 0, D$DataLabelsCounter 0
-    Mov D$HeadLenPtr 0, D$HeadLenFlag 0, D$HeadLenSize dMem
+    Mov D$HeadLenPtr 0, D$HeadLenFlag 0, D$HeadLenSize DWORD_MEM
 
     Move D$StatementsPtr D$StatementsTable | sub D$StatementsPtr 4
 
 L0: .If B$HeadLenFlag = &TRUE
         Mov ebx D$HeadLenPtr, eax D$LenOfDataSet, B$HeadLenFlag &FALSE
 
-        If B$HeadLenSize = dMem
+        If B$HeadLenSize = DWORD_MEM
             Mov D$ebx eax
-        Else_If B$HeadLenSize = wMem
+        Else_If B$HeadLenSize = WORD_MEM
             On eax > 0FFFF, error D$OverWordPtr
             Mov W$ebx ax
         Else
@@ -9057,11 +9115,11 @@ L7: lodsb
 L8: Mov esi D$AfterLastDataLabel | jmp L2<<
 
 L9: If B$esi-1 = Closebracket
-       Mov eax D$StatementsPtr, D$eax DoneFlag
+       Mov eax D$StatementsPtr, D$eax FLAG_DONE
        jmp L0<<                    ; lasting data
     End_If
     On B$esi  <> Closebracket,  jmp L2<<                      ; lasting label
-    Mov eax D$StatementsPtr, D$eax DoneFlag
+    Mov eax D$StatementsPtr, D$eax FLAG_DONE
     inc esi | jmp L0<<
 
 _____________________________________________________________________________________
@@ -9227,10 +9285,10 @@ L8:     If D$DataLoopValue > 1
         Mov esi D$AfterLastDataLabel | jmp L2<<
 
 L9: If B$esi-1 = CloseVirtual
-        Mov eax D$StatementsPtr, D$eax DoneFlag | jmp L0<<      ; lasting data
+        Mov eax D$StatementsPtr, D$eax FLAG_DONE | jmp L0<<      ; lasting data
     End_If
     On B$esi <> CloseVirtual,  jmp L2<<                         ; lasting label
-        inc esi | Mov eax D$StatementsPtr, D$eax DoneFlag | jmp L0<<
+        inc esi | Mov eax D$StatementsPtr, D$eax FLAG_DONE | jmp L0<<
 
 _________________________________________________________________________________________
  _________________________________________________________________________________________
@@ -9243,10 +9301,10 @@ ________________________________________________________________________________
 E0: error D$BadLabelPtr
 
 StoreDataLabel:
-    Mov edx D$DataListPtr | Mov cl DataLabelFlag | jmp L0>
+    Mov edx D$DataListPtr | Mov cl FLAG_DATA_LABEL | jmp L0>
 
 StoreCodeLabel:
-    Mov edx D$CodeListPtr | Mov cl CodeLabelFlag
+    Mov edx D$CodeListPtr | Mov cl FLAG_CODE_LABEL
 
 L0: Push edi
         Mov edi D$LabelListPtr | Mov ebx 0 | Mov D$StartOfLabelName esi
@@ -9341,9 +9399,9 @@ NoFpAssumeError: Error D$FPregNotAssumedPtr
 
 ; expression deal: ModR/M, SIB and immediate in expressions
 
-[IfEregFound | cmp B$Ereg NotFound | jne #1]
+[IfEregFound | cmp B$Ereg NA | jne #1]
 
-[IfEregNotFound | cmp B$Ereg NotFound | je #1]
+[IfEregNotFound | cmp B$Ereg NA | je #1]
 
 [IfNotPartEnd | cmp #1 PartEnds | ja #2]
 
@@ -9354,67 +9412,67 @@ IsitaReg:
 
 L0: ifnot op2 'X', L2>
         ifnot op1 'A', L1>
-            Mov al regAx | jmp L3>
+            Mov al REG_AX | jmp L3>
 L1:     ifnot op1 'B', L1>
-            Mov al regBx | jmp L3>
+            Mov al REG_BX | jmp L3>
 L1:     ifnot op1 'C', L1>
-            Mov al regCx | jmp L3>
+            Mov al REG_CX | jmp L3>
 L1:     On op1 <> 'D',  jmp L9>>
-            Mov al regDx
+            Mov al REG_DX
 
-L3:     Mov W$esi 0 | add esi 3 | Mov ah reg | Mov B$OneOperandwBit WordSize | ret
+L3:     Mov W$esi 0 | add esi 3 | Mov ah GENERAL_REG | Mov B$OneOperandwBit WORD_SIZE | ret
 
 L2: ifnot op2 'H', L2>
         ifnot op1 'A', L1>
-                Mov al regAh | jmp L3>
+                Mov al REG_AH | jmp L3>
 L1:     ifnot op1 'B', L1>
-            Mov al regBh | jmp L3>
+            Mov al REG_BH | jmp L3>
 L1:     ifnot op1 'C', L1>
-            Mov al regCh | jmp L3>
+            Mov al REG_CH | jmp L3>
 L1:     On ah <> 'D',  jmp L9>>
-            Mov al regDh | jmp L3>
+            Mov al REG_DH | jmp L3>
 
 L2: ifnot op2 'L', L2>
         ifnot op1 'A', L1>
-            Mov al regAl | jmp L3>
+            Mov al REG_AL | jmp L3>
 L1:     ifnot op1 'B', L1>
-            Mov al regBl | jmp L3>
+            Mov al REG_BL | jmp L3>
 L1:     ifnot op1 'C', L1>
-            Mov al, regCl | jmp L3>
+            Mov al, REG_CL | jmp L3>
 L1:     On op1 <> 'D',  jmp L9>>
-            Mov al, regDl
+            Mov al, REG_DL
 
-L3:     Mov W$esi 0 | add esi 3 | Mov ah reg | Mov B$OneOperandwBit ByteSize | ret
+L3:     Mov W$esi 0 | add esi 3 | Mov ah GENERAL_REG | Mov B$OneOperandwBit BYTE_SIZE | ret
 
 L2: ifnot op2 'P', L2>
         ifnot op1 'B', L1>
-            Mov al regBp | jmp L3>
+            Mov al REG_BP | jmp L3>
 L1:     On op1 <> 'S',  jmp L9>>
-            Mov al regSp | jmp L3>
+            Mov al REG_SP | jmp L3>
 
 L2: ifnot op2 'I', L2>
         ifnot op1 'S', L1>
-            Mov al regSi | jmp L3>
+            Mov al REG_SI | jmp L3>
 L1:     On op1 <> 'D',  jmp L9>>
-            Mov al regDi
+            Mov al REG_DI
 
-L3:     Mov W$esi 0 | add esi 3 | Mov ah reg | Mov B$OneOperandwBit WordSize | ret
+L3:     Mov W$esi 0 | add esi 3 | Mov ah GENERAL_REG | Mov B$OneOperandwBit WORD_SIZE | ret
 
 L2: ifnot op2 'S', L5>
         ifnot op1 'E', L1>
-           Mov al regEs | jmp L3>
+           Mov al REG_ES | jmp L3>
 L1:     ifnot op1 'C', L1>
-           Mov al regCs | jmp L3>
+           Mov al REG_CS | jmp L3>
 L1:     ifnot op1 'S', L1>
-           Mov al regSs | jmp L3>
+           Mov al REG_SS | jmp L3>
 L1:     ifnot op1 'D', L1>
-           Mov al regDs | jmp L3>
+           Mov al REG_DS | jmp L3>
 L1:     ifnot op1 'F', L1>
-           Mov al regFs | jmp L3>
+           Mov al REG_FS | jmp L3>
 L1:     On op1 <> 'G',  jmp L9>>
-           Mov al regGs
+           Mov al REG_GS
 
-L3:     Mov W$esi 0 | add esi 3 | Mov ah sReg | Mov B$OneOperandwBit WordSize | ret
+L3:     Mov W$esi 0 | add esi 3 | Mov ah SEGMENT_REG | Mov B$OneOperandwBit WORD_SIZE | ret
 
 ; Is it a 3 letters MMX register name?
 
@@ -9423,8 +9481,8 @@ L5: On op4 nb Separators,  jmp L9>>
          IfNot op2, 'M', L5>
            cmp op3, '0' | jb L5>
            cmp op3, '7' | jg L5>
-             sub bh, '0' | Mov al bh | Mov ah MMreg
-             and D$esi 0FF000000 | add esi 4 | Mov B$OneOperandwBit DoubleSize | ret
+             sub bh, '0' | Mov al bh | Mov ah REG_MMX
+             and D$esi 0FF000000 | add esi 4 | Mov B$OneOperandwBit DWORD_SIZE | ret
 
 ; Is it a 3 letters STx register name?
 
@@ -9432,8 +9490,8 @@ L5: IfNot op1, 'S', L5>
         IfNot op2, 'T', L5>
            cmp op3, '0' | jb L5>
            cmp op3, '7' | jg L5>
-             sub bh, '0' | Mov al bh | Mov ah STreg
-             and D$esi 0FF000000 | add esi 4 | Mov B$OneOperandwBit DoubleSize | ret
+             sub bh, '0' | Mov al bh | Mov ah REG_FPU
+             and D$esi 0FF000000 | add esi 4 | Mov B$OneOperandwBit DWORD_SIZE | ret
 
 ; Is it a 3 letters DRx register name?
 
@@ -9441,8 +9499,8 @@ L5: IfNot op1, 'D', L5>
         IfNot op2, 'R', L5>
            cmp op3, '0' | jb L5>
            cmp op3, '7' | jg L5>
-             sub bh, '0' | Mov al bh | Mov ah dReg
-             and D$esi 0FF000000 | add esi 4 | Mov B$OneOperandwBit DoubleSize | ret
+             sub bh, '0' | Mov al bh | Mov ah DEBUG_REG
+             and D$esi 0FF000000 | add esi 4 | Mov B$OneOperandwBit DWORD_SIZE | ret
 
 ; Is it a 3 letters CRx register name?
 
@@ -9450,8 +9508,8 @@ L5: IfNot op1, 'C', L5>
         IfNot op2, 'R', L5>
            cmp op3, '0' | jb L5>
            cmp op3, '4' | jg L5>
-             sub bh, '0' | Mov al bh | Mov ah cReg
-             and D$esi 0FF000000 | add esi 4 | Mov B$OneOperandwBit DoubleSize | ret
+             sub bh, '0' | Mov al bh | Mov ah CONTROL_REG
+             and D$esi 0FF000000 | add esi 4 | Mov B$OneOperandwBit DWORD_SIZE | ret
 
 
 ;IsItAreg32:
@@ -9459,25 +9517,25 @@ L5: IfNot op1, 'C', L5>
 L5: On op1 <> 'E',  jmp L9>
         ifnot op3 'X', L3>
             ifnot op2 'A', L2>
-                Mov al regEAX | jmp L4>
+                Mov al REG_EAX | jmp L4>
 L2:         ifnot op2 'C', L2>
-                Mov al regECX | jmp L4>
+                Mov al REG_ECX | jmp L4>
 L2:         ifnot op2 'D', L2>
-                Mov al regEDX | jmp L4>
+                Mov al REG_EDX | jmp L4>
 L2:         On op2 <> 'B',  jmp L9>
-            Mov al regEBX | jmp L4>
+            Mov al REG_EBX | jmp L4>
 L3:     ifnot op3 'P', L3>
             ifnot op2 'S', L2>
-                Mov al regESP | jmp L4>
+                Mov al REG_ESP | jmp L4>
 L2:         On op2 <> 'B',  jmp L9>
-                Mov al regEBP | jmp L4>
+                Mov al REG_EBP | jmp L4>
 L3:     On op3 <> 'I',  jmp L9>
             ifnot op2 'S', L2>
-                Mov al regESI | jmp L4>
+                Mov al REG_ESI | jmp L4>
 L2:         On op2 <> 'D',  jmp L9>
-                Mov al regEDI
+                Mov al REG_EDI
 
-L4:     and D$esi 0FF000000 | add esi 4 | Mov ah, Reg | Mov B$OneOperandwBit DoubleSize | ret
+L4:     and D$esi 0FF000000 | add esi 4 | Mov ah GENERAL_REG | Mov B$OneOperandwBit DWORD_SIZE | ret
 
 L9: ; 4 Chars Register? > XMM.?
 
@@ -9486,9 +9544,9 @@ L9: ; 4 Chars Register? > XMM.?
             ifnot op3 'M', L9>
                 cmp op4, '0' | jb L9>
                     cmp op4, '7' | jg L9>
-                        sub op4, '0' | Mov al op4 | Mov ah XMMreg
+                        sub op4, '0' | Mov al op4 | Mov ah REG_XMM
                         Mov D$esi 0 | add esi 5
-                        Mov B$OneOperandwBit OctoSize | ret
+                        Mov B$OneOperandwBit OWORD_SIZE | ret
 
 
 L9: Mov eax 0 | ret
@@ -9499,33 +9557,33 @@ L9: Mov eax 0 | ret
 ; 'SearchForEreg' does.
 
 IsItAnEreg:
-    Mov B$Ereg NotFound | Call Store4cars | IfNotPartEnd op3, L9>>
+    Mov B$Ereg NA | Call Store4cars | IfNotPartEnd op3, L9>>
 
     IfNotPartEnd B$esi-2, L9>>
         ifnot op2 'X', L2>
             ifnot op1 'A', L1>
-                Mov B$Ereg regEAX | ret
+                Mov B$Ereg REG_EAX | ret
 L1:         ifnot op1 'C', L1>
-                Mov B$Ereg regECX | ret
+                Mov B$Ereg REG_ECX | ret
 L1:         ifnot op1 'D', L1>
-                Mov B$Ereg regEDX | ret
+                Mov B$Ereg REG_EDX | ret
 L1:         ifnot op1 'B', L9>
-                Mov B$Ereg regEBX | ret
+                Mov B$Ereg REG_EBX | ret
 L2:     ifnot op2 'P', L2>
             ifnot op1 'B', L1>
-                Mov B$Ereg regEBP | ret
+                Mov B$Ereg REG_EBP | ret
 L1:         ifnot op1 'S', L9>
-                Mov B$Ereg regESP | ret
+                Mov B$Ereg REG_ESP | ret
 L2:     ifnot op2 'I', L9>
             ifnot op1 'S', L1>
-                Mov B$Ereg regESI | ret
+                Mov B$Ereg REG_ESI | ret
 L1:         ifnot op1 'D', L9>
-                Mov B$Ereg regEDI | ret
+                Mov B$Ereg REG_EDI | ret
 L9: ret
 
 
 SearchForEreg:
-    Mov B$Ereg NotFound                     ; this double declaration is NOT useless
+    Mov B$Ereg NA                     ; this double declaration is NOT useless
 L0: lodsb | cmp al, 0 | je L0<
         cmp al Separators | jb L9>
             cmp al PartEnds | jb L0<
@@ -9555,7 +9613,7 @@ L1: cmp al '4' | jne L2>
         Mov al 00_1000_0000 | jmp L3>
 L2: cmp al '8' | jne L8>
         Mov al 00_1100_0000
-L3: On B$Ereg = regESP,  error D$ESPsibPtr              ; ESP can not be an index
+L3: On B$Ereg = REG_ESP error D$ESPsibPtr              ; ESP can not be an index
     add esi 2 | Mov B$ScaleFound &TRUE
     Mov B$esi-2 0,  B$esi-1 0                      ; clear scale
     Mov bl B$Ereg | shl bl 3 | or bl al            ; store [xx xxx ...]
@@ -9573,8 +9631,8 @@ L0:   lodsb
         cmp al Separators | jb L9>
             cmp al PartEnds | jb L0<
                 dec esi | Call IsItAreg | cmp eax 0 | je L1>
-                On B$OneOperandwBit <> DoubleSize, error D$WishEregPtr
-                On ah <> Reg, error D$WishEregPtr
+                On B$OneOperandwBit <> DWORD_SIZE error D$WishEregPtr
+                On ah <> GENERAL_REG error D$WishEregPtr
 L1:             inc esi
 L2:             cmp B$esi PartEnds | jb L0>         ; strip remaining text
                     inc esi | jmp L2<
@@ -9598,10 +9656,10 @@ L0: Mov al B$Ereg,  B$SIBreg1 al
         Mov al B$Ereg,  B$SIBreg2 al | Mov B$TwoRegsFound &TRUE
 
         Call SearchForScale | Mov al B$ScaleFound,  B$Reg2isIndex al
-        Call SearchForEreg | On B$Ereg <> NotFound,  error D$expressionPtr    ; 3 regs forbidden
+        Call SearchForEreg | On B$Ereg <> NA  error D$expressionPtr    ; 3 regs forbidden
 
         .If B$ScaleFound = &FALSE
-            If B$SIBreg2 = RegEBP
+            If B$SIBreg2 = REG_EBP
               ; Exchange the two regs, for saving from having to add the zero Dis:
                 Mov al B$SIBreg1, bl B$SIBreg2
                 Mov B$SIBreg2 al, B$SIBreg1 bl
@@ -9635,7 +9693,7 @@ L4: cmp B$TwoRegsFound &TRUE | jne L5>                           ; no index, but
 
         Mov B$SIB al | jmp L9>
 
-L5: cmp B$SIBreg1 regESP | jne L9>             ; no index found, only one reg found, but
+L5: cmp B$SIBreg1 REG_ESP | jne L9>             ; no index found, only one reg found, but
         Mov B$SibInside &TRUE | Mov B$SIB 024     ; if reg = ESP >SIB
 L9: Pop esi
     ret
@@ -9857,7 +9915,7 @@ SearchForModRMreg:
     Mov eax D$Dis32
 
     On B$LongRelative = &FALSE, Mov cl 8
-                                      ; for ByteSize tests on Displacement
+                                      ; for BYTE_SIZE tests on Displacement
                                                 ; (080 >>> -128)
 L0: Push esi
         cmp B$SIBinside &TRUE | je L0>                      ; no SIB found? >>> no more regs
@@ -9891,7 +9949,7 @@ L3:     cmp B$DisInside &FALSE | je L6>
 L4:             Mov B$ModBits 00_01_000_000 | jmp L9>       ; dis8 + reg
 L5:             Mov B$ModBits 00_10_000_000 | jmp L9>       ; dis32 + reg
 
-L6:     cmp B$RmBits regEBP | jne L7>                       ; reg EBP >>> add zero dis
+L6:     cmp B$RmBits REG_EBP | jne L7>                       ; reg EBP >>> add zero dis
             Mov B$DisInside &TRUE | jmp L4<
 
 L7:     Mov B$ModBits 0                                     ; reg without displacement
@@ -9908,9 +9966,9 @@ L9: ret
 
 
 SearchForFirstFPUimm:
-    Mov B$FirstGender imm | jmp L0>
+    Mov B$FirstGender IMM_VALUE | jmp L0>
 SearchForSecondFPUimm:
-    Mov B$SecondGender imm
+    Mov B$SecondGender IMM_VALUE
 
 L0: Push esi
         Call atof
@@ -9931,41 +9989,41 @@ L0: lodsb                               ; simply increase esi over first space; 
 
     cmp B$esi+1 memMarker | jne L4>>               ; if mem marker found, store ascii value
       Mov al B$esi | Mov B$FirstParaMem al
-      Mov W$esi 0 | add esi 2                     ; (see equ. for bMem, wMem, dMem)
+      Mov W$esi 0 | add esi 2                     ; (see equ. for BYTE_MEM, WORD_MEM, DWORD_MEM)
       If B$esi = MemMarker
         inc esi
       End_If
-      Mov B$FirstGender mem
+      Mov B$FirstGender MEM_LABEL
 
         On B$esi = EOI, error D$ParameterPtr
 
-        .If al = dMem
-             Mov B$FirstOperandwbit DoubleSize   ; D$            4 bytes
-        .Else_If al = bMem
-             Mov B$FirstOperandwbit ByteSize     ; B$            1 byte
-        .Else_If al = wMem
-             Mov B$FirstOperandwbit WordSize     ; W$            2 bytes
-        .Else_If al = qMem
-             Mov B$FirstOperandwbit QuadSize     ; Q$            8 bytes
-        .Else_If al = rMem
-             Mov B$FirstOperandwbit QuadSize     ; R$ = FPU Q$   8 bytes
-      ;  .Else_If al = hMem
+        .If al = DWORD_MEM
+             Mov B$FirstOperandwbit DWORD_SIZE   ; D$            4 bytes
+        .Else_If al = BYTE_MEM
+             Mov B$FirstOperandwbit BYTE_SIZE     ; B$            1 byte
+        .Else_If al = WORD_MEM
+             Mov B$FirstOperandwbit WORD_SIZE     ; W$            2 bytes
+        .Else_If al = QWORD_MEM
+             Mov B$FirstOperandwbit QWORD_SIZE     ; Q$            8 bytes
+        .Else_If al = REEL_MEM
+             Mov B$FirstOperandwbit QWORD_SIZE     ; R$ = FPU Q$   8 bytes
+      ;  .Else_If al = REEL2_MEM
       ;       error NewHmem
-       ;      Mov B$FirstOperandwbit QuadSize     ; H$ = FPU Q$   8 bytes >>> 16 bytes (!!!)
-        .Else_If al = fMem
+       ;      Mov B$FirstOperandwbit QWORD_SIZE     ; H$ = FPU Q$   8 bytes >>> 16 bytes (!!!)
+        .Else_If al = FLOAT_MEM
              If B$esi < 'A'
                  Call SearchForFirstFPUimm | ret     ; exemple: Push F$45.2
              Else
-                 Mov B$FirstOperandwbit DoubleSize   ; F$ = FPU D$
+                 Mov B$FirstOperandwbit DWORD_SIZE   ; F$ = FPU D$
              End_If
-        .Else_If al = tMem
-             Mov B$FirstOperandwbit TenSize      ; T$ = FPU 10 Bytes / 80 bits (m80)
-        .Else_If al = xMem
-            Mov B$FirstOperandwbit XSize         ; Weird and XMM sizes
-        .Else_If al = oMem
-            Mov B$FirstOperandwbit OctoSize         ; Weird and XMM sizes
+        .Else_If al = TBYTE_MEM
+             Mov B$FirstOperandwbit TBYTE_SIZE      ; T$ = FPU 10 Bytes / 80 bits (m80)
+        .Else_If al = XWORD_MEM
+            Mov B$FirstOperandwbit USO_SIZE         ; Weird and XMM sizes
+        .Else_If al = OWORD_MEM
+            Mov B$FirstOperandwbit OWORD_SIZE         ; Weird and XMM sizes
         .Else
-            On al = hMem, error D$NewHmemPtr
+            On al = REEL2_MEM error D$NewHmemPtr
             error D$UnknownSizePtr
         .End_If
 
@@ -9988,23 +10046,23 @@ L3:   Call SearchForSIB
     ret
 
 L4: Call IsItaReg | cmp ah 0 | je L5>
-      Mov B$FirstGender reg,  B$FirstReg al,  B$FirstRegGender ah
+      Mov B$FirstGender GENERAL_REG,  B$FirstReg al,  B$FirstRegGender ah
       Mov al B$OneOperandwbit,  B$FirstOperandwbit al
     ret
 
 L5: Call SearchForImm | cmp B$ImmInside &FALSE | je L6>
-      Mov B$FirstGender imm | Mov B$PossibleFirstImmLabel &TRUE
+      Mov B$FirstGender IMM_VALUE | Mov B$PossibleFirstImmLabel &TRUE
     ret
 
 L6: If B$ApiFound = &TRUE   ; 'NewSearchApiName'
-        Mov B$DisInside &TRUE, B$ApiFound &FALSE, B$FirstGender mem
+        Mov B$DisInside &TRUE, B$ApiFound &FALSE, B$FirstGender MEM_LABEL
         Mov B$ModBits 0, B$RmBits 00101
-        Mov B$FirstOperandwBit doubleSize
+        Mov B$FirstOperandwBit DWORD_SIZE
         ret
     End_If
 
 L6: Call SearchForLabel | On B$LabelInside = &FALSE,  error D$UnknownParameterPtr
-      Mov B$FirstGender dis
+      Mov B$FirstGender DISPLACEMENT
       or B$ExpressedLabels 1                            ; we want B$ExpressedLabels < 3
       On B$ExpressedLabels > 2, error D$TooMuchLabelsPtr     ; but only one Lab per member
     ret
@@ -10019,39 +10077,39 @@ L1: lodsb | cmp al Space | jne L1<
 
     cmp B$esi+1 memMarker | jne L5>>             ; if mem marker found, store ascii value
         Mov al B$esi | Mov B$secondParaMem al
-        Mov W$esi 0 | add esi 2                  ; (see equ. for bMem, wMem, dMem, ...)
-        Mov B$secondGender mem
+        Mov W$esi 0 | add esi 2                  ; (see equ. for BYTE_MEM, WORD_MEM, DWORD_MEM, ...)
+        Mov B$secondGender MEM_LABEL
 
         On B$esi = EOI, error D$ParameterPtr
 
-        .If al = dMem
-             Mov B$SecondOperandwBit DoubleSize   ; D$
-        .Else_If al = bMem
-             Mov B$SecondOperandwBit ByteSize     ; B$
-        .Else_If al = wMem
-             Mov B$SecondOperandwBit WordSize     ; W$
-        .Else_If al = qMem
-             Mov B$SecondOperandwBit QuadSize     ; Q$
-        .Else_If al = rMem
-             Mov B$SecondOperandwBit QuadSize     ; R$ = FPU Q$
-        .Else_If al = hMem
+        .If al = DWORD_MEM
+             Mov B$SecondOperandwBit DWORD_SIZE   ; D$
+        .Else_If al = BYTE_MEM
+             Mov B$SecondOperandwBit BYTE_SIZE     ; B$
+        .Else_If al = WORD_MEM
+             Mov B$SecondOperandwBit WORD_SIZE     ; W$
+        .Else_If al = QWORD_MEM
+             Mov B$SecondOperandwBit QWORD_SIZE     ; Q$
+        .Else_If al = REEL_MEM
+             Mov B$SecondOperandwBit QWORD_SIZE     ; R$ = FPU Q$
+        .Else_If al = REEL2_MEM
              error D$NewHmemPtr
-       ;      Mov B$SecondOperandwBit QuadSize     ; H$ = FPU Q$ (!!! > 16 bytes / 128 bits !!!)
-        .Else_If al = fMem
+       ;      Mov B$SecondOperandwBit QWORD_SIZE     ; H$ = FPU Q$ (!!! > 16 bytes / 128 bits !!!)
+        .Else_If al = FLOAT_MEM
              If B$esi < 'A'
                  Call SearchForSecondFPUimm | ret      ; exemple: Mov eax F$45.2
              Else
-                 Mov B$SecondOperandwBit DoubleSize   ; F$ = FPU D$
+                 Mov B$SecondOperandwBit DWORD_SIZE   ; F$ = FPU D$
              End_If
 
-        .Else_If al = tMem
-             Mov B$SecondOperandwBit TenSize      ; T$ = FPU 10 Bytes
-        .Else_If al = xMem
-            Mov B$SecondOperandwbit XSize         ; Weird and XMM sizes
-        .Else_If al = oMem
-            Mov B$SecondOperandwbit OctoSize      ; XMM sizes
+        .Else_If al = TBYTE_MEM
+             Mov B$SecondOperandwBit TBYTE_SIZE      ; T$ = FPU 10 Bytes
+        .Else_If al = XWORD_MEM
+            Mov B$SecondOperandwbit USO_SIZE         ; Weird and XMM sizes
+        .Else_If al = OWORD_MEM
+            Mov B$SecondOperandwbit OWORD_SIZE      ; XMM sizes
         .Else
-            On al = hMem, error D$NewHmemPtr
+            On al = REEL2_MEM error D$NewHmemPtr
             error D$UnknownSizePtr
         .End_If
 
@@ -10060,7 +10118,7 @@ L4:     Call SearchForSIB
         Call SearchForLabel
         ...If B$SibInside = &TRUE
             ..If B$DisInside = &FALSE
-                .If B$FirstGender = reg
+                .If B$FirstGender = GENERAL_REG
                     If B$TwoRegsFound = &TRUE
                         Mov al B$SIB | and al 00_111
                         On al = 00_101, Mov B$DisInside &TRUE, B$LongRelative &FALSE
@@ -10072,12 +10130,12 @@ L4:     Call SearchForSIB
     ret
 
 L5:   Call IsItaReg | cmp ah 0 | je L6>
-      Mov B$secondGender reg,  B$secondReg al,  B$SecondRegGender ah
+      Mov B$secondGender GENERAL_REG,  B$secondReg al,  B$SecondRegGender ah
       Mov al B$OneOperandwbit,  B$secondOperandwbit al
 
       ...If B$SibInside = &TRUE
         ..If B$DisInside = &FALSE
-            .If B$FirstGender = Mem
+            .If B$FirstGender = MEM_LABEL
                 If B$TwoRegsFound = &TRUE
                     Mov al B$SIB | and al 00_111
                     On al = 00_101, Mov B$DisInside &TRUE, B$LongRelative &FALSE
@@ -10091,26 +10149,26 @@ L5:   Call IsItaReg | cmp ah 0 | je L6>
 
 L6:   Call SearchForImm
       cmp B$ImmInside &FALSE | je L7>
-      Mov B$secondGender imm | Mov B$PossibleImmLabel &TRUE
+      Mov B$secondGender IMM_VALUE | Mov B$PossibleImmLabel &TRUE
     ret
 
 L7: If B$ApiFound = &TRUE   ; 'NewSearchApiName'
-        Mov B$DisInside &TRUE, B$ApiFound &FALSE, B$SecondGender mem
+        Mov B$DisInside &TRUE, B$ApiFound &FALSE, B$SecondGender MEM_LABEL
         Mov B$ModBits 0, B$RmBits 00101
-        Mov B$SecondOperandwBit doubleSize
+        Mov B$SecondOperandwBit DWORD_SIZE
         ret
     End_If
 
 L7:   cmp D$DisInside &TRUE | jne L8>
-      Mov B$secondGender imm | Mov B$PossibleImmLabel &TRUE
+      Mov B$secondGender IMM_VALUE | Mov B$PossibleImmLabel &TRUE
     ret
 
 L8:  If B$ExpressedLabels = 0
         Call SearchForLabel
         On B$LabelInside = &FALSE,  error D$UnknownParameterPtr
-        Mov B$SecondGender dis
+        Mov B$SecondGender DISPLACEMENT
       Else                                     ; Case of 'Mov D$Lab1 Lab2'
-        Mov B$ImmInside &TRUE, B$secondGender imm, B$PossibleImmLabel &TRUE
+        Mov B$ImmInside &TRUE, B$secondGender IMM_VALUE, B$PossibleImmLabel &TRUE
       End_If                                   ; Lab2 checked by PossibleImmLabel
       Mov B$sBit 0
     ret
@@ -10162,7 +10220,7 @@ L2:       Mov al EOI | stosb
 
         ; Very stupid. 'FirstParameterLabel' /'SecondParameterLabel' to be re-structured:
           If B$ParametersNumber > 1
-            On B$FirstOperandWbit <> DoubleSize, error D$MissTypePtr
+            On B$FirstOperandWbit <> DWORD_SIZE error D$MissTypePtr
           End_If
 L9: Pop esi
 ret
@@ -10178,13 +10236,13 @@ L1: lodsb | cmp al Space | jne L1<
 L2: lodsb | cmp al Space | jne L2<
 
         Call IsItaReg | cmp ah 0 | je L3>
-        Mov B$ThirdGender reg,  B$ThirdReg al,  B$ThirdRegGender ah
+        Mov B$ThirdGender GENERAL_REG,  B$ThirdReg al,  B$ThirdRegGender ah
         Mov al B$OneOperandwbit,  B$ThirdOperandwbit al
     ret
 
 L3:     Call SearchForImm
         cmp B$ImmInside &FALSE | je L4>
-        Mov B$ThirdGender imm
+        Mov B$ThirdGender IMM_VALUE
     ret
 
 L4: error D$ParameterPtr
@@ -10267,16 +10325,16 @@ ret
 
 StoreImm:
     cmp B$immSign &TRUE | jne L0>
-        cmp B$TrueSize ByteSize | jne L1>
+        cmp B$TrueSize BYTE_SIZE | jne L1>
             On D$imm32 < 0_FFFF_FF00,  error D$overflowPtr
             and D$imm32 0FF | jmp L0>
-L1:     cmp B$TrueSize WordSize | jne L0>
+L1:     cmp B$TrueSize WORD_SIZE | jne L0>
             On D$imm32 < 0_FFFF_0000,  error D$overflowPtr
             and D$imm32 0FFFF
 
 L0: Mov edi D$CodeListPtr
-    cmp B$TrueSize DoubleSize | je L2>
-    cmp B$TrueSize ByteSize | je L3>
+    cmp B$TrueSize DWORD_SIZE | je L2>
+    cmp B$TrueSize BYTE_SIZE | je L3>
 
 L1: On D$imm32 > 0FFFF,  error D$overflowPtr     ; word size
     Mov ax W$imm32 | stosw | jmp L9>
@@ -10306,7 +10364,7 @@ StoreFirstWbit:
     Mov al B$FirstOperandWbit
 
 StoreWbit:
-L0: cmp al WordSize | jne L1>
+L0: cmp al WORD_SIZE | jne L1>
         Mov edi D$CodeListPtr
         Mov B$edi 066 | inc D$CodeListPtr        ; write operand size override prefix
 L1:     Mov B$TrueSize al | and al 1 | Mov B$wBit al
@@ -10315,29 +10373,29 @@ ret
 
 FixInstructionType:
     Mov edi D$CodeListPtr
-    cmp B$FirstGender reg | jne L3>
-      cmp B$SecondGender reg | jne L0>
-        Mov B$Operands RegToReg | Call Store2Wbit | ret
-L0:   cmp B$SecondGender mem | jne L1>
-        Mov B$Operands MemToReg | Call Store2Wbit | ret
-L1:   cmp B$SecondGender dis | je L2>
-      cmp B$SecondGender imm | jne L9>>
-L2:     Mov B$Operands ImmToReg | Call StoreFirstWbit | ret
+    cmp B$FirstGender GENERAL_REG | jne L3>
+      cmp B$SecondGender GENERAL_REG | jne L0>
+        Mov B$Operands REG_TO_REG | Call Store2Wbit | ret
+L0:   cmp B$SecondGender MEM_LABEL | jne L1>
+        Mov B$Operands MEM_TO_REG | Call Store2Wbit | ret
+L1:   cmp B$SecondGender DISPLACEMENT | je L2>
+      cmp B$SecondGender IMM_VALUE | jne L9>>
+L2:     Mov B$Operands IMM_TO_REG | Call StoreFirstWbit | ret
 
-L3: cmp B$FirstGender Mem | jne L6>
-      cmp B$SecondGender reg | jne L4>
-        Mov B$Operands RegToMem | Call Store2Wbit | ret
+L3: cmp B$FirstGender MEM_LABEL | jne L6>
+      cmp B$SecondGender GENERAL_REG | jne L4>
+        Mov B$Operands REG_TO_MEM | Call Store2Wbit | ret
 
-L4:   cmp B$SecondGender dis | je L5>
-      cmp B$SecondGender Imm | jne L9>
+L4:   cmp B$SecondGender DISPLACEMENT | je L5>
+      cmp B$SecondGender IMM_VALUE | jne L9>
 L5:
-        Mov B$Operands ImmToMem | Call StoreFirstWbit | ret
+        Mov B$Operands IMM_TO_MEM | Call StoreFirstWbit | ret
 
-L6: cmp B$FirstGender imm | jne L9>
-      cmp B$SecondGender reg | jne L7>
-        Mov B$Operands RegToImm | ret
-L7:   cmp B$SecondGender imm | jne L9>
-        Mov B$Operands ImmToImm
+L6: cmp B$FirstGender IMM_VALUE | jne L9>
+      cmp B$SecondGender GENERAL_REG | jne L7>
+        Mov B$Operands REG_TO_IMM | ret
+L7:   cmp B$SecondGender IMM_VALUE | jne L9>
+        Mov B$Operands IMM_TO_IMM
         Mov esi D$LineStart | lodsb | cmp al, 'E' | jne L9>
              ret           ; exemple: ENTER 8, 2
                            ; exceptions: Job will be done when coding ENTER
@@ -11065,8 +11123,8 @@ LockInstructionError: Mov B$LockInstruction &FALSE | error D$LockErrorPtr
 CheckLockMem:
     Mov B$LockInstruction &FALSE
 
-    If B$FirstGender <> mem
-        On B$SecondGender <> mem, error D$LockMemErrorPtr
+    If B$FirstGender <> MEM_LABEL
+        On B$SecondGender <> MEM_LABEL error D$LockMemErrorPtr
     End_If
 ret
 
@@ -11247,7 +11305,7 @@ L3:   lodsb                             ; jmp over name in LabelList
         cmp esi edx | jae L5>           ; reach end of LabelList? (EDX = Max)
         cmp al EOI | ja L3<
         lodsd                           ; read an offset in LabelList
-        test B$esi CodeLabelFlag ZERO L4>
+        test B$esi FLAG_CODE_LABEL ZERO L4>
         cmp eax ecx | ja L5>            ; is it about the same offset than the Coderef one?
 L4:     lodsb                           ; jump over flag byte
         lodsb                           ; jmp over '|'
@@ -11301,7 +11359,7 @@ L4:   lodsb                             ; jmp over name in LabelList
         cmp esi edx | jae L7>           ; reach end of LabelList? (EDX = Max)
         cmp al EOI | ja L4<
         lodsd
-        test B$esi CodeLabelFlag ZERO L5>
+        test B$esi FLAG_CODE_LABEL ZERO L5>
           cmp eax ecx | jae L6>         ; is it about the same offset?
 L5:     lodsb                           ; jump over flag byte
         lodsb                           ; jmp over '|'
@@ -11575,7 +11633,7 @@ S9:             Push edx
     On B$ApplyShortenJump = &TRUE, Mov B$LongRelative &FALSE
 
   ; write 'done' on LabelList flag byte:
-    Mov cl B$edi+4 | or B$edi+4 DoneFlag
+    Mov cl B$edi+4 | or B$edi+4 FLAG_DONE
     Mov edi D$esi | add esi 9
   ; ESI > CodeRef offset of evocation > EDI
 
@@ -11584,7 +11642,7 @@ S9:             Push edx
         and edi 07FFFFFFF | sub eax edi
       ; no signed displacement?
         .If B$LongRelative = &FALSE
-            test eax dWordHighBit ZERO L6>
+            test eax DWORD_HIGH_BIT ZERO L6>
           ; -127 (0FFFF_FF80 = -128) ; short negative value:
           ; -128 (-1) (limit for signed negative byte)
             On eax < 0FFFF_FF81,  jmp ErrorShortDisUp
@@ -11610,7 +11668,7 @@ L9: If D$FL.RelocsWanted = &TRUE ;SavingExtension = '.DLL' ; jE!
         Call StoreReloc
     End_If
 
-    If cl < CodeLabelFlag
+    If cl < FLAG_CODE_LABEL
         add eax D$DataAjust         ; 2 >>> data / 3 >>> data+done
     Else
         add eax D$CodeAjust         ; 4 >>> code / 5 >>> code+done
@@ -11649,10 +11707,10 @@ L1:     lodsb
 
     Call SearchSortedRegularLabel | Mov eax D$edi | Mov cl B$edi+4
 
-    cmp cl CodeLabelFlag | jb D1>               ; 'jb' because:
+    cmp cl FLAG_CODE_LABEL | jb D1>               ; 'jb' because:
         add eax D$CodeAjust | jmp D2>                 ; 2 > data / 3 > data+done
 D1:     add eax D$DataAjust                           ; 4 > code / 5 > code+done
-D2:     or B$edi+4 DoneFlag
+D2:     or B$edi+4 FLAG_DONE
 
 D2: On B$DataSign = &TRUE, neg eax | Mov edi D$DataFillPtr | add D$edi eax
 

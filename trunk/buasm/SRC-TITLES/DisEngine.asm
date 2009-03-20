@@ -9696,7 +9696,7 @@ WriteSignedImm8:
 
 L0: Push 0-1
 
-    test ebx dWordHighbit ZERO L0>
+    test ebx DWORD_HIGH_BIT ZERO L0>
 
         If B$edi-1 = '+'
 
@@ -10499,7 +10499,7 @@ L3:         Call 'USER32.GetDlgItemTextA' D@hwnd, 16, HexaCodeText, 80
         jmp L1>
 
     ...Else_If D@msg = &WM_CTLCOLORLISTBOX
-L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+L1:     Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     ...Else

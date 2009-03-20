@@ -7,7 +7,7 @@ writer :  /\\o//\      - December the 31, 2004 -
  'LabelList'
  'SearchSortedRegularLabel'
  'LowSigns'
- 'DoneFlag'
+ 'FLAG_DONE'
  'BuildPlainLabelList'
 
 ;;
@@ -89,11 +89,11 @@ L1:         While B$esi <> EOI
                 movsb
             End_While
 
-            Test B$esi+5 DoneFlag NOT_ZERO L1>>
+            Test B$esi+5 FLAG_DONE NOT_ZERO L1>>
 
             Mov B$edi 0 | inc edi
 
-            Test B$esi+5 CodeLabelFlag ZERO L2>
+            Test B$esi+5 FLAG_CODE_LABEL ZERO L2>
                 Push esi
                     Mov edi D$CodeLabelNameList.Current
                     Mov esi WorkBuffer
@@ -104,7 +104,7 @@ L1:         While B$esi <> EOI
                 Pop esi
             jmp L1>
 
-            L2: Test B$esi+5 DataLabelFlag ZERO L1>
+            L2: Test B$esi+5 FLAG_DATA_LABEL ZERO L1>
                 Push esi
                     Mov edi D$DataLabelNameList.Current esi WorkBuffer
                     While B$esi <> 0 | movsb | End_While

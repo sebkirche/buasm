@@ -9,7 +9,7 @@ ________________________________________________________________________________
 
  here we build a simple list of labels encounted in source: label declarations 'Label:'
  and label evocations ('Call label'). A byte flag is used for declarations and for
- evocations. A Declaration record is:         Flag (1) / DoneFlag (0/1) / adr / name
+ evocations. A Declaration record is:         Flag (1) / FLAG_DONE (0/1) / adr / name
                                               ..(Byte)....(Byte)........(dWord)(Bytes)
              An evocation record is:          Flag (2) / name
                                               ..(Byte)..(Bytes)
@@ -532,7 +532,7 @@ L1:     Push D$TreeWP.ptMinPosition.x, D$TreeWP.ptMinPosition.y, D$TreeWP.flags
         jmp L1<
 
     ..Else_If D@msg = &WM_CTLCOLORLISTBOX
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     ..Else_If D@msg = &WM_ACTIVATE
@@ -592,20 +592,33 @@ L1:     lodsb | cmp B$esi SPC | je L1<
             cmp B$esi '|' | je L1<
 
 L2: Push D$LenOfSearchedString
-        Mov edi SearchString, D$LenOfSearchedString 1
+        Mov edi SearchString,
+            D$LenOfSearchedString 1
+
         While B$esi > SPC
+
             movsb | inc D$LenOfSearchedString
+
         End_While
+
         Mov al ':' | stosb | Mov al 0 | stosb
 
         Push D$DownSearch, D$CaseSearch, D$WholeWordSearch, D$STRUCT.EditData@CurrentWritingPos
+
             Mov B$DownSearch &TRUE, B$CaseSearch &FALSE, B$WholeWordSearch &TRUE
-            Move D$STRUCT.EditData@CurrentWritingPos D$BlockEndTextPtr
+
+            Move D$STRUCT.EditData@CurrentWritingPos D$LP.BlockEndText
+
             Push D$NextSearchPos
+
                 Move D$NextSearchPos D$STRUCT.EditData@CurrentWritingPos
+
                 Call StringSearch
+
             Pop D$NextSearchPos
+
         Pop D$STRUCT.EditData@CurrentWritingPos, D$STRUCT.EditData@CurrentWritingPos, D$CaseSearch, D$DownSearch
+
     Pop D$LenOfSearchedString
 
 L9: Call SetPartialEditionFromPos

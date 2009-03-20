@@ -411,7 +411,7 @@ Proc DisViewProc:
 
     .Else_If D@msg = &WM_CTLCOLOREDIT
         Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0-1, 0
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
 
     .Else
         popad | Mov eax &FALSE | jmp L9>
