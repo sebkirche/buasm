@@ -11,15 +11,11 @@ ________________________________________________________________________________
 
 ViewBUAsmMems:
 
-    pushad
-
-        Call 'USER32.DialogBoxParamA' D$H.Instance,
-                                      IDD_SHOW_BUASM_MEM,
-                                      &NULL,
-                                      ShowBUAsmMemDialog,
-                                      &NULL
-
-    popad
+    Call 'USER32.DialogBoxParamA' D$H.Instance,
+                                  IDD_SHOW_BUASM_MEM,
+                                  &NULL,
+                                  ShowBUAsmMemDialog,
+                                  &NULL
 
 ret
 _______________________________________________________
@@ -31,23 +27,28 @@ Proc ShowBUAsmMemDialog:
               @wParam,
               @lParam
 
-    Comp D@msg &WM_CLOSE <> S1>
 
-    ;    Call ClearDwordBuffer TABLE.MemView,
-    ;                          (MEM_TABLE_SIZE*5)
+    If D@msg = &WM_INITDIALOG
 
-        Call 'USER32.EndDialog' D@hwnd,
-                                &NULL
+        Call DisplayBUAsmMemInfos
 
-EndP
+    Else_If D@msg = &WM_CTLCOLOREDIT
 
-S1: Comp D@msg &WM_INITDIALOG = S1>
+        Call WM_CTLCOLOREDIT | ExitP
 
-S2: Mov eax &FALSE
+    Else_If D@msg = &WM_COMMAND
 
-EndP
+        On W@wParam = HIDE_PUSHBUTTON_OK Call EndDialog
 
-S1: Call DisplayBUAsmMemInfos
+    Else_If D@msg = &WM_CLOSE
+
+        Call EndDialog
+
+    Else
+
+        Return &FALSE
+
+    End_If
 
     Mov eax &TRUE
 
@@ -72,6 +73,17 @@ DisplayBUAsmMemInfos:
     Push ebx,
          esi,
          edi
+
+    Call SetIconDialog
+
+;    Call SetFocusHideCloseButton
+
+    Call 'USER32.SendDlgItemMessageA' D$HWND,
+                                      IDC_DISPLAYMEMINFO,
+                                      &EM_SETMARGINS,
+                                      &EC_LEFTMARGIN+&EC_RIGHTMARGIN,
+                                      10
+
 
     Mov esi TABLE.MemBUAsm,
         edi TABLE.MemView

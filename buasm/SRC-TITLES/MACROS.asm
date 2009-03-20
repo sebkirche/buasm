@@ -375,6 +375,7 @@ ______________________________
 
     &3=pop #L>1]                ; Automatic reg restore pop code
                                 ; Fabrique la chaîne de commande de restauration registres/variables
+;;
 
 [Return
 
@@ -384,7 +385,9 @@ ______________________________
 
     #EndIf                      ; Single return  = Exit Proc / Return seul = Exit Proc
 
-    jmp ExitP]                  ; See next equate / Saute à EndP, voir equate suivante
+    jmp P9>] ; jmp ExitP]                  ; See next equate / Saute à EndP, voir equate suivante
+
+;;
 
 [ExitP P9>]                     ; Equate to exit proc / Equate pour sortie Proc -> cmp eax &NULL | je ExitP
 

@@ -6938,7 +6938,7 @@ Proc ApiChoice:
             Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0, 0
             Mov B$FirstCTLCOLOREDIT &FALSE
         End_If
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     .Else

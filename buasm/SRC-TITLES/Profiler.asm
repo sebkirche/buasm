@@ -126,7 +126,7 @@ Profiler:
   ret
 
 
-    On B$CompileErrorHappend = &TRUE, ret
+    On D$FL.CompileErrorHappend = &TRUE ret
 
   ; Similar to 'ScanShortenJmpsTable'
     Mov ebx D$CodeRef | add ebx 5

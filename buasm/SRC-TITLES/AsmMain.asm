@@ -71,7 +71,7 @@ AsmMain:
 
     On D$ResourcePointersSecurity <> 0 jmp AlertResources
 
-    Mov B$CompileErrorHappend &TRUE | On D$FL.SourceReady = &FALSE ret
+    Mov D$FL.CompileErrorHappend &TRUE | On D$FL.SourceReady = &FALSE ret
 
     Mov eax D$CodeSource | On D$STRUCT.EditData@SourceEnd = eax ret
 
@@ -82,10 +82,10 @@ AsmMain:
 
     Mov D$NoMeanLabel 'ZZZZ',
         D$NoMeanLabel+(4*ASCII) 'ZZZZ',
-        D$CompileErrorHappend &FALSE,
+        D$FL.CompileErrorHappend &FALSE,
         D$FirstPass &TRUE
 
-    If D$WeAreUnfolding = &FALSE
+    If D$FL.WeAreUnfolding = &FALSE
 
         Call InitProgressBar | Call InitProgressSteps 16,
                                                       1
@@ -164,11 +164,14 @@ L1: Call StoreEquatesAndMacros
     If B$MoreBracket = &TRUE
         Mov B$FirstPass &FALSE
         Call ResetForNewBrackets
-        On B$WeAreUnfolding = &TRUE, Call UnfoldOutput
+
+        On D$FL.WeAreUnfolding = &TRUE Call UnfoldOutput
+
         jmp L1<
+
     End_If
 
-    On B$WeAreUnfolding = &TRUE, ret
+    On D$FL.WeAreUnfolding = &TRUE ret
 
 ; ------------------------  End of the Macros and Equates Jobs ------------------------
 
@@ -332,7 +335,7 @@ L1:
 
         Mov D$OldStackPointer &NULL
 
-        On B$CompileErrorHappend = &TRUE jmp L9>
+        On D$FL.CompileErrorHappend = &TRUE jmp L9>
 
         Call 'KERNEL32.FindNextFileA' D$H.MultipleCompileFind,
                                       FindFile

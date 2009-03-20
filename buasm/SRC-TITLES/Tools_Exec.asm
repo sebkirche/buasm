@@ -524,10 +524,17 @@ Print:
     Call 'Comdlg32.PrintDlgA' PRINTDLG | On eax = 0, ret    ; The Printer dialog sets
     Move D$CF_hDC D$PD_hDC,  D$CF_hWndOwner D$H.MainWindow          ; the DC handle in PRINTDLG struc
     If D$PD_Flags = &PD_RETURNDC+&PD_SELECTION
-        Move D$PrintStartPtr D$BlockStartTextPtr, D$PrintEndPtr D$BlockEndTextPtr
+
+        Move D$PrintStartPtr D$LP.BlockStartText,
+             D$PrintEndPtr D$LP.BlockEndText
+
     Else
-        Mov eax D$STRUCT.EditData@UpperLine | Mov D$PrintStartPtr eax
+
+        Mov eax D$STRUCT.EditData@UpperLine,
+            D$PrintStartPtr eax
+
         add eax D$SourceLen | Mov D$PrintEndPtr eax
+
     End_If
 
     Call 'Comdlg32.ChooseFontA' CHOOSEFONT | On eax = 0, ret    ; user sets the font:
@@ -581,13 +588,22 @@ ret
 
 
 ControlP:
+
     If D$FL.BlockInside = &FALSE
+
         ret
+
     Else_If B$PrinterDCavailable = &FALSE
+
         jmp Print
+
     Else
-        Move D$PrintStartPtr D$BlockStartTextPtr,  D$PrintEndPtr D$BlockEndTextPtr
+
+        Move D$PrintStartPtr D$LP.BlockStartText,
+             D$PrintEndPtr D$LP.BlockEndText
+
         jmp StartControlP
+
     End_If
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -662,10 +678,17 @@ Proc ViewSysResourcesProc:
                 End_While
                 Mov B$edi 0
 
-                Mov eax SysButtonText, D$BlockStartTextPtr eax
+                Mov eax SysButtonText, D$LP.BlockStartText eax
+
                 While B$eax > 0 | inc eax | End_While
-                dec eax | Mov D$BlockEndTextPtr eax, D$FL.BlockInside &TRUE
+
+                dec eax
+
+                Mov D$LP.BlockEndText eax,
+                    D$FL.BlockInside &TRUE
+
                 Call ControlC | Mov D$FL.BlockInside &FALSE
+
             End_If
 
 L1:         Mov D$H.ViewSysResources 0
@@ -677,7 +700,7 @@ L1:         Mov D$H.ViewSysResources 0
         jmp L1>
 
     ...Else_If D@msg = &WM_CTLCOLORLISTBOX
-L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+L1:     Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     ...Else
@@ -1818,7 +1841,7 @@ L8:         Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &LB_GETCURSEL, 0, 0
             End_If
 
     ..Else_If D@msg = &WM_CTLCOLORLISTBOX
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     ..Else
@@ -2004,18 +2027,29 @@ L5:
 
 L5: Mov B$edi 0
 
-    Push D$FL.BlockInside, D$BlockEndTextPtr, D$BlockStartTextPtr
-        Mov D$FL.BlockInside &TRUE, D$BlockStartTextPtr STR.A.Trash
-        dec edi | Mov D$BlockEndTextPtr edi
+    Push D$FL.BlockInside,
+         D$LP.BlockEndText,
+         D$LP.BlockStartText
+
+        Mov D$FL.BlockInside &TRUE,
+            D$LP.BlockStartText STR.A.Trash
+
+        sub edi (1*ASCII) | Mov D$LP.BlockEndText edi
 
         Call ControlC
 
         If D$GUIDsPastingType = 101
+
             Mov D$FL.BlockInside &FALSE
+
             Call ControlV | Call AskForRedrawNow
+
         End_If
 
-    Pop D$BlockStartTextPtr, D$BlockEndTextPtr, D$FL.BlockInside
+    Pop D$LP.BlockStartText,
+        D$LP.BlockEndText,
+        D$FL.BlockInside
+
 EndP
 
 

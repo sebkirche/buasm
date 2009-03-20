@@ -1527,7 +1527,7 @@ L2:             Call 'USER32.SetForegroundWindow' D$H.DialogEditor
         jmp L1>
 
     ...Else_If D@msg = &WM_CTLCOLOREDIT
-L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+L1:     Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     ...Else
@@ -6005,7 +6005,7 @@ Proc HelpDialogProc:
         Call 'USER32.SetDlgItemTextA' D@hwnd, 1, D@lParam
 
     .Else_If D@msg = &WM_CTLCOLOREDIT
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         Call 'USER32.SendMessageA' D@lParam &EM_SETSEL 0 0
         popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>>
 
@@ -7429,13 +7429,18 @@ ret
 
 
 SaveClipDialog:
-    Push D$BlockStartTextPtr, D$BlockEndTextPtr, D$FL.BlockInside
+
+    Push D$LP.BlockStartText,
+         D$LP.BlockEndText,
+         D$FL.BlockInside
 
         Call BuildDialogTemplate
-        Move D$BlockStartTextPtr D$ClipTemplate
 
-L9:     Mov eax D$BlockStartTextPtr | add eax D$ClipTemplateLength | dec eax
-        Mov D$BlockEndTextPtr eax
+        Move D$LP.BlockStartText D$ClipTemplate
+
+L9:     Mov eax D$LP.BlockStartText | add eax D$ClipTemplateLength | sub eax (1*ASCII)
+
+        Mov D$LP.BlockEndText eax
 
         Mov D$FL.BlockInside &TRUE | Call ControlC | Mov D$FL.BlockInside &FALSE
 
@@ -7443,7 +7448,10 @@ L9:     Mov eax D$BlockStartTextPtr | add eax D$ClipTemplateLength | dec eax
 
         Mov B$InsideText &FALSE
 
-    Pop D$FL.BlockInside, D$BlockEndTextPtr, D$BlockStartTextPtr
+    Pop D$FL.BlockInside,
+        D$LP.BlockEndText,
+        D$LP.BlockStartText
+
 ret
 
 
@@ -7926,7 +7934,7 @@ ReleaseResourceMemory:
 
         Call ReleaseOneResourceMemory
 
-    INT3 | NOP ; Debug à partir d'ici !!!
+  ;  INT3 | NOP ; Debug à partir d'ici !!!
 
         Mov edx MenuList,
             D$MenuListPtr MenuList
@@ -8144,7 +8152,9 @@ NamedIdSubstitution:  ; 'SymbolicAnalyzes' 'FRproc' 'StringReplaceAll'
                 Call StringSearch
                 ..If D$FL.BlockInside = &TRUE
                   ; The Text of the IdName has been found. Search back for the Data Label:
-                    Mov esi D$BlockStartTextPtr
+
+                    Mov esi D$LP.BlockStartText
+
                     While D$esi <> 'Data' | dec esi | End_While
 
                   ; Copy the 'DATAXXXXXX' into the 'SearchString' Buffer:
@@ -8154,14 +8164,21 @@ NamedIdSubstitution:  ; 'SymbolicAnalyzes' 'FRproc' 'StringReplaceAll'
 
                   ; Search Evocations of 'DATAXXXXXX', replace by the ID Number Text:
 L0:                 Call StringSearch
+
                     If D$FL.BlockInside = &TRUE
-                        Mov eax D$BlockEndTextPtr
+
+                        Mov eax D$LP.BlockEndText
+
                         On B$eax+1 <> ':', Call IDReplace
+
                         jmp L0<
+
                     End_If
 
                 ..End_If
+
             Pop esi
+
         ..End_While
 
         Call VirtualFree NamedIDList
@@ -8172,7 +8189,7 @@ ret
 
 
 IDReplace:
-    Mov esi ReplaceWithString, edi D$BlockStartTextPtr
+    Mov esi ReplaceWithString, edi D$LP.BlockStartText
 
     While B$esi <> 0 | movsb | End_While
     While B$edi > SPC | Mov B$edi SPC | inc edi | End_While
@@ -8403,9 +8420,9 @@ L0: On D$ClipBoardPtr = 0, ret
 
         Call CoolParsers
 
-        Call NewCountStatements | On B$CompileErrorHappend = &TRUE, jmp L9>>
+        Call NewCountStatements | On D$FL.CompileErrorHappend = &TRUE jmp L9>>
 
-        Call HotParsers | On B$CompileErrorHappend = &TRUE, jmp L9>>
+        Call HotParsers | On D$FL.CompileErrorHappend = &TRUE jmp L9>>
 
         Call InitIndex1 | Call InitIndex2
 
@@ -8428,7 +8445,7 @@ L0: On D$ClipBoardPtr = 0, ret
 
         Call RestoreCheckSumTable
 
-L9:     Mov B$WeAreInTheCodeBox &FALSE | On B$CompileErrorHappend = &TRUE, jmp L9>>
+L9:     Mov B$WeAreInTheCodeBox &FALSE | On D$FL.CompileErrorHappend = &TRUE jmp L9>>
 
         Mov B$OnClipDialog &TRUE
 

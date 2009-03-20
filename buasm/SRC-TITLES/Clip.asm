@@ -436,7 +436,7 @@ Proc TemplateChoice:
    ;     jmp L1>
 
     ...Else_If D@msg = &WM_CTLCOLORLISTBOX
-L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+L1:     Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>>
 
     ...Else
@@ -636,13 +636,29 @@ ret
  SelectionTooBig: B$ 'The Selection is too big  ' EOS]
 
 AddTemplate: ; 'LoadClipFile'
-    Mov eax D$BlockEndTextPtr | sub eax D$BlockStartTextPtr
+
+    Mov eax D$LP.BlockEndText | sub eax D$LP.BlockStartText
+
     Mov ebx D$ClipMemoryEnd | sub ebx D$ClipFileMemoryPointer
 
     If D$FL.BlockInside = &FALSE
-        Call 'USER32.MessageBoxA' D$H.MainWindow, NoClipSelection, Argh, &MB_SYSTEMMODAL | ret
+
+        Call 'USER32.MessageBoxA' &NULL,
+                                  NoClipSelection,
+                                  Argh,
+                                  &MB_SYSTEMMODAL
+
+ret
+
     Else_If eax >= ebx
-        Call 'USER32.MessageBoxA' D$H.MainWindow, SelectionTooBig, Argh, &MB_SYSTEMMODAL | ret
+
+        Call 'USER32.MessageBoxA' &NULL,
+                                  SelectionTooBig,
+                                  Argh,
+                                  &MB_SYSTEMMODAL
+
+ret
+
     End_If
 
     Call SaveClipSelections
@@ -661,6 +677,7 @@ AddTemplate: ; 'LoadClipFile'
                       eax
 
     If D$TheClipLenght = 0
+
       ; No Item yet, or no Item selected >>> paste at end:
         Mov ebx D$SectionPointer, edx D$ClipFileMemoryPointer | add edx D$ClipFileSize
 L0:     inc ebx | cmp ebx edx | jae L1>
@@ -697,15 +714,28 @@ L0:     dec esi | dec edi | cmp B$esi '/' | jne L0<
     Mov W$edi CRLF | add edi 2 | add D$ClipFileSize 2
 
     Push esi
-        Mov esi D$BlockStartTextPtr
-        While esi < D$BlockEndTextPtr
-            movsb | inc D$ClipFileSize
-        End_While | movsb | inc D$ClipFileSize
-        Mov D$edi CRLF2, W$edi+4 CRLF | add edi 6 | add D$ClipFileSize 6
+
+        Mov esi D$LP.BlockStartText
+
+        While esi < D$LP.BlockEndText
+
+            movsb | add D$ClipFileSize (1*ASCII)
+
+        End_While
+
+        movsb | add D$ClipFileSize (1*ASCII)
+
+        Mov D$edi CRLF2,
+            W$edi+4 CRLF
+
+        add edi (6*ASCII) | add D$ClipFileSize (6*ASCII)
+
     Pop esi
 
     Mov edx D$ClipFileMemoryPointer | add edx D$ClipFileSize
+
     While esi < edx | movsb | End_While
+
     Exchange D$ClipFileMemoryPointer D$TempoClipFileMemoryPointer
 
     Call VirtualFree TempoClipFileMemoryPointer

@@ -180,7 +180,7 @@ Proc ForcedFlagsProc:
 
     ..Else_If D@msg = &WM_CTLCOLOREDIT
         Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0-1, 0
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | ExitP
 
     ..Else
@@ -669,94 +669,194 @@ InitForcedFlagsFromSelection:
     Mov eax D$DisLabelTypeWas | Call InitForcedSectionsDialog
 
     ..If D$DisLabelTypeWas = CODEFLAG
-        Mov eax D$BlockEndTextPtr
-        If W$eax +1 = '::'
+
+        Mov eax D$LP.BlockEndText
+
+        If W$eax+(1*ASCII) = '::'
+
             Mov eax EXPORTNODE
+
         Else
-            Mov eax 0
+
+            Mov eax &NULL
+
         End_If
+
         add eax INSTRUCTION+LABEL | Call InitForcedRoutingDialog
+
         Call DisableDisDataFlags
 
     ..Else
-        Mov eax D$BlockEndTextPtr, edx D$eax+3, bl B$eax+6, al B$eax+3
+
+        Mov eax D$LP.BlockEndText,
+            edx D$eax+(3*ASCII),
+            bl B$eax+(6*ASCII),
+            al B$eax+(3*ASCII)
 
         If edx = 'Data'
+
             Mov eax INDIRECT | Call InitForcedRoutingDialog
+
             Mov eax DWORD
+
         Else_If edx = 'Code'
+
             Mov eax INDIRECT | Call InitForcedRoutingDialog
+
             Mov eax DWORD
+
         Else_If al = 'B'
+
             Mov eax BYTE
+
             On bl = '"', add eax STRINGS
+
         Else_If al = 'W'
+
             Mov eax WORD
+
         Else_If al = 'D'
+
             Mov eax DWORD
+
         Else_If al = 'F'
+
             Mov eax FP4
+
         Else_If al = 'R'
+
             Mov eax FP8
+
         Else_If al = 'T'
+
             Mov eax FP10
+
         Else_If al = 'U'
+
             Mov eax STRINGS+WORD
+
         End_If
 
         Call InitForcedSizeDialog
 
     ..End_If
 
-    Call Disable D$H.ForcedFlagsProc, 60
-    Call Disable D$H.ForcedFlagsProc, 62
+    Call Disable D$H.ForcedFlagsProc,
+                 60
+
+    Call Disable D$H.ForcedFlagsProc,
+                  62
 ret
 
 
 DisableDisDataFlags:
-    Call Disable D$H.ForcedFlagsProc, 30
-    Call Disable D$H.ForcedFlagsProc, 31
-    Call Disable D$H.ForcedFlagsProc, 32
-    Call Disable D$H.ForcedFlagsProc, 33
-    Call Disable D$H.ForcedFlagsProc, 34
-    Call Disable D$H.ForcedFlagsProc, 35
-    Call Disable D$H.ForcedFlagsProc, 36
-    Call Disable D$H.ForcedFlagsProc, 37
-    Call Disable D$H.ForcedFlagsProc, 51
+
+    Call Disable D$H.ForcedFlagsProc,
+                 30
+
+    Call Disable D$H.ForcedFlagsProc,
+                 31
+
+    Call Disable D$H.ForcedFlagsProc,
+                 32
+
+    Call Disable D$H.ForcedFlagsProc,
+                 33
+
+    Call Disable D$H.ForcedFlagsProc,
+                 34
+
+    Call Disable D$H.ForcedFlagsProc,
+                 35
+
+    Call Disable D$H.ForcedFlagsProc,
+                 36
+
+    Call Disable D$H.ForcedFlagsProc,
+                 37
+
+    Call Disable D$H.ForcedFlagsProc,
+                 51
+
 ret
 
 
 EnableDisDataFlags:
-    Call Enable D$H.ForcedFlagsProc, 30
-    Call Enable D$H.ForcedFlagsProc, 31
-    Call Enable D$H.ForcedFlagsProc, 32
-    Call Enable D$H.ForcedFlagsProc, 33
-    Call Enable D$H.ForcedFlagsProc, 34
-    Call Enable D$H.ForcedFlagsProc, 35
-    Call Enable D$H.ForcedFlagsProc, 36
-    Call Enable D$H.ForcedFlagsProc, 37
-    Call 'USER32.SendDlgItemMessageA' D$H.ForcedFlagsProc, 36, &BM_GETCHECK, 0, 0
+
+    Call Enable D$H.ForcedFlagsProc,
+                30
+
+    Call Enable D$H.ForcedFlagsProc,
+                31
+
+    Call Enable D$H.ForcedFlagsProc,
+                32
+
+    Call Enable D$H.ForcedFlagsProc,
+                33
+
+    Call Enable D$H.ForcedFlagsProc,
+                34
+
+    Call Enable D$H.ForcedFlagsProc,
+                35
+
+    Call Enable D$H.ForcedFlagsProc,
+                36
+
+    Call Enable D$H.ForcedFlagsProc,
+                37
+
+    Call 'USER32.SendDlgItemMessageA' D$H.ForcedFlagsProc,
+                                      36,
+                                      &BM_GETCHECK,
+                                      0,
+                                      0
+
     Push eax
-        Call 'USER32.SendDlgItemMessageA' D$H.ForcedFlagsProc, 37, &BM_GETCHECK, 0, 0
-    Pop ebx
-    or eax ebx
+
+        Call 'USER32.SendDlgItemMessageA' D$H.ForcedFlagsProc,
+                                          37,
+                                          &BM_GETCHECK,
+                                          0,
+                                          0
+
+    Pop edx
+
+    or eax edx
+
     If eax <> 0
-        Call Enable D$H.ForcedFlagsProc, 51
+
+        Call Enable D$H.ForcedFlagsProc,
+                    51
+
     End_If
+
 ret
 
 
 SetForcedNextAddressEditControl:
+
     Call GetForcedRecordPointer | Mov eax D$eax+FORCED_RECORD_OFFSET2
 
     Mov D$CopyOfNextLabelHexa 0
 
     If eax <> 0
-        Mov edi CopyOfNextLabelHexa | Call WriteEax | Mov B$edi 0
+
+        Push edi
+
+            Mov edi CopyOfNextLabelHexa | Call WriteEax | Mov B$edi EOS
+
+        Pop edi
+
     End_If
 
-    Call 'USER32.SendDlgItemMessageA' D$H.ForcedFlagsProc, 51, &WM_SETTEXT,
-                                      0, CopyOfNextLabelHexa
+    Call 'USER32.SendDlgItemMessageA' D$H.ForcedFlagsProc,
+                                      51,
+                                      &WM_SETTEXT,
+                                      0,
+                                      CopyOfNextLabelHexa
+
 ret
 ____________________________________________________________________________________________
 

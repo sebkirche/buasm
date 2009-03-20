@@ -224,9 +224,9 @@ L0: Call IncUndoFileName | Mov eax UndoFile
         Call SetUndoDirectory | jmp L0<
     End_If
 
-    Mov ecx D$BlockEndTextPtr | sub ecx D$BlockStartTextPtr | inc ecx
+    Mov ecx D$LP.BlockEndText | sub ecx D$LP.BlockStartText | add ecx (1*ASCII)
 
-    Call 'KERNEL32.WriteFile' D$H.UndoFile, D$BlockStartTextPtr, ecx, NumberOfReadBytes, 0
+    Call 'KERNEL32.WriteFile' D$H.UndoFile, D$LP.BlockStartText, ecx, NumberOfReadBytes, 0
     Call 'KERNEL32.CloseHandle' D$H.UndoFile
 ret
 
@@ -254,7 +254,9 @@ ret
   we re-paste this Selection:
 ;;
 ReadUndoBlockFile: ; ControlX
-    Mov D$BlockStartTextPtr ebx, D$BlockEndTextPtr ecx
+
+    Mov D$LP.BlockStartText ebx,
+        D$LP.BlockEndText ecx
 
     Call 'KERNEL32.CreateFileA' UndoFile, &GENERIC_READ, 0, 0, &OPEN_EXISTING,
                                 &FILE_ATTRIBUTE_NORMAL, 0
@@ -277,9 +279,10 @@ ret
 
 StoreUserActionOfBlockDeletion:
     Push D$STRUCT.EditData@CurrentWritingPos
-        Move D$STRUCT.EditData@CurrentWritingPos D$BlockStarttextPtr
-        Mov eax D$BlockStarttextPtr | sub eax D$CodeSource
-        Mov ebx D$BlockEndTextPtr | sub ebx D$CodeSource
+        Move D$STRUCT.EditData@CurrentWritingPos D$LP.BlockStartText
+        Mov eax D$LP.BlockStartText | sub eax D$CodeSource
+
+        Mov ebx D$LP.BlockEndText | sub ebx D$CodeSource
 
         Call StoreUserAction ACTION_BLOCKDELETE, eax, ebx
     Pop D$STRUCT.EditData@CurrentWritingPos
@@ -491,8 +494,11 @@ L9: ret
 
 
 UndoBlockCopy:
-    Mov D$BlockStartTextPtr ebx, D$BlockEndTextPtr ecx
-    Mov D$FL.BlockInside &TRUE
+
+    Mov D$LP.BlockStartText ebx,
+        D$LP.BlockEndText ecx,
+        D$FL.BlockInside &TRUE
+
     Call UndoControlV
 ret
 ____________________________________________________________________________________________
@@ -558,10 +564,15 @@ L0:     Push eax, ecx
         .End_If
 
     ..Else_If eax = ACTION_BLOCKDELETE
+
         add ebx D$CodeSource | add ecx D$CodeSource
-        Mov D$BlockStartTextPtr ebx, D$BlockEndTextPtr ecx
+
+        Mov D$LP.BlockStartText ebx, D$LP.BlockEndText ecx
+
         Call WriteUndoBlockFileFromBlock | Call UndoControlV
-        Mov ecx D$BlockEndTextPtr | sub ecx D$BlockStartTextPtr | inc ecx
+
+        Mov ecx D$LP.BlockEndText | sub ecx D$LP.BlockStartText | add ecx (1*ASCII)
+
         sub D$STRUCT.EditData@CurrentWritingPos ecx | sub D$STRUCT.EditData@CaretRow ecx
 
     ..Else_If eax = ACTION_BLOCKCOPY

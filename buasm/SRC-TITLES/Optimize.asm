@@ -661,7 +661,7 @@ InitLabelListScanDwordPointer:
     Mov esi D$LabelList | add esi 5
 L0: While B$esi > EOI | inc esi | End_While | inc esi
 
-    While B$esi+4 < CodeLabelFlag
+    While B$esi+4 < FLAG_CODE_LABEL
         NextLabelListPointer esi
     End_While
 

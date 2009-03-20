@@ -339,7 +339,7 @@ L1:         Call GetUserSearchString
         Call 'USER32.SetFocus' D@hwnd
 
     ...Else_If D@msg = &WM_CTLCOLOREDIT
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     ...Else
@@ -435,15 +435,23 @@ L5:   Pop edi, esi, eax
     ..End_If
 
     Mov eax D$NextSearchPos                                 ; string found
+
     If B$DownSearch = &TRUE
-        Mov bl B$eax | dec eax | Mov D$BlockEndTextPtr eax
-        sub eax edx | Mov D$STRUCT.EditData@CurrentWritingPos eax | Mov D$BlockStartTextPtr eax
+
+        Mov bl B$eax | sub eax (1*ASCII) | Mov D$LP.BlockEndText eax
+
+        sub eax edx | Mov D$STRUCT.EditData@CurrentWritingPos eax | Mov D$LP.BlockStartText eax
+
         Mov bh B$eax-1
+
     Else
-        Mov bl B$eax | inc eax | Mov D$STRUCT.EditData@CurrentWritingPos eax | Mov D$BlockStartTextPtr eax
+        Mov bl B$eax | inc eax | Mov D$STRUCT.EditData@CurrentWritingPos eax | Mov D$LP.BlockStartText eax
         Mov D$NextSearchPos eax
-        add eax edx | Mov D$BlockEndTextPtr eax
+
+        add eax edx | Mov D$LP.BlockEndText eax
+
         Mov bh B$eax+1
+
     End_If
 
     .If B$WholeWordSearch = &TRUE
@@ -470,7 +478,7 @@ L6: lodsb | cmp al LF | ja L6<
         Move D$STRUCT.EditData@UpperLine D$CodeSource
     End_If
 
-    Call SetCaret D$BlockEndtextPtr | jmp L9>
+    Call SetCaret D$LP.BlockEndText | jmp L9>
 
 L8: cld
     If B$OnReplaceAll = &FALSE
@@ -490,9 +498,13 @@ StringReplace:
 
     .If D$FL.BlockInside = &TRUE
         Call ControlX
-        Mov ecx D$BlockEndTextPtr
+
+        Mov ecx D$LP.BlockEndText
+
         Mov D$ReplaceStart ecx
-        sub ecx D$BlockStartTextPtr | inc ecx
+
+        sub ecx D$LP.BlockStartText | add ecx (1*ASCII)
+
         dec D$STRUCT.EditData@CaretRow | dec D$STRUCT.EditData@PhysicalCaretRow
         Mov esi ReplaceWithString
         While B$esi <> 0

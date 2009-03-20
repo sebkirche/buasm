@@ -235,7 +235,9 @@ INIT_BackGroundColors:
                                 &GCL_HBRBACKGROUND,
                                 eax
 
-    Call 'GDI32.DeleteObject' D$H.DialogsBackGroundBrush | Call 'GDI32.CreateSolidBrush' D$DialogsBackColor
+    Call 'GDI32.DeleteObject' D$H.DialogsBackGroundBrush
+
+    Call 'GDI32.CreateSolidBrush' D$ARVB.DialogsBackColor
 
     Mov D$H.DialogsBackGroundBrush eax
 

@@ -2,7 +2,7 @@ TITLE START_BUASM     ; Version A.Bvvv DD.MM.YY maintainer email and version num
 ____________________________________________________________________________________________
 
 ; Colors:
-[DialogsBackColor: D$ 0_FF_FC_F2]         ; For Edit Controls, List Boxes (Default: Light Blue)
+[ARVB.DialogsBackColor: B$ 0_F0 0_F0 0_FF 0_00] ; For Edit Controls, List Boxes (Default: Light Blue)
 
                                           ; Source Editor colors:
 [ARVB.BackColor: B$ 0_FF 0_FF 0_FF 0_00   ; white BackGround color
@@ -152,6 +152,52 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 ; Some basic System calls:
+
+[HIDE_PUSHBUTTON_OK 1]
+
+SetIconDialog:
+    ______________________________________________
+
+    ; Attribue l'icône de BUAsm au dialog courant
+    ______________________________________________
+
+    Call 'USER32.SetClassLongA' D$HWND,
+                                &GCL_HICON,
+                                D$STRUC.WINDOWCLASS@hIcon
+
+ret
+
+WM_CTLCOLOREDIT:
+    __________________________________________________
+
+    ; Attribue RVB fond utilisateur au dialog courant
+    __________________________________________________
+
+    Call 'USER32.SendMessageA' D$LPARAM,
+                               &EM_SETSEL,
+                               0-1,
+                               0
+
+    Call 'GDI32.SetBkColor' D$WPARAM,
+                            D$ARVB.DialogsBackColor
+
+    ; Eax doit être rtourné à l'OS dans le dialog
+    Mov eax D$H.DialogsBackGroundBrush
+
+ret
+
+
+EndDialog:
+    ______________________________
+
+    ; Fermeture du dialog courant
+    ______________________________
+
+
+    Call 'USER32.EndDialog' D$HWND,
+                            0
+
+ret
 
 Proc MessageBox:
 
@@ -423,7 +469,7 @@ ________________________________________________________________________________
 
 [LP.MemTrash: D$ ?]
 
-[TrashPointer: D$ ?
+[LP.Trash: D$ ?
  STR.A.Trash: B$ ? # &MAX_PATH
  Trash1: B$ ? # 40_000
  Trash2: B$ ? # 40_000
@@ -436,7 +482,7 @@ ClearTrashTables:
          eax
 
         Mov edi STR.A.Trash,
-            ecx (&MAX_PATH+(3*40_000))
+            ecx ((&MAX_PATH+(3*40_000))/DWORD)
 
         xor eax eax | rep stosd
 

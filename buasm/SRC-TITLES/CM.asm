@@ -800,30 +800,30 @@ L0: inc esi | cmp B$esi EOI | jbe L7<
           ; The Parameter is a reg
             Mov al B$OneOperandwBit
 
-            .If al = ByteSize
+            .If al = BYTE_SIZE
                     Mov al 'B'
 
-            .Else_If al = wordSize
+            .Else_If al = WORD_SIZE
                     Mov al 'W'
 
-            .Else_If al = doubleSize
-                If ah = STreg
+            .Else_If al = DWORD_SIZE
+                If ah = REG_FPU
                     Mov al 'F'
                 Else
                     Mov al 'D'
                 End_If
 
-            .Else_If al = QuadSize
-                If al = STreg
+            .Else_If al = QWORD_SIZE
+                If al = REG_FPU
                     Mov al 'R'
                 Else
                     Mov al 'Q'
                 End_If
 
-            .Else_If al = TenSize
+            .Else_If al = TBYTE_SIZE
                 Mov al 'T'
 
-            .Else  ;_If al = Xsize
+            .Else  ;_If al = USO_SIZE
                 Mov al 'X'
 
             .End_If

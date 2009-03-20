@@ -300,13 +300,19 @@ Proc DeleteLastWizardCode:
     ; should not be accessed ( checked before)
     ExitP
 
-L1: While B$esi <> CR | inc esi | End_While | dec esi | Mov D$BlockEndTextPtr esi
-    Mov D$BlockStartTextPtr edx
-    Mov D$FL.BlockInside &TRUE
-    Mov D$STRUCT.EditData@CaretRow 1              ; the caret is set at the beginning of the block
-    Mov D$STRUCT.EditData@PhysicalCaretRow 1      ;
-    Mov eax D$STRUCT.EditData@CaretRow, ebx D$STRUCT.EditData@CaretLine | Call SearchTxtPtr
+L1: While B$esi <> CR | add esi (1*ASCII) | End_While | sub esi (1*ASCII) | Mov D$LP.BlockEndText esi
+
+    Mov D$LP.BlockStartText edx,
+        D$FL.BlockInside &TRUE,
+        D$STRUCT.EditData@CaretRow 1,              ; the caret is set at the beginning of the block
+        D$STRUCT.EditData@PhysicalCaretRow 1,
+        eax D$STRUCT.EditData@CaretRow,
+        ebx D$STRUCT.EditData@CaretLine
+
+    Call SearchTxtPtr
+
     Mov D$STRUCT.EditData@CurrentWritingPos eax
+
     Call ControlD
 
     ;ControlZ
@@ -578,7 +584,7 @@ Proc UnicodeEditorProc:
 
     ...Else_If D@msg = &WM_CTLCOLOREDIT
         Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0-1, 0
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | ExitP
 
 
@@ -654,25 +660,39 @@ ret
  NumberOfUnicodeChars: D$ ?]
 
 PasteUnicodeDialogContent:
-    Mov esi D$UnicodeDataPointer
-    Call InternalRightClick
-    If D$FL.BlockInside = &TRUE
-        Mov esi D$BlockStartTextPtr
-        While B$esi <> '[' | dec esi | End_While
-        Mov D$BlockStartTextPtr esi, D$UnicodeDataInsertionPoint esi
 
-        Mov esi D$BlockEndTextPtr
-        While B$esi <> ']' | inc esi | End_While
-        Mov D$BlockEndTextPtr esi
+    Mov esi D$UnicodeDataPointer
+
+    Call InternalRightClick
+
+    If D$FL.BlockInside = &TRUE
+
+        Mov esi D$LP.BlockStartText
+
+        While B$esi <> '[' | sub esi (1*ASCII) | End_While
+
+        Mov D$LP.BlockStartText esi,
+            D$UnicodeDataInsertionPoint esi
+
+        Mov esi D$LP.BlockEndText
+
+        While B$esi <> ']' | add esi (1*ASCII) | End_While
+
+        Mov D$LP.BlockEndText esi
+
         Call ControlD
 
         Mov B$AddedCRLF &FALSE
 
     Else
+
         Mov B$AddedCRLF &TRUE
 
+
         Mov esi D$UnicodeDataPointer
-        While B$esi >= SPC | inc esi | End_While
+
+        While B$esi >= SPC | add esi (1*ASCII) | End_While
+
         Mov D$UnicodeDataInsertionPoint esi
 
     End_If
@@ -680,8 +700,12 @@ PasteUnicodeDialogContent:
     ;    Mov ebx D$UnicodeDataPointer
     ;    While B$ebx > CR | inc ebx | End_While | add ebx 2
 
-    Call 'USER32.SendDlgItemMessageW' D$H.UnicodeEditor, 10, &WM_GETTEXTLENGTH,
-                                      D$H.UnicodeEditorFont, &FALSE
+    Call 'USER32.SendDlgItemMessageW' D$H.UnicodeEditor,
+                                      10,
+                                      &WM_GETTEXTLENGTH,
+                                      D$H.UnicodeEditorFont,
+                                      &FALSE
+
     add eax 100
 
     shl eax 1
@@ -691,8 +715,12 @@ PasteUnicodeDialogContent:
 
     Push eax
 
-        Call 'USER32.SendDlgItemMessageW' D$H.UnicodeEditor, 10, &WM_GETTEXT,
-                                          eax, D$Trash1
+        Call 'USER32.SendDlgItemMessageW' D$H.UnicodeEditor,
+                                          10,
+                                          &WM_GETTEXT,
+                                          eax,
+                                          D$Trash1
+
     Pop eax
 
   ; Max = 7 Char ("0FFFF, ") >>> 8 + Alignements (....) >>>> 32
@@ -704,59 +732,93 @@ PasteUnicodeDialogContent:
     Mov edi D$Trash2
 
     If B$AddedCRLF = &TRUE
+
         Mov D$edi CRLF2 | add edi (4*ASCII)
+
     End_If
 
-    Mov B$edi '[', ecx edi | inc edi
+    Mov B$edi '[', ecx edi
+
+    add edi (1*ASCII)
 
   ; Write the Data Label to the Tempo Buffer:
     Mov esi D$UnicodeDataPointer
+
     While B$esi > SPC | movsb | End_While
-    Mov D$edi ': U$', B$edi+4 SPC| add edi 5
+
+    Mov D$edi ': U$', B$edi+(4*ASCII) SPC | add edi (5*ASCII)
 
   ; Alignement count:
     sub ecx edi | neg ecx | Mov D$UnicodeValuesAlignment ecx
 
-    Mov esi D$Trash1, ecx 0, D$NumberOfUnicodeChars 0
+    Mov esi D$Trash1,
+        ecx 0,
+        D$NumberOfUnicodeChars 0
+
     .While W$esi <> 0
-        movzx eax W$esi| add esi 2 | Call WriteEax | Mov W$edi ', ' | add edi 2 | inc ecx
-        inc D$NumberOfUnicodeChars
+
+        movzx eax W$esi| add esi (2*ASCII) | Call WriteEax | Mov W$edi ', ' | add edi (2*ASCII) | add ecx (1*ASCII)
+
+        add D$NumberOfUnicodeChars (1*ASCII)
+
       ; New Line when wished:
-        If ecx = 11
+        If ecx = (11*ASCII)
+
             Mov ecx 0
-            Mov W$edi CRLF | add edi 2
+
+            Mov W$edi CRLF | add edi (2*ASCII)
+
             Mov ecx D$UnicodeValuesAlignment
-            While ecx > 0 | Mov B$edi SPC | dec ecx | inc edi | End_While
+
+            While ecx > 0 | Mov B$edi SPC | sub ecx (1*ASCII) | add edi (1*ASCII) | End_While
+
         End_If
+
     .End_While
 
   ; Remove the possible CRLF and ',', at the end of the buffer:
-    While B$edi <= SPC | dec edi | End_While | On B$edi = ',', dec edi
-    inc edi
+    While B$edi <= SPC | sub edi (1*ASCII) | End_While | On B$edi = ',' sub edi (1*ASCII)
+
+    add edi (1*ASCII)
 
   ; Cases of empty Edition:
-    If W$edi-2 = 'U$'
-        Mov W$edi ' 0' | add edi 2
+    If W$edi-(2*ASCII) = 'U$'
+
+        Mov W$edi ' 0' | add edi (2*ASCII)
+
     Else
-        Mov D$edi ', 0]' | add edi 3
+
+        Mov D$edi ', 0]' | add edi (3*ASCII)
+
     End_If
 
-    Mov W$edi CRLF | add edi 2
+    Mov W$edi CRLF | add edi (2*ASCII)
+
     Mov esi D$UnicodeDataPointer
-    Mov B$edi SPC | inc edi
+
+    Mov B$edi SPC | add edi (1*ASCII)
+
     While B$esi > SPC | movsb | End_While
-    Mov D$edi 'Ncha', D$edi+4 'rs: ' | add edi 8
-    Mov D$edi 'D$  ' | add edi 3
+
+    Mov D$edi 'Ncha', D$edi+(4*ASCII) 'rs: ' | add edi (8*ASCII)
+
+    Mov D$edi 'D$  ' | add edi (3*ASCII)
+
     Mov eax D$NumberOfUnicodeChars | Call WriteEax
 
-    Mov B$edi ']' | inc edi
+    Mov B$edi ']' | add edi (1*ASCII)
 
-    Move D$BlockStartTextPtr D$Trash2, D$BlockEndTextPtr edi
+    Move D$LP.BlockStartText D$Trash2,
+         D$LP.BlockEndText edi
+
     Mov D$FL.BlockInside &TRUE
+
     Call ControlC
 
     Mov D$FL.BlockInside &FALSE
+
     Call SetCaret D$UnicodeDataInsertionPoint
+
     Call ControlV
 
     Call VirtualFree Trash2
@@ -767,21 +829,33 @@ ret
 
 
 SetUnicodeDialogContent:
+
     Mov esi D$UnicodeDataPointer | Call InternalRightClick
 
     .If D$FL.BlockInside = &TRUE
-        Mov esi D$BlockEndTextPtr
+
+        Mov esi D$LP.BlockEndText
+
         While B$esi <> '0'
-            inc esi | On B$esi = ']', ret
+
+            add esi (1*ASCII) | On B$esi = ']' ret
+
         End_While
+
         Push esi
         ; Count the number of Words (at least...):
+
           Mov ecx 0
+
           While B$esi <> ']'
-            On B$esi = '0', inc ecx
-            inc esi
+
+            On B$esi = '0' add ecx 1
+
+            add esi (1*ASCII)
+
           End_While
-          inc ecx | shl ecx 1
+
+          add ecx 1 | shl ecx 1
         ; Get a mem:
           Call VirtualAlloc Trash1,
                             ecx
@@ -793,25 +867,42 @@ SetUnicodeDialogContent:
         Mov edi D$Trash1
       ; strip the leading '0'
 L0:     lodsb
-        Mov ebx 0
-L1:     lodsb | cmp al ',' | je L8>
-                cmp al ']' | je L8>
-                    sub al '0' | cmp al 9 | jbe L2>
-                        sub al 7
-                        cmp al 0F | ja L9>
-L2:     shl ebx 4 | or bl al | jmp L1<
 
-L8:     Mov W$edi bx | add edi 2
+        Mov ebx 0
+L1:
+        lodsb | cmp al ',' | je L8>
+
+                cmp al ']' | je L8>
+
+                    sub al '0' | cmp al 9 | jbe L2>
+
+                        sub al 7
+
+                        cmp al 0F | ja L9>
+L2:
+        shl ebx 4 | or bl al | jmp L1<
+
+L8:     Mov W$edi bx | add edi (2*ASCII)
 
         If al <> ']'
+
             While B$esi < '0'
-                inc esi | On esi >= D$STRUCT.EditData@SourceEnd, jmp L9>
+
+                add esi (1*ASCII)| On esi >= D$STRUCT.EditData@SourceEnd jmp L9>
+
             End_While
+
             On B$esi = '0', jmp L0<
+
         End_If
 
 L9:     Mov W$edi 0
-        Call 'USER32.SendDlgItemMessageW' D$H.UnicodeEditor, 10, &WM_SETTEXT, 0, D$Trash1
+
+        Call 'USER32.SendDlgItemMessageW' D$H.UnicodeEditor,
+                                          10,
+                                          &WM_SETTEXT,
+                                          0,
+                                          D$Trash1
 
         Call VirtualFree Trash1
 
@@ -839,13 +930,20 @@ GetTagedMenu:
     Mov esi MenuList
   ; (ID / Ptr / Size)
     While D$esi <> 0
+
         If D$esi = eax
+
             Mov B$TagedEdition &TRUE
+
             Mov D$MenuListPtr esi
+
             Call ReEditExistingMenu | jmp L9>
+
         Else
             add esi (4*3)
+
         End_If
+
     End_While
 
 L9: .If B$TagedEdition = 0-1
@@ -853,17 +951,27 @@ L9: .If B$TagedEdition = 0-1
         Lea esi D$DataForClipEquates+3 | Call InternalRightClick
 
         If D$FL.BlockInside = &TRUE
-            Mov esi D$BlockStartTextPtr
-            While B$esi <> '[' | dec esi | End_While
-            Mov D$BlockStartTextPtr esi
-            inc esi
-            While B$esi <> ']' | inc esi | End_While
-            Mov D$BlockEndTextPtr esi
+
+            Mov esi D$LP.BlockStartText
+
+            While B$esi <> '[' | sub esi (1*ASCII) | End_While
+
+            Mov D$LP.BlockStartText esi
+
+            add esi (1*ASCII)
+
+            While B$esi <> ']' | add esi (1*ASCII) | End_While
+
+            Mov D$LP.BlockEndText esi
+
             Call ControlD | Call ControlV
+
         End_If
+
     .End_If
 
     Mov B$TagedEdition &FALSE
+
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________

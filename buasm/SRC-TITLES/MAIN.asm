@@ -833,7 +833,7 @@ Proc DestroyWindow:
 
     Uses ebx
 
-    mov ebx D@LP.Handle
+    Mov ebx D@LP.Handle
 
     ; Attribution de la nouvelle procédure de traitement
     Call 'USER32.SetWindowLongA' D$ebx,
@@ -844,7 +844,7 @@ Proc DestroyWindow:
     Call 'USER32.DestroyWindow' D$ebx
 
     ; RAZ du Lp -> Fenêtre
-    mov D$ebx &NULL
+    Mov D$ebx &NULL
 
 EndP
 

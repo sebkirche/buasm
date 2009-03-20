@@ -391,8 +391,8 @@ L2:         .Else_If D$ConfigTabIndex = 3           ; Colors.
                     Else_If eax = 13                ; Color 5
                         Mov eax D$BracketColor | Call SetColor | Mov D$BracketColor eax
                     Else_If eax = 21                ; Color of Edit Controls, List Boxes,...
-                        Mov eax D$DialogsBackColor | Call SetColor
-                        Mov D$DialogsBackColor eax | Call INIT_BackGroundColors
+                        Mov eax D$ARVB.DialogsBackColor | Call SetColor
+                        Mov D$ARVB.DialogsBackColor eax | Call INIT_BackGroundColors
                     Else_If eax = 30
                         xor B$WantSizeMarkerColor &TRUE
                     End_If
@@ -518,7 +518,7 @@ L2:             popad
         jmp L1>
 
     ...Else_If D@msg = &WM_CTLCOLORLISTBOX
-L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+L1:     Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     ...Else
@@ -1494,7 +1494,7 @@ ________________________________________________________________________________
  Color3          &REG_DWORD  CommentColor
  Color4          &REG_DWORD  TextColor
  Color5          &REG_DWORD  BracketColor
- Color10         &REG_DWORD  DialogsBackColor
+ Color10         &REG_DWORD  ARVB.DialogsBackColor
  SizeColorFlag   &REG_DWORD  WantSizeMarkerColor
  ; NEVER INSERT ANYTHING !!!
  UserLanguage    &REG_DWORD  StringsLanguage
@@ -2066,7 +2066,7 @@ Proc ConfigProc:
             Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0, 0
             Mov B$FirstCTLCOLOREDIT &FALSE
         End_If
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        Call 'GDI32.SetBkColor' D@wParam D$ARVB.DialogsBackColor
         popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     ..Else

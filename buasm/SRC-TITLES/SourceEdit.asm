@@ -462,8 +462,6 @@ ________________________________________________________________________________
 [RosAsmBracket: D$ ?
  MultiLinesComment: D$ ?]
 
-[MLC 0D3B3B0A] ; MLC: Multi-Lines Comment (LF ; ; CR). Set first in 'SearchForBrackets'.
-
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
@@ -592,7 +590,11 @@ L1:             Mov B$edi bl | inc esi | inc edi | jmp L0<<
         Mov ecx 100, al 0 | rep stosb
 
 L9:     If D$FL.BlockInside = &TRUE
-            Mov esi D@First, edx D@Last, eax D$BlockStartTextPtr, ebx D$BlockEndTextPtr
+
+            Mov esi D@First,
+                edx D@Last,
+                eax D$LP.BlockStartText,
+                ebx D$LP.BlockEndText
 
             On eax > ebx, xchg eax ebx
 
@@ -643,8 +645,8 @@ ________________________________________________________________________________
 [ColorsMap: D$ ?
  ColorMapSize: D$ ?]
 
-[BlockStartTextPtr: D$ ?
- BlockEndTextPtr: D$ ?
+[LP.BlockStartText: D$ ?
+ LP.BlockEndText: D$ ?
  ReverseBlock: D$ ?]
 
 TextColorsMap:
@@ -1749,7 +1751,10 @@ L0: If D$FL.BlockInside = &TRUE
     Else
       ; D$ShiftDown is now set in 'LeftButton' (from WM_LBUTTONDOWN Case).
         Mov eax D$STRUCT.EditData@CurrentWritingPos
-        Mov D$BlockStartTextPtr eax, D$BlockEndTextPtr eax
+
+        Mov D$LP.BlockStartText eax,
+            D$LP.BlockEndText eax
+
         Call SimpleMouseTextPos
         Mov D$STRUCT.EditData@CaretLine ebx, D$STRUCT.EditData@CaretRow eax
         Mov D$PreviousMouseLine ebx, D$PreviousMouseCol eax
@@ -1830,17 +1835,21 @@ LeftButtonUp:
 ret
 
     ; Should be no more use, with new Block Routines:
-    Mov eax D$BlockStartTextPtr
+    Mov eax D$LP.BlockStartText
 
-    cmp eax D$BlockEndTextPtr | jna L5>
+    cmp eax D$LP.BlockEndText | jna L5>
 
-        Push eax, D$BlockEndTextPtr | Pop D$BlockStartTextPtr D$BlockEndTextPtr
+        Push eax,
+             D$LP.BlockEndText
 
-L5: Mov ebx D$BlockEndTextPtr
+        Pop D$LP.BlockStartText,
+            D$LP.BlockEndText
 
-    On B$ebx = CR sub D$BlockEndTextPtr 1
+L5: Mov edx D$LP.BlockEndText
 
-    Mov eax D$STRUCT.EditData@RightScroll | add D$BlockStartTextPtr eax | add D$BlockEndTextPtr eax
+    On B$edx = CR sub D$LP.BlockEndText (1*ASCII)
+
+    Mov eax D$STRUCT.EditData@RightScroll | add D$LP.BlockStartText eax | add D$LP.BlockEndText eax
 
 ret
 ____________________________________________________________________________________________
@@ -1857,12 +1866,14 @@ ControlC:
 
     Call 'USER32.OpenClipboard' D$H.MainWindow | cmp eax 0 | je L9>>
     Call 'USER32.EmptyClipboard' | cmp eax 0 | je L8>>
-    Mov ecx D$BlockEndTextPtr | sub ecx D$BlockStartTextPtr | inc ecx
+
+    Mov ecx D$LP.BlockEndText | sub ecx D$LP.BlockStartText | add ecx (1*ASCII)
+
     Mov D$BlockSize ecx | Mov ebx ecx | inc ebx
     Call 'KERNEL32.GlobalAlloc' &GMEM_DDESHARE, ebx | cmp eax 0 | je L8>  ; > eax = handle
     Mov D$hBlock eax
     Call 'KERNEL32.GlobalLock' eax                                       ; > eax = adress
-    Mov edi eax, esi D$BlockStartTextPtr, ecx D$BlockSize
+    Mov edi eax, esi D$LP.BlockStartText, ecx D$BlockSize
     rep movsb | Mov al 0 | stosb
     Call 'KERNEL32.GlobalUnlock' D$hBlock
     Call 'USER32.SetClipboardData' &CF_TEXT, D$hBlock
@@ -1881,13 +1892,14 @@ ControlY:
         dec esi | cmp B$esi CR | je L1>
     End_While
 
-L1: Mov D$BlockStartTextPtr esi
+L1: Mov D$LP.BlockStartText esi
     While esi < D$STRUCT.EditData@SourceEnd
         inc esi | cmp B$esi CR | je L1>
     End_While
 
-L1: dec esi | Mov D$BlockEndTextPtr esi
-    If esi > D$BlockStartTextPtr
+L1: sub esi (1*ASCII) | Mov D$LP.BlockEndText esi
+
+    If esi > D$LP.BlockStartText
         Push D$STRUCT.EditData@CaretRow
             Mov d$FL.BlockInside &TRUE | Call ControlD | Call KeyDown
         Pop D$STRUCT.EditData@CaretRow
@@ -1911,11 +1923,13 @@ L0: If D$H.DebugDialog <> 0
 
     Mov eax D$STRUCT.EditData@CaretRow, ebx D$STRUCT.EditData@CaretLine | Call SearchTxtPtr
 
-    ...If eax <> D$BlockStartTextPtr
+    ...If eax <> D$LP.BlockStartText
 
         std                                         ; reset cursor at "BlockStartText":
-            Mov esi D$BlockEndTextPtr
-L0:         cmp esi D$BlockStartTextPtr | je L2>
+            Mov esi D$LP.BlockEndText
+L0:
+            cmp esi D$LP.BlockStartText | je L2>
+
                 lodsb
                 cmp al LF | jne L0<
                 If esi < D$LastCharPosOnScreen         ; do not DEC Caret Line if block bigger
@@ -1946,13 +1960,13 @@ L4:         .If esi < D$STRUCT.EditData@Upperline                   ; rePos scre
             Move D$STRUCT.EditData@PhysicalCaretRow D$STRUCT.EditData@CaretRow
         cld
 
-        Move D$STRUCT.EditData@CurrentWritingPos D$BlockStartTextPtr
+        Move D$STRUCT.EditData@CurrentWritingPos D$LP.BlockStartText
 
     ...End_If
 
 UndoControlV:                                   ; strip text:
 
-    Mov edi D$BlockStartTextPtr, esi D$BlockEndTextPtr | inc esi
+    Mov edi D$LP.BlockStartText, esi D$LP.BlockEndText | add esi (1*ASCII)
 
     Mov eax esi | sub eax edi                   ; eax = Block-to-strip-out length
     Push eax
@@ -2200,12 +2214,17 @@ ________________________________________________________________________________
 
 ControlA:
     If B$WithControlA = &TRUE
-        Move D$BlockStartTextPtr D$CodeSource
-        Move D$BlockEndTextPtr D$STRUCT.EditData@SourceEnd
+
+        Move D$LP.BlockStartText D$CodeSource,
+             D$LP.BlockEndText D$STRUCT.EditData@SourceEnd
+
       ; SourceEnd is the Byte _after_ // BlockEndTextPtr is the last Byte:
-        dec D$BlockEndTextPtr
+        sub D$LP.BlockEndText (1*ASCII)
+
         Mov D$FL.BlockInside &TRUE
+
     End_If
+
 ret
 ____________________________________________________________________________________________
 
@@ -2334,7 +2353,7 @@ Proc KillTrailingSpaces:
     example when you enter blanks Lines on Indentations
 
     I do not implement it in the Menu, and as this is fast enough i implement it when opening
-    a file [OpenSourceOnly] / [OpenRosAsmPE]
+    a file [OpenSourceOnly] / [OpenBUAsmPE]
 
 ;;
 
@@ -2342,7 +2361,9 @@ Proc KillTrailingSpaces:
          esi,
          edi
 
-    Mov esi D$CodeSource, edi esi, edx D$STRUCT.EditData@SourceEnd, ecx 0
+    Mov esi D$CodeSource,
+        edi esi,
+        edx D$STRUCT.EditData@SourceEnd
     ________________________________________
 
     ; TODO traduction
@@ -2350,20 +2371,20 @@ Proc KillTrailingSpaces:
     ; Correction [CRCR] et [LFLF] en [CRLF]
     ________________________________________
 
-L0: Comp W$esi CRCR = S1>
+L1: Comp W$esi CRCR = S1>
 
         Comp W$esi LFLF = S1>
 
-        add esi ASCII
+        add esi (2*ASCII)
 
-    Comp esi edx < L0<,
-                 = S0>
+    Comp esi edx < L1<,
+                 => S2>
 
 S1:     Mov W$esi CRLF
 
-        add esi ASCII
+        add esi (2*ASCII)
 
-    Comp esi edx < L0<
+    Comp esi edx < L1<
     __________________________________
 
     ; TODO traduction
@@ -2372,92 +2393,89 @@ S1:     Mov W$esi CRLF
     __________________________________
 
     ; Esi = D$CodeSource
-S0: Mov esi edi
+S2: Mov esi edi
+
+    jmp S3>
 
 L1:@Start:
 
-    Comp esi edx > S0> ; @End
+    stosb
 
-        lodsb
+S3:     Comp esi edx > S0> ; @End
 
-        Comp al '"' = S1> ; @Clean022
+            lodsb
 
-        Comp al "'" = S2> ; @Clean027
+            Comp al 0_22 = S4> ; " @Clean022
 
-        Comp al ';' = S3> ; @Clean03B
+            Comp al 0_27 = S5> ; ' @Clean027
 
-        Comp al CR = S4>  ; @Clean020
+            Comp al 0_3B = S6> ; ; @Clean03B
 
-        stosb
-
-    jmp L1< ; @Start
-
-S1:@Clean022:
-
-L0:     stosb | lodsb | Comp esi edx => S0> ; @End
-
-        Comp al '"'  <> L0< ; Allow blank Lines in Data Text
-
-        jmp S9> ; @Suite
-
-S2:@Clean027:
-
-L0:     stosb | lodsb | Comp esi edx => S0> ; @End
-
-        Comp al "'" <> L0<
-
-        jmp S9> ; @Suite
-
-S3:@Clean03B:
-
-        Comp D$esi-2 MLC <> L2> ; (LF ; ; CR)
-
-L0:         stosb | lodsb | Comp esi edx = S0> ; @End
-
-            Comp D$esi-(2*ASCII) MLC <> L0<
-
-        jmp S9> ; @Suite
-
-L2:         stosb | lodsb | Comp al CR <> L2<
-
-S4:@Clean020:
-
-L0:     Comp B$edi-1 SPC <> S9>; @Suite
-
-            sub edi ASCII | sub D$SourceLen 1 | sub D$STRUCT.EditData@SourceEnd 1 | add ecx 1
-
-        jmp L0<
-
-S9:@Suite:
-
-        stosb
+            Comp al CR = S7>   ;   @Clean020
 
     jmp L1< ; @Start
 
-S0:@End:
+S4:@Clean022:
 
-    Comp B$edi-1 CR <> S8> ; @EndEd
+L0:             stosb | lodsb | Comp esi edx = S0> ; @End
 
-        Mov B$edi LF | add D$STRUCT.EditData@SourceEnd 1 | add D$SourceLen 1 | add edi ASCII
+                Comp al '"'  <> L0< ; Allow blank Lines in Data Text
 
-S8:@EndEd: ; !!! TODO Je ne sais pas encore à quoi correspond ce bourrage en fin de source
-           ; j'imagine que c'est un alignement nécessaire...
+    jmp L1< ; @Start
 
-    shr ecx 2 | add ecx 10 | Mov eax CRLF2 | rep stosd
+S5:@Clean027:
+
+L0:             stosb | lodsb | Comp esi edx = S0> ; @End
+
+                Comp al "'" <> L0<
+
+    jmp L1< ; @Start
+
+S6:@Clean03B:
+
+            Comp D$esi-2 MLC <> L2> ; LF;;CR
+
+L0:             stosb | lodsb | Comp esi edx = S0> ; @End
+
+                Comp D$esi-(2*ASCII) MLC <> L0<
+
+    jmp L1< ; @Start
+
+L2:             stosb | lodsb | Comp al CR <> L2<
+
+S7:@Clean020:
+
+L0:         Comp B$edi-1 SPC <> L1< ; @Start
+
+                sub edi (1*ASCII) | sub D$SourceLen 1 | sub D$STRUCT.EditData@SourceEnd 1
+
+            jmp L0< ; @Start
+
+S0:@End:   Mov eax D$STRUCT.EditData@SourceEnd
+
+    cmp W$eax-(1*WORD) CRLF | je P9> ; TODO ExitP
+
+    cmp W$eax-(1*WORD) LFCR | je P9> ; TODO ExitP
+
+        Mov W$eax CRLF | add D$STRUCT.EditData@SourceEnd (2*ASCII) | add D$SourceLen (2*ASCII)
+
 
 EndP
+
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
 WheelMsg:
 
+    Call KillCompletionList
+
     test W$Wparam+(1*WORD) 0_FFFF NEGATIVE S1>
 
-        Call UpOneLine | Call KillCompletionList
+        Call UpOneLine
 
 ret
 
-S1: Call DownOneLine | Call KillCompletionList
+S1: Call DownOneLine
 
 ret
 ____________________________________________________________________________________________
@@ -2705,8 +2723,13 @@ C2: Push ebx
           cmp B$DataDeclaration &TRUE | je L2<<  ; avoid pointing data body instead of Equate
 
 L4: dec esi                                                    ; found
-    Mov D$BlockStartTextPtr esi, D$RCstart esi                 ; RCstart/End used by
-    add esi ebx | Mov D$BlockEndTextPtr esi, D$RCend esi       ; 'BackClick'
+    Mov D$LP.BlockStartText esi, D$RCstart esi                 ; RCstart/End used by
+
+    add esi ebx
+
+    Mov D$LP.BlockEndText esi,
+        D$RCend esi       ; 'BackClick'
+
     Mov D$FL.BlockInside &TRUE
     inc esi | Mov D$STRUCT.EditData@CurrentWritingPos esi
 

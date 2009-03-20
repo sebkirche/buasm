@@ -422,11 +422,11 @@ L3:                         While B$ebx <> ']'
 L2:                         popad
 
                         cmp B$OneOperandwBit 0FF | je L7>
-L4:                     cmp B$OneOperandwBit ByteSize | jne L4>
+L4:                     cmp B$OneOperandwBit BYTE_SIZE | jne L4>
                             Mov ax 'B$' | stosw | jmp L5>
-L4:                     cmp B$OneOperandwBit WordSize | jne L4>
+L4:                     cmp B$OneOperandwBit WORD_SIZE | jne L4>
                             Mov ax 'W$' | stosw | jmp L5>
-L4:                     cmp B$OneOperandwBit DoubleSize | jne L7>
+L4:                     cmp B$OneOperandwBit DWORD_SIZE | jne L7>
                             Mov ax 'D$' | stosw
 
 L5:                     inc esi
