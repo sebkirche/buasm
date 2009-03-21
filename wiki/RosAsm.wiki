@@ -1,5 +1,0 @@
-English :
-The project that won't be maintained anymore and that we continue from now on.
-
-Français :
-Le projet qui ne sera plus maintenu plus longtemps, c'est pour cela que nous le continuons.
