@@ -285,7 +285,8 @@ StoreFunctionName
 DualBubbleSortExportListPointers_AndOrdinals
 .added Procs:
 CheckExportOrdinal
-FindExportFullNameString for Error-report
+FindExportFullNameString (Error-report)
+FindLostExportString (Error-report)
 ErrorStrings: BadExportOrdinal SameExportOrdinal
 .added Variables:
 NumberOfDisExportNames DisExportOrdBase NumberOfJunkBytes ExpOrdArray
@@ -295,3 +296,5 @@ OnlyOrdinalExport OrdinalExport ExpOrdBase
 
 .removed many unwanted &FILE_SHARE_WRITE from any Call CreateFileA..
 .in StoreAllMacros fixed '<' char case, it was above xored by 080..
+
+; this bad taped> [ B|uildCommentedCodeReference:: 32 ] infinite_loop in macros-jobs!!!

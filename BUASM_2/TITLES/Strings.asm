@@ -436,7 +436,7 @@ TITLE Strings
  172 NoSpaceBeforeColonPtr: NoSpaceBeforeColon
  173 NeedSpaceAfterColonPtr: NeedSpaceAfterColon
  174 BadExportOrdinalPtr: BadExportOrdinal
- 174 SameExportOrdinalPtr: SameExportOrdinal
+ 175 SameExportOrdinalPtr: SameExportOrdinal
 ____________________________________________________________________________________________
 ; Debugger strings
 
