@@ -221,7 +221,7 @@ EndiIconAndMask: ]
 
 reverseRGB:
     push ecx, ebx
-      mov ebx eax, ecx eax
+      Mov ebx eax, ecx eax
       and eax 0FF | and ebx 0FF00 | and ecx 0FF0000
       shl eax 16 | shr ecx 16
       add eax ebx | add eax ecx
@@ -245,34 +245,34 @@ ret
 ; a pointer to "Brushes'structures". DL is used to rotary point to AND mask bits.
 
 iOneRect:
-    mov dh B$iIconAndMask+ecx | and dh dl
+    Mov dh B$iIconAndMask+ecx | and dh dl
     pushad
       if dh <> 0
 ; blank area box:
-        call 'GDI32.Rectangle' D$ihdc  D$iRECTx1  D$iRECTy1  D$iRECTx2  D$iRECTy2
+        Call 'GDI32.Rectangle' D$ihdc  D$iRECTx1  D$iRECTy1  D$iRECTx2  D$iRECTy2
 ; blank of true size icon at bottom:
-        mov eax D$iRECTx1, ebx D$iRECTy1 ; | sub eax 140 | sub ebx 276
+        Mov eax D$iRECTx1, ebx D$iRECTy1 ; | sub eax 140 | sub ebx 276
         shr eax 3 | shr ebx 3 | add eax 40 | add ebx 360
-        call 'GDI32.SetPixel' D$ihdc eax ebx D$iBackGroundColor
+        Call 'GDI32.SetPixel' D$ihdc eax ebx D$iBackGroundColor
       Else
         push eax
 ; One color pixel box of icon :
-          call 'USER32.FillRect' D$ihdc iRECT D$ihBrush0+eax
+          Call 'USER32.FillRect' D$ihdc iRECT D$ihBrush0+eax
         pop ebx
 ; show true size icon pixel at bottom:
         shr ebx 2                                    ; IBrush index
-        mov ecx ebx | shl ebx 1 | add ecx ebx        ; * 3
+        Mov ecx ebx | shl ebx 1 | add ecx ebx        ; * 3
         inc ecx                                      ; + 1
         shl ecx 2                                    ; * 4
-        mov ecx D$IBrush0+ecx
-      ;  mov eax D$iRECTx1, ebx D$iRECTy1 | sub eax 140 | sub ebx 276
+        Mov ecx D$IBrush0+ecx
+      ;  Mov eax D$iRECTx1, ebx D$iRECTy1 | sub eax 140 | sub ebx 276
       ;  shr eax 3 | shr ebx 3 | add eax 40 | add ebx 360
 
-        mov eax D$iRECTx1, ebx D$iRECTy1
+        Mov eax D$iRECTx1, ebx D$iRECTy1
         shr eax 3 | shr ebx 3 | add eax 28 | add ebx 320
       ; Toto fix
 
-        call 'GDI32.SetPixel' D$ihdc eax ebx ecx      ; handle, X, Y, color
+        Call 'GDI32.SetPixel' D$ihdc eax ebx ecx      ; handle, X, Y, color
 ; NT > problem: only bottom line drawn (ebx always the same value ???) don't find any
 ; reason for...
       end_if
@@ -284,33 +284,33 @@ ret
 ; Drawing of edition image of icon:
 
 iDrawColorBox:
-    call 'USER32.BeginPaint' D$IconEditorHandle, iPAINTSTRUCT
-    call 'USER32.GetDC' D$IconEditorHandle | mov D$ihdc eax
-    mov D$iRECTx1 135,  D$iRECTy1 305, D$iRECTx2 0192,  D$iRECTy2 016C
-    call 'USER32.FillRect' D$ihdc iRECT D$IhBackBrush
-    mov D$iRECTx1 140,  D$iRECTy1 310, D$iRECTx2 160,  D$iRECTy2 330, ecx 0
+    Call 'USER32.BeginPaint' D$IconEditorHandle, iPAINTSTRUCT
+    Call 'USER32.GetDC' D$IconEditorHandle | Mov D$ihdc eax
+    Mov D$iRECTx1 135,  D$iRECTy1 305, D$iRECTx2 0192,  D$iRECTy2 016C
+    Call 'USER32.FillRect' D$ihdc iRECT D$IhBackBrush
+    Mov D$iRECTx1 140,  D$iRECTy1 310, D$iRECTx2 160,  D$iRECTy2 330, ecx 0
 L0: push ecx
       dec D$iRECTx1 | dec D$iRECTy1 | inc D$iRECTx2 | inc D$iRECTy2
-      call 'GDI32.Rectangle' D$ihdc  D$iRECTx1  D$iRECTy1  D$iRECTx2  D$iRECTy2
+      Call 'GDI32.Rectangle' D$ihdc  D$iRECTx1  D$iRECTy1  D$iRECTx2  D$iRECTy2
       inc D$iRECTx1 | inc D$iRECTy1 | dec D$iRECTx2 | dec D$iRECTy2
     pop ecx
     push ecx
-      mov al cl | shr al 2 | cmp B$ActualColor, al | jne L1>
+      Mov al cl | shr al 2 | cmp B$ActualColor, al | jne L1>
         pushad
-          mov eax D$iRECTx1, ebx D$iRECTy1, ecx D$iRECTx2, edx D$iRECTy2
+          Mov eax D$iRECTx1, ebx D$iRECTy1, ecx D$iRECTx2, edx D$iRECTy2
           sub eax 3 | sub ebx 3 | add ecx 3 | add edx 3
-          call 'GDI32.Rectangle' D$ihdc  eax ebx ecx edx
+          Call 'GDI32.Rectangle' D$ihdc  eax ebx ecx edx
         popad
-L1:   call 'USER32.FillRect' D$ihdc iRECT D$ihBrush0+ecx
+L1:   Call 'USER32.FillRect' D$ihdc iRECT D$ihBrush0+ecx
     pop ecx
       add ecx 4 | cmp ecx 64 | jae L9>
         add D$iRECTx1 34 | add D$iRECTx2 34
         If ecx = 32
-          mov D$iRECTx1 140,  D$iRECTy1 340, D$iRECTx2 160,  D$iRECTy2 360
+          Mov D$iRECTx1 140,  D$iRECTy1 340, D$iRECTx2 160,  D$iRECTy2 360
         End_If
       jmp L0<<
-L9: call 'USER32.ReleaseDC' D$IconEditorHandle, D$ihdc
-    call 'USER32.EndPaint' D$IconEditorHandle, iPAINTSTRUCT
+L9: Call 'USER32.ReleaseDC' D$IconEditorHandle, D$ihdc
+    Call 'USER32.EndPaint' D$IconEditorHandle, iPAINTSTRUCT
  ret
 
 
@@ -319,30 +319,30 @@ L9: call 'USER32.ReleaseDC' D$IconEditorHandle, D$ihdc
 [iBackGroundColor: ?    DrawIconMessage: ?]
 
 DrawIcon:
-    call 'USER32.BeginPaint' D$IconEditorHandle, iPAINTSTRUCT
-      call 'USER32.GetDC' D$IconEditorHandle | mov D$ihdc eax
-      call 'GDI32.GetPixel' eax 5 5 | mov D$iBackGroundColor eax, D$iBackBrush+4 eax
-      call DeleteIconBrushes | call CreateIconBrushes
-        mov D$iXcount 0, D$iYcount 0
-        mov D$iRECTx1 140,  D$iRECTy1 276,  D$iRECTx2 149,  D$iRECTy2 285
-        mov esi iIconXorMask, ecx 0, edx 00_1000_0000
+    Call 'USER32.BeginPaint' D$IconEditorHandle, iPAINTSTRUCT
+      Call 'USER32.GetDC' D$IconEditorHandle | Mov D$ihdc eax
+      Call 'GDI32.GetPixel' eax 5 5 | Mov D$iBackGroundColor eax, D$iBackBrush+4 eax
+      Call DeleteIconBrushes | Call CreateIconBrushes
+        Mov D$iXcount 0, D$iYcount 0
+        Mov D$iRECTx1 140,  D$iRECTy1 276,  D$iRECTx2 149,  D$iRECTy2 285
+        Mov esi iIconXorMask, ecx 0, edx 00_1000_0000
 
-L0:     mov ebx 0, eax 0 | lodsb | mov bl al | and ebx 0F | and eax 0F0 | shr eax 4
+L0:     Mov ebx 0, eax 0 | lodsb | Mov bl al | and ebx 0F | and eax 0F0 | shr eax 4
           shl eax 2 | shl ebx 2
-            call iOneRect
+            Call iOneRect
               inc D$iXcount | add D$iRECTx1 8 | add D$iRECTx2 8
-                mov eax ebx
-                  call iOneRect
+                Mov eax ebx
+                  Call iOneRect
                     inc D$iXcount | cmp D$iXcount 32 | je L2>
         add D$iRECTx1 8 | add D$iRECTx2 8 | jmp L0<<
 
 L2:     inc D$iYcount | cmp D$iYcount 32 | je L3>
-          mov D$iRECTx1 140,  D$iRECTx2 149, D$iXcount 0
+          Mov D$iRECTx1 140,  D$iRECTx2 149, D$iXcount 0
             sub D$iRECTy1 8 | sub D$iRECTy2 8 | jmp L0<<
 
-L3: call 'USER32.ReleaseDC' D$IconEditorHandle,  D$ihdc
-    call 'USER32.EndPaint' D$IconEditorHandle, iPAINTSTRUCT
-    On D$DrawIconMessage <> &WM_MOUSEMOVE, call iDrawColorBox
+L3: Call 'USER32.ReleaseDC' D$IconEditorHandle,  D$ihdc
+    Call 'USER32.EndPaint' D$IconEditorHandle, iPAINTSTRUCT
+    On D$DrawIconMessage <> &WM_MOUSEMOVE, Call iDrawColorBox
 ret
 
  ______________________________________
@@ -366,48 +366,48 @@ ret
 
 
 CreateIconBrushes:
-    mov edi iBrush0, esi iIconPalette | add edi 4        ; store icon palette colors
-L0: lodsd | call reverseRGB | stosd | add edi 8          ; in brushes structures
+    Mov edi iBrush0, esi iIconPalette | add edi 4        ; store icon palette colors
+L0: lodsd | Call reverseRGB | stosd | add edi 8          ; in brushes structures
     cmp edi iBrushesEnd | jb L0<
 
-    call 'GDI32.CreateBrushIndirect' iBrush0 | mov D$ihBrush0 eax
-    call 'GDI32.CreateBrushIndirect' iBrush1 | mov D$ihBrush1 eax
-    call 'GDI32.CreateBrushIndirect' iBrush2 | mov D$ihBrush2 eax
-    call 'GDI32.CreateBrushIndirect' iBrush3 | mov D$ihBrush3 eax
-    call 'GDI32.CreateBrushIndirect' iBrush4 | mov D$ihBrush4 eax
-    call 'GDI32.CreateBrushIndirect' iBrush5 | mov D$ihBrush5 eax
-    call 'GDI32.CreateBrushIndirect' iBrush6 | mov D$ihBrush6 eax
-    call 'GDI32.CreateBrushIndirect' iBrush7 | mov D$ihBrush7 eax
-    call 'GDI32.CreateBrushIndirect' iBrush8 | mov D$ihBrush8 eax
-    call 'GDI32.CreateBrushIndirect' iBrush9 | mov D$ihBrush9 eax
-    call 'GDI32.CreateBrushIndirect' iBrushA | mov D$ihBrushA eax
-    call 'GDI32.CreateBrushIndirect' iBrushB | mov D$ihBrushB eax
-    call 'GDI32.CreateBrushIndirect' iBrushC | mov D$ihBrushC eax
-    call 'GDI32.CreateBrushIndirect' iBrushD | mov D$ihBrushD eax
-    call 'GDI32.CreateBrushIndirect' iBrushE | mov D$ihBrushE eax
-    call 'GDI32.CreateBrushIndirect' iBrushF | mov D$ihBrushF eax
-    call 'GDI32.CreateBrushIndirect' iBackBrush | mov D$IhBackBrush eax
+    Call 'GDI32.CreateBrushIndirect' iBrush0 | Mov D$ihBrush0 eax
+    Call 'GDI32.CreateBrushIndirect' iBrush1 | Mov D$ihBrush1 eax
+    Call 'GDI32.CreateBrushIndirect' iBrush2 | Mov D$ihBrush2 eax
+    Call 'GDI32.CreateBrushIndirect' iBrush3 | Mov D$ihBrush3 eax
+    Call 'GDI32.CreateBrushIndirect' iBrush4 | Mov D$ihBrush4 eax
+    Call 'GDI32.CreateBrushIndirect' iBrush5 | Mov D$ihBrush5 eax
+    Call 'GDI32.CreateBrushIndirect' iBrush6 | Mov D$ihBrush6 eax
+    Call 'GDI32.CreateBrushIndirect' iBrush7 | Mov D$ihBrush7 eax
+    Call 'GDI32.CreateBrushIndirect' iBrush8 | Mov D$ihBrush8 eax
+    Call 'GDI32.CreateBrushIndirect' iBrush9 | Mov D$ihBrush9 eax
+    Call 'GDI32.CreateBrushIndirect' iBrushA | Mov D$ihBrushA eax
+    Call 'GDI32.CreateBrushIndirect' iBrushB | Mov D$ihBrushB eax
+    Call 'GDI32.CreateBrushIndirect' iBrushC | Mov D$ihBrushC eax
+    Call 'GDI32.CreateBrushIndirect' iBrushD | Mov D$ihBrushD eax
+    Call 'GDI32.CreateBrushIndirect' iBrushE | Mov D$ihBrushE eax
+    Call 'GDI32.CreateBrushIndirect' iBrushF | Mov D$ihBrushF eax
+    Call 'GDI32.CreateBrushIndirect' iBackBrush | Mov D$IhBackBrush eax
 ret
 
 
 DeleteIconBrushes:
-    call 'GDI32.DeleteObject'  D$ihBrush0
-    call 'GDI32.DeleteObject'  D$ihBrush1
-    call 'GDI32.DeleteObject'  D$ihBrush2
-    call 'GDI32.DeleteObject'  D$ihBrush3
-    call 'GDI32.DeleteObject'  D$ihBrush4
-    call 'GDI32.DeleteObject'  D$ihBrush5
-    call 'GDI32.DeleteObject'  D$ihBrush6
-    call 'GDI32.DeleteObject'  D$ihBrush7
-    call 'GDI32.DeleteObject'  D$ihBrush8
-    call 'GDI32.DeleteObject'  D$ihBrush9
-    call 'GDI32.DeleteObject'  D$ihBrushA
-    call 'GDI32.DeleteObject'  D$ihBrushB
-    call 'GDI32.DeleteObject'  D$ihBrushC
-    call 'GDI32.DeleteObject'  D$ihBrushD
-    call 'GDI32.DeleteObject'  D$ihBrushE
-    call 'GDI32.DeleteObject'  D$ihBrushF
-    call 'GDI32.DeleteObject'  D$IhBackBrush
+    Call 'GDI32.DeleteObject'  D$ihBrush0
+    Call 'GDI32.DeleteObject'  D$ihBrush1
+    Call 'GDI32.DeleteObject'  D$ihBrush2
+    Call 'GDI32.DeleteObject'  D$ihBrush3
+    Call 'GDI32.DeleteObject'  D$ihBrush4
+    Call 'GDI32.DeleteObject'  D$ihBrush5
+    Call 'GDI32.DeleteObject'  D$ihBrush6
+    Call 'GDI32.DeleteObject'  D$ihBrush7
+    Call 'GDI32.DeleteObject'  D$ihBrush8
+    Call 'GDI32.DeleteObject'  D$ihBrush9
+    Call 'GDI32.DeleteObject'  D$ihBrushA
+    Call 'GDI32.DeleteObject'  D$ihBrushB
+    Call 'GDI32.DeleteObject'  D$ihBrushC
+    Call 'GDI32.DeleteObject'  D$ihBrushD
+    Call 'GDI32.DeleteObject'  D$ihBrushE
+    Call 'GDI32.DeleteObject'  D$ihBrushF
+    Call 'GDI32.DeleteObject'  D$IhBackBrush
 ret
  ________________________________________
 
@@ -416,19 +416,19 @@ ret
 [InsideEditBox edx  InsideColorBox ecx]
 
 iPos:
-    mov InsideEditBox &FALSE, InsideColorBox &FALSE
-    mov eax D$MousePosX, ebx D$MousePosY
-  ;  mov eax 0, ebx 0 | push D$Lparam | pop ax, bx      ; eax > x / ebx > y
+    Mov InsideEditBox &FALSE, InsideColorBox &FALSE
+    Mov eax D$MousePosX, ebx D$MousePosY
+  ;  Mov eax 0, ebx 0 | push D$Lparam | pop ax, bx      ; eax > x / ebx > y
     cmp eax 08D  | jbe L9>
     cmp eax 018D | jae L9>
     cmp ebx 01C  | jbe L9>
     cmp ebx 011C | jae L8>
       sub eax 08D | sub ebx 01C                         ; Pos - origin
-      mov InsideEditBox &TRUE | ret
+      Mov InsideEditBox &TRUE | ret
 L8: cmp ebx 0135 | jb L9>
     cmp ebx 0167  | ja L9>
       sub eax 08D | sub ebx 0135
-      mov InsideColorBox &TRUE | ret
+      Mov InsideColorBox &TRUE | ret
 L9: ret
 
 ; Drawing in icon image.
@@ -443,21 +443,21 @@ L9: ret
 EditIcon:
     shr eax 3 | shr ebx 3                                  ; 8 pixels per little box
     push eax, ebx
-      mov esi iIconAndMask | sub esi 16 | shl ebx 4 | sub esi ebx ; + lines
-      mov ebx eax                                                 ; keep for odd test
+      Mov esi iIconAndMask | sub esi 16 | shl ebx 4 | sub esi ebx ; + lines
+      Mov ebx eax                                                 ; keep for odd test
       shr eax 1 | add esi eax
-      mov al B$ActualColor | mov ah 00_1111_0000
+      Mov al B$ActualColor | Mov ah 00_1111_0000
       Test ebx 1 | jnz L2>
-        shl al 4 | mov ah 00_1111
+        shl al 4 | Mov ah 00_1111
 L2:   and B$esi ah | or B$esi al
     pop ebx, eax
-    mov esi EndiIconAndMask | sub esi 4 | shl ebx 2 | sub esi ebx
-    mov ecx eax
+    Mov esi EndiIconAndMask | sub esi 4 | shl ebx 2 | sub esi ebx
+    Mov ecx eax
     shr eax 3 | add esi eax
     and ecx 00_111
-    mov al 00_1000_0000 | shr al cl
+    Mov al 00_1000_0000 | shr al cl
     or B$esi al | xor B$esi al
-    call DrawIcon
+    Call DrawIcon
   ret
 
 ; Clearing in icon image.
@@ -465,21 +465,21 @@ L2:   and B$esi ah | or B$esi al
 ClearIconPix:
     shr eax 3 | shr ebx 3                               ; 8 pixels per little box
     push eax, ebx
-      mov esi iIconAndMask | sub esi 16 | shl ebx 4 | sub esi ebx  ; + lines
-      mov ebx eax                                     ; keep for odd test
+      Mov esi iIconAndMask | sub esi 16 | shl ebx 4 | sub esi ebx  ; + lines
+      Mov ebx eax                                     ; keep for odd test
       shr eax 1 | add esi eax
-      mov al B$ActualColor | mov ah 00_1111_0000
+      Mov al B$ActualColor | Mov ah 00_1111_0000
       Test ebx 1 | jnz L2>
-        shl al 4 | mov ah 00_1111
+        shl al 4 | Mov ah 00_1111
 L2:   and B$esi ah
     pop ebx, eax
-    mov esi EndiIconAndMask | sub esi 4 | shl ebx 2 | sub esi ebx
-    mov ecx eax
+    Mov esi EndiIconAndMask | sub esi 4 | shl ebx 2 | sub esi ebx
+    Mov ecx eax
     shr eax 3 | add esi eax
     and ecx 00_111
-    mov al 00_1000_0000 | shr al cl
+    Mov al 00_1000_0000 | shr al cl
     or B$esi al
-    call DrawIcon
+    Call DrawIcon
 ret
 
 
@@ -487,8 +487,8 @@ ret
 
 WhatColor:
     shr eax 5 | shr ebx 5 | shl ebx 3
-    add eax ebx | mov B$ActualColor al
-    call DrawIcon
+    add eax ebx | Mov B$ActualColor al
+    Call DrawIcon
 ret
 
 
@@ -497,10 +497,10 @@ ret
 [NewColor: ?]
 
 WhatNewColor:
-    call 'GDI32.GetPixel' D$RainbowDC eax ebx | call ReverseRGB
-    mov edi iIconPalette, ebx D$ActualColor | shl ebx 2 | add edi ebx | stosd
-    call DeleteIconBrushes | call CreateIconBrushes
-    call iDrawColorBox
+    Call 'GDI32.GetPixel' D$RainbowDC eax ebx | Call ReverseRGB
+    Mov edi iIconPalette, ebx D$ActualColor | shl ebx 2 | add edi ebx | stosd
+    Call DeleteIconBrushes | Call CreateIconBrushes
+    Call iDrawColorBox
 ret
 
 ; User left Click on selected Color Box while in 'Choose Color':
@@ -508,28 +508,28 @@ ret
 SetNewColor:
     shr eax 5 | shr ebx 5 | shl ebx 3
     add eax ebx | cmp al B$ActualColor | jne L9>
-      call 'USER32.DestroyWindow' D$GreenSliderHandle
-      call DeleteRainbowDC
-      mov B$OnRainbow &FALSE
-      call DrawIcon
+      Call 'USER32.DestroyWindow' D$GreenSliderHandle
+      Call DeleteRainbowDC
+      Mov B$OnRainbow &FALSE
+      Call DrawIcon
 L9: ret
 
 
 iLeft:
-    call iPos
+    Call iPos
     cmp B$OnRainbow &TRUE | jne L5>
 
     If InsideEditBox = &TRUE
-      call WhatNewColor
+      Call WhatNewColor
     Else_If InsideColorBox = &TRUE
-      call SetNewColor
+      Call SetNewColor
     End_If
     ret
 
 L5: If InsideEditBox = &TRUE
-      call EditIcon
+      Call EditIcon
     Else_If InsideColorBox = &TRUE
-      call WhatColor
+      Call WhatColor
     End_If
 L9: ret
 
@@ -550,29 +550,29 @@ L9: ret
 ; Build a 2 dimensions color table in memory (blue/red):
 
 DeleteRainbowDC:
-    call 'GDI32.SelectObject' D$RainBowDC  D$OldRainbowBitMaP
-    call 'GDI32.DeleteObject' D$RainbowHandle
-    call 'GDI32.DeleteDC' D$RainbowDC
+    Call 'GDI32.SelectObject' D$RainBowDC  D$OldRainbowBitMaP
+    Call 'GDI32.DeleteObject' D$RainbowHandle
+    Call 'GDI32.DeleteDC' D$RainbowDC
 ret
 
 
 Rainbow:
-    call 'USER32.BeginPaint' D$IconEditorHandle iPAINTSTRUCT
+    Call 'USER32.BeginPaint' D$IconEditorHandle iPAINTSTRUCT
 
-    call 'USER32.GetDC' D$IconEditorHandle | mov D$ihdc eax
+    Call 'USER32.GetDC' D$IconEditorHandle | Mov D$ihdc eax
 
-    call 'GDI32.CreateCompatibleDC' D$ihdc | mov D$RainbowDC eax
+    Call 'GDI32.CreateCompatibleDC' D$ihdc | Mov D$RainbowDC eax
 
-    call 'GDI32.CreateDIBSection' D$RainBowDC RainBowHeader,
+    Call 'GDI32.CreateDIBSection' D$RainBowDC RainBowHeader,
                                      &DIB_RGB_COLORS RainData 0 0
-    mov D$RainbowHandle eax
+    Mov D$RainbowHandle eax
 
 ; filling colors data:
 
-    mov eax D$SlideGreen, ecx 0FF, edi D$RainData
+    Mov eax D$SlideGreen, ecx 0FF, edi D$RainData
     shl eax 8
 L0: push ecx
-        mov ecx 0FF
+        Mov ecx 0FF
 L1:     stosd | add eax RED_BIT | loop L1<
             and eax NO_RED
     pop ecx
@@ -580,13 +580,13 @@ L1:     stosd | add eax RED_BIT | loop L1<
 
 ; Painting at screen (we do not release rainbow DC and object here -needed-):
 
-    call 'GDI32.SelectObject' D$RainBowDC  D$RainbowHandle
-        mov D$OldRainbowBitMaP eax
-    call 'GDI32.BitBlt' D$ihdc 140 30  255 255 D$RainbowDC 0  0  &SRCCOPY
+    Call 'GDI32.SelectObject' D$RainBowDC  D$RainbowHandle
+        Mov D$OldRainbowBitMaP eax
+    Call 'GDI32.BitBlt' D$ihdc 140 30  255 255 D$RainbowDC 0  0  &SRCCOPY
 
-    call 'USER32.ReleaseDC' D$IconEditorHandle D$ihdc
+    Call 'USER32.ReleaseDC' D$IconEditorHandle D$ihdc
 
-    call 'USER32.EndPaint' D$IconEditorHandle, iPAINTSTRUCT
+    Call 'USER32.EndPaint' D$IconEditorHandle, iPAINTSTRUCT
 ret
 
 
@@ -594,62 +594,62 @@ ret
 ; we clean that here, at first 'color box right click':
 
 clearIconArea:
-    call 'USER32.BeginPaint' D$IconEditorHandle, iPAINTSTRUCT
-      call 'USER32.GetDC' D$IconEditorHandle | mov D$ihdc eax
-        mov D$iRECTx1 135,  D$iRECTy1 25, D$iRECTx2 400,  D$iRECTy2 290
-        call 'USER32.FillRect' D$ihdc iRECT D$IhBackBrush
-      call 'USER32.ReleaseDC' D$IconEditorHandle  D$ihdc
-    call 'USER32.EndPaint' D$IconEditorHandle, iPAINTSTRUCT
+    Call 'USER32.BeginPaint' D$IconEditorHandle, iPAINTSTRUCT
+      Call 'USER32.GetDC' D$IconEditorHandle | Mov D$ihdc eax
+        Mov D$iRECTx1 135,  D$iRECTy1 25, D$iRECTx2 400,  D$iRECTy2 290
+        Call 'USER32.FillRect' D$ihdc iRECT D$IhBackBrush
+      Call 'USER32.ReleaseDC' D$IconEditorHandle  D$ihdc
+    Call 'USER32.EndPaint' D$IconEditorHandle, iPAINTSTRUCT
 ret
 
 
 [TrackClassName: 'msctls_trackbar32', 0  TrackTitle: 'Green' 0  GreenSliderHandle: 0]
 
 GreenSlider:
-    call 'User32.CreateWindowExA' 0, TrackClassName, TrackTitle,
+    Call 'User32.CreateWindowExA' 0, TrackClassName, TrackTitle,
                                   &WS_CHILD+&WS_VISIBLE+&TBS_LEFT+&TBS_VERT,
                                   410, 25, 20, 265, D$IconEditorHandle, ID_TRACKBAR,
                                   D$hinstance, 0
-    mov D$GreenSliderHandle eax
-    call 'User32.SendMessageA' D$GreenSliderHandle  &TBM_SETRANGE 1 0FF_0000
-    mov eax D$SlideGreen | not al
-    call 'User32.SendMessageA' D$GreenSliderHandle  &TBM_SETPOS 1  eax
+    Mov D$GreenSliderHandle eax
+    Call 'User32.SendMessageA' D$GreenSliderHandle  &TBM_SETRANGE 1 0FF_0000
+    Mov eax D$SlideGreen | not al
+    Call 'User32.SendMessageA' D$GreenSliderHandle  &TBM_SETPOS 1  eax
 ret
 
 
 [OnRainbow: ?  OldSelectedColor: ?]
 
 RestorePreviousColor:
-    mov edi iIconPalette, eax D$ActualColor | shl eax 2
-    add edi eax | mov eax D$OldSelectedColor | stosd
-    call DeleteIconBrushes | call CreateIconBrushes | call DrawIcon
+    Mov edi iIconPalette, eax D$ActualColor | shl eax 2
+    add edi eax | Mov eax D$OldSelectedColor | stosd
+    Call DeleteIconBrushes | Call CreateIconBrushes | Call DrawIcon
 ret
 
 
 SaveActualColor:
-    mov esi iIconPalette, eax D$ActualColor | shl eax 2
-    add esi eax | lodsd | mov D$OldSelectedColor eax
+    Mov esi iIconPalette, eax D$ActualColor | shl eax 2
+    add esi eax | lodsd | Mov D$OldSelectedColor eax
 ret
 
 
 iRight:
     If B$OnRainbow = &TRUE
-      call RestorePreviousColor
-      call 'USER32.DestroyWindow' D$GreenSliderHandle
-      call deleteRainbowDC
-      mov B$OnRainbow &FALSE | ret
+      Call RestorePreviousColor
+      Call 'USER32.DestroyWindow' D$GreenSliderHandle
+      Call deleteRainbowDC
+      Mov B$OnRainbow &FALSE | ret
     End_If
 
-    call iPos
+    Call iPos
     If InsideEditBox = &TRUE
-      call ClearIconPix
+      Call ClearIconPix
     Else_If InsideColorBox = &TRUE
-      mov B$OnRainbow &TRUE
-      call WhatColor
-      call SaveActualColor
-      mov esi iIconPalette, eax D$ActualColor | shl eax 2
-      add esi eax | inc esi | mov eax 0, al B$esi | mov D$SlideGreen eax
-      call clearIconArea | call GreenSlider | call RainBow
+      Mov B$OnRainbow &TRUE
+      Call WhatColor
+      Call SaveActualColor
+      Mov esi iIconPalette, eax D$ActualColor | shl eax 2
+      add esi eax | inc esi | Mov eax 0, al B$esi | Mov D$SlideGreen eax
+      Call clearIconArea | Call GreenSlider | Call RainBow
     End_If
 L9: ret
 
@@ -657,9 +657,9 @@ L9: ret
 ; Retrieve the slider value on user move and redraw rainbow:
 
 iTrackMove:
-      call 'User32.SendMessageA' D$GreenSliderHandle &TBM_GETPOS 0 0
-        not al | mov D$SlideGreen eax
-      call DeleteRainbowDC | call Rainbow
+      Call 'User32.SendMessageA' D$GreenSliderHandle &TBM_GETPOS 0 0
+        not al | Mov D$SlideGreen eax
+      Call DeleteRainbowDC | Call Rainbow
 L9: ret
 
  ___________________________________________________________________________________
@@ -689,51 +689,51 @@ L9: ret
 
 OpenPeForReadingIcon:
   ; Opening a file:
-    mov B$NoResourcesPE &FALSE
+    Mov B$NoResourcesPE &FALSE
 
-    mov edi iSaveFilter, ecx 260, eax 0 | rep stosd
+    Mov edi iSaveFilter, ecx 260, eax 0 | rep stosd
 
-    call 'Comdlg32.GetOpenFileNameA' iOpenPEStruc
+    Call 'Comdlg32.GetOpenFileNameA' iOpenPEStruc
       On D$iSaveFilter = 0, ret
  ______________________________________
 
   ; Loading the entire file in memory:
 
-    On D$iSourceHandle > 0, call 'KERNEL32.CloseHandle' D$iSourceHandle
+    On D$iSourceHandle > 0, Call 'KERNEL32.CloseHandle' D$iSourceHandle
 
-    mov esi iSaveFilter
+    Mov esi iSaveFilter
 
-    call 'KERNEL32.CreateFileA' esi &GENERIC_READ, &FILE_SHARE_READ,
+    Call 'KERNEL32.CreateFileA' esi &GENERIC_READ, &FILE_SHARE_READ,
                                 0, &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-        mov eax D$BusyFilePtr | call MessageBox ;;;;| pop eax | ret  ; return to caller of caller
-        mov D$iSourceHandle 0
+        Mov eax D$BusyFilePtr | Call MessageBox ;;;;| pop eax | ret  ; return to caller of caller
+        Mov D$iSourceHandle 0
     Else
-        mov D$iSourceHandle eax
+        Mov D$iSourceHandle eax
 
-        call 'KERNEL32.GetFileSize'  eax 0
-        mov D$iExeLen eax | VirtualAlloc iExePtr eax
+        Call 'KERNEL32.GetFileSize'  eax 0
+        Mov D$iExeLen eax | VirtualAlloc iExePtr eax
 
-        mov D$NumberOfReadBytes 0
-        call 'KERNEL32.ReadFile' D$iSourceHandle D$iExePtr,
+        Mov D$NumberOfReadBytes 0
+        Call 'KERNEL32.ReadFile' D$iSourceHandle D$iExePtr,
                                 D$iExeLen NumberOfReadBytes 0      ; load headers
     End_If
 ret
 
 
 ReadRosAsmPeIcon:                     ; reused by general purpose RosAsm PE opening.
-    mov B$PeIconFound &FALSE
+    Mov B$PeIconFound &FALSE
 
   ; read dos header:
-    mov esi D$iExePtr
-    mov eax 0 | add esi 8 | lodsw    ; parag. size of dos header end >PE header adress
+    Mov esi D$iExePtr
+    Mov eax 0 | add esi 8 | lodsw    ; parag. size of dos header end >PE header adress
 
     shl eax 4 | sub eax 4
-    mov esi D$iExePtr | add esi eax | lodsd      ; eax = PE header
+    Mov esi D$iExePtr | add esi eax | lodsd      ; eax = PE header
 
-    mov esi D$iExePtr | add esi eax
+    Mov esi D$iExePtr | add esi eax
     If D$esi <> 'PE'
-        mov esi D$iExePtr | add esi 03C | lodsd | add eax D$iExePtr | mov esi eax
+        Mov esi D$iExePtr | add esi 03C | lodsd | add eax D$iExePtr | Mov esi eax
         cmp D$esi 'PE' | jne PeNotFound
     End_If
 
@@ -742,8 +742,8 @@ ReadRosAsmPeIcon:                     ; reused by general purpose RosAsm PE open
   ; read data in PE header:
 
     movzx ecx w$esi+6                     ; word record of section number
-    add esi 136 | lodsd | mov ebx eax     ; RVA of resources from "Image Data Dir..."
-    mov D$ResourcesRVA eax  ; jmp over general purpose headers and reach PE sections headers:
+    add esi 136 | lodsd | Mov ebx eax     ; RVA of resources from "Image Data Dir..."
+    Mov D$ResourcesRVA eax  ; jmp over general purpose headers and reach PE sections headers:
 
     add esi 120                           ; esi points to RVA of first section header
 
@@ -760,13 +760,13 @@ L1: On D$esi-16 <> '.rsr', jmp AbortIconSearch
 
 L1: add esi 4 | lodsd                            ; > app ptr to resources
 
-    add eax D$iExePtr | mov D$iStartOfResources eax
+    add eax D$iExePtr | Mov D$iStartOfResources eax
 
 DisReadMainIcon:
-    mov B$PeIconFound &FALSE
+    Mov B$PeIconFound &FALSE
 
-    mov esi eax | add esi 14                     ; > number of ID resources
-    mov eax 0 | lodsw | mov ecx eax              ; > in ecx
+    Mov esi eax | add esi 14                     ; > number of ID resources
+    Mov eax 0 | lodsw | Mov ecx eax              ; > in ecx
     add cx W$esi-4                               ; add number of Named IDs
     On eax = 0, jmp AbortIconSearch      ; if no resources at all
 
@@ -780,7 +780,7 @@ L1: lodsd                   ; icon found "Level2Rt_Icon-StartOfRsrc+NodeFlag" in
     and eax 0FFFFFFF        ; strip node flag (0_80000000)
     add eax D$iStartOfResources
 
-    add eax 14 | mov esi eax, edx 0, dx W$esi | sub  esi 2
+    add eax 14 | Mov esi eax, edx 0, dx W$esi | sub  esi 2
 
  ______________________________________
 
@@ -794,17 +794,17 @@ NextiRecord:
     lodsd                              ; "Level3Rt_Icon-StartOfRsrc+NodeFlag" in eax
     and eax 0FFFFFFF
     add eax D$iStartOfResources
-    add eax 20 | mov esi eax
+    add eax 20 | Mov esi eax
 
   ; language. dir:
     lodsd                      ; "Level4Rt_Icon-StartOfRsrc" in eax (no NodeFlag here
                                        ; next one is leave ptr to true resources)
     add eax D$iStartOfResources
-    mov esi eax
+    Mov esi eax
 
   ; records of each resource:
     lodsd                              ; ptr to icon data (but RVA - startOfResource)
-    mov ecx D$esi
+    Mov ecx D$esi
 
     If ecx <> 02E8                                       ; 2E8h = size of common icons
       pop esi | dec edx | On edx > 0, jmp NextiRecord
@@ -815,11 +815,11 @@ NextiRecord:
 
     sub eax ebx                              ; - RVA
     add eax D$iStartOfResources              ; eax now points to true icon data
-    mov B$PeIconFound &TRUE
+    Mov B$PeIconFound &TRUE
   ret
 
 
-SectNotFound:    mov eax SectionNotFound | jmp L9>
+SectNotFound:    Mov eax SectionNotFound | jmp L9>
 AbortIconSearch:
 
     If D$SavingExtension = '.DLL'
@@ -828,22 +828,22 @@ AbortIconSearch:
         jmp L7>
     End_If
 
-                    mov eax NoIcon       | jmp L9>
-BadIcoSize:      mov eax BadIconSize     | jmp L9>
-PeNotFound:      mov eax NoPE
+                    Mov eax NoIcon       | jmp L9>
+BadIcoSize:      Mov eax BadIconSize     | jmp L9>
+PeNotFound:      Mov eax NoPE
 
 L9: ;If B$Disassembling = &TRUE
-    ;    mov D$iExePtr 0 | ret  ; restored by Disassembler call (used as Flag, here).
+    ;    Mov D$iExePtr 0 | ret  ; restored by Disassembler Call (used as Flag, here).
     ;End_If
-    call MessageBox ;;;;| call IconSearchOut ;| pop eax |
+    Call MessageBox ;;;;| Call IconSearchOut ;| pop eax |
     ret     ;;;; return to caller of caller
 
-L7: mov B$NoResourcesPE &TRUE ;;;;| call IconSearchOut |
+L7: Mov B$NoResourcesPE &TRUE ;;;;| Call IconSearchOut |
     ret
 
 
 ;IconSearchOut:
-;    mov eax D$UserPeStart | On D$iExePtr <> eax, VirtualFree D$iExePtr
+;    Mov eax D$UserPeStart | On D$iExePtr <> eax, VirtualFree D$iExePtr
 ;  ; Don't destroy User Source in any case, if the 'readRosAsmPeIcon' Routine is called
 ;  ; from some Open PE ,normal Functions.
 ;ret
@@ -857,16 +857,16 @@ L7: mov B$NoResourcesPE &TRUE ;;;;| call IconSearchOut |
 ; peek from PE:
 
 PeekIcon:
-    call OpenPeForReadingIcon
+    Call OpenPeForReadingIcon
 
     .If D$iSourceHandle <> 0
-        call ReadRosAsmPeIcon                        ; eax > start of icon data
+        Call ReadRosAsmPeIcon                        ; eax > start of icon data
 
         If B$PeIconFound = &TRUE
-            mov esi eax | mov edi iIcon | rep movsb  ; Copying to ower buffer
+            Mov esi eax | Mov edi iIcon | rep movsb  ; Copying to ower buffer
         End_If
 
-        call 'KERNEL32.CloseHandle' D$iSourceHandle | mov D$iSourceHandle 0
+        Call 'KERNEL32.CloseHandle' D$iSourceHandle | Mov D$iSourceHandle 0
 
         VirtualFree D$iExePtr
     .End_If
@@ -878,34 +878,34 @@ ret
 ; Poke inside PE:
 
 PokeIcon:
-    call OpenPeForReadingIcon                        ; eax > start of icon data
+    Call OpenPeForReadingIcon                        ; eax > start of icon data
 
     ..If D$iSourceHandle <> 0
-        call ReadRosAsmPeIcon                        ; eax > start of icon data
+        Call ReadRosAsmPeIcon                        ; eax > start of icon data
 
         .If B$PeIconFound = &TRUE
-            mov edi eax | mov esi iIcon | rep movsb  ; Copying from ower buffer
-            call 'KERNEL32.CloseHandle' D$iSourceHandle | mov D$iSourceHandle 0
-            call 'USER32.MessageBoxA' D$hwnd  PokeSure  NullTitle,
+            Mov edi eax | Mov esi iIcon | rep movsb  ; Copying from ower buffer
+            Call 'KERNEL32.CloseHandle' D$iSourceHandle | Mov D$iSourceHandle 0
+            Call 'USER32.MessageBoxA' D$H.MainWindow  PokeSure  NullTitle,
                                     &MB_YESNO+&MB_ICONEXCLAMATION +&MB_SYSTEMMODAL
             On eax = &IDNO, jmp L9>>
 
-            call 'KERNEL32.CreateFileA' iSaveFilter &GENERIC_WRITE,
+            Call 'KERNEL32.CreateFileA' iSaveFilter &GENERIC_WRITE,
                                         &FILE_SHARE_READ, 0,
                                         &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
             If eax = &INVALID_HANDLE_VALUE
-                mov eax D$BusyFilePtr | call MessageBox | ret
+                Mov eax D$BusyFilePtr | Call MessageBox | ret
             Else
-                mov D$iDestinationHandle eax
+                Mov D$iDestinationHandle eax
             End_If
 
-            mov D$NumberOfReadBytes  0
-            call 'KERNEL32.WriteFile'   D$iDestinationHandle D$iExePtr D$iExeLen,
+            Mov D$NumberOfReadBytes  0
+            Call 'KERNEL32.WriteFile'   D$iDestinationHandle D$iExePtr D$iExeLen,
                                         NumberOfReadBytes  0
         .End_If
 
 L9:     VirtualFree D$iExePtr
-        call 'KERNEL32.CloseHandle' D$iDestinationHandle
+        Call 'KERNEL32.CloseHandle' D$iDestinationHandle
     ..End_If
 ret
 
@@ -937,46 +937,46 @@ FIDentriesTable: FIwidth: B$ 020   FIheight: 020    FIcolorCount: 010  0
 
 [BadFIsiz: 'No 36/36 icon in this file (or too much colors)', 0]
 
-BadFIsize: mov eax BadFIsiz | call MessageBox | ret
+BadFIsize: Mov eax BadFIsiz | Call MessageBox | ret
 
 
 ReadIcoFile:
   ; Opening a .ico file:
 
-    mov edi iSaveFilter, ecx 260, eax 0 | rep stosd
-    mov D$IOSflags 0281804 | call 'Comdlg32.GetOpenFileNameA' icoOpenStruc
+    Mov edi iSaveFilter, ecx 260, eax 0 | rep stosd
+    Mov D$IOSflags 0281804 | Call 'Comdlg32.GetOpenFileNameA' icoOpenStruc
       On D$iSaveFilter = 0,  ret
 
   ; Loading the entire file in memory:
 
-    call 'KERNEL32.CreateFileA' iSaveFilter &GENERIC_READ, &FILE_SHARE_READ,
+    Call 'KERNEL32.CreateFileA' iSaveFilter &GENERIC_READ, &FILE_SHARE_READ,
                                 0, &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
                                               ; hTemplateFile
     If eax = &INVALID_HANDLE_VALUE
-      mov eax D$BusyFilePtr | call MessageBox | ret         ; return to caller of caller
+      Mov eax D$BusyFilePtr | Call MessageBox | ret         ; return to caller of caller
     Else
-      mov D$iSourceHandle eax
+      Mov D$iSourceHandle eax
     End_If
 
-    call 'KERNEL32.GetFileSize'  eax 0 | mov D$icoFileLen eax
+    Call 'KERNEL32.GetFileSize'  eax 0 | Mov D$icoFileLen eax
 
     VirtualAlloc icoFilePtr eax
-    mov D$NumberOfReadBytes 0
+    Mov D$NumberOfReadBytes 0
 
-    call 'KERNEL32.ReadFile' D$iSourceHandle D$icoFilePtr,
+    Call 'KERNEL32.ReadFile' D$iSourceHandle D$icoFilePtr,
                             D$icoFileLen NumberOfReadBytes 0
 
-    mov esi D$IcoFilePtr | add esi 4
+    Mov esi D$IcoFilePtr | add esi 4
     lodsw | movzx ecx ax                             ; icons number in ecx
 L0: cmp B$esi 020 | je L1>                           ; first size
       add esi 16 | loop L0<                          ; next record
         jmp BadFIsize
 L1: On D$esi+8 <> 02E8, jmp BadFIsize
     add esi 12                                       ; ptr to ico data
-    mov esi D$esi, edi iIcon, ecx 02E8
+    Mov esi D$esi, edi iIcon, ecx 02E8
     add esi D$IcoFilePtr | rep movsb                 ; Copying to ower buffer
 
-    call 'KERNEL32.CloseHandle' D$iSourceHandle
+    Call 'KERNEL32.CloseHandle' D$iSourceHandle
 
     VirtualFree D$icoFilePtr
 ret
@@ -987,23 +987,23 @@ ret
 WriteIcoFile:
   ; Opening a .ico file:
 
-    mov edi iSaveFilter, ecx 260, eax 0 | rep stosd
-    mov D$IOSflags 0288006 | call 'Comdlg32.GetSaveFileNameA' icoOpenStruc
+    Mov edi iSaveFilter, ecx 260, eax 0 | rep stosd
+    Mov D$IOSflags 0288006 | Call 'Comdlg32.GetSaveFileNameA' icoOpenStruc
       On D$iSaveFilter = 0,  ret
 
-    call 'KERNEL32.CreateFileA' iSaveFilter &GENERIC_WRITE, 0, 0,
+    Call 'KERNEL32.CreateFileA' iSaveFilter &GENERIC_WRITE, 0, 0,
                                 &CREATE_NEW, &FILE_ATTRIBUTE_NORMAL, 0
 
     If eax = &INVALID_HANDLE_VALUE
-      mov eax NewOnly | call MessageBox | ret  ; return to caller of caller
+      Mov eax NewOnly | Call MessageBox | ret  ; return to caller of caller
     Else
-      mov D$iDestinationHandle eax
+      Mov D$iDestinationHandle eax
     End_If
 
-    mov D$NumberOfReadBytes  0
-    call 'KERNEL32.WriteFile'   D$iDestinationHandle iIcoFileHeader 02FE,
+    Mov D$NumberOfReadBytes  0
+    Call 'KERNEL32.WriteFile'   D$iDestinationHandle iIcoFileHeader 02FE,
                                NumberOfReadBytes  0
-    call 'KERNEL32.CloseHandle' D$iDestinationHandle
+    Call 'KERNEL32.CloseHandle' D$iDestinationHandle
 ret
 
  ____________________________________________________________________________________
@@ -1012,7 +1012,7 @@ ret
 ; saving icon data in user stub data for effective compilation:
 
 StoreIcon:
-    mov esi iIcon, edi uIcon, ecx 02E8 | rep movsb
+    Mov esi iIcon, edi uIcon, ecx 02E8 | rep movsb
 ret
 
  ____________________________________________________________________________________
@@ -1022,7 +1022,7 @@ ret
 
 IconEdition:
     If D$IconEditorHandle = 0
-        call 'User32.DialogBoxIndirectParamA' D$hinstance, IconDialogData, D$hwnd,
+        Call 'User32.DialogBoxIndirectParamA' D$hinstance, IconDialogData, D$H.MainWindow,
                                               IconEditProc, 0
     Else
         Beep
@@ -1033,90 +1033,90 @@ ret
 [iDraw: B$ ?  iArase: ?] [IconEditorHandle: ?]
 
 Proc IconEditProc:
-  Arguments @Adressee, @Message, @wParam, @lParam
+  Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    move D$DrawIconMessage D@Message
+    move D$DrawIconMessage D@msg
 
-    ...If D@Message = &WM_PAINT
-        call DrawIcon
+    ...If D@msg = &WM_PAINT
+        Call DrawIcon
 
-    ...Else_If D@Message = &WM_VSCROLL
-        call iTrackMove
+    ...Else_If D@msg = &WM_VSCROLL
+        Call iTrackMove
 
-    ...Else_If D@Message = &WM_LBUTTONDOWN
-        mov B$iDraw &TRUE
+    ...Else_If D@msg = &WM_LBUTTONDOWN
+        Mov B$iDraw &TRUE
 
-    ...Else_If D@Message = &WM_LBUTTONUP
+    ...Else_If D@msg = &WM_LBUTTONUP
         push D@Lparam | pop W$MousePosX, W$MousePosY
-        mov B$idraw &FALSE | call iLeft
+        Mov B$idraw &FALSE | Call iLeft
 
-    ...Else_If D@Message = &WM_RBUTTONDOWN
-        mov B$iArase &TRUE
+    ...Else_If D@msg = &WM_RBUTTONDOWN
+        Mov B$iArase &TRUE
 
-    ...Else_If D@Message = &WM_RBUTTONUP
+    ...Else_If D@msg = &WM_RBUTTONUP
         push D@Lparam | pop W$MousePosX, W$MousePosY
-        mov B$iArase &FALSE | call iRight
+        Mov B$iArase &FALSE | Call iRight
 
-    ...Else_If D@Message = &WM_MOUSEMOVE
+    ...Else_If D@msg = &WM_MOUSEMOVE
         push D@Lparam | pop W$MousePosX, W$MousePosY
         If B$iDraw = &TRUE
-            call iLeft
+            Call iLeft
         Else_If B$iArase = &TRUE
-            call iRight
+            Call iRight
         EndIf
 
-    ...Else_If D@Message = &WM_COMMAND
+    ...Else_If D@msg = &WM_COMMAND
         .If D@wParam = &IDCANCEL
-            mov D$IconEditorHandle 0
-            call 'User32.EndDialog' D@Adressee 0
+            Mov D$IconEditorHandle 0
+            Call 'User32.EndDialog' D@hwnd 0
         .Else_If D@wParam = ID_Inew
-            mov edi iIconAndMask, ecx 128, al 0FF | rep stosb
-            mov edi iIconXorMask, ecx 512, al 0   | rep stosb
-            call DrawIcon
+            Mov edi iIconAndMask, ecx 128, al 0FF | rep stosb
+            Mov edi iIconXorMask, ecx 512, al 0   | rep stosb
+            Call DrawIcon
         .Else_If D@wParam = ID_Ipeek
-            call PeekIcon | call DrawIcon
+            Call PeekIcon | Call DrawIcon
         .Else_If D@wParam = ID_Ipoke
-            call PokeIcon
+            Call PokeIcon
         .Else_If D@wParam = ID_IfromIco
-            call ReadIcoFile | call DrawIcon
+            Call ReadIcoFile | Call DrawIcon
         .Else_If D@wParam = ID_ItoIco
-            call WriteIcoFile
+            Call WriteIcoFile
         .Else_If D@wParam = ID_iKeep
             move D$IconEditorHandle 0
-            call StoreIcon | call 'User32.EndDialog' D@Adressee 0
+            Call StoreIcon | Call 'User32.EndDialog' D@hwnd 0
         .Else_If D@wParam = ID_Help
-            call Help, B_U_AsmName, IconHelp, ContextHlpMessage
+            Call Help, B_U_AsmName, IconHelp, ContextHlpMessage
         .Else
-            popad | mov eax &FALSE | jmp L9>>
+            popad | Mov eax &FALSE | jmp L9>>
         .End_If
 
-    ...Else_If D@Message = &WM_INITDIALOG
-        move D$IconEditorHandle D@Adressee
+    ...Else_If D@msg = &WM_INITDIALOG
+        move D$IconEditorHandle D@hwnd
         move D$icohInstance D$hInstance
         move D$iOPESInstance D$hInstance
-        move D$icohwndFileOwner D@Adressee
-        move D$ihwndPEFileOwner D@Adressee
-        call CreateIconBrushes
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
+        move D$icohwndFileOwner D@hwnd
+        move D$ihwndPEFileOwner D@hwnd
+        Call CreateIconBrushes
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
 
-    ...Else_If D@Message = &WM_Close
-        mov D$IconEditorHandle 0
+    ...Else_If D@msg = &WM_Close
+        Mov D$IconEditorHandle 0
         If B$OnRainbow = &TRUE
-            call RestorePreviousColor
-            call 'USER32.DestroyWindow' D$GreenSliderHandle
-            call deleteRainbowDC
-            mov B$OnRainbow &FALSE
+            Call RestorePreviousColor
+            Call 'USER32.DestroyWindow' D$GreenSliderHandle
+            Call deleteRainbowDC
+            Mov B$OnRainbow &FALSE
         End_If
-        popad | call DeleteIconBrushes | mov eax &FALSE | jmp L9>
+        popad | Call DeleteIconBrushes | Mov eax &FALSE | jmp L9>
 
     ...Else
-        popad | mov eax &FALSE | jmp L9>
+        popad | Mov eax &FALSE | jmp L9>
 
     ...End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 

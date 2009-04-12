@@ -11,7 +11,7 @@ TITLE Progress
  PBarWindow: PBarWindowX: 0   PBarWindowY: 0   PBarWindowW: 340  PBarWindowH: 45
  ProgressInst: 0   hwndForBar: 0]
 
- call 'Comctl32.InitCommonControls'
+ Call 'Comctl32.InitCommonControls'
 
 [Writing:       '[Writing PE__<<<<<__'
  Fixing:        'Resolving__<<<<<__'
@@ -29,31 +29,31 @@ TITLE Progress
 
 InitProgressBar:
   ; Center the bar:
-    mov eax D$EditWindowW | sub eax PROGRESS_BAR_WIDTH
-    shr eax 1 | mov D$PBarWindowX eax
+    Mov eax D$EditWindowW | sub eax PROGRESS_BAR_WIDTH
+    shr eax 1 | Mov D$PBarWindowX eax
 
-    mov ebx D$EditWindowH | sub ebx PROGRESS_BAR_HIGHT
-    shr ebx 1 | mov D$PBarWindowY eax
+    Mov ebx D$EditWindowH | sub ebx PROGRESS_BAR_HIGHT
+    shr ebx 1 | Mov D$PBarWindowY eax
 
-    mov D$PBarWindowW PROGRESS_BAR_WIDTH, D$PBarWindowH, PROGRESS_BAR_HIGHT
+    Mov D$PBarWindowW PROGRESS_BAR_WIDTH, D$PBarWindowH, PROGRESS_BAR_HIGHT
 
-    call 'USER32.ClientToScreen' D$EditWindowHandle, PBarWindow
+    Call 'USER32.ClientToScreen' D$EditWindowHandle, PBarWindow
 
-    call 'USER32.CreateWindowExA' 0, ClassName, Cleaning,
+    Call 'USER32.CreateWindowExA' 0, ClassName, Cleaning,
                                   &WS_OVERLAPPED__&WS_CAPTION__&WS_THICKFRAME_&WS_VISIBLE,
                                   D$PBarWindowX, D$PBarWindowY, D$PBarWindowW, D$PBarWindowH,
                                   0, 0, D$hInstance, 0
-    mov D$hwndForBar eax
+    Mov D$hwndForBar eax
 
-    call 'USER32.ShowWindow' D$hwndForBar, &SW_SHOW ;&SW_SHOWNORMAL
+    Call 'USER32.ShowWindow' D$hwndForBar, &SW_SHOW ;&SW_SHOWNORMAL
 
-    call 'USER32.UpdateWindow' D$hwndForBar
+    Call 'USER32.UpdateWindow' D$hwndForBar
 _____________________________
 
-    call 'USER32.CreateWindowExA' 0, ProgressClassName, 0, &WS_CHILD__&WS_VISIBLE,
+    Call 'USER32.CreateWindowExA' 0, ProgressClassName, 0, &WS_CHILD__&WS_VISIBLE,
                                   D$PWindowX, D$PWindowY, D$PWindowW, D$PWindowH,
                                   D$hwndForBar, 0, D$hInstance, 0
-    mov D$ProgressInst eax
+    Mov D$ProgressInst eax
 ret
 
 
@@ -61,8 +61,8 @@ Proc InitProgressSteps:
     Arguments @Range, @Step
       ; Low Word is 'Min', High Word is 'Max':
         shl D@Range 16
-        call 'USER32.SendMessageA'  D$ProgressInst, &PBM_SETRANGE, 0, D@Range
-        call 'USER32.SendMessageA'  D$ProgressInst, &PBM_SETSTEP, D@Step, 0
+        Call 'USER32.SendMessageA'  D$ProgressInst, &PBM_SETRANGE, 0, D@Range
+        Call 'USER32.SendMessageA'  D$ProgressInst, &PBM_SETSTEP, D@Step, 0
 EndP
 
 
@@ -70,7 +70,7 @@ BarProgress:
     On B$WeAreUnfolding = &TRUE, ret
 
     pushad
-        call 'USER32.SendMessageA' D$ProgressInst &PBM_STEPIT 0 0
+        Call 'USER32.SendMessageA' D$ProgressInst &PBM_STEPIT 0 0
     popad
 ret
 
@@ -118,12 +118,12 @@ ret
 
 StatDecimalWritting:
     push eax
-        mov eax '    ' | stosd | stosd
+        Mov eax '    ' | stosd | stosd
     pop eax
 
-L0: mov edx 0
+L0: Mov edx 0
     div ebx
-    add dl '0' | mov B$edi dl | dec edi | cmp eax 0 | ja L0<
+    add dl '0' | Mov B$edi dl | dec edi | cmp eax 0 | ja L0<
 ret
 
 
@@ -132,70 +132,70 @@ ret
 [StatsHandle: ?   TotalTime: ?   UnusedSymbolsWanted: ?]
 
 Proc Statistics:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ..If D@Message = &WM_COMMAND
+    ..If D@msg = &WM_COMMAND
         If D@wParam = &IDCANCEL
-            call 'USER32.EndDialog' D@Adressee, 0
+            Call 'USER32.EndDialog' D@hwnd, 0
         Else_If D@wParam = 3
-            ;call DisplayUnusedSymbolsDialog D@Adressee
-            call 'USER32.EndDialog' D@Adressee, 0
-            mov D$UnusedSymbolsDialogWanted &TRUE
+            ;Call DisplayUnusedSymbolsDialog D@hwnd
+            Call 'USER32.EndDialog' D@hwnd, 0
+            Mov D$UnusedSymbolsDialogWanted &TRUE
         End_If
 
-    ..Else_If D@Message = &WM_INITDIALOG
-        move D$StatsHandle D@Adressee
+    ..Else_If D@msg = &WM_INITDIALOG
+        move D$StatsHandle D@hwnd
 
-        call 'USER32.SetClassLongA' D@Adressee, &GCL_HICON, D$wc_hIcon
+        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
 
       ; Number of Instructions:
-        call 'USER32.SetDlgItemInt' D@Adressee, 110, D$InstructionsCounter, 0
+        Call 'USER32.SetDlgItemInt' D@hwnd, 110, D$InstructionsCounter, 0
       ; Number of Code and Data Labels:
-        call 'USER32.SetDlgItemInt' D@Adressee, 111, D$DataLabelsCounter, 0
-        call 'USER32.SetDlgItemInt' D@Adressee, 112, D$CodeLabelsCounter, 0
+        Call 'USER32.SetDlgItemInt' D@hwnd, 111, D$DataLabelsCounter, 0
+        Call 'USER32.SetDlgItemInt' D@hwnd, 112, D$CodeLabelsCounter, 0
 
       ; Parsing Time:
-        mov eax D$Time2 | sub eax D$Time1 | mov D$TotalTime eax
-        call 'USER32.SetDlgItemInt' D@Adressee, 120, eax, 0
+        Mov eax D$Time2 | sub eax D$Time1 | Mov D$TotalTime eax
+        Call 'USER32.SetDlgItemInt' D@hwnd, 120, eax, 0
       ; Compile Time:
-        mov eax D$Time3 | sub eax D$Time2 | add D$TotalTime eax
-        call 'USER32.SetDlgItemInt' D@Adressee, 121, eax, 0
+        Mov eax D$Time3 | sub eax D$Time2 | add D$TotalTime eax
+        Call 'USER32.SetDlgItemInt' D@hwnd, 121, eax, 0
       ; Creation Time:
-        mov eax D$Time4 | sub eax D$Time3 | add D$TotalTime eax
-        call 'USER32.SetDlgItemInt' D@Adressee, 122, eax, 0
+        Mov eax D$Time4 | sub eax D$Time3 | add D$TotalTime eax
+        Call 'USER32.SetDlgItemInt' D@hwnd, 122, eax, 0
       ; Total Time:
-        call 'USER32.SetDlgItemInt' D@Adressee, 129, D$TotalTime, 0
+        Call 'USER32.SetDlgItemInt' D@hwnd, 129, D$TotalTime, 0
 
       ; Source Size:
-        call 'USER32.SetDlgItemInt' D@Adressee, 130, D$SourceLen, 0
+        Call 'USER32.SetDlgItemInt' D@hwnd, 130, D$SourceLen, 0
       ; Code Size:
-        call 'USER32.SetDlgItemInt' D@Adressee, 131, D$LenOfCode, 0
+        Call 'USER32.SetDlgItemInt' D@hwnd, 131, D$LenOfCode, 0
       ; Total Size:
-        mov eax D$LenOfCode | add eax D$SourceLen
-        call 'USER32.SetDlgItemInt' D@Adressee, 139, eax, 0
+        Mov eax D$LenOfCode | add eax D$SourceLen
+        Call 'USER32.SetDlgItemInt' D@hwnd, 139, eax, 0
 
-        call WritePE | call RecordMRU | On D$BookMarks > 0, call SaveBookMarks
+        Call WritePE | Call RecordMRU | On D$BookMarks > 0, Call SaveBookMarks
 
         If B$UnusedSymbolsWanted = &TRUE
-            call DisplayUnusedSymbolsDialog D@Adressee
+            Call DisplayUnusedSymbolsDialog D@hwnd
         Else
-            mov D$UnusedCodeIndex 0, D$UnusedDataIndex 0
+            Mov D$UnusedCodeIndex 0, D$UnusedDataIndex 0
         End_If
 
     ..Else
-        popad | mov eax &FALSE | ExitP
+        popad | Mov eax &FALSE | ExitP
 
     ..End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 EndP
 
 
 CloseProgressBar:
-    call 'User32.SendMessageA' D$ProgressInst &PBM_SETPOS 0 0
-    call 'User32.DestroyWindow' D$hwndForBar
+    Call 'User32.SendMessageA' D$ProgressInst &PBM_SETPOS 0 0
+    Call 'User32.DestroyWindow' D$hwndForBar
 ret
 
 ____________________________________________________________________________________________
@@ -218,7 +218,7 @@ AboutTitle:  ' About:', 0]
 
 
 AboutBox:
-   call 'USER32.MessageBoxA' D$hwnd,                ; handle
+   Call 'USER32.MessageBoxA' D$H.MainWindow,                ; handle
                             AboutMessage ,         ; Message
                             AboutTitle,            ; Message-Window-Title
                             &MB_ICONINFORMATION__&MB_SYSTEMMODAL         ; Style (0 to 4) 0 > 'OK'
@@ -226,7 +226,7 @@ ret
 
 
 About_ToolBar:
-    call 'USER32.MessageBoxA' D$hwnd, {"
+    Call 'USER32.MessageBoxA' D$H.MainWindow, {"
     
     Double-Click on the ToolBar for customization
     

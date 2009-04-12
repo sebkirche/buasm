@@ -147,30 +147,30 @@ TITLE menu
 [TenTable:  10000 1000  100  10  1 0]
 
 TransDwordToAsciiDecimal:
-    mov ebx TenTable, ecx D$ebx, B$edi '0'
+    Mov ebx TenTable, ecx D$ebx, B$edi '0'
 L0: cmp eax ecx | jb L1>
         sub eax ecx | inc B$edi | jmp L0<
-L1: inc edi |  mov B$edi '0' | add ebx 4 | mov ecx D$ebx | cmp ecx 0 | ja L0<
-    mov B$edi 0
+L1: inc edi |  Mov B$edi '0' | add ebx 4 | Mov ecx D$ebx | cmp ecx 0 | ja L0<
+    Mov B$edi 0
 ret
 
 
 [TranslateDwordToAscii | pushad | push #1 | pop eax | push #2 | pop edi
-                                         call TransDwordToAsciiDecimal | popad]
+                                         Call TransDwordToAsciiDecimal | popad]
 
 TransDecimalAsciiToDword:
     While B$esi = ' '
         inc esi
     End_While
-    mov ebx 0
-L0: mov eax 0
+    Mov ebx 0
+L0: Mov eax 0
     lodsb | cmp al 0 | je L9>
     sub al '0' | shl ebx 1 | add eax ebx | shl ebx 2 | add ebx eax    ; (EBX * 10) + AL
         jmp L0<
-L9: mov eax ebx
+L9: Mov eax ebx
 ret
 
-[TranslateAsciiToDword | push #1 | pop esi | call TransDecimalAsciiToDword]
+[TranslateAsciiToDword | push #1 | pop esi | Call TransDecimalAsciiToDword]
  _________________________________
 
 ;;
@@ -183,29 +183,29 @@ ret
 [uMenu_ID: 1000] [MenuTabsCount: 0]
 
 FillMenuEditData:
-    mov D$MenuTabsCount 0
-    mov esi eMenu, edi MenuEdition, ebx MenuItemsFlags
+    Mov D$MenuTabsCount 0
+    Mov esi eMenu, edi MenuEdition, ebx MenuItemsFlags
     add esi 8                                           ; skip header
 
-L0: lodsd | mov D$ebx eax                               ; MFT Flags
+L0: lodsd | Mov D$ebx eax                               ; MFT Flags
     lodsd | or D$ebx eax                                ; MFS Flags
 
     lodsd                                               ; jump over ID
 
-    mov eax 0 | lodsw                                   ; Pop Flags
+    Mov eax 0 | lodsw                                   ; Pop Flags
 
     .If eax = PopUpFlag
         inc D$MenuTabsCount
-        mov eax &MF_POPUP
+        Mov eax &MF_POPUP
     .Else_If eax = LastPopUpFlag
         inc D$MenuTabsCount
-        mov eax &MF_POPUP__&MF_END
+        Mov eax &MF_POPUP__&MF_END
     .Else_If eax = LastItemFlag
         On D$MenuTabsCount > 0, dec D$MenuTabsCount
         push ebx, eax
             sub ebx 4
             .While ebx > MenuItemsFlags
-                mov eax D$ebx | and eax POPMASK
+                Mov eax D$ebx | and eax POPMASK
                 If eax = &MF_POPUP__&MF_END
                     On D$MenuTabsCount > 0, dec D$MenuTabsCount
                 Else_If eax = &MF_POPUP
@@ -214,19 +214,19 @@ L0: lodsd | mov D$ebx eax                               ; MFT Flags
                 sub ebx 4
             .End_While
 L1:     pop eax, ebx
-        mov eax &MF_END
+        Mov eax &MF_END
     .End_If
 
     or D$ebx eax                                        ; All Flags
 
     lodsw                                               ; item first letter
     If ax = 0
-      mov ax 0A0D | stosw                               ; Separator
+      Mov ax 0A0D | stosw                               ; Separator
     Else
-      mov edx 0                                         ; simple counter for read alignement
+      Mov edx 0                                         ; simple counter for read alignement
 L1:   stosb | inc edx
       lodsw | cmp ax 0 | jne L1<                        ; write item name
-      mov ax 0A0D | stosw                               ; end mark
+      Mov ax 0A0D | stosw                               ; end mark
       test edx 1 | jz L2>
         lodsw                                           ; dWord align
 L2:   test D$ebx &MF_POPUP
@@ -234,7 +234,7 @@ L2:   test D$ebx &MF_POPUP
         lodsd                                           ; + 1 dWord in case of popup
     End_If
 
-L2: mov ecx D$MenuTabsCount, al tab
+L2: Mov ecx D$MenuTabsCount, al tab
     while ecx > 0
         stosb | dec ecx
     End_While
@@ -249,10 +249,10 @@ L8: cmp B$edi-1  ' ' | jae L9>
       dec edi | jmp L8<
 
 L9: On B$edi = 0FF, inc edi                          ; edge in case of empty menu
-    mov eax 0 | stosd                                   ; End mark
+    Mov eax 0 | stosd                                   ; End mark
 
 
-    mov esi MenuItemsFlags
+    Mov esi MenuItemsFlags
 ret
 
 ____________________________________________________________________________________________
@@ -278,49 +278,49 @@ SetMenuItemFlag:
 
     On B$OnMenuEdition = &FALSE, ret
 
-    call 'User32.SendMessageA' D$MenuEditHandle &EM_GETSEL SelectionStart SelectionEnd
-    mov ebx D$SelectionStart, eax D$SelectionEnd | sub eax ebx | cmp eax 0 | je L8>>
-    call 'User32.SendMessageA' D$MenuEditHandle &EM_LINEFROMCHAR D$SelectionStart 0
+    Call 'User32.SendMessageA' D$MenuEditHandle &EM_GETSEL SelectionStart SelectionEnd
+    Mov ebx D$SelectionStart, eax D$SelectionEnd | sub eax ebx | cmp eax 0 | je L8>>
+    Call 'User32.SendMessageA' D$MenuEditHandle &EM_LINEFROMCHAR D$SelectionStart 0
   ; eax > line number
-    call 'User32.SendMessageA' D$MenuEditHandle &EM_LINEINDEX    eax   0
+    Call 'User32.SendMessageA' D$MenuEditHandle &EM_LINEINDEX    eax   0
   ; eax > first line char
-        mov D$SelectionStart eax
-    call 'User32.SendMessageA' D$MenuEditHandle &EM_LINELENGTH   eax   0
+        Mov D$SelectionStart eax
+    Call 'User32.SendMessageA' D$MenuEditHandle &EM_LINELENGTH   eax   0
   ; eax > lenght
-        add eax D$SelectionStart | mov D$SelectionEnd eax
-    call 'User32.SendMessageA' D$MenuEditHandle &EM_SETSEL D$SelectionStart D$SelectionEnd
+        add eax D$SelectionStart | Mov D$SelectionEnd eax
+    Call 'User32.SendMessageA' D$MenuEditHandle &EM_SETSEL D$SelectionStart D$SelectionEnd
 
 ; Now, set the according flags:
 
     .If B$MenuFlagEnable = &FALSE
-        call 'User32.EnableWindow' D$hRight &TRUE
-        call 'User32.EnableWindow' D$hChecked &TRUE
-        call 'User32.EnableWindow' D$hGrayed &TRUE
-        call 'User32.EnableWindow' D$hRadio &TRUE
-        call 'User32.SendMessageA' D$hRight &BM_SETCHECK 0 0
-        call 'User32.SendMessageA' D$hChecked &BM_SETCHECK 0 0
-        call 'User32.SendMessageA' D$hGrayed &BM_SETCHECK 0 0
-        call 'User32.SendMessageA' D$hRadio &BM_SETCHECK 0 0
-        mov B$MenuFlagEnable &TRUE
+        Call 'User32.EnableWindow' D$hRight &TRUE
+        Call 'User32.EnableWindow' D$hChecked &TRUE
+        Call 'User32.EnableWindow' D$hGrayed &TRUE
+        Call 'User32.EnableWindow' D$hRadio &TRUE
+        Call 'User32.SendMessageA' D$hRight &BM_SETCHECK 0 0
+        Call 'User32.SendMessageA' D$hChecked &BM_SETCHECK 0 0
+        Call 'User32.SendMessageA' D$hGrayed &BM_SETCHECK 0 0
+        Call 'User32.SendMessageA' D$hRadio &BM_SETCHECK 0 0
+        Mov B$MenuFlagEnable &TRUE
 
-        call 'User32.SendMessageA' D$MenuEditHandle &EM_LINEFROMCHAR  D$SelectionStart 0
-        shl eax 2 | mov D$IndexToMenuItemsFlags eax
-        mov ebx MenuItemsFlags | add ebx eax | mov eax D$ebx
+        Call 'User32.SendMessageA' D$MenuEditHandle &EM_LINEFROMCHAR  D$SelectionStart 0
+        shl eax 2 | Mov D$IndexToMenuItemsFlags eax
+        Mov ebx MenuItemsFlags | add ebx eax | Mov eax D$ebx
         test eax &MFS_GRAYED | jz L1>
             push eax
-                call 'User32.SendMessageA' D$hGrayed &BM_SETCHECK 1 0
+                Call 'User32.SendMessageA' D$hGrayed &BM_SETCHECK 1 0
             pop eax
 L1:     test eax &MFS_CHECKED | jz L1>
             push eax
-                call 'User32.SendMessageA' D$hChecked &BM_SETCHECK 1 0
+                Call 'User32.SendMessageA' D$hChecked &BM_SETCHECK 1 0
             pop eax
 L1:   test eax &MFT_RADIOCHECK | jz L1>
             push eax
-                call 'User32.SendMessageA' D$hRadio &BM_SETCHECK 1 0
+                Call 'User32.SendMessageA' D$hRadio &BM_SETCHECK 1 0
             pop eax
 L1:   test eax &MFT_RIGHTJUSTIFY | jz L9>>
             push eax
-                call 'User32.SendMessageA' D$hRight &BM_SETCHECK 1 0
+                Call 'User32.SendMessageA' D$hRight &BM_SETCHECK 1 0
             pop eax
     .End_If
     jmp L9>
@@ -328,11 +328,11 @@ L1:   test eax &MFT_RIGHTJUSTIFY | jz L9>>
 ; sleep:
 
 L8: If B$MenuFlagEnable = &TRUE
-        call 'User32.EnableWindow' D$hRight &FALSE
-        call 'User32.EnableWindow' D$hChecked &FALSE
-        call 'User32.EnableWindow' D$hGrayed &FALSE
-        call 'User32.EnableWindow' D$hRadio &FALSE
-        mov B$MenuFlagEnable &FALSE
+        Call 'User32.EnableWindow' D$hRight &FALSE
+        Call 'User32.EnableWindow' D$hChecked &FALSE
+        Call 'User32.EnableWindow' D$hGrayed &FALSE
+        Call 'User32.EnableWindow' D$hRadio &FALSE
+        Mov B$MenuFlagEnable &FALSE
     End_If
 
 L9: ret
@@ -341,41 +341,41 @@ L9: ret
 ; Read a menu in RosAsm PE. Basicaly same routine as the one for icons.
 
 ReadRosAsmPeMenus:
-    mov edi MenuList, eax 0, ecx 300 | rep stosd
-    mov ebx RT_MENU | call SearchResourceType | On eax = 0, ret
-    mov D$MenuListPtr MenuList, ebx MenuListPtr | call ReadResourcesRecord
+    Mov edi MenuList, eax 0, ecx 300 | rep stosd
+    Mov ebx RT_MENU | Call SearchResourceType | On eax = 0, ret
+    Mov D$MenuListPtr MenuList, ebx MenuListPtr | Call ReadResourcesRecord
 ret
  ______________________________________
 
 [PreviousEditProc: ?]
 
 Proc InitMenuEdition:
-    Argument @Adressee
+    Argument @hwnd
 
-    call 'User32.GetDlgItem' D@Adressee ID_MenuEdit
-      mov D$MenuEditHandle eax
+    Call 'User32.GetDlgItem' D@hwnd ID_MenuEdit
+      Mov D$MenuEditHandle eax
 
   ; subClassing Edit control for tab problem:
-    call 'User32.SetWindowLongA' D$MenuEditHandle  &GWL_WNDPROC mEditProc
-      mov D$PreviousEditProc eax
+    Call 'User32.SetWindowLongA' D$MenuEditHandle  &GWL_WNDPROC mEditProc
+      Mov D$PreviousEditProc eax
 
   ; Limit edition of Equate number to 5 chars and set text at 1000:
-    call 'User32.GetDlgItem' D@Adressee ID_IDedit
-      mov D$MenuIDsHandle eax
+    Call 'User32.GetDlgItem' D@hwnd ID_IDedit
+      Mov D$MenuIDsHandle eax
 
-    call 'User32.SendMessageA' eax  &EM_SETLIMITTEXT 5  0
+    Call 'User32.SendMessageA' eax  &EM_SETLIMITTEXT 5  0
 
-    call 'User32.SendMessageA' D$MenuIDsHandle  &WM_SETTEXT 0 FirstMenuID
+    Call 'User32.SendMessageA' D$MenuIDsHandle  &WM_SETTEXT 0 FirstMenuID
 
   ; Disable all the CheckBoxes:
-    call 'User32.GetDlgItem' D@Adressee IDR_Grayed | mov D$hGrayed eax
-    call 'User32.EnableWindow' D$hGrayed &FALSE
-    call 'User32.GetDlgItem' D@Adressee IDR_Checked | mov D$hChecked eax
-    call 'User32.EnableWindow' D$hChecked &FALSE
-    call 'User32.GetDlgItem' D@Adressee IDR_Right | mov D$hRight eax
-    call 'User32.EnableWindow' D$hRight &FALSE
-    call 'User32.GetDlgItem' D@Adressee IDR_Radio | mov D$hRadio eax
-    call 'User32.EnableWindow' D$hRadio &FALSE
+    Call 'User32.GetDlgItem' D@hwnd IDR_Grayed | Mov D$hGrayed eax
+    Call 'User32.EnableWindow' D$hGrayed &FALSE
+    Call 'User32.GetDlgItem' D@hwnd IDR_Checked | Mov D$hChecked eax
+    Call 'User32.EnableWindow' D$hChecked &FALSE
+    Call 'User32.GetDlgItem' D@hwnd IDR_Right | Mov D$hRight eax
+    Call 'User32.EnableWindow' D$hRight &FALSE
+    Call 'User32.GetDlgItem' D@hwnd IDR_Radio | Mov D$hRadio eax
+    Call 'User32.EnableWindow' D$hRadio &FALSE
 Endp
 
 ____________________________________________________________________________________________
@@ -383,17 +383,17 @@ ________________________________________________________________________________
 [OneItemString: 160 ] [StringData: 0 #40]
 
 GetuMenuID:
-    call 'User32.SendMessageA' D$MenuIDsHandle &WM_GETTEXTLENGTH 0 0 | inc eax
-    call 'User32.SendMessageA' D$MenuIDsHandle &WM_GETTEXT eax FirstMenuID
+    Call 'User32.SendMessageA' D$MenuIDsHandle &WM_GETTEXTLENGTH 0 0 | inc eax
+    Call 'User32.SendMessageA' D$MenuIDsHandle &WM_GETTEXT eax FirstMenuID
     TranslateAsciiToDword FirstMenuID
-    mov D$FirstMenuId 0                           ; just for abort tests in callers:
+    Mov D$FirstMenuId 0                           ; just for abort tests in callers:
     If eax > 32000                                ; 'StoreMenuEdition' / 'MenuEditProc'
-      mov eax D$IdTooBigPtr | call MessageBox | mov D$FirstMenuId 0 | ret
+      Mov eax D$IdTooBigPtr | Call MessageBox | Mov D$FirstMenuId 0 | ret
     Else_If eax < 1   ;000
-      mov eax D$IdTooSmallPtr | call MessageBox | mov D$FirstMenuId 0 | ret
+      Mov eax D$IdTooSmallPtr | Call MessageBox | Mov D$FirstMenuId 0 | ret
     End_If
-    mov D$uMenu_ID eax
-    inc eax | mov D$FirstMenuId eax
+    Mov D$uMenu_ID eax
+    inc eax | Mov D$FirstMenuId eax
 ret
 
 ____________________________________________________________________________________________
@@ -409,7 +409,7 @@ EM_GETLINE_Comment:
   Hopefully, the (eax) Return Value, saying the number of written Chars seems good. This is 
   why i add this:
   
-  > mov B$Destination+eax 0
+  > Mov B$Destination+eax 0
   
   after retrieving a Line by EM_GETLINE Message.
 ;;
@@ -424,38 +424,38 @@ EM_GETLINE_Comment:
 [SeparatorsNumber: ?    PopUpNumber: ?]
 
 StoreMenuEdition:
-    call GetuMenuID | On D$FirstMenuId = 0, ret
+    Call GetuMenuID | On D$FirstMenuId = 0, ret
    ; "EM_GETLINECOUNT" returns 1 if empty; so, ...:
-    call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, 0, OneItemString
-    mov B$OneItemString+eax 0  ; >>> 'EM_GETLINE_Comment'
+    Call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, 0, OneItemString
+    Mov B$OneItemString+eax 0  ; >>> 'EM_GETLINE_Comment'
 
     If eax = 0
-        mov D$FirstMenuId 0 | ret
+        Mov D$FirstMenuId 0 | ret
     End_If
 
-    mov edi eMenu, ecx MENU_DWORDS, eax 0 | rep stosd
+    Mov edi eMenu, ecx MENU_DWORDS, eax 0 | rep stosd
 
-    call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINECOUNT, 0, 0
+    Call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINECOUNT, 0, 0
 
-    mov ecx eax, ebx MenuItemsFlags, edi eMenu, edx 0
-    mov D$SeparatorsNumber 0, D$PopUpNumber 0
-    mov ax 1 | stosw | mov ax 4 | stosw | mov eax 0 | stosd     ; header (8 bytes)
+    Mov ecx eax, ebx MenuItemsFlags, edi eMenu, edx 0
+    Mov D$SeparatorsNumber 0, D$PopUpNumber 0
+    Mov ax 1 | stosw | Mov ax 4 | stosw | Mov eax 0 | stosd     ; header (8 bytes)
 L0: pushad
-T0:     mov eax 0, edi OneItemString, ecx 40 | rep stosd        ; GETLINE not zero-ended
-        mov W$OneItemString 160                                 ; max write for GETLINE
-        call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, edx, OneItemString
+T0:     Mov eax 0, edi OneItemString, ecx 40 | rep stosd        ; GETLINE not zero-ended
+        Mov W$OneItemString 160                                 ; max write for GETLINE
+        Call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, edx, OneItemString
       ; Copied Line may be corrupted at the end with some weird Drivers on Board:
-        mov B$OneItemString+eax 0  ; >>> 'EM_GETLINE_Comment'
+        Mov B$OneItemString+eax 0  ; >>> 'EM_GETLINE_Comment'
 
         On eax = 0, jmp T1>
-        mov esi OneItemString
+        Mov esi OneItemString
         While B$esi = tab
             inc esi | dec eax                                   ; no header tabs in chars count
         End_While
-        On B$esi = 0 , mov eax 0
+        On B$esi = 0 , Mov eax 0
         .If eax = 0
 T1:         popad
-                mov eax 0 | stosd | stosd | stosd | stosd       ; Separator = 16 zero bytes
+                Mov eax 0 | stosd | stosd | stosd | stosd       ; Separator = 16 zero bytes
                 inc edx | inc D$SeparatorsNumber | add ebx 4
                 If edx < ecx
                     pushad | jmp T0<<
@@ -465,28 +465,28 @@ T1:         popad
         .End_If
     popad
 
-    mov eax D$ebx | and eax MFTMASK | stosd
+    Mov eax D$ebx | and eax MFTMASK | stosd
 
-    mov eax D$ebx | and eax MFSMASK | stosd
+    Mov eax D$ebx | and eax MFSMASK | stosd
 
-    mov eax D$FirstMenuID | add eax edx
+    Mov eax D$FirstMenuID | add eax edx
     sub eax D$SeparatorsNumber
     sub eax D$PopUpNumber
     test D$ebx &MF_POPUP | jz F0>
-        inc D$PopUpNumber | mov eax 0                          ; No ID for PopUp
+        inc D$PopUpNumber | Mov eax 0                          ; No ID for PopUp
 F0: stosd                                                      ; ID number
-    mov eax D$ebx | and eax POPMASK
+    Mov eax D$ebx | and eax POPMASK
     If eax = &MF_POPUP
-        mov eax PopUpFlag
+        Mov eax PopUpFlag
     Else_If eax = &MF_POPUP__&MF_END
-        mov eax LastPopUpFlag
+        Mov eax LastPopUpFlag
     Else_If eax = &MF_END
-        mov eax LastItemFlag
+        Mov eax LastItemFlag
     End_If
-    stosw | mov esi OneItemString
+    stosw | Mov esi OneItemString
 
     push ecx
-        mov ecx 0, eax 0                                      ; align counter
+        Mov ecx 0, eax 0                                      ; align counter
         While B$esi < ' '
            lodsb                                              ; clear tabs if any
         End_While
@@ -499,29 +499,29 @@ L2: pop ecx
 
 L3: inc edx | add ebx 4 | cmp edx ecx | jb L0<<
 
-L9: mov eax 0 | stosd | stosd
+L9: Mov eax 0 | stosd | stosd
 
-    mov D$EndOfeMenu edi, eax &TRUE
+    Mov D$EndOfeMenu edi, eax &TRUE
 ret
 
 
 PackMenuInList:
-    mov eax D$MenuListPtr | add eax 4
+    Mov eax D$MenuListPtr | add eax 4
     push eax
-        mov edi D$MenuListPtr | mov eax D$uMenu_ID | stosd  ; ID
+        Mov edi D$MenuListPtr | Mov eax D$uMenu_ID | stosd  ; ID
         push edi
-            mov eax D$EndOfeMenu | sub eax eMenu | inc eax
+            Mov eax D$EndOfeMenu | sub eax eMenu | inc eax
             push eax
                 VirtualAlloc TempoMemPointer eax            ; New memory
-                mov ebx D$TempoMemPointer, eax ebx
+                Mov ebx D$TempoMemPointer, eax ebx
             pop ecx
         pop edi
         stosd                                               ; Ptr (eax from 'AskMem')
-        mov eax ecx                                         ; Size
+        Mov eax ecx                                         ; Size
         stosd
-        mov esi eMenu, edi ebx | rep movsb                  ; store
+        Mov esi eMenu, edi ebx | rep movsb                  ; store
     pop eax
-  ;  call FreeMemory                                        ; release previous Listed memory
+  ;  Call FreeMemory                                        ; release previous Listed memory
 ret
 
 
@@ -531,25 +531,25 @@ ret
 [DataForClipEquates: ? #1000] [StartOfItemsLine: ?]
 
 WriteClipIDvalue:
-    mov ax '  ' | stosw
-    mov eax D$FirstMenuID | add eax edx
+    Mov ax '  ' | stosw
+    Mov eax D$FirstMenuID | add eax edx
     sub eax D$SeparatorsNumber | sub eax D$PopUpNumber
 
     push ecx
     ; adapted version of 'TransDwordToAsciiDecimal' for ID number:
-      mov ebx TenTable, ecx D$ebx, B$edi '0'
+      Mov ebx TenTable, ecx D$ebx, B$edi '0'
 L1:   cmp eax ecx | jae L2>
-            add ebx 4 | mov ecx D$ebx | jmp L1<
+            add ebx 4 | Mov ecx D$ebx | jmp L1<
 L2:   cmp eax ecx | jb L3>
             sub eax ecx | inc B$edi | jmp L2<
-L3:   inc edi |  mov B$edi '0' | add ebx 4 | mov ecx D$ebx | cmp ecx 0 | ja L2<
+L3:   inc edi |  Mov B$edi '0' | add ebx 4 | Mov ecx D$ebx | cmp ecx 0 | ja L2<
 
-      mov ecx edi | sub ecx D$StartOfItemsLine        ; align items text (3 per line):
+      Mov ecx edi | sub ecx D$StartOfItemsLine        ; align items text (3 per line):
       If ecx > 64                                     ; 32 chars each
-            mov ax 0A0D | stosw | mov al ' ' | stosb
-            mov D$StartOfItemsLine edi
+            Mov ax 0A0D | stosw | Mov al ' ' | stosb
+            Mov D$StartOfItemsLine edi
       Else
-            mov al ' ' | and ecx 00_11111 | xor ecx 00_11111 | inc ecx | rep stosb
+            Mov al ' ' | and ecx 00_11111 | xor ecx 00_11111 | inc ecx | rep stosb
       End_If
     pop ecx
 
@@ -561,32 +561,32 @@ ________________________________________________________________________________
 [MenuEquateIndice: 'M00_']
 
 ClipEquates:
-    mov D$MenuEquateIndice 'M00_'
-    mov eax D$MenulistPtr | sub eax MenuList
-    mov ebx 12, edx 0 | div ebx                 ; > indice = 0, 1, 2, ...
-    mov ebx 10, edx 0 | div ebx
+    Mov D$MenuEquateIndice 'M00_'
+    Mov eax D$MenulistPtr | sub eax MenuList
+    Mov ebx 12, edx 0 | div ebx                 ; > indice = 0, 1, 2, ...
+    Mov ebx 10, edx 0 | div ebx
     add B$MenuEquateIndice+2 dl
-    mov edx 0 | div ebx
+    Mov edx 0 | div ebx
     add B$MenuEquateIndice+1 dl
 
-    call GetuMenuID
-    call 'User32.SendMessageA' D$MenuEditHandle &EM_GETLINECOUNT 0 0
-    mov ecx eax, edi DataForClipEquates, edx 0, D$SeparatorsNumber 0, D$PopUpNumber 0
-    mov al '[' | stosb | mov D$StartOfItemsLine edi
+    Call GetuMenuID
+    Call 'User32.SendMessageA' D$MenuEditHandle &EM_GETLINECOUNT 0 0
+    Mov ecx eax, edi DataForClipEquates, edx 0, D$SeparatorsNumber 0, D$PopUpNumber 0
+    Mov al '[' | stosb | Mov D$StartOfItemsLine edi
 
-    mov eax D$MenuEquateIndice | stosd | mov eax 'Menu' | stosd
-    dec D$FirstMenuID | call WriteClipIDvalue | inc D$FirstMenuID
+    Mov eax D$MenuEquateIndice | stosd | Mov eax 'Menu' | stosd
+    dec D$FirstMenuID | Call WriteClipIDvalue | inc D$FirstMenuID
 
 L0:
 L1: push edi, ecx
-        mov eax 0, edi OneItemString, ecx 40 | rep stosd        ; GETLINE not zero-ended
+        Mov eax 0, edi OneItemString, ecx 40 | rep stosd        ; GETLINE not zero-ended
     pop ecx, edi
-    mov W$OneItemString 160                                 ; max write for GETLINE
+    Mov W$OneItemString 160                                 ; max write for GETLINE
     pushad
-        call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, edx, OneItemString
-        mov B$OneItemString+eax 0  ; >>> 'EM_GETLINE_Comment'
+        Call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, edx, OneItemString
+        Mov B$OneItemString+eax 0  ; >>> 'EM_GETLINE_Comment'
     popad
-    mov esi OneItemString
+    Mov esi OneItemString
     While B$esi = tab
         inc esi
     End_While
@@ -594,36 +594,36 @@ L1: push edi, ecx
         inc D$SeparatorsNumber | inc edx | cmp edx ecx | je L9>>   ; No Separators
             jmp L1<<
     End_If
-    mov eax D$MenuItemsFlags+edx*4 | test eax &MF_POPUP | jz T0>   ; No Popup  ; PopUpFlag
+    Mov eax D$MenuItemsFlags+edx*4 | test eax &MF_POPUP | jz T0>   ; No Popup  ; PopUpFlag
     inc D$PopUpNumber | inc edx | jmp L1<<
 
-T0: mov esi OneItemString, eax 0, eax D$MenuEquateIndice | stosd
+T0: Mov esi OneItemString, eax 0, eax D$MenuEquateIndice | stosd
     While B$esi <= ' '
         lodsb                                           ; strip leading tabs and spaces
     End_While
 
 L3: lodsb | cmp al 0 | je L4>
-       ; On al = ' ', mov al '_'                         ; link separates words
+       ; On al = ' ', Mov al '_'                         ; link separates words
         On al = '&', jmp L3<                            ; do not write '&'
         On al = tab  , jmp L4>                          ; do not write 'hot keys'
-        On al < '0', mov al '_'
+        On al < '0', Mov al '_'
         If al = '_'
             On B$edi-1 = '_', jmp L3<                   ; only one '_' at a time
         End_If
 
         stosb | jmp L3<                                 ; name Char writing
 
-L4: call WriteClipIDvalue
+L4: Call WriteClipIDvalue
 
     inc edx | cmp edx ecx | jb L0<<
 
 L9: dec edi | cmp B$edi ' ' | jbe L9<                   ; suppress lasting spaces / CR/LF
-    inc edi | mov al ']' | stosb | mov al 0 | stosb     ; and close Bracket
+    inc edi | Mov al ']' | stosb | Mov al 0 | stosb     ; and close Bracket
 
     dec edi                                             ; reuse 'ControlC' for clip:
     push D$BlockStartTextPtr, D$BlockEndTextPtr, D$BlockInside
-      mov D$BlockStartTextPtr DataForClipEquates, D$BlockEndTextPtr edi
-      mov B$BlockInside &TRUE | call ControlC
+      Mov D$BlockStartTextPtr DataForClipEquates, D$BlockEndTextPtr edi
+      Mov B$BlockInside &TRUE | Call ControlC
     pop D$BlockInside, D$BlockEndTextPtr, D$BlockStartTextPtr
 ret
 ____________________________________________________________________________________________
@@ -634,25 +634,25 @@ ________________________________________________________________________________
 [LenOfMenuText: ?    TempoMenuTextPtr: ?]
 
 CleanMenuEnd:
-    call 'User32.SendMessageA' D$MenuEditHandle &WM_GETTEXTLENGTH 0 0
-    inc eax | mov D$LenOfMenuText eax
+    Call 'User32.SendMessageA' D$MenuEditHandle &WM_GETTEXTLENGTH 0 0
+    inc eax | Mov D$LenOfMenuText eax
     VirtualAlloc TempoMenuTextPtr eax
-    call 'User32.SendMessageA' D$MenuEditHandle, &WM_GETTEXT, D$LenOfMenuText,
+    Call 'User32.SendMessageA' D$MenuEditHandle, &WM_GETTEXT, D$LenOfMenuText,
                                D$TempoMenuTextPtr
-    mov esi D$TempoMenuTextPtr
+    Mov esi D$TempoMenuTextPtr
 
     If D$esi = 0
 L1:     VirtualFree D$TempoMenuTextPtr
-        mov eax &FALSE | ret
+        Mov eax &FALSE | ret
     End_If
-    add esi D$LenOfMenuText | mov D$esi+1 0
+    add esi D$LenOfMenuText | Mov D$esi+1 0
     While B$esi <= ' '
-        mov B$esi 0 | dec esi | cmp esi D$TempoMenuTextPtr | jb L1<
+        Mov B$esi 0 | dec esi | cmp esi D$TempoMenuTextPtr | jb L1<
     End_While
-    call 'User32.SendMessageA' D$MenuEditHandle &WM_SETTEXT 0 D$TempoMenuTextPtr
+    Call 'User32.SendMessageA' D$MenuEditHandle &WM_SETTEXT 0 D$TempoMenuTextPtr
 
     VirtualFree D$TempoMenuTextPtr
-    mov eax &TRUE
+    Mov eax &TRUE
 ret
 
 ____________________________________________________________________________________________
@@ -664,25 +664,25 @@ ________________________________________________________________________________
 [MenuItemTabsList: B$ ? #MAXMENUTABS] [MenuItemTabsListPtr: ?]
 
 StoreMenuPopFlags:
-    mov D$MenuItemTabsListPtr MenuItemTabsList
+    Mov D$MenuItemTabsListPtr MenuItemTabsList
 
-    call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, 0, OneItemString
-    mov B$OneItemString+eax 0  ; >>> 'EM_GETLINE_Comment'
+    Call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, 0, OneItemString
+    Mov B$OneItemString+eax 0  ; >>> 'EM_GETLINE_Comment'
 
     On eax = 0, ret
 
-    call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINECOUNT, 0, 0
+    Call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINECOUNT, 0, 0
 
-    mov ecx eax, edx 0
+    Mov ecx eax, edx 0
 
 L0: pushad
-      mov eax 0, edi OneItemString, ecx 40 | rep stosd       ; GETLINE not zero-ended
-      mov W$OneItemString 160                                ; max write for GETLINE
+      Mov eax 0, edi OneItemString, ecx 40 | rep stosd       ; GETLINE not zero-ended
+      Mov W$OneItemString 160                                ; max write for GETLINE
 
-      call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, edx, OneItemString
-      mov B$OneItemString+eax 0  ; >>> 'EM_GETLINE_Comment'
+      Call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, edx, OneItemString
+      Mov B$OneItemString+eax 0  ; >>> 'EM_GETLINE_Comment'
 
-      mov esi OneItemString, edi D$MenuItemTabsListPtr, B$edi 1
+      Mov esi OneItemString, edi D$MenuItemTabsListPtr, B$edi 1
 
       .If eax > 0
           While B$esi = tab
@@ -693,27 +693,27 @@ L0: pushad
 
     inc D$MenuItemTabsListPtr | inc edx | cmp edx ecx | jb L0<<
 
-    mov edi D$MenuItemTabsListPtr, D$edi 0
+    Mov edi D$MenuItemTabsListPtr, D$edi 0
 
     ; Now, set the Flags in MenuItemsFlags:
 
-    mov esi MenuItemTabsList, edi MenuItemsFlags
+    Mov esi MenuItemTabsList, edi MenuItemsFlags
 
     .While B$esi > 0
         lodsb
         .If al > B$esi
-            mov eax &MF_END
+            Mov eax &MF_END
         .Else_If al = B$esi
-            mov eax 0
+            Mov eax 0
         .Else
             push esi
                 While B$esi > al
                     inc esi
                 End_While
                 If B$esi < al
-                    mov eax &MF_POPUP__&MF_END
+                    Mov eax &MF_POPUP__&MF_END
                 Else
-                    mov eax &MF_POPUP
+                    Mov eax &MF_POPUP
                 End_If
             pop esi
        .End_If
@@ -723,11 +723,11 @@ L0: pushad
 ret
 
 
-[Beep | On B$SoundsWanted = &TRUE, call BeepIt]
+[Beep | On B$SoundsWanted = &TRUE, Call BeepIt]
 
-BeepIt: pushad | call 'USER32.MessageBeep' &MB_ICONHAND | popad | ret
+BeepIt: pushad | Call 'USER32.MessageBeep' &MB_ICONHAND | popad | ret
 
-call 'USER32.MessageBeep' &MB_ICONHAND
+Call 'USER32.MessageBeep' &MB_ICONHAND
 ;;
 0xFFFFFFFF Standard beep using the computer speaker
 &MB_ICONASTERISK SystemAsterisk
@@ -740,56 +740,56 @@ call 'USER32.MessageBeep' &MB_ICONHAND
 [ClickMessage: ?   OnMenuEdition: ?    MenuEditorHandle: ?]
 
 Proc MenuEditProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    mov eax D@wParam | shr eax 16 | mov D$ClickMessage eax
+    Mov eax D@wParam | shr eax 16 | Mov D$ClickMessage eax
 
-    If D@Message = &WM_CTLCOLOREDIT
-        call SetMenuItemFlag | mov B$OnMenuEdition &TRUE
+    If D@msg = &WM_CTLCOLOREDIT
+        Call SetMenuItemFlag | Mov B$OnMenuEdition &TRUE
     End_If
 
-    ...If D@Message = &WM_COMMAND
-        mov eax D@lParam
+    ...If D@msg = &WM_COMMAND
+        Mov eax D@lParam
         .If eax = D$MenuEditHandle
-            mov eax D@wParam | shr eax 16
+            Mov eax D@wParam | shr eax 16
             If eax = &EN_CHANGE
-                call MenuLinesControl | popad | mov eax &TRUE | jmp L9>>
+                Call MenuLinesControl | popad | Mov eax &TRUE | jmp L9>>
             End_If
         .End_If
 
         ..If D@wParam = &IDCANCEL
-            mov B$OnMenuEdition &FALSE, D$MenuEditorHandle 0
-            call 'User32.EndDialog' D@Adressee 0
+            Mov B$OnMenuEdition &FALSE, D$MenuEditorHandle 0
+            Call 'User32.EndDialog' D@hwnd 0
 
         ..Else_If D@wParam = &IDOK
-            call CleanMenuEnd
+            Call CleanMenuEnd
             If eax = &FALSE
-                mov D$MenuEditorHandle 0 | call 'User32.EndDialog' D@Adressee 0
+                Mov D$MenuEditorHandle 0 | Call 'User32.EndDialog' D@hwnd 0
             End_If
-            call StoreMenuPopFlags | call StoreMenuEdition
+            Call StoreMenuPopFlags | Call StoreMenuEdition
             If D$FirstMenuId <> 0
-                call PackMenuInList
-                mov B$OnMenuEdition &FALSE, D$MenuEditorHandle 0
-                call 'User32.EndDialog' D@Adressee 0
+                Call PackMenuInList
+                Mov B$OnMenuEdition &FALSE, D$MenuEditorHandle 0
+                Call 'User32.EndDialog' D@hwnd 0
             End_If
 
       ..Else_If D@wParam = ID_EquToClip
-            call CleanMenuEnd
+            Call CleanMenuEnd
             If eax = &TRUE
-                call StoreMenuPopFlags
-                call StoreMenuEdition
-                On D$FirstMenuId <> 0, call ClipEquates
+                Call StoreMenuPopFlags
+                Call StoreMenuEdition
+                On D$FirstMenuId <> 0, Call ClipEquates
             End_If
 
-            On B$TagedEdition = &TRUE, mov B$TagedEdition 0-1
+            On B$TagedEdition = &TRUE, Mov B$TagedEdition 0-1
 
       ..Else_If D@wParam = ID_MenuHelp
-            call Help, B_U_AsmName, MenuHelp, ContextHlpMessage
+            Call Help, B_U_AsmName, MenuHelp, ContextHlpMessage
 
       ..Else_If D$ClickMessage = &BN_CLICKED
-            mov eax D@lParam, ebx MenuItemsFlags               ; D$lParam = from what
+            Mov eax D@lParam, ebx MenuItemsFlags               ; D$lParam = from what
             add ebx D$IndexToMenuItemsFlags
 
             If eax = D$hGrayed
@@ -807,60 +807,60 @@ Proc MenuEditProc:
 
       ..End_If
 
-    ...Else_If D@Message = &WM_INITDIALOG
-        call FillMenuEditData | call InitMenuEdition D@Adressee
-        call 'User32.SetDlgItemTextA' D@Adressee, 065, MenuEdition
-        call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINECOUNT, 0, 0
-        mov D$NumberOfMenuLines eax
-            call MenuLinesControl
-        move D$MenuEditorHandle D@Adressee
-        call 'USER32.SetClassLongA' D@Adressee, &GCL_HICON, D$wc_hIcon
+    ...Else_If D@msg = &WM_INITDIALOG
+        Call FillMenuEditData | Call InitMenuEdition D@hwnd
+        Call 'User32.SetDlgItemTextA' D@hwnd, 065, MenuEdition
+        Call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINECOUNT, 0, 0
+        Mov D$NumberOfMenuLines eax
+            Call MenuLinesControl
+        move D$MenuEditorHandle D@hwnd
+        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
 
         If B$TagedEdition = &TRUE
-            call 'USER32.SendDlgItemMessageA' D@Adressee, ID_EquToClip,
+            Call 'USER32.SendDlgItemMessageA' D@hwnd, ID_EquToClip,
                                               &WM_SETTEXT, 0, {'Replace in Source', 0}
         End_If
 
-    ...Else_If D@Message = &WM_CTLCOLOREDIT
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+    ...Else_If D@msg = &WM_CTLCOLOREDIT
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
 
     ...Else
-L8:   popad | mov eax &FALSE | jmp L9>
+L8:   popad | Mov eax &FALSE | jmp L9>
 
     ...End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
 
 
 NewMenu:
-    mov esi MenuList                               ; (ID / Ptr / Size)
+    Mov esi MenuList                               ; (ID / Ptr / Size)
     While D$esi > 0
-        mov eax D$esi | add esi 12
+        Mov eax D$esi | add esi 12
     End_While
 
-    mov D$MenuListPtr esi
+    Mov D$MenuListPtr esi
 
     If esi = MenuList
-        mov eax 1000
+        Mov eax 1000
     Else
         add eax 1000
     End_If
-    mov D$uMenu_ID eax
-    mov ebx 10, edi FirstMenuID | add edi 5
-L0: mov edx 0 | div ebx
-    dec edi | add dl '0' | mov B$edi dl | cmp edi FirstMenuID | ja L0<
+    Mov D$uMenu_ID eax
+    Mov ebx 10, edi FirstMenuID | add edi 5
+L0: Mov edx 0 | div ebx
+    dec edi | add dl '0' | Mov B$edi dl | cmp edi FirstMenuID | ja L0<
     While B$edi = '0'
-        mov B$edi ' ' | inc edi
+        Mov B$edi ' ' | inc edi
     End_While
 
-    mov eax 0, ecx MENU_DWORDS, edi eMenu | rep stosd     ; clear temporary table
-    mov D$EndOfeMenu eMenu
+    Mov eax 0, ecx MENU_DWORDS, edi eMenu | rep stosd     ; clear temporary table
+    Mov D$EndOfeMenu eMenu
 
-    call MenuEditor
+    Call MenuEditor
 ret
 
 
@@ -870,34 +870,34 @@ SaveMenuBinaryFile:
         Beep | ret
     End_If
 
-    mov D$MenuListPtr MenuList,  B$UserTellWhatMenu &FALSE
+    Mov D$MenuListPtr MenuList,  B$UserTellWhatMenu &FALSE
     While B$UserTellWhatMenu = &FALSE
-        call WhatMenu
+        Call WhatMenu
     End_While
     On D$MenuListPtr = 0, ret
 
-    mov edi SaveFilter, eax 0, ecx 65 | rep stosd
-    mov D$SaveDlgFilter 'New.', D$SaveDlgFilter+3 '.bmf', D$SaveDlgFilter+7 0
+    Mov edi SaveFilter, eax 0, ecx 65 | rep stosd
+    Mov D$SaveDlgFilter 'New.', D$SaveDlgFilter+3 '.bmf', D$SaveDlgFilter+7 0
 
-    call 'Comdlg32.GetSaveFileNameA' OpenDlg | On eax = &FALSE, ret
+    Call 'Comdlg32.GetSaveFileNameA' OpenDlg | On eax = &FALSE, ret
 
-    call ForceExtension SaveDlgFilter, '.bmf'
+    Call ForceExtension SaveDlgFilter, '.bmf'
 
-    call 'KERNEL32.CreateFileA' SaveDlgFilter &GENERIC_WRITE,
+    Call 'KERNEL32.CreateFileA' SaveDlgFilter &GENERIC_WRITE,
                                &FILE_SHARE_READ, 0,
                                &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
 
     If eax = &INVALID_HANDLE_VALUE
-        mov eax D$BusyFilePtr | call MessageBox | ret
+        Mov eax D$BusyFilePtr | Call MessageBox | ret
     End_If
 
-    mov D$DestinationHandle eax, D$NumberOfReadBytes 0
+    Mov D$DestinationHandle eax, D$NumberOfReadBytes 0
 
-    mov esi D$MenuListPtr | mov ecx D$esi+8, esi D$esi+4
+    Mov esi D$MenuListPtr | Mov ecx D$esi+8, esi D$esi+4
 
-    call 'KERNEL32.WriteFile' D$DestinationHandle, esi, ecx, NumberOfReadBytes  0
+    Call 'KERNEL32.WriteFile' D$DestinationHandle, esi, ecx, NumberOfReadBytes  0
 
-    call 'KERNEL32.CloseHandle' D$DestinationHandle | mov D$DestinationHandle 0
+    Call 'KERNEL32.CloseHandle' D$DestinationHandle | Mov D$DestinationHandle 0
 ret
 
 
@@ -908,43 +908,43 @@ LoadMenuBinaryFile:
         Beep | ret
     End_If
 
-    mov D$OtherFilesFilters BinMenuFilesFilters
-    mov D$OpenOtherFileTitle DialogFilesTitle
+    Mov D$OtherFilesFilters BinMenuFilesFilters
+    Mov D$OpenOtherFileTitle DialogFilesTitle
 
-    move D$OtherhwndFileOwner D$hwnd, D$OtherhInstance D$hInstance
+    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$hInstance
 
-    mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
-    call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
+    Mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
+    Call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
 
     On D$OtherSaveFilter = 0, ret
 
-    call 'KERNEL32.CreateFileA' OtherSaveFilter &GENERIC_READ,
+    Call 'KERNEL32.CreateFileA' OtherSaveFilter &GENERIC_READ,
                                 &FILE_SHARE_READ, 0,
                                 &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-      mov eax D$BusyFilePtr | call MessageBox | ret  ; return to caller of caller
+      Mov eax D$BusyFilePtr | Call MessageBox | ret  ; return to caller of caller
     Else
-      mov D$OtherSourceHandle eax
+      Mov D$OtherSourceHandle eax
     End_If
 
-    call 'KERNEL32.GetFileSize' eax, 0 | mov D$BinMenuLength eax
+    Call 'KERNEL32.GetFileSize' eax, 0 | Mov D$BinMenuLength eax
 
     If eax > 0
         VirtualAlloc BinMenuMemory eax
 
-        mov D$NumberOfReadBytes 0
-        call 'KERNEL32.ReadFile' D$OtherSourceHandle, D$BinMenuMemory,
+        Mov D$NumberOfReadBytes 0
+        Call 'KERNEL32.ReadFile' D$OtherSourceHandle, D$BinMenuMemory,
                                  D$BinMenuLength, NumberOfReadBytes, 0
     Else
         ret
     End_If
 
-    call 'KERNEL32.CloseHandle' D$OtherSourceHandle
+    Call 'KERNEL32.CloseHandle' D$OtherSourceHandle
 
-    mov esi MenuList | While D$esi <> 0 | add esi 12 | End_While
-    mov eax D$esi-12 | add eax 1000 | mov D$esi eax
-    mov eax D$BinMenuMemory, D$esi+4 eax
-    mov eax D$BinMenuLength, D$esi+8 eax
+    Mov esi MenuList | While D$esi <> 0 | add esi 12 | End_While
+    Mov eax D$esi-12 | add eax 1000 | Mov D$esi eax
+    Mov eax D$BinMenuMemory, D$esi+4 eax
+    Mov eax D$BinMenuLength, D$esi+8 eax
 ret
 
 
@@ -953,57 +953,57 @@ ReplaceMenuBinaryFile:
         Beep | ret
     End_If
 
-    mov D$MenuListPtr MenuList,  B$UserTellWhatMenu &FALSE
+    Mov D$MenuListPtr MenuList,  B$UserTellWhatMenu &FALSE
     While B$UserTellWhatMenu = &FALSE
-        call WhatMenu
+        Call WhatMenu
     End_While
     On D$MenuListPtr = 0, ret
 
-    mov D$OtherFilesFilters BinMenuFilesFilters
-    mov D$OpenOtherFileTitle DialogFilesTitle
+    Mov D$OtherFilesFilters BinMenuFilesFilters
+    Mov D$OpenOtherFileTitle DialogFilesTitle
 
-    move D$OtherhwndFileOwner D$hwnd, D$OtherhInstance D$hInstance
+    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$hInstance
 
-    mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
-    call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
+    Mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
+    Call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
 
     On D$OtherSaveFilter = 0, ret
 
-    call 'KERNEL32.CreateFileA' OtherSaveFilter &GENERIC_READ,
+    Call 'KERNEL32.CreateFileA' OtherSaveFilter &GENERIC_READ,
                                 &FILE_SHARE_READ, 0,
                                 &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-      mov eax D$BusyFilePtr | call MessageBox | ret  ; return to caller of caller
+      Mov eax D$BusyFilePtr | Call MessageBox | ret  ; return to caller of caller
     Else
-      mov D$OtherSourceHandle eax
+      Mov D$OtherSourceHandle eax
     End_If
 
-    call 'KERNEL32.GetFileSize' eax, 0 | mov D$BinMenuLength eax
+    Call 'KERNEL32.GetFileSize' eax, 0 | Mov D$BinMenuLength eax
 
     If eax > 0
         VirtualAlloc BinMenuMemory eax
 
-        mov D$NumberOfReadBytes 0
-        call 'KERNEL32.ReadFile' D$OtherSourceHandle, D$BinMenuMemory,
+        Mov D$NumberOfReadBytes 0
+        Call 'KERNEL32.ReadFile' D$OtherSourceHandle, D$BinMenuMemory,
                                  D$BinMenuLength, NumberOfReadBytes, 0
     Else
         ret
     End_If
 
-    call 'KERNEL32.CloseHandle' D$OtherSourceHandle
+    Call 'KERNEL32.CloseHandle' D$OtherSourceHandle
 
-    mov esi D$MenuListPtr
+    Mov esi D$MenuListPtr
     push esi
         VirtualFree D$esi+4
     pop esi
-    mov eax D$BinMenuMemory, D$esi+4 eax
-    mov eax D$BinMenuLength, D$esi+8 eax
+    Mov eax D$BinMenuMemory, D$esi+4 eax
+    Mov eax D$BinMenuLength, D$esi+8 eax
 ret
 
 
 MenuEditor:
     If D$MenuEditorHandle = 0
-        call 'User32.DialogBoxIndirectParamA' D$hinstance, MenuDialogData, D$hwnd,
+        Call 'User32.DialogBoxIndirectParamA' D$hinstance, MenuDialogData, D$H.MainWindow,
                                               MenuEditProc, 0
     Else
         Beep
@@ -1015,17 +1015,17 @@ ret
 [UserTellWhatMenu: ?]
 
 ExistingMenu:
-    mov esi MenuList                                ; (ID / Ptr / Size)
+    Mov esi MenuList                                ; (ID / Ptr / Size)
     If D$esi = 0
-       call 'User32.MessageBoxA' D$hwnd, NoResourceMenu, Argh,
+       Call 'User32.MessageBoxA' D$H.MainWindow, NoResourceMenu, Argh,
                                  &MB_ICONINFORMATION+&MB_SYSTEMMODAL
        ret
     Else_If D$esi+12 = 0
-      mov D$MenuListPtr MenuList
+      Mov D$MenuListPtr MenuList
     Else
-      mov D$MenuListPtr MenuList,  B$UserTellWhatMenu &FALSE
+      Mov D$MenuListPtr MenuList,  B$UserTellWhatMenu &FALSE
       While B$UserTellWhatMenu = &FALSE
-        call WhatMenu
+        Call WhatMenu
       End_While
 
       On D$MenuListPtr = 0, ret
@@ -1035,20 +1035,20 @@ ExistingMenu:
 
 ReEditExistingMenu:
 
-    mov esi D$MenuListPtr
-    lodsd | mov D$uMenu_ID eax
-      mov ebx 10, edi FirstMenuID | add edi 5
-L0:     mov edx 0 | div ebx
-          dec edi | add dl '0' | mov B$edi dl | cmp edi FirstMenuID | ja L0<
+    Mov esi D$MenuListPtr
+    lodsd | Mov D$uMenu_ID eax
+      Mov ebx 10, edi FirstMenuID | add edi 5
+L0:     Mov edx 0 | div ebx
+          dec edi | add dl '0' | Mov B$edi dl | cmp edi FirstMenuID | ja L0<
           While B$edi = '0'
-            mov B$edi ' ' | inc edi
+            Mov B$edi ' ' | inc edi
           End_While
-    lodsd | mov ebx eax                           ; Ptr
-    lodsd | mov ecx eax                           ; Size
-    mov esi ebx, edi eMenu | rep movsb
-    mov D$EndOfeMenu edi
+    lodsd | Mov ebx eax                           ; Ptr
+    lodsd | Mov ecx eax                           ; Size
+    Mov esi ebx, edi eMenu | rep movsb
+    Mov D$EndOfeMenu edi
 
-    call MenuEditor
+    Call MenuEditor
 ret
 
 
@@ -1056,28 +1056,28 @@ ret
  Sure: 'Are you sure...', 0]
 
 DeleteMenu:
-    mov esi MenuList                                ; (ID / Ptr / Size)
+    Mov esi MenuList                                ; (ID / Ptr / Size)
 
     If D$esi = 0
-       call 'User32.MessageBoxA' D$hwnd, NoResourceMenu, Argh,
+       Call 'User32.MessageBoxA' D$H.MainWindow, NoResourceMenu, Argh,
                                  &MB_ICONINFORMATION+&MB_SYSTEMMODAL
        ret
     Else
-        mov D$MenuListPtr MenuList,  B$UserTellWhatMenu &FALSE
+        Mov D$MenuListPtr MenuList,  B$UserTellWhatMenu &FALSE
         While B$UserTellWhatMenu = &FALSE
-            call WhatMenu
+            Call WhatMenu
         End_While
 
         On D$MenuListPtr = 0, ret
     End_If
 
-    call 'User32.MessageBoxA' D$hwnd, DelteMenuQuestion, Sure,
+    Call 'User32.MessageBoxA' D$H.MainWindow, DelteMenuQuestion, Sure,
                              &MB_ICONQUESTION+&MB_SYSTEMMODAL+&MB_YESNO
    .If eax = &IDYES
-        call VerifyNotDialogMenu
+        Call VerifyNotDialogMenu
         If B$CancelDeleteMenu = &FALSE
-            mov esi D$MenuListPtr, edi esi | add esi 12
-            mov ecx MAXMENU, eax esi | sub eax MenuList | sub ecx eax
+            Mov esi D$MenuListPtr, edi esi | add esi 12
+            Mov ecx MAXMENU, eax esi | sub eax MenuList | sub ecx eax
             rep movsd
         End_If
    .End_If
@@ -1090,42 +1090,42 @@ ret
 [CancelDeleteMenu: ?]
 
 VerifyNotDialogMenu:
-    mov B$CancelDeleteMenu &FALSE
-    mov ecx 0, edx D$MenuListPtr, edx D$edx                  ; whished delete Menu ID
-    mov esi DialogList | add esi 4 | mov D$DialogListPtr esi
+    Mov B$CancelDeleteMenu &FALSE
+    Mov ecx 0, edx D$MenuListPtr, edx D$edx                  ; whished delete Menu ID
+    Mov esi DialogList | add esi 4 | Mov D$DialogListPtr esi
 
     While D$esi > 0
-      mov ebx D$DialogListPtr | mov ebx D$ebx    ; ebx > DialogData > menu (0 / 0FFFF)
-      mov ax W$ebx+18
+      Mov ebx D$DialogListPtr | Mov ebx D$ebx    ; ebx > DialogData > menu (0 / 0FFFF)
+      Mov ax W$ebx+18
 
       .If ax = 0FFFF                             ; (see ex.: EditedDialogBoxData)
-         mov ax W$ebx+20                         ; Menu ID
+         Mov ax W$ebx+20                         ; Menu ID
          If ax = dx
-           call 'User32.DialogBoxIndirectParamA' D$hinstance DelMenuDialog D$hwnd,
+           Call 'User32.DialogBoxIndirectParamA' D$hinstance DelMenuDialog D$H.MainWindow,
                                                 DelDialogMenuProc 0
            On B$CancelDeleteMenu = &TRUE, ret
          End_If
       .End_If
 
-      add D$DialogListPtr 12 | mov esi D$DialogListPtr
+      add D$DialogListPtr 12 | Mov esi D$DialogListPtr
     End_While
 ret
 
 
 Proc DelDialogMenuProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_COMMAND
+    ...If D@msg = &WM_COMMAND
 
         .If D@wParam = &IDCANCEL
-            mov D$CancelDeleteMenu &TRUE | call 'User32.EndDialog' D@Adressee 0
+            Mov D$CancelDeleteMenu &TRUE | Call 'User32.EndDialog' D@hwnd 0
 
         .Else_If D@wParam = &IDOK
-            mov edi D$DialogListPtr, edi D$edi, eax 0   ; scratch menu record in Dialog Data:
+            Mov edi D$DialogListPtr, edi D$edi, eax 0   ; scratch menu record in Dialog Data:
             add edi 18 | stosw                          ; replace 0FFFF by 0
-            mov esi edi | add esi 2                     ; (see ex: EditedDialogBoxData)
+            Mov esi edi | add esi 2                     ; (see ex: EditedDialogBoxData)
 
           ; We can't copy simply, because of alignement to reset before first control.
             If W$esi = 0                                ; copy Class record
@@ -1146,27 +1146,27 @@ Proc DelDialogMenuProc:
 
 ; If aligment is good now , it was not previously and had require the add of a zeroed word
             Test edi 00_111 | jz L1>
-                mov eax 0 | stosw | jmp L2>
+                Mov eax 0 | stosw | jmp L2>
 
 L1:         add esi 2
 
           ; copy remaining controls:
-L2:         mov eax D$DialogListPtr                     ; > List recorded lenght of Dialog data
-            add eax 4 | mov ecx D$eax                   ; lenght of data do NOT change
+L2:         Mov eax D$DialogListPtr                     ; > List recorded lenght of Dialog data
+            add eax 4 | Mov ecx D$eax                   ; lenght of data do NOT change
             sub ecx 26 | rep movsb                      ; 'about...'
 
-            call 'User32.EndDialog' D@Adressee, 0
+            Call 'User32.EndDialog' D@hwnd, 0
         .End_If
 
-    ...Else_If D@Message = &WM_INITDIALOG
-        call 'USER32.SetClassLongA' D@Adressee, &GCL_HICON, D$wc_hIcon
+    ...Else_If D@msg = &WM_INITDIALOG
+        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
 
     ...Else
-        popad | mov eax &FALSE | jmp L9>
+        popad | Mov eax &FALSE | jmp L9>
 
     ...End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
@@ -1241,7 +1241,7 @@ ____________________________________________________________
 
 
 WhatMenu:
-    call 'User32.DialogBoxParamA' D$hinstance, 500, D$hwnd, WhatMenuProc, 0
+    Call 'User32.DialogBoxParamA' D$hinstance, 500, D$H.MainWindow, WhatMenuProc, 0
 ret
 
 
@@ -1250,59 +1250,59 @@ ret
 ; Tag Dialog 500
 
 Proc WhatMenuProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_COMMAND
+    ...If D@msg = &WM_COMMAND
 
         .If D@wParam = &IDCANCEL
-            mov D$MenuListPtr 0, B$UserTellWhatMenu &TRUE
-            call 'User32.EndDialog' D@Adressee 0
+            Mov D$MenuListPtr 0, B$UserTellWhatMenu &TRUE
+            Call 'User32.EndDialog' D@hwnd 0
 
         .Else_If D@wParam = &IDOK
-            mov B$UserTellWhatMenu &TRUE
-            call 'User32.EndDialog' D@Adressee 0
+            Mov B$UserTellWhatMenu &TRUE
+            Call 'User32.EndDialog' D@hwnd 0
 
         .Else_If D@wParam = IDNextMenu
-            mov ebx D$MenuListPtr | add ebx 12
+            Mov ebx D$MenuListPtr | add ebx 12
             If D$ebx > 0
-                mov D$MenuListPtr ebx | call SetTestMenu D@Adressee
-                call 'User32.EndDialog' D@Adressee 0
+                Mov D$MenuListPtr ebx | Call SetTestMenu D@hwnd
+                Call 'User32.EndDialog' D@hwnd 0
             End_If
 
         .Else_If D@wParam = IDPreviousMenu
-            mov ebx D$MenuListPtr | sub ebx 12
+            Mov ebx D$MenuListPtr | sub ebx 12
             If ebx >= MenuList
-            mov D$MenuListPtr ebx
-            call 'User32.DestroyMenu' D$ActualMenutestID
-            call SetTestMenu D@Adressee
-            call 'User32.EndDialog' D@Adressee 0
+            Mov D$MenuListPtr ebx
+            Call 'User32.DestroyMenu' D$ActualMenutestID
+            Call SetTestMenu D@hwnd
+            Call 'User32.EndDialog' D@hwnd 0
             End_If
 
         .End_If
 
-    ...Else_If D@Message = &WM_INITDIALOG
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
-        call SetTestMenu D@Adressee
+    ...Else_If D@msg = &WM_INITDIALOG
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetTestMenu D@hwnd
 
     ...Else
-L8:     popad | mov eax &FALSE | jmp L9>
+L8:     popad | Mov eax &FALSE | jmp L9>
 
     ...End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
 
 Proc SetTestMenu:
-    Argument @Adressee
+    Argument @hwnd
 
-      mov eax D$MenuListPtr | add eax 4
-      call 'User32.LoadMenuIndirectA' D$eax
-      mov D$ActualMenutestID eax
-      call 'User32.SetMenu' D@Adressee eax
+      Mov eax D$MenuListPtr | add eax 4
+      Call 'User32.LoadMenuIndirectA' D$eax
+      Mov D$ActualMenutestID eax
+      Call 'User32.SetMenu' D@hwnd eax
 EndP
 
 
@@ -1312,17 +1312,17 @@ EndP
 ; Copy whole user edition to "eMenu" (reuse of final storage area):
 
 MenuCopy:
-    mov edx 0, edi ceMenu, eax 0, ecx MENU_DWORDS | rep stosd
-    mov edi ceMenu
+    Mov edx 0, edi ceMenu, eax 0, ecx MENU_DWORDS | rep stosd
+    Mov edi ceMenu
     While edx < D$NumberOfMenuLines
 L0:     pushad
-            mov W$edi 160
+            Mov W$edi 160
             push edi
-                call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, edx, edi
+                Call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, edx, edi
             pop edi
-            mov B$edi+eax 0  ; >>> 'EM_GETLINE_Comment'
+            Mov B$edi+eax 0  ; >>> 'EM_GETLINE_Comment'
         popad
-        mov al 0, ecx 200 | repne scasb
+        Mov al 0, ecx 200 | repne scasb
         inc edx
     End_While
 ret
@@ -1330,27 +1330,27 @@ ret
 
 [MenuEditCaretPos: ? ?]
 SearchMenuLineChange:
-    call 'USER32.GetCaretPos' MenuEditCaretPos
+    Call 'USER32.GetCaretPos' MenuEditCaretPos
   ; Zero based X/Y in eax: Y >>> High Word // X >>> Low Word:
-    mov eax D$MenuEditCaretPos+4 | shl eax 16 | or eax D$MenuEditCaretPos
+    Mov eax D$MenuEditCaretPos+4 | shl eax 16 | or eax D$MenuEditCaretPos
 
-    call 'USER32.SendMessageA' D$MenuEditHandle, &EM_CHARFROMPOS, 0, eax
+    Call 'USER32.SendMessageA' D$MenuEditHandle, &EM_CHARFROMPOS, 0, eax
   ; Line in the high Word:
-    shr eax 16 | mov edx eax
+    shr eax 16 | Mov edx eax
 ret
 
 ;;
-    mov edx 0, esi ceMenu
+    Mov edx 0, esi ceMenu
 
 L0: push edx, esi
-        mov eax 0, edi OneItemString, ecx 40 | rep stosd       ; GETLINE not zero-ended
-        mov W$OneItemString 160                                ; max write for GETLINE
-        call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, edx, OneItemString
-        mov B$OneItemString+eax 0  ; >>> 'EM_GETLINE_Comment'
+        Mov eax 0, edi OneItemString, ecx 40 | rep stosd       ; GETLINE not zero-ended
+        Mov W$OneItemString 160                                ; max write for GETLINE
+        Call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, edx, OneItemString
+        Mov B$OneItemString+eax 0  ; >>> 'EM_GETLINE_Comment'
     pop esi, edx
 
     cmp eax 0 | je L9>
-    mov edi OneItemString, ecx eax | repe cmpsb | jne L9>
+    Mov edi OneItemString, ecx eax | repe cmpsb | jne L9>
     cmp B$esi 0 | jne L9>
         inc edx | inc esi | jmp L0<<
 L9: ret
@@ -1359,16 +1359,16 @@ L9: ret
 ; edx > 0 based index of suppressed item.
 
 DeleteMenuFlagRecord:
-    inc edx | mov edi MenuItemsFlags | shl edx 2 | add edi edx
+    inc edx | Mov edi MenuItemsFlags | shl edx 2 | add edi edx
     lea esi D$edi+4
     While esi < MenuItemsFlagsEnd | movsb | End_While
 ret
 
-    mov ecx MenuItemsFlagsEnd | sub ecx MenuItemsFlags | shr ecx 2
+    Mov ecx MenuItemsFlagsEnd | sub ecx MenuItemsFlags | shr ecx 2
     sub ecx edx    ; Number of dWords to move backward.
 
     shl edx 2
-    mov esi MenuItemsFlags | add esi edx | mov edi esi | add esi 4
+    Mov esi MenuItemsFlags | add esi edx | Mov edi esi | add esi 4
     rep movsd
 ret
 
@@ -1376,30 +1376,30 @@ ret
 ; edx > 0 based index of added item.
 
 InsertMenuFlagRecord:
-    mov edi MenuItemsFlagsEnd, esi edi | sub esi 4
-    mov ecx MenuItemsFlagsEnd | sub ecx MenuItemsFlags | shr ecx 2
+    Mov edi MenuItemsFlagsEnd, esi edi | sub esi 4
+    Mov ecx MenuItemsFlagsEnd | sub ecx MenuItemsFlags | shr ecx 2
     sub ecx edx    ; Number of dWords to move forward
     std | rep movsd | cld
-    mov eax 0 | stosd
+    Mov eax 0 | stosd
 ret
 
 
 [NumberOfMenuLines: ?]
 
 MenuLinesControl:
-    call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINECOUNT, 0, 0
+    Call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINECOUNT, 0, 0
 
     If eax = D$NumberOfMenuLines
-        call MenuCopy
+        Call MenuCopy
     Else_If eax < D$NumberOfMenuLines   ; user has suppressed one item:
-        mov D$NumberOfMenuLines eax
-        call SearchMenuLineChange       ; edx > 0 based index of suppressed line
-        call DeleteMenuFlagRecord
+        Mov D$NumberOfMenuLines eax
+        Call SearchMenuLineChange       ; edx > 0 based index of suppressed line
+        Call DeleteMenuFlagRecord
     Else                                ; user has added one item:
-        mov D$NumberOfMenuLines eax
-        call SearchMenuLineChange       ; edx > 0 based index of added line
-        call InsertMenuFlagRecord
-        call IndentMenuItem
+        Mov D$NumberOfMenuLines eax
+        Call SearchMenuLineChange       ; edx > 0 based index of added line
+        Call InsertMenuFlagRecord
+        Call IndentMenuItem
     End_If
 ret
 
@@ -1411,15 +1411,15 @@ ret
 IndentMenuItem:
     push edx
         dec edx
-        mov eax 0, edi OneItemString, ecx 40 | rep stosd       ; GETLINE not zero-ended
-        mov W$OneItemString 160                                ; max write for GETLINE
-        call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, edx, OneItemString
-        mov B$OneItemString+eax 0  ; >>> 'EM_GETLINE_Comment'
-        mov D$ItemLevel 0, esi OneItemString
+        Mov eax 0, edi OneItemString, ecx 40 | rep stosd       ; GETLINE not zero-ended
+        Mov W$OneItemString 160                                ; max write for GETLINE
+        Call 'User32.SendMessageA' D$MenuEditHandle, &EM_GETLINE, edx, OneItemString
+        Mov B$OneItemString+eax 0  ; >>> 'EM_GETLINE_Comment'
+        Mov D$ItemLevel 0, esi OneItemString
         While B$esi = tab
             inc D$ItemLevel | inc esi
             pushad
-                call 'User32.SendMessageA' D$MenuEditHandle &EM_REPLACESEL &TRUE ItemTab
+                Call 'User32.SendMessageA' D$MenuEditHandle &EM_REPLACESEL &TRUE ItemTab
             popad
 
         End_While
@@ -1437,13 +1437,13 @@ mEditProc:
 
     .If D$mEditMessage = &WM_KEYDOWN
         If D$mEditWparam = tab
-            call StoreTabInClipBoard
-            call 'User32.SendMessageA' D$MenuEditHandle &WM_PASTE 0  0
-            mov eax &FALSE | ret
+            Call StoreTabInClipBoard
+            Call 'User32.SendMessageA' D$MenuEditHandle &WM_PASTE 0  0
+            Mov eax &FALSE | ret
         End_If
     .End_If
 
-L9: call 'User32.CallWindowProcA' D$PreviousEditProc D$mEditAdressee,
+L9: Call 'User32.CallWindowProcA' D$PreviousEditProc D$mEditAdressee,
                                  D$mEditMessage, D$mEditWparam, D$mEditLparam
     ret
 
@@ -1453,8 +1453,8 @@ L9: call 'User32.CallWindowProcA' D$PreviousEditProc D$mEditAdressee,
 StoreTabInClipBoard:
     pushad
         push D$BlockStartTextPtr, D$BlockEndTextPtr, D$BlockInside
-            mov D$BlockStartTextPtr TabForEditControl, D$BlockEndTextPtr TabForEditControl
-            mov B$BlockInside &TRUE | call ControlC | mov B$BlockInside &FALSE
+            Mov D$BlockStartTextPtr TabForEditControl, D$BlockEndTextPtr TabForEditControl
+            Mov B$BlockInside &TRUE | Call ControlC | Mov B$BlockInside &FALSE
         pop D$BlockInside, D$BlockEndTextPtr, D$BlockStartTextPtr
     popad
 ret

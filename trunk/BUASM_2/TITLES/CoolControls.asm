@@ -26,30 +26,30 @@ Proc CoolControlTB_CreateImageList:
     move D@TempBuff D$edi
 
   ; Create the images
-    call 'User32.LoadImageA' D$hInstance, D@EnabledImage, &IMAGE_BITMAP, 0, 0, 0
+    Call 'User32.LoadImageA' D$hInstance, D@EnabledImage, &IMAGE_BITMAP, 0, 0, 0
     If eax = 0
-        call ReportWinError {'CoolControl ToolBar CreateImageList: LoadImage (1 - Enabled)' 0}
+        Call ReportWinError {'CoolControl ToolBar CreateImageList: LoadImage (1 - Enabled)' 0}
     EndIf
-    mov D@Image eax
+    Mov D@Image eax
 
-    call 'User32.LoadImageA' D$hInstance, D@DisabledImage, &IMAGE_BITMAP, 0, 0, 0
+    Call 'User32.LoadImageA' D$hInstance, D@DisabledImage, &IMAGE_BITMAP, 0, 0, 0
     If eax = 0
-        call ReportWinError {'CoolControl ToolBar CreateImageList: LoadImage (2 - Disabled)' 0}
+        Call ReportWinError {'CoolControl ToolBar CreateImageList: LoadImage (2 - Disabled)' 0}
     EndIf
-    mov D@Mask eax
+    Mov D@Mask eax
 
-    call 'ComCtl32.ImageList_Create' D@Cx, D@Cy, D@Flags, D@CInitial, D@CGrow
-    mov D$edi eax       ; Copy the Value store in eax to the Data in Edi (That have the address of the Outputed Buffer)
-    mov eax D@TempBuff  ; Copy our previously stored address of the outputed Buffer to eax
+    Call 'ComCtl32.ImageList_Create' D@Cx, D@Cy, D@Flags, D@CInitial, D@CGrow
+    Mov D$edi eax       ; Copy the Value store in eax to the Data in Edi (That have the address of the Outputed Buffer)
+    Mov eax D@TempBuff  ; Copy our previously stored address of the outputed Buffer to eax
     move D$eax D$edi    ; Save the Data to be outputed in the outputed Buffer at the OutPutHandle that now is stored in eax
 
-    call 'ComCtl32.ImageList_Add' D@OutPutHandle, D@Image, D@Mask
+    Call 'ComCtl32.ImageList_Add' D@OutPutHandle, D@Image, D@Mask
     If eax = 0-1
-        call ReportWinError {'CoolControl ToolBar: ImageList_Add' 0}
+        Call ReportWinError {'CoolControl ToolBar: ImageList_Add' 0}
     EndIf
 
-    call 'GDI32.DeleteObject' D@Image
-    call 'GDI32.DeleteObject' D@Mask
+    Call 'GDI32.DeleteObject' D@Image
+    Call 'GDI32.DeleteObject' D@Mask
 EndP
 
 ____________________________________________________________________________________________
@@ -60,22 +60,22 @@ Proc CoolControlWin_CreateToolbar:
     Local @TempBuff
     pushad
 
-    call 'ComCtl32.InitCommonControlsEx' Init_Common_Controls
+    Call 'ComCtl32.InitCommonControlsEx' Init_Common_Controls
 
     ; Always initialize the ToolBar handle with 0
 
     lea edi D@OutPutHandle
     move D@TempBuff D$edi
-    mov eax D@TempBuff
-    mov D$eax 0
+    Mov eax D@TempBuff
+    Mov D$eax 0
 
     ; Always initialize the Text Flag to FALSE
 
-    mov edx D@tbCmdStruc
-    mov edx D$edx+TBWIN_CMD.ShowTxtFlagDis
-    mov D$edx &FALSE
+    Mov edx D@tbCmdStruc
+    Mov edx D$edx+TBWIN_CMD.ShowTxtFlagDis
+    Mov D$edx &FALSE
 
-    call CoolControlWin_CreateCommandTB D@Addresse, eax, D@ToolStructure, D@TotalButtons, D@ToolTipArray, D@tbCmdStruc
+    Call CoolControlWin_CreateCommandTB D@Addresse, eax, D@ToolStructure, D@TotalButtons, D@ToolTipArray, D@tbCmdStruc
     popad
 EndP
 
@@ -176,48 +176,48 @@ Proc CoolControlWin_CreateCommandTB:
     Local @TBWidth
     pushad
 
-    mov ebx D@ToolStructure
-    mov esi 0
+    Mov ebx D@ToolStructure
+    Mov esi 0
 
-    mov ecx D@OutPutHandle ; We need to keep track on ecx because this is the output handle.
+    Mov ecx D@OutPutHandle ; We need to keep track on ecx because this is the output handle.
 
     ; Save states & clear if toolbar is Recreated
     .If D$ecx <> 0
         Do
             push ecx | SendMessage D$ecx, &TB_GETSTATE, D$ebx+TBBUTTON.idCommandDis, 0 | pop ecx
-            mov B$ebx+TBBUTTON.fsStateDis al
+            Mov B$ebx+TBBUTTON.fsStateDis al
             inc esi
             add ebx SizeOf_TBBUTTON
         Loop_Until esi = D@TotalButtons
 
-        push ecx | call 'USER32.DestroyWindow' D$ecx | pop ecx
+        push ecx | Call 'USER32.DestroyWindow' D$ecx | pop ecx
     .EndIf
 
     ; Create toolbar
     push ecx
-        mov edx D@tbCmdStruc
-        mov esi D@tbCmdStruc
+        Mov edx D@tbCmdStruc
+        Mov esi D@tbCmdStruc
         ; eax = D@TBWidth * D@TotalButtons
         move D@TBWidth D$edx
-        mov eax D@TotalButtons
+        Mov eax D@TotalButtons
         mul D@TBWidth
 
-        call 'User32.CreateWindowExA' 0, {'ToolbarWindow32' 0}, 0, D$esi+TBWIN_CMD.dwStyleDis,
+        Call 'User32.CreateWindowExA' 0, {'ToolbarWindow32' 0}, 0, D$esi+TBWIN_CMD.dwStyleDis,
                                       0, 0, eax, 0, D@Addresse, D$esi+TBWIN_CMD.hMenuDis, D$hInstance, 0
 
     pop ecx
 
-    mov D$ecx eax
+    Mov D$ecx eax
     push ecx | SendMessage D$ecx, &TB_BUTTONSTRUCTSIZE, SizeOf_TBBUTTON, 0 | pop ecx
 
-    mov eax D$esi+TBWIN_CMD.hImlDis
+    Mov eax D$esi+TBWIN_CMD.hImlDis
     push ecx | SendMessage D$ecx, &TB_SETIMAGELIST, 0, D$eax | pop ecx
 
-    mov ebx D@ToolStructure
-    mov edx D@tbCmdStruc
-    mov edx D$edx+TBWIN_CMD.ShowTxtFlagDis
-    mov esi 0
-    mov edi D@ToolTipArray
+    Mov ebx D@ToolStructure
+    Mov edx D@tbCmdStruc
+    Mov edx D$edx+TBWIN_CMD.ShowTxtFlagDis
+    Mov esi 0
+    Mov edi D@ToolTipArray
 
   ; Activate / Deactivate Text
     .If D$edx = &TRUE
@@ -230,14 +230,14 @@ Proc CoolControlWin_CreateCommandTB:
 
     .Else
         Do
-            mov D$ebx+TBBUTTON.iStringDis 0
+            Mov D$ebx+TBBUTTON.iStringDis 0
             inc esi
             add ebx SizeOf_TBBUTTON
         Loop_Until esi = D@TotalButtons
 
     .EndIf
 
-    mov ebx D@ToolStructure
+    Mov ebx D@ToolStructure
     push ecx | SendMessage D$ecx, &TB_ADDBUTTONS, D@TotalButtons, ebx | pop ecx
 
     popad
@@ -246,36 +246,36 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 Proc CoolControlTB_OnNotify:
-    Arguments @Handle, @Notification, @ToolStructure, @TotalButtons, @ToolTipArray
+    Arguments @hwnd, @Notification, @ToolStructure, @TotalButtons, @ToolTipArray
     Uses ebx, edx, ecx, edi
 
-        mov ebx D@Notification
-        mov edx D$ebx+NMHDR.idFromDis
-        mov eax D$ebx+NMHDR.codeDis
+        Mov ebx D@Notification
+        Mov edx D$ebx+NMHDR.idFromDis
+        Mov eax D$ebx+NMHDR.codeDis
 
-        mov edi D@ToolStructure
+        Mov edi D@ToolStructure
 
         ..If eax = &TTN_NEEDTEXT
-            mov eax D$ebx+NMHDR.idFromDis
+            Mov eax D$ebx+NMHDR.idFromDis
           ; Pointing with esi to the Buttons List IDs:
             lea esi D$edi+TBBUTTON.idCommandDis
 
-            mov ecx 0
+            Mov ecx 0
             While D$esi <> eax
                 add esi SizeOf_TBBUTTON | inc ecx
                 If ecx > D@TotalButtons
-                    mov eax 0   ; mandatory for TCN_SELCHANGING !!!
+                    Mov eax 0   ; mandatory for TCN_SELCHANGING !!!
                     ExitP
                 End_If
             End_While
 
-            mov edi D@ToolTipArray
-            mov eax D$edi+ecx*4
-            mov D$ebx+TOOLTIPTEXT_lpszText eax
+            Mov edi D@ToolTipArray
+            Mov eax D$edi+ecx*4
+            Mov D$ebx+TOOLTIPTEXT_lpszText eax
 
         ..EndIf
 
-        mov eax 0 ; mandatory for TCN_SELCHANGING !!!
+        Mov eax 0 ; mandatory for TCN_SELCHANGING !!!
 EndP
 
 ____________________________________________________________________________________________
@@ -285,30 +285,30 @@ Proc CoolControlTabToolTip_OnNotify:
     Arguments @Notification, @TotalButtons, @ToolTipArray
     Uses ebx, edx, ecx, edi
 
-        mov ebx D@Notification
-        mov edx D$ebx+NMHDR.idFromDis
-        mov eax D$ebx+NMHDR.codeDis
+        Mov ebx D@Notification
+        Mov edx D$ebx+NMHDR.idFromDis
+        Mov eax D$ebx+NMHDR.codeDis
 
-        mov esi 0 ; The Tab Item always starts with 0
+        Mov esi 0 ; The Tab Item always starts with 0
 
         ..If eax = &TTN_NEEDTEXT
-            mov eax D$ebx+NMHDR.idFromDis
-            mov ecx 0
+            Mov eax D$ebx+NMHDR.idFromDis
+            Mov ecx 0
             While esi <> eax
                 inc esi | inc ecx
                 If ecx > D@TotalButtons
-                    mov eax 0   ; mandatory for TCN_SELCHANGING !!!
+                    Mov eax 0   ; mandatory for TCN_SELCHANGING !!!
                     ExitP
                 End_If
             End_While
 
-            mov edi D@ToolTipArray
-            mov eax D$edi+ecx*4
-            mov D$ebx+TOOLTIPTEXT_lpszText eax
+            Mov edi D@ToolTipArray
+            Mov eax D$edi+ecx*4
+            Mov D$ebx+TOOLTIPTEXT_lpszText eax
 
         ..EndIf
 
-        mov eax 0 ; mandatory for TCN_SELCHANGING !!!
+        Mov eax 0 ; mandatory for TCN_SELCHANGING !!!
 EndP
 
 ____________________________________________________________________________________________
@@ -317,24 +317,24 @@ ________________________________________________________________________________
 Proc CoolControlTabChange_OnNotify:
     Arguments @Notification, @TabSelected, @MainTab
 
-        mov ebx D@Notification
-        mov eax D$ebx+NMHDR.codeDis
+        Mov ebx D@Notification
+        Mov eax D$ebx+NMHDR.codeDis
         lea edi D@TabSelected
-        mov edi D$edi
+        Mov edi D$edi
 
         ..If eax = &TCN_SELCHANGE
 
             ;Tab selection. We are sending the message on the Main Tab Control, in the main dialog.
             ; At ebx we have the handle of the MainTab = htab
-            call 'USER32.SendMessageA' D$ebx &TCM_GETCURSEL 0 0
+            Call 'USER32.SendMessageA' D$ebx &TCM_GETCURSEL 0 0
             .If eax <> D$edi
 
                 push eax
-                mov eax D$edi
-                call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_HIDE
+                Mov eax D$edi
+                Call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_HIDE
                 pop eax
-                mov D$edi eax
-                call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_SHOWDEFAULT
+                Mov D$edi eax
+                Call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_SHOWDEFAULT
 
             .End_If
 
@@ -355,24 +355,24 @@ ________________________________________________________________________________
 [Size_Of_RECT 16]
 
 Proc CoolControlDialog_AdjustDataTabSize:
-    Arguments @Handle, @nIDDlgItem, @hWndPage, @Rect
+    Arguments @hwnd, @nIDDlgItem, @hWndPage, @Rect
     Local @TabHandle
 
     pushad
 
-    call 'USER32.GetDlgItem' D@Handle, D@nIDDlgItem
-    mov D@TabHandle eax
+    Call 'USER32.GetDlgItem' D@hwnd, D@nIDDlgItem
+    Mov D@TabHandle eax
 
-    mov esi D@Rect
-    call 'USER32.GetClientRect' D@TabHandle, esi
+    Mov esi D@Rect
+    Call 'USER32.GetClientRect' D@TabHandle, esi
     SendMessage D@TabHandle, &TCM_ADJUSTRECT, &FALSE, esi
-    mov eax D$esi+RECT.leftDis
-    mov ebx D$esi+RECT.topDis
-    mov ecx D$esi+RECT.rightDis
-    mov edx D$esi+RECT.bottomDis
+    Mov eax D$esi+RECT.leftDis
+    Mov ebx D$esi+RECT.topDis
+    Mov ecx D$esi+RECT.rightDis
+    Mov edx D$esi+RECT.bottomDis
     sub ecx eax
     sub edx ebx
-    call 'USER32.SetWindowPos' D@hWndPage, 0, eax, ebx, ecx, edx, &SWP_NOZORDER
+    Call 'USER32.SetWindowPos' D@hWndPage, 0, eax, ebx, ecx, edx, &SWP_NOZORDER
 
     popad
 EndP
@@ -417,21 +417,21 @@ ________________________________________________________________________________
     Returned values: This function does not returns any value.
 
     Usage Example:
-        call CoolControl_ListViewAlternateSort ListViewSort, D@Notification, SortDecimal, D$hCharMapList, 5    
+        Call CoolControl_ListViewAlternateSort ListViewSort, D@Notification, SortDecimal, D$hCharMapList, 5    
 
     Note: The functionality of this function is exactly the same as if we defined each listview item by hand, like
           if when we have, for example 5 itens (columns) on a listview, defined as:
           
                 .If D$ebx+NM_LISTVIEW.iSubItemDis = 0 ; decimal
-                    call AlternateSorting ListViewSort, SortDecimal, D$hCharMapList, 1, 2
+                    Call AlternateSorting ListViewSort, SortDecimal, D$hCharMapList, 1, 2
                 .Else_If D$ebx+NM_LISTVIEW.iSubItemDis = 1 ; hexadecimal
-                    call AlternateSorting ListViewSort, SortDecimal, D$hCharMapList, 3, 4
+                    Call AlternateSorting ListViewSort, SortDecimal, D$hCharMapList, 3, 4
                 .Else_If D$ebx+NM_LISTVIEW.iSubItemDis = 2 ; Char
-                    call AlternateSorting ListViewSort, SortDecimal, D$hCharMapList, 5, 6
+                    Call AlternateSorting ListViewSort, SortDecimal, D$hCharMapList, 5, 6
                 .Else_If D$ebx+NM_LISTVIEW.iSubItemDis = 3 ; Count
-                    call AlternateSorting ListViewSort, SortDecimal, D$hCharMapList, 7, 8
+                    Call AlternateSorting ListViewSort, SortDecimal, D$hCharMapList, 7, 8
                 .Else_If D$ebx+NM_LISTVIEW.iSubItemDis = 4 ; Percent
-                    call AlternateSorting ListViewSort, SortDecimal, D$hCharMapList, 9, 10
+                    Call AlternateSorting ListViewSort, SortDecimal, D$hCharMapList, 9, 10
                 .End_If          
 ;;
 
@@ -441,18 +441,18 @@ Proc CoolControl_ListViewAlternateSort:
 
     pushad
 
-    mov ebx D@Notification
-    mov edx D$ebx+NMHDR.idFromDis
-    mov eax D$ebx+NMHDR.codeDis
+    Mov ebx D@Notification
+    Mov edx D$ebx+NMHDR.idFromDis
+    Mov eax D$ebx+NMHDR.codeDis
 
-    mov D@InitValue 1
-    mov D@NextValue 2
+    Mov D@InitValue 1
+    Mov D@NextValue 2
 
-    mov ecx 0 ; Column Counter. Always starts at the 1st column.
+    Mov ecx 0 ; Column Counter. Always starts at the 1st column.
 
     .While ecx <> D@LViewNumber
         If D$ebx+NM_LISTVIEW.iSubItemDis = ecx
-            call AlternateSorting D@hLView, D@SortItem, D@hList, D@InitValue, D@NextValue
+            Call AlternateSorting D@hLView, D@SortItem, D@hList, D@InitValue, D@NextValue
             jmp L1> ; Once we identify wich column we are working with, we go out of the loop
         End_If
         inc ecx
@@ -468,17 +468,17 @@ Proc AlternateSorting:
     Arguments @hLView, @SortItem, @hList, @InitValue, @NextValue
     pushad
 
-    mov edi D@SortItem
+    Mov edi D@SortItem
     If D$edi = &FALSE
-        call 'USER32.SendMessageA' D@hList, &LVM_SORTITEMS, D@InitValue, D@hLView
-        call Resequence D@hList
-        mov edi D@SortItem
-        mov D$edi &TRUE
+        Call 'USER32.SendMessageA' D@hList, &LVM_SORTITEMS, D@InitValue, D@hLView
+        Call Resequence D@hList
+        Mov edi D@SortItem
+        Mov D$edi &TRUE
     Else
-        call 'USER32.SendMessageA' D@hList, &LVM_SORTITEMS, D@NextValue, D@hLView
-        call Resequence D@hList
-        mov edi D@SortItem
-        mov D$edi &FALSE
+        Call 'USER32.SendMessageA' D@hList, &LVM_SORTITEMS, D@NextValue, D@hLView
+        Call Resequence D@hList
+        Mov edi D@SortItem
+        Mov D$edi &FALSE
     End_If
 
     popad
@@ -492,16 +492,16 @@ Proc Resequence:
 
     pushad
 
-    call 'USER32.SendMessageA' D@hList, &LVM_GETITEMCOUNT, 0, 0
-    mov edi eax
-    mov D$lviResequence.imaskDis &LVIF_PARAM
-    mov D$lviResequence.iSubItemDis 0
-    mov D$lviResequence.iItemDis 0
+    Call 'USER32.SendMessageA' D@hList, &LVM_GETITEMCOUNT, 0, 0
+    Mov edi eax
+    Mov D$lviResequence.imaskDis &LVIF_PARAM
+    Mov D$lviResequence.iSubItemDis 0
+    Mov D$lviResequence.iItemDis 0
 
     While edi <> 0
         push D$lviResequence.iItemDis
         pop D$lviResequence.lParamDis
-        call 'USER32.SendMessageA' D@hList, &LVM_SETITEM, 0, D@lviResequence
+        Call 'USER32.SendMessageA' D@hList, &LVM_SETITEM, 0, D@lviResequence
         inc D$lviResequence.iItemDis
         dec edi
     End_While
@@ -536,7 +536,7 @@ ________________________________________________________________________________
     Returned values: This function does not returns any value.
 
     Usage Example:
-        call CoolControl_LVBeginSort ListViewSort, SortDecimal, D$hCharMapList, 1
+        Call CoolControl_LVBeginSort ListViewSort, SortDecimal, D$hCharMapList, 1
 
 ;;
 
@@ -544,10 +544,10 @@ Proc CoolControl_LVBeginSort:
     Arguments @hLview, @SortItem, @hList, @InitValue
 
     pushad
-    call 'USER32.SendMessageA' D@hList, &LVM_SORTITEMS, D@InitValue, D@hLview
-    call Resequence D@hList
-    mov edi D@SortItem
-    mov D$edi &TRUE
+    Call 'USER32.SendMessageA' D@hList, &LVM_SORTITEMS, D@InitValue, D@hLview
+    Call Resequence D@hList
+    Mov edi D@SortItem
+    Mov D$edi &TRUE
     popad
 
 EndP

@@ -9,7 +9,7 @@ TITLE Tree
  Building the tree view:
 
  here we build a simple list of labels encounted in source: label declarations 'Label:'
- and label evocations ('call label'). A byte flag is used for declarations and for
+ and label evocations ('Call label'). A byte flag is used for declarations and for
  evocations. A Declaration record is:         Flag (1) / DoneFlag (0/1) / adr / name
                                               ..(Byte)....(Byte)........(dWord)(Bytes)
              An evocation record is:          Flag (2) / name
@@ -29,9 +29,9 @@ TITLE Tree
 [DeclarationFlag 1  EvocationFlag 2  ListFlagMax 3]
 
 BuildLabelTreeList:
-    mov eax D$SourceEnd | add eax 400 | mov D$eax-4 0A0D0A0D
-    mov D$TreeList eax, D$TreeListPtr eax
-    mov esi D$CodeSource, edx D$SourceEnd
+    Mov eax D$SourceEnd | add eax 400 | Mov D$eax-4 0A0D0A0D
+    Mov D$TreeList eax, D$TreeListPtr eax
+    Mov esi D$CodeSource, edx D$SourceEnd
 
 L0: lodsb | cmp esi edx | jae L9>>
 
@@ -92,20 +92,20 @@ L1: cmp al ':' | jne L1>                              ; Label declaration found 
         cmp B$esi-4 '|' | je L0<<
 
       ; End of Label:
-        mov ecx esi | dec ecx
+        Mov ecx esi | dec ecx
 
       ; Case of Exported Functions.
         On B$esi = ':', inc esi
 
         push esi
 L2:       dec esi | cmp B$esi 32 | ja L2<
-            inc esi | mov edi D$TreeListPtr
-            mov al DeclarationFlag | stosb            ; declaration flag
-            mov al 0 | stosb                          ; done flag
-            mov eax esi | stosd                       ; adress in source
+            inc esi | Mov edi D$TreeListPtr
+            Mov al DeclarationFlag | stosb            ; declaration flag
+            Mov al 0 | stosb                          ; done flag
+            Mov eax esi | stosd                       ; adress in source
             sub ecx esi | rep movsb                   ; label name
-            mov D$edi 0
-            mov D$TreeListPtr edi
+            Mov D$edi 0
+            Mov D$TreeListPtr edi
         pop esi
       jmp L0<<
 
@@ -117,22 +117,22 @@ L2:   lodsd | or eax 020202020 | cmp eax 'all ' | je L3>
         sub esi 4 | jmp L0<<
 L3:   cmp B$esi 32 | jne L4>                          ; strip double spaces
         inc esi | jmp L3<
-L4:   If B$esi = "'"                                  ; direct api call (without 'api' macro)
-        mov ebp esi | dec ebp | inc esi | jmp L3>>
+L4:   If B$esi = "'"                                  ; direct api Call (without 'api' macro)
+        Mov ebp esi | dec ebp | inc esi | jmp L3>>
       End_If
 
-L8:           mov edi D$TreeListPtr                   ; jmp target of successfull 'IsItDialogApi'
-                mov al EvocationFlag | stosb          ; evocation flag
+L8:           Mov edi D$TreeListPtr                   ; jmp target of successfull 'IsItDialogApi'
+                Mov al EvocationFlag | stosb          ; evocation flag
 L5:             lodsb | cmp al '0' | jb L6>
                         cmp al 'z' | ja L6>
                 stosb | jmp L5<                       ; label name
-L6:           mov D$edi 0
-              mov D$TreeListPtr edi | dec esi
+L6:           Mov D$edi 0
+              Mov D$TreeListPtr edi | dec esi
         jmp L0<<
 
-L9: mov edi D$TreeListPtr
-    mov al DeclarationFlag | stosb         ; security if 'Callback:' is last main label
-    mov al 0 | stosb
+L9: Mov edi D$TreeListPtr
+    Mov al DeclarationFlag | stosb         ; security if 'Callback:' is last main label
+    Mov al 0 | stosb
     move D$TreeListEnd D$TreeListPtr
 ret
 
@@ -140,9 +140,9 @@ ret
 IsItDialogApi:
     cmp B$esi-2 32 | jbe L2>
         cmp B$esi-2 '|' | jne L0<<
-L2: mov ebp esi
+L2: Mov ebp esi
     lodsd | or eax 02020 | cmp eax "pi '" | je L3>
-L7:     mov esi ebp | jmp L0<<
+L7:     Mov esi ebp | jmp L0<<
 L3: add esi 7 | lodsd | cmp eax 'Crea' | jne L4>      ; esi+7 > jumps over 'User32.'
       lodsd | cmp eax 'teDi' | jne L7<
         lodsd | cmp eax 'alog' | jne L7<
@@ -150,10 +150,10 @@ L3: add esi 7 | lodsd | cmp eax 'Crea' | jne L4>      ; esi+7 > jumps over 'User
 L4: cmp eax 'Dial' | jne L7<
       lodsd | cmp eax 'ogBo' | jne L7<
 
-L5: ; We found either call 'CreateDialog/Indirect/paramA' or 'DialogBox/Indirect/ParamA'.
+L5: ; We found either Call 'CreateDialog/Indirect/paramA' or 'DialogBox/Indirect/ParamA'.
     ; the pointed Proc is always the fourth following parameter:
 
-    mov ecx 4
+    Mov ecx 4
 
 P0: lodsb | cmp al ' ' | je P1>                      ; search a separator
             cmp al ',' | jne P0<
@@ -174,9 +174,9 @@ L6: dec esi | jmp L8<<
 [AbortTreeMessage: "Unpaired Text delimiter or unpaired Bracket", 0]
 
 AbortTree:
-    mov ebx D$BackTablePtr | sub bl 4 | mov D$ebx 0 | mov D$BackTablePtr ebx
-    call 'USER32.MessageBoxA' D$hwnd, AbortTreeMessage, Argh, &MB_SYSTEMMODAL
-    mov B$TreeAborted &TRUE
+    Mov ebx D$BackTablePtr | sub bl 4 | Mov D$ebx 0 | Mov D$BackTablePtr ebx
+    Call 'USER32.MessageBoxA' D$H.MainWindow, AbortTreeMessage, Argh, &MB_SYSTEMMODAL
+    Mov B$TreeAborted &TRUE
 ret
 
 
@@ -184,7 +184,7 @@ ret
  Now the list of labels declarations and of labels evocation (by call) is done. Let us
  take a short exemple: 'CallBack:' contains three calls (to SubA1/A2/A3); SubA1 contains
  two calls (to SubB1/B2); SubB1 again two calls (SubC1/C2); and at last, SubC2 has one
- call (to SubD1). The tree we want to print could be:
+ Call (to SubD1). The tree we want to print could be:
 
  > CallBack
  >      SubA1
@@ -224,13 +224,13 @@ ret
 
 SearchListDeclaration:  ; edi(ah) > what to find (evoc.) // esi(al) search ptr (> declar.)
 
-    mov edx D$TreeListEnd, esi D$TreeList, B$DoNotWriteInTree &FALSE
+    Mov edx D$TreeListEnd, esi D$TreeList, B$DoNotWriteInTree &FALSE
     push edi
 L0:     lodsb | cmp esi edx | jae L8>
 L1:     cmp al DeclarationFlag | ja L0<           ; jump over evocations
-        mov ebx esi | inc esi                     ; ebx = done flag ptr. Jump over
-        mov D$TreeLabelPtr esi | add esi 4 | pop edi | push edi
-L4:     lodsb | mov ah B$edi | inc edi
+        Mov ebx esi | inc esi                     ; ebx = done flag ptr. Jump over
+        Mov D$TreeLabelPtr esi | add esi 4 | pop edi | push edi
+L4:     lodsb | Mov ah B$edi | inc edi
         and eax 00_11011111_11011111              ; ah, al > Upper Case
         cmp eax 0202 | je L7>
         cmp eax 0101 | je L7>
@@ -241,15 +241,15 @@ L4:     lodsb | mov ah B$edi | inc edi
 L6:     cmp ah ListFlagMax | ja L1<
 
 L7:     If B$ShowLabelsOnce = &TRUE
-            On B$ebx = 1, mov B$DoNotWriteInTree &TRUE
+            On B$ebx = 1, Mov B$DoNotWriteInTree &TRUE
         End_If
-        mov B$ebx &TRUE                           ; write done flag
-        dec esi | mov ecx esi                     ; ecx = size
-        mov esi D$TreeLabelPtr
-        lodsd | mov ebx eax                       ; eax, ebx = declaration ptr in source
+        Mov B$ebx &TRUE                           ; write done flag
+        dec esi | Mov ecx esi                     ; ecx = size
+        Mov esi D$TreeLabelPtr
+        lodsd | Mov ebx eax                       ; eax, ebx = declaration ptr in source
         sub ecx esi | jmp L9>
 
-L8:     mov ecx 0
+L8:     Mov ecx 0
 L9: pop edi
 ret                     ; >>> ecx = 0 if not found,  esi = pointer to name if found
 
@@ -263,18 +263,18 @@ ret                     ; >>> ecx = 0 if not found,  esi = pointer to name if fo
 WriteTreeView:           ; Page set up of the tree like in Win32 TreeView Lists.
                          ; Here one Item once.
     push esi, edi, ecx
-        mov edi TreeViewItem
+        Mov edi TreeViewItem
 L1:     cmp D$TreeIndent 0 | je L1>
 L0:         push ecx
-                mov ecx D$TreeIndent, ebx ecx
-L0:             mov eax '    ' | stosd
-                mov eax '|   ' | stosd
+                Mov ecx D$TreeIndent, ebx ecx
+L0:             Mov eax '    ' | stosd
+                Mov eax '|   ' | stosd
                 loop L0<
             pop ecx
 L1:     rep movsb                   ; ecx still good from 'SearchLabelInTreeList'
 
-L2:     mov al ' ' | stosb | mov al 0 | stosb
-        call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle, 100, &LB_ADDSTRING,
+L2:     Mov al ' ' | stosb | Mov al 0 | stosb
+        Call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle, 100, &LB_ADDSTRING,
                                           0, TreeViewItem
     pop ecx, edi, esi
 ret
@@ -306,21 +306,21 @@ ret
 
 [TreeLevels: ? #30]
 
-ClearTreeLevels: mov edi TreeLevels, eax 0, ecx 30 | rep stosd | ret
+ClearTreeLevels: Mov edi TreeLevels, eax 0, ecx 30 | rep stosd | ret
 
 BuildOneTree:
     push 0                                           ; end search mark on stack first.
-    mov D$TreeIndent 0, edi TreeRoot                 ; Root String set by caller.
-    call SearchListDeclaration
+    Mov D$TreeIndent 0, edi TreeRoot                 ; Root String set by caller.
+    Call SearchListDeclaration
     If ecx = 0                                       ; zero lenght (not found) > abort
         pop eax | ret
     End_If
-    mov D$TreeLevels ebx
+    Mov D$TreeLevels ebx
 
-L0: call WriteTreeView | add esi ecx
+L0: Call WriteTreeView | add esi ecx
                                                      ; Testing NEXT RECORD flag:
 L2: .If B$esi = EvocationFlag                        ; ________Evocation Case______________
-        inc esi | mov edi esi
+        inc esi | Mov edi esi
 L3:     lodsb | cmp al ListFlagMax | ja L3<          ; Search end of evocation Name
         dec esi | push esi                           ; push next possible evocation record Ptr
         inc D$TreeIndent                             ; > esi points to next record Type Flag
@@ -330,16 +330,16 @@ L4:     dec D$TreeIndent                             ; > No more evocation in th
             jmp L9>>
     .End_If
 
-    call SearchListDeclaration | cmp ecx 0 | je L4<  ; Evocation of a non existing Label
+    Call SearchListDeclaration | cmp ecx 0 | je L4<  ; Evocation of a non existing Label
     cmp B$DoNotWriteInTree &TRUE | je L4<            ; If "First Call Only" selected
 
     push edi, ecx                                    ; Compare new Source Label Adress with
-        mov edi TreeLevels, ecx D$TreeIndent         ; other adresses of the same branch
+        Mov edi TreeLevels, ecx D$TreeIndent         ; other adresses of the same branch
         inc ecx | repne scasd                        ; to prevent from infine loop in case
     pop ecx, edi                                     ; of imbricated re-intrant calls.
     je L4<
 
-    mov eax D$TreeIndent, D$TreeLevels+eax*4 ebx | jmp L0<< ; store source Label Adresses.
+    Mov eax D$TreeIndent, D$TreeLevels+eax*4 ebx | jmp L0<< ; store source Label Adresses.
                                                             ; for next time upper control
 L9: ret
 
@@ -356,7 +356,7 @@ L9: ret
                                     Go on listing?", 0]
 
 ListOrphanLabels:
-    mov D$TreeIndent 0, edx D$TreeListEnd, esi D$TreeList, ecx 0, ebx 0
+    Mov D$TreeIndent 0, edx D$TreeListEnd, esi D$TreeList, ecx 0, ebx 0
 
   ; Count how many Orphan Labels to be listed:
 L1: lodsb | cmp esi edx | jae L2>
@@ -369,12 +369,12 @@ L1: lodsb | cmp esi edx | jae L2>
   ; The number of orphans Labels may be uge with Disassemblies:
 L2: shr ecx 2
     If ecx > ebx
-            call 'USER32.MessageBoxA' D$hwnd, ManyOrphans, ContinueOrphans,
+            Call 'USER32.MessageBoxA' D$H.MainWindow, ManyOrphans, ContinueOrphans,
                                       &MB_SYSTEMMODAL__&MB_YESNO
         On eax = &IDNO, ret
     End_If
 
-    mov D$TreeIndent 0, edx D$TreeListEnd, esi D$TreeList
+    Mov D$TreeIndent 0, edx D$TreeListEnd, esi D$TreeList
 
 L1: lodsb | cmp esi edx | jae L9>
     cmp al DeclarationFlag | ja L1<                       ; jump over evocations
@@ -382,14 +382,14 @@ L1: lodsb | cmp esi edx | jae L9>
         cmp al &TRUE | je L1<                             ; done flag ?
         push esi                                          ; start of name
 L4:       lodsb | cmp al ListFlagMax | ja L4<             ; search end of name
-          mov ecx esi
+          Mov ecx esi
         pop eax
           sub ecx eax                                     ; ecx = size
           dec esi
         push esi, edx                                     ; next record
-          mov edi TreeRoot, D$TreeIndent 0, esi eax       ; esi > start of name
-          rep movsb | mov al 0 | stosb
-          call BuildOneTree
+          Mov edi TreeRoot, D$TreeIndent 0, esi eax       ; esi > start of name
+          rep movsb | Mov al 0 | stosb
+          Call BuildOneTree
         pop edx, esi                                      ; next record
       jmp L1<
 L9: ret
@@ -399,17 +399,17 @@ L9: ret
 
 BuildTree:             ; build the tree from the List
 
-    mov D$TreeIndent 0
-    mov esi CallBackName, ecx D$CallBackNameLen, edi TreeRoot
-    rep movsb | mov al 0 | stosb
+    Mov D$TreeIndent 0
+    Mov esi CallBackName, ecx D$CallBackNameLen, edi TreeRoot
+    rep movsb | Mov al 0 | stosb
 
-    call BuildOneTree
+    Call BuildOneTree
 
-    mov esi EntryPointLabel, edi TreeRoot, D$TreeIndent 0
+    Mov esi EntryPointLabel, edi TreeRoot, D$TreeIndent 0
     While B$esi <> 0 | movsb | End_While | movsb
-    call BuildOneTree
+    Call BuildOneTree
 
-    On B$ShowOrphan = &TRUE, call ListOrphanLabels
+    On B$ShowOrphan = &TRUE, Call ListOrphanLabels
 L9: ret
 
  _______________________________________________________________________________________
@@ -421,11 +421,11 @@ L9: ret
 
 CreateTreeViewList:
     If D$ShowTreeHandle = 0
-        call 'USER32.CreateDialogParamA' D$hInstance, 22000, D$hWnd, ShowTree, &NULL
-        On D$BookMarks > 0, call ReInsertBookMarks
+        Call 'USER32.CreateDialogParamA' D$hInstance, 22000, D$H.MainWindow, ShowTree, &NULL
+        On D$BookMarks > 0, Call ReInsertBookMarks
     Else
-        call 'USER32.SetForegroundWindow' D$ShowTreeHandle
-        call 'USER32.ShowWindow' D$ShowTreeHandle, &SW_RESTORE
+        Call 'USER32.SetForegroundWindow' D$ShowTreeHandle
+        Call 'USER32.ShowWindow' D$ShowTreeHandle, &SW_RESTORE
     End_If
 ret
 
@@ -434,8 +434,8 @@ ret
 
 CloseTree:
     If D$ShowTreeHandle > 0
-        call 'User32.DestroyWindow' D$ShowTreeHandle
-        mov D$ShowTreeHandle 0
+        Call 'User32.DestroyWindow' D$ShowTreeHandle
+        Mov D$ShowTreeHandle 0
     End_If
 ret
 
@@ -459,84 +459,84 @@ ret
 [ListKeyBoardInput: ?    AutoHideTreeView: ?    AutoRebuildTreeView: ?]
 
 Proc ShowTree:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ..If D@Message = &WM_COMMAND
+    ..If D@msg = &WM_COMMAND
         .If D@wParam = &IDCANCEL
-L7:        mov D$ShowTreeHandle 0
-           call 'User32.EndDialog' D@Adressee 0   ; CloseTree
+L7:        Mov D$ShowTreeHandle 0
+           Call 'User32.EndDialog' D@hwnd 0   ; CloseTree
 
         .Else
             shr D@wParam 16
 
             If D@wParam = &LBN_KILLFOCUS
                 On B$AutoHideTreeView = &TRUE,
-                    call 'USER32.ShowWindow' D@Adressee &SW_MINIMIZE
+                    Call 'USER32.ShowWindow' D@hwnd &SW_MINIMIZE
             Else_If D@wParam = &LBN_SELCHANGE
-                On B$ListKeyBoardInput = &FALSE, call SearchFromTreeListBox D@lParam
-                mov B$ListKeyBoardInput &FALSE
+                On B$ListKeyBoardInput = &FALSE, Call SearchFromTreeListBox D@lParam
+                Mov B$ListKeyBoardInput &FALSE
             End_If
         .End_If
 
-    ..Else_If D@Message = &WM_VKEYTOITEM    ; Prevents from searching hundreads of
+    ..Else_If D@msg = &WM_VKEYTOITEM    ; Prevents from searching hundreads of
         If W@wParam <> CR                   ; Label when user is moving through the
-            mov B$ListKeyBoardInput &TRUE   ; List with the KeyBorad.
+            Mov B$ListKeyBoardInput &TRUE   ; List with the KeyBorad.
         Else                                ; But allow Search if [Return] Key depressed.
-            call SearchFromTreeListBox D@lParam
+            Call SearchFromTreeListBox D@lParam
         End_If
-        popad | mov eax 0-1 | jmp L9>>
+        popad | Mov eax 0-1 | jmp L9>>
 
-    ..Else_If D@Message = &WM_INITDIALOG
+    ..Else_If D@msg = &WM_INITDIALOG
       ; Does not survive in the Minimized state...:
-      ; call 'USER32.SetWindowLongA' D@Adressee, &GWL_EXSTYLE, &WS_EX_TOOLWINDOW
-        call RestoreRealSource
-        mov D$TreeViewItemEdge '    '
-        move D$ShowTreeHandle D@Adressee
-        call StorePosInBackTable
-        call 'USER32.SetClassLongA' D$ShowTreeHandle &GCL_HICON D$wc_hIcon
-        call ClearTreeLevels
-        mov B$TreeAborted &FALSE | push ebp | call BuildLabelTreeList | pop ebp
+      ; Call 'USER32.SetWindowLongA' D@hwnd, &GWL_EXSTYLE, &WS_EX_TOOLWINDOW
+        Call RestoreRealSource
+        Mov D$TreeViewItemEdge '    '
+        move D$ShowTreeHandle D@hwnd
+        Call StorePosInBackTable
+        Call 'USER32.SetClassLongA' D$ShowTreeHandle &GCL_HICON D$wc_hIcon
+        Call ClearTreeLevels
+        Mov B$TreeAborted &FALSE | push ebp | Call BuildLabelTreeList | pop ebp
         cmp B$TreeAborted &TRUE | je L7<<
-        call BuildTree
-        call SetPartialEditionFromPos
+        Call BuildTree
+        Call SetPartialEditionFromPos
 
-    ..Else_If D@Message = &WM_SIZE
+    ..Else_If D@msg = &WM_SIZE
       ; This is for adjusting the List Control to the Dialog new Size:
-        call 'USER32.GetClientRect' D@Adressee, ListEditRect
-        mov eax D$ListERX | sub D$ListERW eax
-        mov eax D$ListERY | sub D$ListERH eax
-        call 'USER32.GetDlgItem' D@Adressee, 100
-        call 'USER32.MoveWindow' eax D$ListERX D$ListERY D$listERW D$ListERH &TRUE
+        Call 'USER32.GetClientRect' D@hwnd, ListEditRect
+        Mov eax D$ListERX | sub D$ListERW eax
+        Mov eax D$ListERY | sub D$ListERH eax
+        Call 'USER32.GetDlgItem' D@hwnd, 100
+        Call 'USER32.MoveWindow' eax D$ListERX D$ListERY D$listERW D$ListERH &TRUE
 
       ; Save the user's Tree Dialog Width:
-        call 'USER32.GetWindowRect' D@Adressee, ListEditRect
-        mov eax D$ListERW | sub eax D$ListERX | mov D$TreeWidth eax
+        Call 'USER32.GetWindowRect' D@hwnd, ListEditRect
+        Mov eax D$ListERW | sub eax D$ListERX | Mov D$TreeWidth eax
 
 L1:     push D$TreeWP.ptMinPosition.x, D$TreeWP.ptMinPosition.y, D$TreeWP.flags
-            call 'USER32.GetWindowPlacement' D$ShowTreeHandle TreeWP
+            Call 'USER32.GetWindowPlacement' D$ShowTreeHandle TreeWP
         pop D$TreeWP.flags, D$TreeWP.ptMinPosition.y, D$TreeWP.ptMinPosition.x
 
-    ..Else_If D@Message = &WM_MOVE
+    ..Else_If D@msg = &WM_MOVE
         jmp L1<
 
-    ..Else_If D@Message = &WM_CTLCOLORLISTBOX
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+    ..Else_If D@msg = &WM_CTLCOLORLISTBOX
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
 
-    ..Else_If D@Message = &WM_ACTIVATE
+    ..Else_If D@msg = &WM_ACTIVATE
        ; Wanted by... Anvar if i remember, but conflicts with any wish of moving
        ; the reduced Tree Window, with AutoHide Flag set on. So commented out:
 
-       ; On B$AutoHideTreeView = &TRUE, call 'USER32.ShowWindow' D@Adressee &SW_NORMAL
+       ; On B$AutoHideTreeView = &TRUE, Call 'USER32.ShowWindow' D@hwnd &SW_NORMAL
 
     ..Else
-        popad | mov eax &FALSE | jmp L9>
+        popad | Mov eax &FALSE | jmp L9>
 
     ..End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
@@ -546,28 +546,28 @@ L9: EndP
 Proc SearchFromTreeListBox:
     Argument @lParam
 
-    call RestoreRealSource
+    Call RestoreRealSource
 
-    call 'USER32.SendMessageA' D@lParam, &LB_GETCURSEL, 0, 0
-    mov D$TreeCurrentSel eax, D$TreeUpperMainLabelSel eax
+    Call 'USER32.SendMessageA' D@lParam, &LB_GETCURSEL, 0, 0
+    Mov D$TreeCurrentSel eax, D$TreeUpperMainLabelSel eax
 
-    call 'USER32.SendMessageA' D@lParam, &LB_GETTEXT, D$TreeUpperMainLabelSel, TreeViewItem
-    mov esi TreeViewItem | On B$esi > ' ', jmp L2>
+    Call 'USER32.SendMessageA' D@lParam, &LB_GETTEXT, D$TreeUpperMainLabelSel, TreeViewItem
+    Mov esi TreeViewItem | On B$esi > ' ', jmp L2>
 L1: lodsb | cmp B$esi ' ' | je L1<
         cmp B$esi '|' | je L1<
 
 L2: If B$esi = '@'
 L0:     dec D$TreeUpperMainLabelSel | jc L9>>
-        call 'USER32.SendMessageA' D@lParam, &LB_GETTEXT, D$TreeUpperMainLabelSel,
+        Call 'USER32.SendMessageA' D@lParam, &LB_GETTEXT, D$TreeUpperMainLabelSel,
                                    TreeViewItem
-        mov esi TreeViewItem | On B$esi > ' ', jmp L2>
+        Mov esi TreeViewItem | On B$esi > ' ', jmp L2>
 L1:     lodsb | cmp B$esi ' ' | je L1<
             cmp B$esi '|' | je L1<
 L2:             On B$esi = '@', jmp L0<
-                    call InternalRightClick
+                    Call InternalRightClick
 
     Else
-        call InternalRightClick | jmp L9>>
+        Call InternalRightClick | jmp L9>>
 
     End_If
 ;;
@@ -575,29 +575,29 @@ L2:             On B$esi = '@', jmp L0<
   MainLabel, which is now a selected Block.  We search downward for the wanted relative
   "@Label":
 ;;
-    call 'USER32.SendMessageA' D@lParam, &LB_GETTEXT, D$TreeCurrentSel, TreeViewItem
-        mov esi TreeViewItem | On B$esi > ' ', jmp L2>
+    Call 'USER32.SendMessageA' D@lParam, &LB_GETTEXT, D$TreeCurrentSel, TreeViewItem
+        Mov esi TreeViewItem | On B$esi > ' ', jmp L2>
 L1:     lodsb | cmp B$esi ' ' | je L1<
             cmp B$esi '|' | je L1<
 
 L2: push D$LenOfSearchedString
-        mov edi SearchString, D$LenOfSearchedString 1
+        Mov edi SearchString, D$LenOfSearchedString 1
         While B$esi > ' '
             movsb | inc D$LenOfSearchedString
         End_While
-        mov al ':' | stosb | mov al 0 | stosb
+        Mov al ':' | stosb | Mov al 0 | stosb
 
         push D$DownSearch, D$CaseSearch, D$WholeWordSearch, D$CurrentWritingPos
-            mov B$DownSearch &TRUE, B$CaseSearch &FALSE, B$WholeWordSearch &TRUE
+            Mov B$DownSearch &TRUE, B$CaseSearch &FALSE, B$WholeWordSearch &TRUE
             move D$CurrentWritingPos D$BlockEndTextPtr
             push D$NextSearchPos
                 move D$NextSearchPos D$CurrentWritingPos
-                call StringSearch
+                Call StringSearch
             pop D$NextSearchPos
         pop D$CurrentWritingPos, D$CurrentWritingPos, D$CaseSearch, D$DownSearch
     pop D$LenOfSearchedString
 
-L9: call SetPartialEditionFromPos
+L9: Call SetPartialEditionFromPos
 EndP
 
 
@@ -605,12 +605,12 @@ EndP
 ; Set the Tree Window at left of Main Window:
 
 SetTreeDialogPos:
-    call GetTreePlacement
+    Call GetTreePlacement
 
-    call 'USER32.SetWindowPlacement' D$ShowTreeHandle, TreeWP
+    Call 'USER32.SetWindowPlacement' D$ShowTreeHandle, TreeWP
 
-    call 'USER32.GetWindowLongA' D$ShowTreeHandle, &GWL_STYLE | or eax &WS_VISIBLE
-    call 'USER32.SetWindowLongA' D$ShowTreeHandle, &GWL_STYLE, eax
+    Call 'USER32.GetWindowLongA' D$ShowTreeHandle, &GWL_STYLE | or eax &WS_VISIBLE
+    Call 'USER32.SetWindowLongA' D$ShowTreeHandle, &GWL_STYLE, eax
 ret
 
 
@@ -623,26 +623,26 @@ ret
 GetTreePlacement:
     On B$TreePlacementDone = &TRUE, ret
 
-    mov B$TreePlacementDone &TRUE
+    Mov B$TreePlacementDone &TRUE
 
-    call 'USER32.GetWindowRect' D$EditWindowHandle, EditWindowXforTree
+    Call 'USER32.GetWindowRect' D$EditWindowHandle, EditWindowXforTree
 
   ; Default Width if the user never redefined it:
-    On D$TreeWidth = 0, mov D$TreeWidth 250
+    On D$TreeWidth = 0, Mov D$TreeWidth 250
 
-    mov eax D$EditWindowX2forTree | mov D$TreeWP.rcNormalPosition.right eax
-    sub eax D$TreeWidth | mov D$TreeWP.rcNormalPosition.left eax
-    mov eax D$EditWindowYforTree | mov D$TreeWP.rcNormalPosition.top eax
-    mov eax D$EditWindowY2forTree | mov D$TreeWP.rcNormalPosition.bottom eax
+    Mov eax D$EditWindowX2forTree | Mov D$TreeWP.rcNormalPosition.right eax
+    sub eax D$TreeWidth | Mov D$TreeWP.rcNormalPosition.left eax
+    Mov eax D$EditWindowYforTree | Mov D$TreeWP.rcNormalPosition.top eax
+    Mov eax D$EditWindowY2forTree | Mov D$TreeWP.rcNormalPosition.bottom eax
 
-    mov D$TreeWP.flags &WPF_SETMINPOSITION
-    mov eax D$TreeWP.rcNormalPosition.right | sub eax 160    ; founded Minimized Width.
-    mov D$TreeWP.ptMinPosition.x eax
-    mov eax D$TreeWP.rcNormalPosition.top
+    Mov D$TreeWP.flags &WPF_SETMINPOSITION
+    Mov eax D$TreeWP.rcNormalPosition.right | sub eax 160    ; founded Minimized Width.
+    Mov D$TreeWP.ptMinPosition.x eax
+    Mov eax D$TreeWP.rcNormalPosition.top
     move D$TreeWP.ptMinPosition.Y eax
-    mov D$TreeWP.flags &WPF_SETMINPOSITION
+    Mov D$TreeWP.flags &WPF_SETMINPOSITION
 
-    mov D$TreeWP.showCmd &SW_SHOWNORMAL
+    Mov D$TreeWP.showCmd &SW_SHOWNORMAL
 ret
 
 
@@ -654,13 +654,13 @@ ________________________________________________________________________________
 ;;
 
 TreeUpDate:
-    call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle, 100, &LB_RESETCONTENT, 0, 0
+    Call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle, 100, &LB_RESETCONTENT, 0, 0
 
-    mov D$TreeViewItemEdge '    ' | call ClearTreeLevels
+    Mov D$TreeViewItemEdge '    ' | Call ClearTreeLevels
 
-    mov B$TreeAborted &FALSE | push ebp | call BuildLabelTreeList | pop ebp
+    Mov B$TreeAborted &FALSE | push ebp | Call BuildLabelTreeList | pop ebp
 
-    On B$TreeAborted = &FALSE, call BuildTree
+    On B$TreeAborted = &FALSE, Call BuildTree
 L9: ret
 
 

@@ -20,9 +20,9 @@ TITLE Click
 WordEdge:
     pushfd | cld
         push ecx, esi, edi
-            mov ecx D$OneWordCharsLen, edi OneWordChars, B$Edge &TRUE
+            Mov ecx D$OneWordCharsLen, edi OneWordChars, B$Edge &TRUE
             repne scasb | jne L9>
-                mov B$Edge &FALSE
+                Mov B$Edge &FALSE
 L9:     pop edi, esi, ecx
     popfd
 ret
@@ -33,36 +33,36 @@ ret
 [ShowEquateHexa: ? #40]
 
 ShowEquate:
-     mov ebx, eax
+     Mov ebx, eax
 
-     mov edi ShowEquateHexa, esi TrashString
+     Mov edi ShowEquateHexa, esi TrashString
      While B$esi <> 0
         movsb
      End_While
-     mov eax '   =' | stosd | mov eax '    ', ecx 3 | rep stosd
+     Mov eax '   =' | stosd | Mov eax '    ', ecx 3 | rep stosd
 
      push edi, ebx
          std
-            mov ecx, 9
+            Mov ecx, 9
 L1:         If ecx = 5
-                mov al '_' | stosb
+                Mov al '_' | stosb
             End_If
             If ecx = 1
-                mov al '_' | stosb
+                Mov al '_' | stosb
             End_If
-            mov al bl | and al 0F | add al, '0' |  On al > '9', add al 7
+            Mov al bl | and al 0F | add al, '0' |  On al > '9', add al 7
             stosb | shr ebx, 4 | loop L1<
          cld
      pop ebx, edi
      inc edi
 
-     mov D$edi '_h  ', D$edi+4 '  [' | add edi 7
+     Mov D$edi '_h  ', D$edi+4 '  [' | add edi 7
 
-     mov eax ebx | call WriteEaxDecimal
+     Mov eax ebx | Call WriteEaxDecimal
 
-     mov D$edi ']   ', B$edi+4 0
+     Mov D$edi ']   ', B$edi+4 0
 
-     call 'USER32.MessageBoxA' D$hwnd, ShowEquateHexa, ShowEquateTitle, &MB_SYSTEMMODAL
+     Call 'USER32.MessageBoxA' D$H.MainWindow, ShowEquateHexa, ShowEquateTitle, &MB_SYSTEMMODAL
 ret
 
 ;;
@@ -75,11 +75,11 @@ ret
 [PossibleWinApi: B$ ?   PossibleOpCode: ?   LocalSymbol: ?] [NumberDashLines: ?]
 
 RightClick: ; 'InternSearch'
-    mov B$ShiftBlockInside &FALSE
+    Mov B$ShiftBlockInside &FALSE
 
     push D$BlockInside
-        call LeftButtonSimulation | call LeftButtonUp
-        mov eax D$CurrentWritingPos
+        Call LeftButtonSimulation | Call LeftButtonUp
+        Mov eax D$CurrentWritingPos
     pop D$BlockInside
 
     ..If B$BlockInside = &TRUE
@@ -90,29 +90,29 @@ RightClick: ; 'InternSearch'
        .End_If
     ..End_If
 
-    call LeftButtonSimulation | call LeftButtonUp | call AskForRedraw
+    Call LeftButtonSimulation | Call LeftButtonUp | Call AskForRedraw
 
   ; Save all 'EditData's
-    mov esi EditData, edi OldEditData, ecx 21 | rep movsd
+    Mov esi EditData, edi OldEditData, ecx 21 | rep movsd
 
-    mov esi D$CurrentWritingPos
+    Mov esi D$CurrentWritingPos
 
   ; Special Selections cases when Clicking exactely on '"' or '[':
     If B$esi = '"'
-        call SelectDoubleQuotedText | ret
+        Call SelectDoubleQuotedText | ret
     Else_If B$esi = '['
-        call SelectDataBlock | ret
+        Call SelectDataBlock | ret
     End_If
 
   ; Is it a Right-Click on 'blank' area for simply routing back?
   ; Or on a DashLine >>> do nothing.
-    mov al B$esi
+    Mov al B$esi
     If B$esi = '_'
         On B$esi+1 = '_', ret
         On B$esi-1 = '_', ret
     End_If
 
-    call WordEdge
+    Call WordEdge
 
     .If B$Edge <> &FALSE
         If B$esi <= ' '
@@ -125,36 +125,36 @@ RightClick: ; 'InternSearch'
         End_If
     .End_If
 
-    mov B$PossibleWinApi &FALSE
+    Mov B$PossibleWinApi &FALSE
 
 ; Reused by 'SearchFromTreeListBox' and the Debugger 'DataView_ShowDeclaration':
 InternalRightClick: ; 'InternSearch'
-    mov B$InsideMLC &FALSE, B$InsideComment &FALSE
+    Mov B$InsideMLC &FALSE, B$InsideComment &FALSE
 
   ; Go to start of Clicked word:
     std
-L0:     lodsb | call WordEdge | cmp B$Edge &TRUE | jne L0<
+L0:     lodsb | Call WordEdge | cmp B$Edge &TRUE | jne L0<
     cld
     inc esi
 
   ; Special case for Numbers:
     ..If B$esi+1 >= '0'
         .If B$esi+1 <= '9'
-            call RightClickedNumber | ret
+            Call RightClickedNumber | ret
         .End_If
     ..End_If
 
   ; Special case of Tag Comment:
-    mov eax D$esi+1 | or eax 020202020
+    Mov eax D$esi+1 | or eax 020202020
     If eax = 'tag '
-        call IsItTag | On eax = &TRUE, jmp TagParser
+        Call IsItTag | On eax = &TRUE, jmp TagParser
     End_If
 
   ; To differenciate for example a Click on 'mov' (if 'mov' is a Macro) from '[mov | ...':
     push esi
         While B$esi = ' ' | dec esi | End_While
-        mov B$PossibleOpCode &FALSE
-        On B$esi = '[', mov B$PossibleOpCode &TRUE
+        Mov B$PossibleOpCode &FALSE
+        On B$esi = '[', Mov B$PossibleOpCode &TRUE
     pop esi
 
     inc esi
@@ -162,24 +162,24 @@ L0:     lodsb | call WordEdge | cmp B$Edge &TRUE | jne L0<
   ; Special case for OS Equates, plus, take care of Strings Delimiters for Api calls:
     If B$esi-1 = '&'
         push esi
-            call NewGetEquates | mov edx esi
+            Call NewGetEquates | Mov edx esi
         pop esi
-        On B$EquateFound = &TRUE, call ShowEquate
+        On B$EquateFound = &TRUE, Call ShowEquate
         ret
     Else_If B$esi-1 = "'"
-        mov B$PossibleWinApi &TRUE
+        Mov B$PossibleWinApi &TRUE
     Else_If B$esi-1 = "'"
-        mov B$PossibleWinApi &TRUE
+        Mov B$PossibleWinApi &TRUE
     End_If
 
   ; First Char, Low Case into ah:
-    mov ah B$esi | or ah 32
+    Mov ah B$esi | or ah 32
 
   ; edx > second char (> edi)
-    inc esi | mov ebx 0, edx esi
+    inc esi | Mov ebx 0, edx esi
 
   ; Search for end of Clicked word:
-L0: lodsb | inc ebx | call WordEdge | cmp B$Edge &TRUE | jne L0<
+L0: lodsb | inc ebx | Call WordEdge | cmp B$Edge &TRUE | jne L0<
     sub ebx 1 | jc L9>>             ; ebx = length-1
         cmp ebx 0 | je L9>>
     cmp ebx 1 | ja L0>              ; Abort if local label
@@ -187,7 +187,7 @@ L0: lodsb | inc ebx | call WordEdge | cmp B$Edge &TRUE | jne L0<
         ret
 
   ; Now, edi (edx) > start+1 of right clicked word; ebx = lenght-1. Search maching Symbol:
-L0: mov esi D$CodeSource, ecx D$SourceLen, B$InsideBracket &FALSE, B$InsideComment &FALSE
+L0: Mov esi D$CodeSource, ecx D$SourceLen, B$InsideBracket &FALSE, B$InsideComment &FALSE
     and D$MacroNamePointer 0 ;jE!
 ;;
   Clean up, in actual Style to be continued from here, when i will have time.
@@ -206,61 +206,61 @@ L0: lodsb | cmp al ah | je L3>>             ; test XORed AH each pass in order t
 L2: loop L0<
 
 C0:     .If B$PossibleWinApi = &TRUE
-            call WinApiFirstPass ; SearchWinApi
+            Call WinApiFirstPass ; SearchWinApi
         .Else
-            mov B$MnemonicHelpFound &FALSE
-            call SearchMneMonic             ; Nothing found > it it a Mnemonic?
+            Mov B$MnemonicHelpFound &FALSE
+            Call SearchMneMonic             ; Nothing found > it it a Mnemonic?
             If B$MnemonicHelpFound = &FALSE
-                On ebx < 3, call SearchForReg
+                On ebx < 3, Call SearchForReg
             End_If
         .End_If
         ret
 
 L1: cmp B$InsideMLC &TRUE | jne L1>
       cmp D$esi-2 MLC | jne T1<
-        mov B$InsideMLC &FALSE | jmp L2<
+        Mov B$InsideMLC &FALSE | jmp L2<
 L1: cmp B$InsideComment &TRUE | jne L1>
       cmp al LF  | jne T1<<
-        mov B$InsideComment &FALSE | jmp L2<
+        Mov B$InsideComment &FALSE | jmp L2<
 L1: cmp B$InsideText &FALSE | je L1>
       cmp al B$InsideText | jne T1<<
-        mov B$InsideText &FALSE | jmp L2<<
+        Mov B$InsideText &FALSE | jmp L2<<
 L1: cmp al "'" | jne L1>
-      mov B$InsideText al | jmp T1<<
+      Mov B$InsideText al | jmp T1<<
 L1: cmp al '"' | jne L1>
-      mov B$InsideText al | jmp T1<<
+      Mov B$InsideText al | jmp T1<<
 L1: cmp al '[' | jne L1>
-        call ScaningBracket
+        Call ScaningBracket
 
 S0:   cmp B$esi ' ' | jne L2<<
         inc esi | sub ecx 1 | jnc S0<        ; strip double spaces
           ret
 
 L1: cmp al ']' | jne L1>
-      mov B$InsideBracket &FALSE, B$DataDeclaration &FALSE, B$MacroDeclaration &FALSE
+      Mov B$InsideBracket &FALSE, B$DataDeclaration &FALSE, B$MacroDeclaration &FALSE
       jmp L2<<
 
 L1: cmp al ';' | jne L1>                     ; jmp over comments
         If D$esi-2 = MLC   ; (LF ; ; CR)
-            mov B$InsideMLC &TRUE | jmp T1<<
+            Mov B$InsideMLC &TRUE | jmp T1<<
         Else
-            mov B$InsideComment &TRUE | jmp T1<<
+            Mov B$InsideComment &TRUE | jmp T1<<
         End_If
 
 L1: cmp al '|' | jne L1>
-      mov B$InsideBracket &FALSE | jmp L2<<
+      Mov B$InsideBracket &FALSE | jmp L2<<
 L1: cmp al ':' | jne L2<<
-      mov B$DataDeclaration &TRUE
+      Mov B$DataDeclaration &TRUE
 
             jmp L2<<                         ; (avoids pointing equates datas).
 
-L3: mov al B$esi-2 | call WordEdge | cmp B$Edge &FALSE | je L2<<     ; left edge?
+L3: Mov al B$esi-2 | Call WordEdge | cmp B$Edge &FALSE | je L2<<     ; left edge?
 
-        mov D$NumberDashLines 0
+        Mov D$NumberDashLines 0
 
-        pushad | mov ecx ebx, edi edx
+        pushad | Mov ecx ebx, edi edx
 
-C0:       lodsb | mov ah B$edi | inc edi
+C0:       lodsb | Mov ah B$edi | inc edi
 
           ; case insensitive comparison:
             If al >= 'A'
@@ -285,7 +285,7 @@ C0:       lodsb | mov ah B$edi | inc edi
 
             .If B$esi-1 <> '_'
                 While B$edi-1 = '_'
-                    mov ah B$edi | inc edi
+                    Mov ah B$edi | inc edi
                     If ah >= 'A'
                         On ah <= 'Z', or ah 020
                     End_If
@@ -296,7 +296,7 @@ C0:       lodsb | mov ah B$edi | inc edi
             cmp ah al | jne C1>
             loop C0<
 
-X1:         mov al B$esi | call WordEdge
+X1:         Mov al B$esi | Call WordEdge
             If B$Edge = &FALSE
                 popad | jmp L2<<
             End_If
@@ -305,7 +305,7 @@ X1:         mov al B$esi | call WordEdge
 
 C1:     popad | jne L2<<
 
-   ; mov al B$esi+ebx | call WordEdge | cmp B$Edge &FALSE | je L2<<    ; right edge?
+   ; Mov al B$esi+ebx | Call WordEdge | cmp B$Edge &FALSE | je L2<<    ; right edge?
 
 C2: If B$MacroDeclaration = &TRUE
       ; Was it first word?
@@ -325,39 +325,39 @@ C2: If B$MacroDeclaration = &TRUE
       cmp B$InsideBracket &TRUE | jne L2<<                     ; equ. / macro
           cmp B$DataDeclaration &TRUE | je L2<<  ; avoid pointing data body instead of Equate
               If B$MacroDeclaration = &FALSE
-                call PairedEquate | On B$ValidEquateOrMacro = &FALSE, jmp L2<<
+                Call PairedEquate | On B$ValidEquateOrMacro = &FALSE, jmp L2<<
               End_If
 
 L4: dec esi                                                    ; found
-    mov D$BlockStartTextPtr esi, D$RCstart esi                 ; RCstart/End used by
-    add esi ebx | mov D$BlockEndTextPtr esi, D$RCend esi       ; 'BackClick'
-    mov B$BlockInside &TRUE
-    inc esi | mov D$CurrentWritingPos esi
+    Mov D$BlockStartTextPtr esi, D$RCstart esi                 ; RCstart/End used by
+    add esi ebx | Mov D$BlockEndTextPtr esi, D$RCend esi       ; 'BackClick'
+    Mov B$BlockInside &TRUE
+    inc esi | Mov D$CurrentWritingPos esi
 
-    std | mov ecx 0
+    std | Mov ecx 0
 L5:     lodsb | inc ecx
         cmp al LF | jne L5<                    ; search for start of line
         cld | ;dec ecx
 
-    call StorePosInBackTable
+    Call StorePosInBackTable
 
-    add esi 2 | mov D$UpperLine esi                            ; and set all needed
-    call UpOneLine | call UpOneLine | call UpOneLine           ; variables for Pos, in
+    add esi 2 | Mov D$UpperLine esi                            ; and set all needed
+    Call UpOneLine | Call UpOneLine | Call UpOneLine           ; variables for Pos, in
 
   ; Would be a good thing... but doesn't work. The Block seems cleared by 'TryToMove'
   ; when it can't move any more upward... complicated... later...
 
-  ;  call UpOneLine | call UpOneLine | call UpOneLine
-  ;  call UpOneLine | call UpOneLine | call UpOneLine
+  ;  Call UpOneLine | Call UpOneLine | Call UpOneLine
+  ;  Call UpOneLine | Call UpOneLine | Call UpOneLine
 
-    mov D$CaretLine 3, D$CaretRow ecx, D$PhysicalCaretRow ecx  ; case user wish editing
-    call TryToMove
-    mov D$RightScroll 0 | call AskForRedraw
+    Mov D$CaretLine 3, D$CaretRow ecx, D$PhysicalCaretRow ecx  ; case user wish editing
+    Call TryToMove
+    Mov D$RightScroll 0 | Call AskForRedraw
 
     If B$PossibleOpCode = &TRUE
-        mov esi D$BlockStartTextPtr, ah B$esi, edx esi, ebx D$BlockEndTextPtr
+        Mov esi D$BlockStartTextPtr, ah B$esi, edx esi, ebx D$BlockEndTextPtr
         or ah 32 | inc edx | sub ebx esi
-        call SearchMneMonic
+        Call SearchMneMonic
     End_If
 
 L9: ret
@@ -365,12 +365,12 @@ L9: ret
 
 SearchForReg:
     pushad
-        dec edx | mov esi edx, edi MnemonicCopy, ecx ebx | inc ecx
+        dec edx | Mov esi edx, edi MnemonicCopy, ecx ebx | inc ecx
 L0:     lodsb | On al > 'Z', and eax (not 020) | stosb | loop L0<
-        mov B$edi 0
-        mov esi MnemonicCopy
+        Mov B$edi 0
+        Mov esi MnemonicCopy
         Call IsItaReg
-        On eax <> 0, call Help B_U_AsmName, {'Registers', 0}, ContextHlpMessage
+        On eax <> 0, Call Help B_U_AsmName, {'Registers', 0}, ContextHlpMessage
     popad
 ret
 ____________________________________________________________________________________________
@@ -391,7 +391,7 @@ PairedEquate:
     pushad
     push D$CodeSourceA, D$CodeSourceB
         While B$esi >= '0' | inc esi | End_While
-        mov ecx 2
+        Mov ecx 2
 
 L0:     While B$esi <> '[' | dec esi | inc ecx | End_While
 
@@ -401,38 +401,38 @@ L0:     While B$esi <> '[' | dec esi | inc ecx | End_While
             dec esi | inc ecx | jmp L0<
         End_If
 L1:   ;and D$MacroNamePointer 0 ; ?? jE!
-        mov edi Trash1, D$StripLen ecx | rep movsb | mov D$edi CRLF2
+        Mov edi Trash1, D$StripLen ecx | rep movsb | Mov D$edi CRLF2
 
         move D$CodeSourceA Trash1, D$CodeSourceB Trash2
 
       ; CoolParsers
-        call KillMultiLineComments
-        call NewKillVirtualCRLF
-        call KillMeaninglessCommas
+        Call KillMultiLineComments
+        Call NewKillVirtualCRLF
+        Call KillMeaninglessCommas
 
       ; HotParsers
-        call StripUnderscore
-        call TranslateAsciiToMyAscii
-        call StripUnneededSpaces
-        call ConvertCommasToSpace
+        Call StripUnderscore
+        Call TranslateAsciiToMyAscii
+        Call StripUnneededSpaces
+        Call ConvertCommasToSpace
 
-        mov esi D$CodeSourceA, edx D$StripLen | add edx esi
+        Mov esi D$CodeSourceA, edx D$StripLen | add edx esi
 
         While esi < edx
             If B$esi < Separators
-                mov B$esi Space
+                Mov B$esi Space
             End_If
             inc esi
         End_While
 
-        call StripUnneededSpaces
+        Call StripUnneededSpaces
 
-        mov esi D$CodeSourceA, edx D$StripLen | add edx esi | dec edx
-        mov D$ValidEquateOrMacro &FALSE
+        Mov esi D$CodeSourceA, edx D$StripLen | add edx esi | dec edx
+        Mov D$ValidEquateOrMacro &FALSE
 
       ; Don't know why, but it seems that when stripping un-needed Spaces,
       ; the last one might be lost. Probably when followed by EOI:
-        On B$edx <> Space, mov B$edx Space
+        On B$edx <> Space, Mov B$edx Space
 
         While esi < edx
             inc esi | On B$esi = Space, xor D$ValidEquateOrMacro &TRUE
@@ -444,17 +444,17 @@ ret
 
 
 
-BlankRightClick:    On B$BackAnyWhere = &TRUE, call BackClick | ret
+BlankRightClick:    On B$BackAnyWhere = &TRUE, Call BackClick | ret
 
 
 [MacroNamePointer: ?]
 
 ScaningBracket:
-    mov B$InsideBracket &TRUE, B$DataDeclaration &FALSE, B$MacroDeclaration &FALSE
+    Mov B$InsideBracket &TRUE, B$DataDeclaration &FALSE, B$MacroDeclaration &FALSE
 
   ; Verify that this is not an Alternate Syntax Instruction:
     push eax
-        mov al B$esi-2 | or al 020
+        Mov al B$esi-2 | or al 020
         If al = 'd'
 L0:         pop eax
             While B$esi > LF | inc esi | End_While
@@ -468,32 +468,32 @@ L0:         pop eax
 
       ; Go to first word and keep pointer as required for final test (+1):
         While B$esi = ' ' | inc esi | End_While
-        mov D$MacroNamePointer esi | inc D$MacroNamePointer
+        Mov D$MacroNamePointer esi | inc D$MacroNamePointer
 
       ; Skip first word:
         While B$esi > ' '
             inc esi
             If B$esi = '|'
-                mov B$MacroDeclaration &TRUE | jmp L9>
+                Mov B$MacroDeclaration &TRUE | jmp L9>
             End_If
         End_While
 
       ; What last Char in first word:
         If B$esi-1 = ':'
-            mov B$DataDeclaration &TRUE | jmp L9>
+            Mov B$DataDeclaration &TRUE | jmp L9>
         Else_If B$esi-1 = '|'
-            mov B$MacroDeclaration &TRUE | jmp L9>
+            Mov B$MacroDeclaration &TRUE | jmp L9>
         End_If
 
       ; What is next non space Char:
         While B$esi = ' ' | inc esi | End_While | lodsb
 
         If al = '|'
-            mov B$MacroDeclaration &TRUE
+            Mov B$MacroDeclaration &TRUE
         Else_If al = CR
-            mov B$MacroDeclaration &TRUE
+            Mov B$MacroDeclaration &TRUE
         Else_If al = ';'
-            mov B$MacroDeclaration &TRUE
+            Mov B$MacroDeclaration &TRUE
         End_If
 L9: pop esi
 ret
@@ -501,21 +501,21 @@ ret
 ____________________________________________________________________________________________
 
 SelectDoubleQuotedText:
-    mov D$BlockStartTextPtr esi | inc D$BlockStartTextPtr
+    Mov D$BlockStartTextPtr esi | inc D$BlockStartTextPtr
 
-    mov B$TextGoingOn &FALSE | lodsb | call IsItFirstText
+    Mov B$TextGoingOn &FALSE | lodsb | Call IsItFirstText
 
 L1: lodsb | On esi >= D$SourceEnd, ret
-            call IsItFirstText | je L1<
+            Call IsItFirstText | je L1<
 
     sub esi 2
-    mov D$BlockEndTextPtr esi, B$BlockInside &TRUE
-    call AskForRedraw
+    Mov D$BlockEndTextPtr esi, B$BlockInside &TRUE
+    Call AskForRedraw
 ret
 
 
 SelectDataBlock:
-    inc esi | mov D$BlockStartTextPtr esi, B$TextGoingOn &FALSE
+    inc esi | Mov D$BlockStartTextPtr esi, B$TextGoingOn &FALSE
     .While B$esi <> ']'
 
         .If B$esi = ';'
@@ -531,12 +531,12 @@ SelectDataBlock:
         .End_If
 
 L1:     lodsb | On esi >= D$SourceEnd, ret
-                call IsItFirsttext | je L1<
+                Call IsItFirsttext | je L1<
     .End_While
 
 L9: dec esi
-    mov D$BlockEndTextPtr esi, B$BlockInside &TRUE
-    call AskForRedraw
+    Mov D$BlockEndTextPtr esi, B$BlockInside &TRUE
+    Call AskForRedraw
 ret
 
 ____________________________________________________________________________
@@ -565,96 +565,96 @@ ____________________________________________________________________________
  Float_BadDisLabel 5512]
 
 RightClickOnBlock:
-    call 'USER32.CreatePopupMenu' | mov D$FloatHandle eax
-    call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING, Float_Copy, Float_Copy_String
-    call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING, Float_Delete, Float_Delete_String
-    call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING, Float_Replace, Float_Replace_String
+    Call 'USER32.CreatePopupMenu' | Mov D$FloatHandle eax
+    Call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING, Float_Copy, Float_Copy_String
+    Call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING, Float_Delete, Float_Delete_String
+    Call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING, Float_Replace, Float_Replace_String
 
-    call 'USER32.AppendMenuA' D$FloatHandle &MF_SEPARATOR &NULL &NUll
-    call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING Float_SearchFromTop,
+    Call 'USER32.AppendMenuA' D$FloatHandle &MF_SEPARATOR &NULL &NUll
+    Call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING Float_SearchFromTop,
                              Float_SearchFromTop_String
-    call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING Float_SearchUp Float_SearchUp_String
-    call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING Float_SearchDown Float_SearchDown_String
+    Call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING Float_SearchUp Float_SearchUp_String
+    Call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING Float_SearchDown Float_SearchDown_String
 
-    call IsItaNumber
+    Call IsItaNumber
     If eax > 0
-        call 'USER32.AppendMenuA' D$FloatHandle, &MF_SEPARATOR, &NULL, &NUll
-        call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, Float_Number, Float_Number_String
+        Call 'USER32.AppendMenuA' D$FloatHandle, &MF_SEPARATOR, &NULL, &NUll
+        Call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, Float_Number, Float_Number_String
     End_If
 
-    call IsItanEqual | On eax = &TRUE, jmp L0>
+    Call IsItanEqual | On eax = &TRUE, jmp L0>
 
-    call IsItaMacro
+    Call IsItaMacro
     If eax > 0
-L0:     call 'USER32.AppendMenuA' D$FloatHandle, &MF_SEPARATOR, &NULL, &NUll
-        call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, Float_Unfold, Float_Unfold_String
+L0:     Call 'USER32.AppendMenuA' D$FloatHandle, &MF_SEPARATOR, &NULL, &NUll
+        Call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, Float_Unfold, Float_Unfold_String
     End_If
 
-    call IsItaLabel
+    Call IsItaLabel
     If eax = 1
-        call 'USER32.AppendMenuA' D$FloatHandle, &MF_SEPARATOR, &NULL, &NUll
-        call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, Float_BookMark,
+        Call 'USER32.AppendMenuA' D$FloatHandle, &MF_SEPARATOR, &NULL, &NUll
+        Call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, Float_BookMark,
                                   Float_BookMark_String
     Else_If eax = 2
-        call 'USER32.AppendMenuA' D$FloatHandle, &MF_SEPARATOR, &NULL, &NUll
-        call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, Float_UnBookMark,
+        Call 'USER32.AppendMenuA' D$FloatHandle, &MF_SEPARATOR, &NULL, &NUll
+        Call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, Float_UnBookMark,
                                   Float_UnBookMark_String
     End_If
 
     .If D$IsDebugging = &FALSE
-        mov ecx D$BlockEndTextPtr | sub ecx D$BlockStartTextPtr
+        Mov ecx D$BlockEndTextPtr | sub ecx D$BlockStartTextPtr
         If ecx > 50
-            call 'USER32.AppendMenuA' D$FloatHandle, &MF_SEPARATOR, &NULL, &NUll
-            call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, Float_SelReplace,
+            Call 'USER32.AppendMenuA' D$FloatHandle, &MF_SEPARATOR, &NULL, &NUll
+            Call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, Float_SelReplace,
                                     Float_SelReplace_String
         End_If
     .End_If
 
 
     .If B$ThisSourceIsDisassembled = &TRUE
-        call IsItDisassembledLabel
+        Call IsItDisassembledLabel
         If eax = &TRUE
-            call 'USER32.AppendMenuA' D$FloatHandle, &MF_SEPARATOR, &NULL, &NUll
-            call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, Float_BadDisLabel,
+            Call 'USER32.AppendMenuA' D$FloatHandle, &MF_SEPARATOR, &NULL, &NUll
+            Call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, Float_BadDisLabel,
                                       Float_BadDisLabel_String
         end_If
     .End_If
 
 
-    call 'USER32.GetWindowRect' D$hwnd RECT
-    mov eax D$RECTleft | add eax 20 | add D$MousePosX eax
-    mov eax D$RECTtop | add D$MousePosY eax
+    Call 'USER32.GetWindowRect' D$H.MainWindow RECT
+    Mov eax D$RECTleft | add eax 20 | add D$MousePosX eax
+    Mov eax D$RECTtop | add D$MousePosY eax
 
-    call 'KERNEL32.GetCurrentThreadId'
-    call 'USER32.SetWindowsHookExA' &WH_KEYBOARD, FloatMenuProc, &NULL, eax
-    mov D$hHook eax
+    Call 'KERNEL32.GetCurrentThreadId'
+    Call 'USER32.SetWindowsHookExA' &WH_KEYBOARD, FloatMenuProc, &NULL, eax
+    Mov D$hHook eax
 
-    mov eax D$MousePosX | add eax D$BpMarginWidth
+    Mov eax D$MousePosX | add eax D$BpMarginWidth
 
-    call 'USER32.TrackPopupMenu' D$FloatHandle,
+    Call 'USER32.TrackPopupMenu' D$FloatHandle,
                                  0, eax, D$MousePosY, 0,
                                  D$EditWindowHandle, &NULL
 
-    call 'USER32.UnhookWindowsHookEx' D$hHook
+    Call 'USER32.UnhookWindowsHookEx' D$hHook
 ret
 
 
 IsItDisassembledLabel:
-    mov esi D$BlockEndTextPtr | On B$esi+1 <> ':', jmp L7>
+    Mov esi D$BlockEndTextPtr | On B$esi+1 <> ':', jmp L7>
 
-    mov esi D$BlockStartTextPtr
+    Mov esi D$BlockStartTextPtr
     If D$esi = 'Code'
-        mov D$DisLabelTypeWas CODEFLAG
-        call GetDisLabelHexaValue
-        xor B$GetHexaFromTextError &TRUE | mov eax D$GetHexaFromTextError
+        Mov D$DisLabelTypeWas CODEFLAG
+        Call GetDisLabelHexaValue
+        xor B$GetHexaFromTextError &TRUE | Mov eax D$GetHexaFromTextError
 
     Else_If D$esi = 'Data'
-        mov D$DisLabelTypeWas DATAFLAG
-        call GetDisLabelHexaValue
-        xor B$GetHexaFromTextError &TRUE | mov eax D$GetHexaFromTextError
+        Mov D$DisLabelTypeWas DATAFLAG
+        Call GetDisLabelHexaValue
+        xor B$GetHexaFromTextError &TRUE | Mov eax D$GetHexaFromTextError
 
     Else
-L7:     mov eax 0
+L7:     Mov eax 0
 
     End_If
 ret
@@ -665,41 +665,41 @@ GetDisLabelHexaValue:
   The "On B$esi = '_', jmp L1>" are for cases of Label that are appended with a "_Symbol"
   taken from the 'StringsMap'.
 ;;
-    mov esi D$BlockStartTextPtr, edi CopyOfLabelHexa | add esi 4
+    Mov esi D$BlockStartTextPtr, edi CopyOfLabelHexa | add esi 4
     While B$esi <> ':'
         movsb | On B$esi = '_', jmp L1>
     End_While
-L1: mov B$edi 0
+L1: Mov B$edi 0
 
-    call GetHexaFromText CopyOfLabelHexa
+    Call GetHexaFromText CopyOfLabelHexa
 
     If B$GetHexaFromTextError = &TRUE
-        mov D$DisAddressWas 0
+        Mov D$DisAddressWas 0
     Else
-        mov D$DisAddressWas eax
+        Mov D$DisAddressWas eax
     End_If
 
-    mov D$CopyOfNextLabelHexa 0
-    mov eax D$CopyOfLabelHexa
+    Mov D$CopyOfNextLabelHexa 0
+    Mov eax D$CopyOfLabelHexa
     .While esi < D$SourceEnd
         inc esi
         .If D$esi = eax
-            mov ebx esi
+            Mov ebx esi
             While B$esi <> ':'
                 inc esi | On B$esi <= ' ', jmp L2>
             End_While
 
-            mov esi ebx, edi CopyOfNextLabelHexa
+            Mov esi ebx, edi CopyOfNextLabelHexa
             While B$esi <> ':'
                 movsb | On B$esi = '_', jmp L1>
             End_While
-L1:         mov B$edi 0
+L1:         Mov B$edi 0
             push D$GetHexaFromTextError
-                call GetHexaFromText CopyOfNextLabelHexa
+                Call GetHexaFromText CopyOfNextLabelHexa
                 If B$GetHexaFromTextError = &TRUE
-                    mov D$NextDisAddressWas 0, D$CopyOfNextLabelHexa 0
+                    Mov D$NextDisAddressWas 0, D$CopyOfNextLabelHexa 0
                 Else
-                    mov D$NextDisAddressWas eax
+                    Mov D$NextDisAddressWas eax
                 End_If
             pop D$GetHexaFromTextError
         .End_If
@@ -712,57 +712,57 @@ Proc FloatMenuProc:
 
         ..If D@nCode = &HC_ACTION ; HC_NOREMOVE
             On D@wParam = &VK_ESCAPE
-L1:             mov B$BlockInside &FALSE
+L1:             Mov B$BlockInside &FALSE
             End_If
         ..End_If
 
-L9:     mov eax &FALSE ; Forwarding
+L9:     Mov eax &FALSE ; Forwarding
 EndP
 
 
 CopyFromFloatMenu:
-    call 'USER32.DestroyMenu' D$FloatHandle
-    call ControlC
+    Call 'USER32.DestroyMenu' D$FloatHandle
+    Call ControlC
 ret
 
 
 SetFloatSearch:
-    mov esi D$BlockStartTextPtr, edi SearchString, ecx D$BlockEndTextPtr
+    Mov esi D$BlockStartTextPtr, edi SearchString, ecx D$BlockEndTextPtr
     sub ecx esi | inc ecx
-    mov D$LenOfSearchedString ecx
+    Mov D$LenOfSearchedString ecx
     rep movsb
 ret
 
 SearchUpFromFloatMenu:
-    mov B$DownSearch &FALSE
-    call SetFloatSearch | call SetCaret D$BlockStartTextPtr | call StringSearch
+    Mov B$DownSearch &FALSE
+    Call SetFloatSearch | Call SetCaret D$BlockStartTextPtr | Call StringSearch
 ret
 
 SearchFromTopFromFloatMenu:
-    mov B$DownSearch &TRUE
-    call SetFloatSearch
-    call FullUp | mov D$CaretRow 1, D$CaretLine 0 | move D$CurrentWritingPos D$CodeSource
-    call StringSearch
+    Mov B$DownSearch &TRUE
+    Call SetFloatSearch
+    Call FullUp | Mov D$CaretRow 1, D$CaretLine 0 | move D$CurrentWritingPos D$CodeSource
+    Call StringSearch
 ret
 
 SearchDownFromFloatMenu:
-    mov B$DownSearch &TRUE
-    call SetFloatSearch | call StringSearch
+    Mov B$DownSearch &TRUE
+    Call SetFloatSearch | Call StringSearch
 ret
 
 
 RightClickedNumber:
     inc esi
     push D$BlockStartTextPtr, D$BlockEndTextPtr
-        mov D$BlockStartTextPtr esi
+        Mov D$BlockStartTextPtr esi
         push esi
-L0:         lodsb | call WordEdge | cmp B$Edge &TRUE | jne L0<
-            sub esi 2 | mov D$BlockEndTextPtr esi
+L0:         lodsb | Call WordEdge | cmp B$Edge &TRUE | jne L0<
+            sub esi 2 | Mov D$BlockEndTextPtr esi
         pop esi
-        call IsItaNumber
+        Call IsItaNumber
     pop D$BlockEndTextPtr, D$BlockStartTextPtr
     If eax <> 0
-        call ViewClickedNumber
+        Call ViewClickedNumber
     End_If
 ret
 
@@ -772,8 +772,8 @@ ret
 [NumberCopy: ? #25]
 
 IsItaNumber:
-    mov eax 0, esi D$BlockStartTextPtr, bl B$esi
-    mov B$HexaInBlock &FALSE, B$BinaryInBlock &TRUE
+    Mov eax 0, esi D$BlockStartTextPtr, bl B$esi
+    Mov B$HexaInBlock &FALSE, B$BinaryInBlock &TRUE
 
     cmp bl '0' | jb L9>>
         cmp bl '9' | ja L9>>
@@ -786,11 +786,11 @@ L0: inc esi
     cmp B$esi '9' | ja L2>
 L1: jmp L0<
 
-L2: mov ecx esi | sub ecx D$BlockStartTextPtr
+L2: Mov ecx esi | sub ecx D$BlockStartTextPtr
     If ecx > 50
-        mov eax 0 | jmp L9>>
+        Mov eax 0 | jmp L9>>
     End_If
-    mov esi D$BlockStartTextPtr, edi NumberCopy
+    Mov esi D$BlockStartTextPtr, edi NumberCopy
 
     While esi <= D$BlockEndTextPtr
 L3:     lodsb
@@ -801,38 +801,38 @@ L3:     lodsb
         If al = '_'
             jmp L3<
         Else_If al > 'F'
-            mov eax 0 | jmp L9>>
+            Mov eax 0 | jmp L9>>
         Else_If al < '0'
-            mov eax 0 | jmp L9>>
+            Mov eax 0 | jmp L9>>
         End_If
 
-        On al > '9',  mov B$HexaInBlock &TRUE
-        On al > '1', mov B$BinaryInBlock &FALSE
+        On al > '9',  Mov B$HexaInBlock &TRUE
+        On al > '1', Mov B$BinaryInBlock &FALSE
 
         On al <> '_', stosb
     End_While
 
-    mov D$OldStackPointer esp
-    mov B$edi 0
-    mov esi NumberCopy
+    Mov D$OldStackPointer esp
+    Mov B$edi 0
+    Mov esi NumberCopy
     .If W$esi = '00'
         If B$BinaryInBlock = &TRUE
-            call ClickBinary
+            Call ClickBinary
         Else
-            mov eax 0
+            Mov eax 0
         End_If
     .Else_If B$esi = '0'
-        call ClickHexa
+        Call ClickHexa
     .Else
         If B$HexaInBlock = &FALSE
-            call ClickDecimal
+            Call ClickDecimal
         Else
-            mov eax 0
+            Mov eax 0
         End_If
     .End_If
 
   ; eax = Number if any (or 0):
-L9: mov D$ClickedNumberValue eax
+L9: Mov D$ClickedNumberValue eax
 ret
 ____________________________________________________________________________________________
 
@@ -841,40 +841,40 @@ ________________________________________________________________________________
 ClickBinary:
     lodsw                                               ; clear first '00'
 NackedClickBinary:
-    mov ebx 0, edx 0, ecx 0
+    Mov ebx 0, edx 0, ecx 0
 L0: lodsb | cmp al Closebracket | jbe L9>
     sub al '0' | shld edx ebx 1 | shl ebx 1 | or bl al
     cmp edx ecx | jb L8>
-        mov ecx edx
+        Mov ecx edx
             cmp al 2 | jb L0<
-L8:             mov ecx D$BinTypePtr | jmp BadNumberFormat
-L9: mov eax ebx
+L8:             Mov ecx D$BinTypePtr | jmp BadNumberFormat
+L9: Mov eax ebx
 ret
 
 
 ClickHexa:
     lodsb                                               ; clear first '0'
 NackedClickHexa:
-    mov ebx 0,  edx 0, ecx 0
+    Mov ebx 0,  edx 0, ecx 0
 L0: lodsb | cmp al LowSigns | jbe L9>
         sub al '0' | cmp al 9 | jbe L2>
             sub al 7
 L2: shld edx ebx 4 | shl ebx 4 | or bl al
     cmp edx ecx | jb L8>
-        mov ecx edx
+        Mov ecx edx
             cmp al 0F | jbe L0<
-L8: mov ecx HexType | jmp BadClickFormat
-L9: mov eax ebx
+L8: Mov ecx HexType | jmp BadClickFormat
+L9: Mov eax ebx
 ret
 
 
 ClickDecimal:
-    mov eax 0, ecx 0
+    Mov eax 0, ecx 0
 
-L2: mov cl B$esi | inc esi                        ; (eax used for result > no lodsb)
+L2: Mov cl B$esi | inc esi                        ; (eax used for result > no lodsb)
     cmp cl LowSigns | jbe  L9>
 
-      mov edx 10 | mul edx | jo L3>               ; loaded part * 10
+      Mov edx 10 | mul edx | jo L3>               ; loaded part * 10
                                                   ; Overflow >>> Qword
         sub  ecx '0' | jc L7>
         cmp  ecx 9   | ja L7>
@@ -889,17 +889,17 @@ L3: sub ecx '0' | jc L7>
       add eax ecx
 
 L4:   adc edx 0
-      mov cl B$esi | inc  esi
+      Mov cl B$esi | inc  esi
       cmp cl LowSigns | jbe L9>
 
-        mov ebx eax, eax edx, edx 10 | mul edx    ; high part * 10
+        Mov ebx eax, eax edx, edx 10 | mul edx    ; high part * 10
           jo L6>                                  ; Qword overflow
-            xchg eax ebx | mov edx 10 | mul edx   ; low part * 10
+            xchg eax ebx | Mov edx 10 | mul edx   ; low part * 10
             add  edx ebx
             jnc   L3<                             ; carry >>> overflow
-L6:           mov eax 0 | ret
+L6:           Mov eax 0 | ret
 
-L7: mov ecx D$DezimalTypePtr | jmp BadNumberFormat
+L7: Mov ecx D$DezimalTypePtr | jmp BadNumberFormat
 L9: ret                                           ; >>> number in EDX:EAX
 
 
@@ -918,18 +918,18 @@ L0: lodsb | On al = 'X', lodsb
 L7:     While B$esi > LowSigns | inc esi | End_While | dec esi | lodsb
         .If al = 'H'
             If ecx = HexType
-                mov eax 0 | ret
+                Mov eax 0 | ret
             End_If
         .Else_If al = 'D'
             If ecx = DezimalType
-                mov eax 0 | ret
+                Mov eax 0 | ret
             End_If
         .Else_If al = 'B'
             If ecx = BinType
-                mov eax 0 | ret
+                Mov eax 0 | ret
             End_If
         .Else
-            mov eax 0 | ret
+            Mov eax 0 | ret
         .End_If
     ..End_If
 
@@ -939,11 +939,11 @@ L7:     While B$esi > LowSigns | inc esi | End_While | dec esi | lodsb
  and we fill at the other end (start), with zeros:
 ;;
     push edi
-        mov edi esi | dec esi | On B$esi = 'X', dec esi
+        Mov edi esi | dec esi | On B$esi = 'X', dec esi
         std
             While B$esi > LowSigns | movsb | End_While
         cld
-        While B$edi > LowSigns | mov B$edi '0' | dec edi | End_While
+        While B$edi > LowSigns | Mov B$edi '0' | dec edi | End_While
     pop edi
 
     inc esi | While B$esi = '0' | inc esi | End_While
@@ -975,55 +975,55 @@ ClickedNumberTitle: 'Bases forms', 0]
 
 
 ViewClickedNumber:
-    mov eax D$ClickedNumberValue | lea edi D$ClickedHexa+8
+    Mov eax D$ClickedNumberValue | lea edi D$ClickedHexa+8
 
   ; Write Hexa form:
-    call WriteEax
-    mov al ' '
+    Call WriteEax
+    Mov al ' '
     While B$edi <> CR
         stosb
     End_While
     add edi 8
 
   ; Write Decimal form:
-    mov eax D$ClickedNumberValue
-    mov dl 0FF | push edx                       ; Push stack end mark
-    mov ecx 10
-L0: mov edx 0
+    Mov eax D$ClickedNumberValue
+    Mov dl 0FF | push edx                       ; Push stack end mark
+    Mov ecx 10
+L0: Mov edx 0
     div ecx | push edx | cmp eax 0 | ja L0<     ; Push remainders
 L2: pop eax                                     ; Retrieve Backward
     cmp al 0FF | je L9>                         ; Over?
        add al '0' | stosb | jmp L2<             ; Write
 L9:
-    mov al ' '
+    Mov al ' '
     While B$edi <> CR
         stosb
     End_While
     add edi 8
 
   ; Write Binary form:
-    mov D$edi '00_ ' | add edi 3
-    mov ebx D$ClickedNumberValue, ecx 4
-L0: shl ebx 1 | mov al '0' | adc al 0 | stosb | loop L0<
-    mov al '_' | stosb | mov ecx 4
-L0: shl ebx 1 | mov al '0' | adc al 0 | stosb | loop L0<
-    mov al '_' | stosb | mov ecx 4
-L0: shl ebx 1 | mov al '0' | adc al 0 | stosb | loop L0<
-    mov al '_' | stosb | mov ecx 4
-L0: shl ebx 1 | mov al '0' | adc al 0 | stosb | loop L0<
-    mov al '_' | stosb | mov ecx 4
+    Mov D$edi '00_ ' | add edi 3
+    Mov ebx D$ClickedNumberValue, ecx 4
+L0: shl ebx 1 | Mov al '0' | adc al 0 | stosb | loop L0<
+    Mov al '_' | stosb | Mov ecx 4
+L0: shl ebx 1 | Mov al '0' | adc al 0 | stosb | loop L0<
+    Mov al '_' | stosb | Mov ecx 4
+L0: shl ebx 1 | Mov al '0' | adc al 0 | stosb | loop L0<
+    Mov al '_' | stosb | Mov ecx 4
+L0: shl ebx 1 | Mov al '0' | adc al 0 | stosb | loop L0<
+    Mov al '_' | stosb | Mov ecx 4
 
-    mov al '_' | stosb | stosb
+    Mov al '_' | stosb | stosb
 
-L0: shl ebx 1 | mov al '0' | adc al 0 | stosb | loop L0<
-    mov al '_' | stosb | mov ecx 4
-L0: shl ebx 1 | mov al '0' | adc al 0 | stosb | loop L0<
-    mov al '_' | stosb | mov ecx 4
-L0: shl ebx 1 | mov al '0' | adc al 0 | stosb | loop L0<
-    mov al '_' | stosb | mov ecx 4
-L0: shl ebx 1 | mov al '0' | adc al 0 | stosb | loop L0<
+L0: shl ebx 1 | Mov al '0' | adc al 0 | stosb | loop L0<
+    Mov al '_' | stosb | Mov ecx 4
+L0: shl ebx 1 | Mov al '0' | adc al 0 | stosb | loop L0<
+    Mov al '_' | stosb | Mov ecx 4
+L0: shl ebx 1 | Mov al '0' | adc al 0 | stosb | loop L0<
+    Mov al '_' | stosb | Mov ecx 4
+L0: shl ebx 1 | Mov al '0' | adc al 0 | stosb | loop L0<
 
-    call 'USER32.MessageBoxA' D$hwnd, ClickedNumberText, ClickedNumberTitle, &MB_SYSTEMMODAL
+    Call 'USER32.MessageBoxA' D$H.MainWindow, ClickedNumberText, ClickedNumberTitle, &MB_SYSTEMMODAL
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -1033,7 +1033,7 @@ ________________________________________________________________________________
 ; Tag Dialog 1050
 
 BlockReplaceAll:
-    call 'USER32.DialogBoxParamA' D$hinstance, 1050, D$hwnd, BlockReplaceAllProc, &NULL
+    Call 'USER32.DialogBoxParamA' D$hinstance, 1050, D$H.MainWindow, BlockReplaceAllProc, &NULL
 ret
 
 
@@ -1042,77 +1042,77 @@ ret
 ; Tag Dialog 1050
 
 Proc BlockReplaceAllProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
     Local @StartOfBlock, @EndOfBlock
 
     pushad
 
-    ...If D@Message = &WM_INITDIALOG
-       ; call 'USER32.SendDlgItemMessageA' D@Adressee, 50, &BM_SETCHECK, D$BlockFrCase, 0
-       ; call 'USER32.SendDlgItemMessageA' D@Adressee, 51, &BM_SETCHECK, D$BlockWwSearch, 0
-        call 'USER32.GetDlgItem' D@Adressee, 10
-        call 'USER32.SetFocus' eax
-        popad | mov eax &TRUE | ExitP
+    ...If D@msg = &WM_INITDIALOG
+       ; Call 'USER32.SendDlgItemMessageA' D@hwnd, 50, &BM_SETCHECK, D$BlockFrCase, 0
+       ; Call 'USER32.SendDlgItemMessageA' D@hwnd, 51, &BM_SETCHECK, D$BlockWwSearch, 0
+        Call 'USER32.GetDlgItem' D@hwnd, 10
+        Call 'USER32.SetFocus' eax
+        popad | Mov eax &TRUE | ExitP
 
-    ...Else_If D@Message = &WM_COMMAND
+    ...Else_If D@msg = &WM_COMMAND
 
-        mov eax D@wParam | and D@wParam 0FFFF | shr eax 16
+        Mov eax D@wParam | and D@wParam 0FFFF | shr eax 16
 
         ..If D@wParam = &IDCANCEL
-            call 'USER32.EndDialog' D@Adressee, 0
+            Call 'USER32.EndDialog' D@hwnd, 0
 
         ..Else_If D@wParam = &IDOK
-            call 'USER32.SendDlgItemMessageA' D@Adressee, 50, &BM_GETCHECK, 0, 0
-            mov D$BlockFrCase eax
+            Call 'USER32.SendDlgItemMessageA' D@hwnd, 50, &BM_GETCHECK, 0, 0
+            Mov D$BlockFrCase eax
 
-            call 'USER32.SendDlgItemMessageA' D@Adressee, 51, &BM_GETCHECK, 0, 0
-            mov D$BlockWwSearch eax
+            Call 'USER32.SendDlgItemMessageA' D@hwnd, 51, &BM_GETCHECK, 0, 0
+            Mov D$BlockWwSearch eax
 
-            call 'USER32.SendDlgItemMessageA' D@Adressee, 10, &WM_GETTEXT, 80,
+            Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &WM_GETTEXT, 80,
                                               SearchString
-            call 'USER32.SendDlgItemMessageA' D@Adressee, 11, &WM_GETTEXT, 80,
+            Call 'USER32.SendDlgItemMessageA' D@hwnd, 11, &WM_GETTEXT, 80,
                                               ReplaceWithString
-            mov esi SearchString, ecx 0
+            Mov esi SearchString, ecx 0
             While B$esi > 0 | inc esi | inc ecx | End_While
-            mov esi ReplaceWithString, D$LenOfReplaceString 0
+            Mov esi ReplaceWithString, D$LenOfReplaceString 0
             While B$esi > 0 | inc esi | inc D$LenOfReplaceString | End_While
 
             .If ecx > 0
                 push D$UpperLine, D$CaretRow, D$CaretLine
                 push D$DownSearch, D$CaseSearch, D$WholeWordSearch
-                    mov B$BlockInside &FALSE
+                    Mov B$BlockInside &FALSE
 
-                    mov D$LenOfSearchedString ecx
+                    Mov D$LenOfSearchedString ecx
                   ; No 'String not found" Message at the end:
-                    mov B$OnReplaceAll &TRUE
+                    Mov B$OnReplaceAll &TRUE
                     move D$NextSearchPos D$BlockStartTextPtr
                     move D$CaseSearch D$BlockFrCase, D$WholeWordSearch D$BlockWwSearch
-                    mov B$DownSearch &TRUE
+                    Mov B$DownSearch &TRUE
                     move D@StartOfBlock D$BlockStartTextPtr, D@EndOfBlock D$BlockEndTextPtr
 
-L0:                 call StringSearch
+L0:                 Call StringSearch
 
                     If B$BlockInside = &TRUE
-                        mov eax D@EndOfBlock | cmp D$BlockStartTextPtr eax | ja L1>
-                        call StringReplace | jmp L0<
+                        Mov eax D@EndOfBlock | cmp D$BlockStartTextPtr eax | ja L1>
+                        Call StringReplace | jmp L0<
                     End_If
 
-L1:                 mov B$OnReplaceAll &FALSE, B$Disassembling &FALSE, B$BlockInside &TRUE
+L1:                 Mov B$OnReplaceAll &FALSE, B$Disassembling &FALSE, B$BlockInside &TRUE
                     move D$BlockStartTextPtr D@StartOfBlock, D$BlockEndTextPtr D@EndOfBlock
                 pop D$WholeWordSearch, D$CaseSearch, D$DownSearch
                 pop D$CaretLine, D$CaretRow, D$UpperLine
-                call AskForRedraw
+                Call AskForRedraw
             .End_If
 
-            call 'USER32.EndDialog' D@Adressee, 0
+            Call 'USER32.EndDialog' D@hwnd, 0
         ..End_If
 
     ...Else
-L8:     popad | mov eax &FALSE | ExitP
+L8:     popad | Mov eax &FALSE | ExitP
 
     ...End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 EndP
 
 
@@ -1125,21 +1125,21 @@ ________________________________________________________________________________
 ; 'RightClickOnBlock'.
 
 IsItaMacro:
-    mov esi D$BlockStartTextPtr
+    Mov esi D$BlockStartTextPtr
 
   ; Verify we are not pointing a Declaration:
     push esi
         While B$esi-1 = ' '
             dec esi
         End_While
-        mov al B$esi-1
+        Mov al B$esi-1
     pop esi
     If al = '['
-        mov eax 0 | ret
+        Mov eax 0 | ret
     End_If
 
-    mov edi D$CodeSource, al '[', ecx D$SourceLen
-    mov edx D$BlockEndTextPtr | sub edx D$BlockStartTextPtr | inc edx
+    Mov edi D$CodeSource, al '[', ecx D$SourceLen
+    Mov edx D$BlockEndTextPtr | sub edx D$BlockStartTextPtr | inc edx
 
   ; Search for '[' in user Source:
 L0: repne scasb | jne L8>
@@ -1147,8 +1147,8 @@ L0: repne scasb | jne L8>
             While B$edi = ' '
                 inc edi                     ; Strip possible leading Space(s).
             End_While
-            mov ecx edx
-L1:         mov al B$esi, bl B$edi | inc esi | inc edi | dec ecx
+            Mov ecx edx
+L1:         Mov al B$esi, bl B$edi | inc esi | inc edi | dec ecx
             or al 020 | or bl 020 | cmp al bl | jne L2>          ; No case compare with Block.
             cmp ecx 0 | ja L1<
                jmp L9>
@@ -1156,7 +1156,7 @@ L2:     pop edi, esi, ecx, eax
 
 L3: cmp ecx 0 | ja L0<
 
-L8: mov eax 0 | ret                         ; No mach found.
+L8: Mov eax 0 | ret                         ; No mach found.
 
   ; Mach found, but is it a Macro?
 L9: While B$edi = ' '
@@ -1170,7 +1170,7 @@ L9: While B$edi = ' '
 L9: pop edi, esi, ecx, eax
 
     move D$InstructionToUnfold D$BlockStartTextPtr
-    dec edi | mov eax edi, D$UnfoldedMacro eax
+    dec edi | Mov eax edi, D$UnfoldedMacro eax
 ret
 
 
@@ -1180,14 +1180,14 @@ ret
 [ASCII_DOLLAR 024, ASCII_PARAGRAPH 0A7]
 
 IsItAnEqual:
-    mov esi D$BlockStartTextPtr, eax 0, B$UnfoldEqual &FALSE
+    Mov esi D$BlockStartTextPtr, eax 0, B$UnfoldEqual &FALSE
     If B$esi-1 = ASCII_DOLLAR
         sub esi 2
     Else_If B$esi-1 = ASCII_PARAGRAPH
         sub esi 2
     End_If
 
-    mov D$InstructionToUnfold esi
+    Mov D$InstructionToUnfold esi
 
   ; Go to the start of the Statement:
 L0: dec esi
@@ -1202,7 +1202,7 @@ L0: dec esi
     End_If
 
   ; OK, the Selection is the first Member of a Statement. Go to next Component:
-L1: mov esi D$BlockEndTextPtr
+L1: Mov esi D$BlockEndTextPtr
 L0: inc esi
     If B$esi = ' '
         jmp L1>
@@ -1217,10 +1217,10 @@ L1: While B$esi = ' ' | inc esi | End_While
 
     .If B$esi = '='
         If B$esi+1 = ' '
-            mov B$UnfoldEqual &TRUE
+            Mov B$UnfoldEqual &TRUE
             move D$UnfoldedMacro D$CodeSource
             dec D$UnfoldedMacro
-            mov eax &TRUE | ret
+            Mov eax &TRUE | ret
         End_If
     .End_If
 ret
@@ -1234,63 +1234,63 @@ ________________________________________________________________________________
 
 IsItaLabel:
   ; If not a Label, we abort:
-    mov esi D$BlockEndTextPtr
+    Mov esi D$BlockEndTextPtr
     If B$esi+1 <> ':'
-        mov eax 0 | ret
+        Mov eax 0 | ret
     End_If
 
   ; Local Label, we abort:
-    mov esi D$BlockStartTextPtr
+    Mov esi D$BlockStartTextPtr
     If B$esi+2 = ':'
-        mov eax 0 | ret
+        Mov eax 0 | ret
     End_If
 
   ; If It is a Local Symbol, we extend. If it is a Local Label we abort:
-    mov esi D$BlockStartTextPtr, edi ToBeBookMarked
+    Mov esi D$BlockStartTextPtr, edi ToBeBookMarked
 
     If B$esi-1 = '@'
-        push edi | call SearchUpperMainLabel | pop edi | On eax = 0, ret
-        mov esi eax
+        push edi | Call SearchUpperMainLabel | pop edi | On eax = 0, ret
+        Mov esi eax
         While B$esi <> ':'
             movsb
         End_While
-        mov B$edi '@' | inc edi
-        mov esi D$BlockStartTextPtr
+        Mov B$edi '@' | inc edi
+        Mov esi D$BlockStartTextPtr
     End_If
 
-    While esi < D$BlockEndTextPtr | movsb | End_While | movsb | mov B$edi 0
+    While esi < D$BlockEndTextPtr | movsb | End_While | movsb | Mov B$edi 0
 
-    sub edi ToBeBookMarked | mov D$BookMarkLen edi
-    mov esi ToBeBookMarked
+    sub edi ToBeBookMarked | Mov D$BookMarkLen edi
+    Mov esi ToBeBookMarked
 
   ; If the Block is aready BookMarked, we enable the [UnBookMark] option:
     If D$BookMarks > 0
-        mov edi D$BookMarks, ecx D$BookMarkLen
+        Mov edi D$BookMarks, ecx D$BookMarkLen
         inc edi
 L0:     push esi, edi, ecx
-            mov D$BookMarkPtr edi
-L1:         mov al B$esi, bl B$edi | or al 020 | or bl 020 | inc esi | inc edi
+            Mov D$BookMarkPtr edi
+L1:         Mov al B$esi, bl B$edi | or al 020 | or bl 020 | inc esi | inc edi
             cmp al bl | jne L2>
             loop L1<
         pop ecx, eax, esi                       ; Found.
         cmp B$edi ' ' | ja L3>
-        mov eax 2 | ret                         ; Return for [UnBookMark] option.
+        Mov eax 2 | ret                         ; Return for [UnBookMark] option.
 L2:     pop ecx, eax, esi                       ; Not yet found.
-L3:     mov edi eax
+L3:     Mov edi eax
 L3:     cmp B$edi 0 | je L4>
             inc edi | jmp L3<
 L4:     inc edi | cmp B$edi 0 | jne L0<         ; Not yet end of Stored BookMarks.
     End_If
 
   ; If here, the Label is a Main label and is not yet BookMarked:
-    mov eax 1
+    Mov eax 1
 ret
 
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
 SearchUpperMainLabel:
-    mov edi D$BlockStartTextPtr
+    Mov edi D$BlockStartTextPtr
 L0: dec edi
     While B$edi <> ':'
         dec edi
@@ -1316,10 +1316,10 @@ L0: dec edi
     Else_If B$edi+2 = ':'
         jmp L0<<
     Else
-        mov eax edi | ret
+        Mov eax edi | ret
     End_If
 
-L7: mov eax 0
+L7: Mov eax 0
 ret
 
 
@@ -1329,44 +1329,44 @@ ret
 [NumberOfBookMarks: 0]
 
 StoreBookMark:
-    call CreateTreeViewList
+    Call CreateTreeViewList
     If D$BookMarks = 0
-        VirtualAlloc BookMarks 01000 | mov D$NumberOfBookMarks 2
-        call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle, 100, &LB_INSERTSTRING, 0,
+        VirtualAlloc BookMarks 01000 | Mov D$NumberOfBookMarks 2
+        Call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle, 100, &LB_INSERTSTRING, 0,
                                           EndBookMarks
-        call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle, 100, &LB_INSERTSTRING, 0,
+        Call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle, 100, &LB_INSERTSTRING, 0,
                                           BookMarksTitle
     End_If
-    mov edi D$BookMarks, al 0, ecx 01000
+    Mov edi D$BookMarks, al 0, ecx 01000
 L0: repne scasb | cmp B$edi 0 | jne L0<
     push edi
-        mov eax ToBeBookMarked
+        Mov eax ToBeBookMarked
         While B$eax <> 0 | inc eax | End_While
         sub eax ToBeBookMarked
         If ecx <= eax
-            call 'USER32.MessageBoxA' D$hwnd, FullBookMarks, Argh, &MB_SYSTEMMODAL
+            Call 'USER32.MessageBoxA' D$H.MainWindow, FullBookMarks, Argh, &MB_SYSTEMMODAL
             pop edi | jmp L9>
         End_If
-        mov ecx eax, esi ToBeBookMarked
+        Mov ecx eax, esi ToBeBookMarked
         rep movsb
-        mov al ' ' | stosb | mov al 0 | stosb
+        Mov al ' ' | stosb | Mov al 0 | stosb
     pop edi
 
-    call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_INSERTSTRING 1 edi
+    Call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_INSERTSTRING 1 edi
     inc D$NumberOfBookMarks
 L9: ret
 
 
 ReInsertBookMarks:
-    mov D$NumberOfBookMarks 2
-    call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_INSERTSTRING 0,
+    Mov D$NumberOfBookMarks 2
+    Call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_INSERTSTRING 0,
                                      EndBookMarks
-    call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_INSERTSTRING 0,
+    Call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_INSERTSTRING 0,
                                      BookMarksTitle
 
-    mov esi D$BookMarks | inc esi
+    Mov esi D$BookMarks | inc esi
     .While B$esi > 0
-        call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_INSERTSTRING 1 esi
+        Call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_INSERTSTRING 1 esi
         inc D$NumberOfBookMarks
         While B$esi <> 0
             inc esi
@@ -1377,19 +1377,19 @@ ret
 
 
 DeleteBookMark:
-    call CreateTreeViewList
-    call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_FINDSTRING 0-1 D$BookMarkPtr
-    call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_DELETESTRING eax 0
-    mov edi D$BookMarkPtr, esi edi
+    Call CreateTreeViewList
+    Call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_FINDSTRING 0-1 D$BookMarkPtr
+    Call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_DELETESTRING eax 0
+    Mov edi D$BookMarkPtr, esi edi
     add esi D$BookMarkLen | While B$esi > 0 | inc esi | End_While | inc esi
-    mov ecx D$BookMarks | add ecx 01000 | sub ecx esi | rep movsb
+    Mov ecx D$BookMarks | add ecx 01000 | sub ecx esi | rep movsb
 
   ; Delete the 2 added titles if no more BookMarks, delete the .BKM File and release Mem:
     dec D$NumberOfBookMarks
     If D$NumberOfBookMarks = 2
-        call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_DELETESTRING 0 0
-        call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_DELETESTRING 0 0
-        call DeleteBookMarkFile
+        Call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_DELETESTRING 0 0
+        Call 'USER32.SendDlgItemMessageA' D$ShowTreeHandle 100  &LB_DELETESTRING 0 0
+        Call DeleteBookMarkFile
 
         VirtualFree D$BookMarks
     End_If
@@ -1397,20 +1397,20 @@ ret
 
 
 DeleteBookMarkFile:
-    mov D$NumberOfBookMarks 0
-    mov edi SaveFilter, al 0, ecx 0-1 | repne scasb
+    Mov D$NumberOfBookMarks 0
+    Mov edi SaveFilter, al 0, ecx 0-1 | repne scasb
     While B$edi <> '.'
         dec edi
     End_While
 
     push D$edi, edi
-        mov D$edi '.BKM'
+        Mov D$edi '.BKM'
 
-        call 'KERNEL32.FindFirstFileA' SaveFilter FindFile
+        Call 'KERNEL32.FindFirstFileA' SaveFilter FindFile
 
         .If eax <> &INVALID_HANDLE_VALUE
-            call 'KERNEL32.FindClose' eax
-            call 'KERNEL32.DeleteFileA' SaveFilter
+            Call 'KERNEL32.FindClose' eax
+            Call 'KERNEL32.DeleteFileA' SaveFilter
         .End_If
     pop edi, D$edi
 ret
@@ -1422,7 +1422,7 @@ ________________________________________________________________________________
            
   'ShowUnfoldMacro' ---> 'ShowUnfoldDialog' ---> 'UnfoldMacro' ---> 'AsmMain'
   
-  Both 'AsmMain' and (after final RET), 'UnfoldMacro' call for 'UnfoldOutput'.
+  Both 'AsmMain' and (after final RET), 'UnfoldMacro' Call for 'UnfoldOutput'.
 ;;
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -1433,12 +1433,12 @@ ________________________________________________________________________________
 
 ShowUnfoldMacro:
     If D$DebugDialogHandle <> 0
-        call KillDebugger | On eax = &IDNO, ret
+        Call KillDebugger | On eax = &IDNO, ret
     End_If
 
     .If D$ShowUnfoldDialogHandle = 0
-        mov B$CompileErrorHappend &FALSE
-        call 'USER32.DialogBoxParamA' D$hInstance, 23000, &NULL, ShowUnfoldDialog, &NULL
+        Mov B$CompileErrorHappend &FALSE
+        Call 'USER32.DialogBoxParamA' D$hInstance, 23000, &NULL, ShowUnfoldDialog, &NULL
 
     .Else
         Beep
@@ -1452,54 +1452,54 @@ ________________________________________________________________________________
 ; Tag Dialog 23000
 
 Proc ShowUnfoldDialog:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    .If D@Message = &WM_COMMAND
+    .If D@msg = &WM_COMMAND
          If W@wParam = &IDCANCEL
-L0:         mov D$ShowUnfoldDialogHandle 0
-            call 'USER32.EndDialog' D@Adressee, 0
+L0:         Mov D$ShowUnfoldDialogHandle 0
+            Call 'USER32.EndDialog' D@hwnd, 0
 
          Else_If W@wParam = &IDOK
             jmp L0<
 
          End_If
 
-    .Else_If D@Message = &WM_SIZE
+    .Else_If D@msg = &WM_SIZE
         Call ResizeEditControl
 
-    .Else_If D@Message = &WM_INITDIALOG
-        move D$ShowUnfoldDialogHandle D@Adressee
-        call 'USER32.SetClassLongA' D@Adressee, &GCL_HICON, D$wc_hIcon
+    .Else_If D@msg = &WM_INITDIALOG
+        move D$ShowUnfoldDialogHandle D@hwnd
+        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
 
-        call UnfoldMacro
+        Call UnfoldMacro
 
         If B$UnfoldCompleted = &FALSE
             jmp L0<
         Else
-            call 'USER32.SendMessageA' D@Adressee, &WM_SETTEXT, &NULL, UnfoldTitle
-            mov B$FirstCTLCOLOREDIT &TRUE
+            Call 'USER32.SendMessageA' D@hwnd, &WM_SETTEXT, &NULL, UnfoldTitle
+            Mov B$FirstCTLCOLOREDIT &TRUE
         End_If
 
-    .Else_If D@Message = &WM_CTLCOLOREDIT
+    .Else_If D@msg = &WM_CTLCOLOREDIT
         If B$FirstCTLCOLOREDIT = &TRUE
-            call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0, 0
-            mov B$FirstCTLCOLOREDIT &FALSE
+            Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0, 0
+            Mov B$FirstCTLCOLOREDIT &FALSE
         End_If
-        call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+        Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
 
     .Else_If B$CompileErrorHappend = &TRUE
-        mov D$ShowUnfoldDialogHandle 0
-        call 'USER32.EndDialog' D@Adressee, 0
+        Mov D$ShowUnfoldDialogHandle 0
+        Call 'USER32.EndDialog' D@hwnd, 0
 
     .Else
-        popad | mov eax &FALSE | jmp L9>
+        popad | Mov eax &FALSE | jmp L9>
 
     .End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
@@ -1507,46 +1507,46 @@ L9: EndP
 Proc ResizeEditControl:
     Structure @RECT 16, @RECT_leftDis 0, @RECT_topDis 4, @RECT_rightDis 8, @RECT_bottomDis 12
 
-        call 'USER32.GetClientRect' D$ShowUnfoldDialogHandle, D@RECT
+        Call 'USER32.GetClientRect' D$ShowUnfoldDialogHandle, D@RECT
 
-        call 'USER32.GetDlgItem' D$ShowUnfoldDialogHandle, 101
+        Call 'USER32.GetDlgItem' D$ShowUnfoldDialogHandle, 101
 
-        mov ebx D@RECT_rightDis | sub ebx D@RECT_leftDis
-        mov ecx D@RECT_bottomDis | sub ecx D@RECT_topDis
+        Mov ebx D@RECT_rightDis | sub ebx D@RECT_leftDis
+        Mov ecx D@RECT_bottomDis | sub ecx D@RECT_topDis
 
-        call 'USER32.MoveWindow' eax, 0, 0, ebx, ecx, &TRUE
+        Call 'USER32.MoveWindow' eax, 0, 0, ebx, ecx, &TRUE
 EndP
 ____________________________________________________________________________________________
 
 [UnfoldEqual: ?  UnfoldCompleted: ?]
 
 UnfoldMacro:
-    call 'USER32.SetCursor', D$WaitCursor | call AskForRedrawNow
+    Call 'USER32.SetCursor', D$WaitCursor | Call AskForRedrawNow
 
-    mov B$WeAreUnfolding &TRUE, B$UnfoldStepIndice '0'
-    mov D$TrashPointer Trash3
+    Mov B$WeAreUnfolding &TRUE, B$UnfoldStepIndice '0'
+    Mov D$TrashPointer Trash3
 
     push D$SourceLen, D$SourceEnd
 
-        mov D$StackBeforeUnfolding esp
+        Mov D$StackBeforeUnfolding esp
 
-        call AsmMain
+        Call AsmMain
       ; 'AsmMain' stops after the Macros jobs, in cases when "B$WeAreUnfolding = &TRUE".
 
-        call 'USER32.SetCursor' D$ActualCursor
+        Call 'USER32.SetCursor' D$ActualCursor
 
-        call UnfoldOutput
+        Call UnfoldOutput
 
-        mov D$edi CRLF2, B$edi+4 0
+        Mov D$edi CRLF2, B$edi+4 0
 
       ; Show the result:
-        mov eax D$CodeSourceB
+        Mov eax D$CodeSourceB
         If D$eax <> 0
-            call 'USER32.SetDlgItemTextA' D$ShowUnfoldDialogHandle, 101, Trash3
-            mov B$UnfoldCompleted &TRUE
+            Call 'USER32.SetDlgItemTextA' D$ShowUnfoldDialogHandle, 101, Trash3
+            Mov B$UnfoldCompleted &TRUE
 
         Else
-            mov B$UnfoldCompleted &FALSE
+            Mov B$UnfoldCompleted &FALSE
 
         End_If
 
@@ -1554,17 +1554,17 @@ L8: pop D$SourceEnd, D$SourceLen
 
     ;VirtualFree D$LabelList, D$MacroList, D$PlainLabelList,
     ;        D$StatementsTable, D$StatementsTable2, D$CodeSourceB, D$CodeSourceA
-    call ReleaseAsmTables
+    Call ReleaseAsmTables
 
-    mov B$WeAreUnfolding &FALSE, B$ReadyToRun &FALSE
+    Mov B$WeAreUnfolding &FALSE, B$ReadyToRun &FALSE
 
-    call ReleaseAsmTables
+    Call ReleaseAsmTables
 ret
 
 UnfoldingError:
-    mov D$UnfoldErrorMessage eax, B$CompileErrorHappend &TRUE, B$UnfoldCompleted &FALSE
+    Mov D$UnfoldErrorMessage eax, B$CompileErrorHappend &TRUE, B$UnfoldCompleted &FALSE
 
-    call 'USER32.SetCursor' D$ActualCursor
+    Call 'USER32.SetCursor' D$ActualCursor
 
     While esp <> D$StackBeforeUnfolding
         pop ebx
@@ -1577,8 +1577,8 @@ ________________________________________________________________________________
 
 GetUnfoldStatement:
     push esi, ebx, ecx
-        mov esi D$CodeSourceA, eax 0
-        mov edx esi | add edx D$SourceLen
+        Mov esi D$CodeSourceA, eax 0
+        Mov edx esi | add edx D$SourceLen
 
         While eax <> ecx
             .If B$esi = EOI
@@ -1602,16 +1602,16 @@ GetUnfoldStatement:
         End_While
 
       ; Translate into normal Ascii form:
-        mov edi D$TrashPointer
+        Mov edi D$TrashPointer
 
         If B$esi-1 = OpenVirtual ; 016
-            dec esi | call TranslateDeclarationToNormalAscii
+            dec esi | Call TranslateDeclarationToNormalAscii
 
         Else_If B$esi-1 = OpenBracket ; 014
-            dec esi | call TranslateDeclarationToNormalAscii
+            dec esi | Call TranslateDeclarationToNormalAscii
 
         Else
-            call TranslateCodeToNormalAscii
+            Call TranslateCodeToNormalAscii
 
         End_If
 
@@ -1623,58 +1623,58 @@ TranslateDeclarationToNormalAscii:
 L0: lodsb
 
     .If al = Space
-        mov al ' '
+        Mov al ' '
     .Else_If al = EOI
         jmp L2>>
     .Else_If al = meEOI
-        mov al CR | stosb | mov al LF
+        Mov al CR | stosb | Mov al LF
     .Else_If al = TextSign
-        mov B$edi '"' | inc edi
+        Mov B$edi '"' | inc edi
         While B$esi <> TextSign
             lodsb
             If al = CR
-                mov W$edi CRLF | add edi 2 | add esi 2
+                Mov W$edi CRLF | add edi 2 | add esi 2
             Else
                 stosb
             End_If
         End_While
-        inc esi | mov al '"'
+        inc esi | Mov al '"'
 
     .Else_If al = MemMarker
-        mov al '$'
+        Mov al '$'
     .Else_If al = OpenBracket
-        mov al '['
+        Mov al '['
     .Else_If al = CloseVirtual
-        mov al ']' | stosb
-        mov al CR | stosb | mov al LF | stosb | jmp L2>>
+        Mov al ']' | stosb
+        Mov al CR | stosb | Mov al LF | stosb | jmp L2>>
     .Else_If al = CloseBracket
-        mov al ']' | stosb
-        mov al CR | stosb | mov al LF | stosb | jmp L2>>
+        Mov al ']' | stosb
+        Mov al CR | stosb | Mov al LF | stosb | jmp L2>>
     .Else_If al = OpenVirtual
-        mov al '['
+        Mov al '['
     .Else_If al = AddSign
-        mov al '+'
+        Mov al '+'
     .Else_If al = SubSign
-        mov al '-'
+        Mov al '-'
     .Else_If al = MulSign
-        mov al '*'
+        Mov al '*'
     .Else_If al = DivSign
-        mov al '/'
+        Mov al '/'
     .Else_If al = numSign
-        mov al '#'
+        Mov al '#'
     .Else_If al = colonSign
-        mov al ':' | stosb | mov al ' ' | stosb
+        Mov al ':' | stosb | Mov al ' ' | stosb
     .End_If
 
     stosb
 
     If al = LF
-        mov D$edi '    ' | add edi 4
+        Mov D$edi '    ' | add edi 4
     End_If
 
     jmp L0<<
 
-L2: mov ax CRLF | stosw ;| mov al 0 | stosb
+L2: Mov ax CRLF | stosw ;| Mov al 0 | stosb
 ret
 ____________________________________________________________________________________________
 
@@ -1682,53 +1682,53 @@ TranslateCodeToNormalAscii:
 L0: lodsb
 
     .If al = Space
-        mov al ' '
+        Mov al ' '
     .Else_If al = EOI
         jmp L2>>
     .Else_If al = meEOI
-        mov al CR | stosb | mov al LF
+        Mov al CR | stosb | Mov al LF
     .Else_If al = TextSign
-        mov B$edi '"' | inc edi
+        Mov B$edi '"' | inc edi
         While B$esi <> TextSign
             lodsb
             If al = CR
-                mov W$edi CRLF | add edi 2 | add esi 2
+                Mov W$edi CRLF | add edi 2 | add esi 2
             Else
                 stosb
             End_If
         End_While
-        inc esi | mov al '"'
+        inc esi | Mov al '"'
     .Else_If al = MemMarker
-        mov al '$'
+        Mov al '$'
     .Else_If al = OpenBracket
         jmp L2>>
     .Else_If al = CloseVirtual
-        mov al ']'
+        Mov al ']'
     .Else_If al = OpenVirtual
-        mov al '['
+        Mov al '['
     .Else_If al = AddSign
-        mov al '+'
+        Mov al '+'
     .Else_If al = SubSign
-        mov al '-'
+        Mov al '-'
     .Else_If al = MulSign
-        mov al '*'
+        Mov al '*'
     .Else_If al = DivSign
-        mov al '/'
+        Mov al '/'
     .Else_If al = numSign
-        mov al '#'
+        Mov al '#'
     .Else_If al = colonSign
-        mov al ':' | stosb | mov al CR | stosb | mov al LF
+        Mov al ':' | stosb | Mov al CR | stosb | Mov al LF
     .End_If
 
     stosb
 
     If al = LF
-        mov D$edi '    ' | add edi 4
+        Mov D$edi '    ' | add edi 4
     End_If
 
     jmp L0<<
 
-L2: mov ax CRLF | stosw ;| mov al 0 | stosb
+L2: Mov ax CRLF | stosw ;| Mov al 0 | stosb
 ret
 ____________________________________________________________________________________________
 
@@ -1745,19 +1745,19 @@ UnfoldStepIndice: "0    *
 UnfoldOutput:
     inc B$UnfoldStepIndice
 
-    mov edi D$TrashPointer
+    Mov edi D$TrashPointer
     zCopy UnfoldSteps
-    mov esi D$CodeSourceA
-    mov D$TrashPointer edi
+    Mov esi D$CodeSourceA
+    Mov D$TrashPointer edi
 
   ; Count how many Statements, in the 'StatementsTable', down to our Line:
-    mov ebx D$BlockStartTextPtr, esi D$StatementsTable, ecx 1
+    Mov ebx D$BlockStartTextPtr, esi D$StatementsTable, ecx 1
 
   ; For "some reason", leading Labels must be included in the Statement:
-    mov eax ebx | dec eax | While B$eax = ' ' | dec eax | End_While
+    Mov eax ebx | dec eax | While B$eax = ' ' | dec eax | End_While
     If B$eax = ':'
         While B$eax-1 > ' ' | dec eax | End_While
-        mov ebx eax
+        Mov ebx eax
     End_If
 
   ; Unfold upon an Equal Pre-Parser Statement:
@@ -1770,9 +1770,9 @@ UnfoldOutput:
   ; Several Statements are possible. Example, in Data and in Code with a Para-Macro:
     While D$esi <> 0
         If D$esi = ebx
-            call GetUnfoldStatement
-            mov D$edi '    ' | add edi 4
-            mov D$TrashPointer edi
+            Call GetUnfoldStatement
+            Mov D$edi '    ' | add edi 4
+            Mov D$TrashPointer edi
         End_If
 
         add esi 4 | inc ecx
@@ -1782,57 +1782,57 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 EncodeBoxError:
-    call ErrorMessageBox 0, D$ErrorMessagePtr
-    mov esp D$OldStackPointer | sub esp 4
+    Call ErrorMessageBox 0, D$ErrorMessagePtr
+    Mov esp D$OldStackPointer | sub esp 4
 ret
 ____________________________________________________________________________________________
 
 MarginRightClick:
-    On D$BreakPointsTables = 0, call InitBreakPointsTables
+    On D$BreakPointsTables = 0, Call InitBreakPointsTables
 
-    call MouseTextPos
+    Call MouseTextPos
     push ebx
-        call SearchTxtPtr | mov D$BreakPointLocation eax
+        Call SearchTxtPtr | Mov D$BreakPointLocation eax
     pop ebx
 
-    mov D$PhysicalCaretRow eax, D$CaretRow eax, D$StartBlockCol eax, D$EndBlockCol eax,
+    Mov D$PhysicalCaretRow eax, D$CaretRow eax, D$StartBlockCol eax, D$EndBlockCol eax,
         D$CaretLine ebx, D$StartBlockLine ebx, D$EndBlockLine ebx
 
-    mov D$CaretRow 1
+    Mov D$CaretRow 1
 
-    mov eax D$BreakPointLocation | call IsEaxInBpOnTable
+    Mov eax D$BreakPointLocation | Call IsEaxInBpOnTable
 
-    call BpMenu
+    Call BpMenu
 ret
 ____________________________________________________________________________________________
 
 DoubleClick:
-    call MouseTextPos
+    Call MouseTextPos
 
-    mov D$PhysicalCaretRow eax, D$CaretRow eax, D$StartBlockCol eax, D$EndBlockCol eax,
+    Mov D$PhysicalCaretRow eax, D$CaretRow eax, D$StartBlockCol eax, D$EndBlockCol eax,
         D$CaretLine ebx, D$StartBlockLine ebx, D$EndBlockLine ebx
 
     If D$DBPMenuOn = DOUBLE_CLICK_ACTION
         On B$ClickOnMargin = &TRUE, jmp DoubleClickMarginAction
     End_If
 
-    call SearchTxtPtr
+    Call SearchTxtPtr
 
-    mov al B$esi | call WordEdge | On B$Edge = &TRUE, ret
+    Mov al B$esi | Call WordEdge | On B$Edge = &TRUE, ret
 
     push esi
         std
-L0:       lodsb | call WordEdge | cmp B$Edge &TRUE | jne L0<         ; search start
+L0:       lodsb | Call WordEdge | cmp B$Edge &TRUE | jne L0<         ; search start
         cld
-        add esi 2 | mov D$BlockStartTextPtr esi
+        add esi 2 | Mov D$BlockStartTextPtr esi
     pop esi
 
-L0: lodsb | call WordEdge | cmp B$Edge &TRUE | jne L0<               ; search end
+L0: lodsb | Call WordEdge | cmp B$Edge &TRUE | jne L0<               ; search end
 
-    sub esi 2 | mov D$BlockEndTextPtr esi
+    sub esi 2 | Mov D$BlockEndTextPtr esi
 
-    mov B$BlockInside &TRUE | call SetCaret esi
-    call AskForRedraw | call RightClickOnBlock
+    Mov B$BlockInside &TRUE | Call SetCaret esi
+    Call AskForRedraw | Call RightClickOnBlock
 ret
 ____________________________________________________________________________________________
 
@@ -1842,50 +1842,50 @@ _________________________________________________________
 ; See comment for rotary BackTable at "SetBackTableMemory"
 
 ClearBackTable:
-    mov edi D$BackTable, D$BackTablePtr edi, eax 0, ecx 040 | rep stosd
+    Mov edi D$BackTable, D$BackTablePtr edi, eax 0, ecx 040 | rep stosd
 ret
 
 
 StorePosInBackTable:
-    mov ebx D$BackTablePtr, eax D$UpperLine
-    mov D$ebx eax | add bl 4 | mov D$ebx 0
-    mov D$BackTablePtr ebx, B$MovingBack  &FALSE
+    Mov ebx D$BackTablePtr, eax D$UpperLine
+    Mov D$ebx eax | add bl 4 | Mov D$ebx 0
+    Mov D$BackTablePtr ebx, B$MovingBack  &FALSE
 ret
 
 
 [MovingBack: ?]
 
 BackClick:
-    mov eax D$CodeSource | On D$SourceEnd = eax, ret
+    Mov eax D$CodeSource | On D$SourceEnd = eax, ret
 
     If B$MovingBack = &FALSE              ; BackTable store old pos, not last new one.
-      call StorePosInBackTable            ; here we add last new one to allow Forward
+      Call StorePosInBackTable            ; here we add last new one to allow Forward
       sub bl 4                            ; moves completion.
-      mov D$BackTablePtr ebx, B$MovingBack &TRUE
+      Mov D$BackTablePtr ebx, B$MovingBack &TRUE
     End_If
 
-    mov ebx D$BackTablePtr | sub bl 4
+    Mov ebx D$BackTablePtr | sub bl 4
     If D$ebx = 0                          ; If Start pointer, lock on it
-        call StartEdition | call AskForRedraw | ret
+        Call StartEdition | Call AskForRedraw | ret
     End_If
 
-L1: mov eax D$ebx
-    mov D$BackTablePtr ebx, D$UpperLine eax
-    mov D$CaretRow 1, D$CaretLine 0, D$CurrentWritingPos eax
-    call TryToMove
-    call ResetUpperline
-    call AskForRedraw
+L1: Mov eax D$ebx
+    Mov D$BackTablePtr ebx, D$UpperLine eax
+    Mov D$CaretRow 1, D$CaretLine 0, D$CurrentWritingPos eax
+    Call TryToMove
+    Call ResetUpperline
+    Call AskForRedraw
 L9: ret
 
 
 ForwardClick:
-    mov eax D$CodeSource | On D$SourceEnd = eax, ret
+    Mov eax D$CodeSource | On D$SourceEnd = eax, ret
 
-    mov ebx D$BackTablePtr | add bl 4
-    mov eax D$ebx | cmp eax 0 | je L9>
-      mov D$BackTablePtr ebx, D$UpperLine eax
-      mov D$CaretRow 1, D$CaretLine 0, D$CurrentWritingPos eax
-      call TryToMove | call ResetUpperline | call AskForRedraw
+    Mov ebx D$BackTablePtr | add bl 4
+    Mov eax D$ebx | cmp eax 0 | je L9>
+      Mov D$BackTablePtr ebx, D$UpperLine eax
+      Mov D$CaretRow 1, D$CaretLine 0, D$CurrentWritingPos eax
+      Call TryToMove | Call ResetUpperline | Call AskForRedraw
 L9: ret
 
 
@@ -1893,10 +1893,10 @@ L9: ret
 ; any char in a line. We ensure start of line in D$Upperline:
 
 ResetUpperline:
-    mov esi D$Upperline
+    Mov esi D$Upperline
 L0: cmp B$esi-1 LF | je L9>
         dec esi | jmp L0<
-L9: mov D$Upperline esi
+L9: Mov D$Upperline esi
 ret
 
 

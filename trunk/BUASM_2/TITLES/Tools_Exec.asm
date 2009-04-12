@@ -44,7 +44,7 @@ TITLE Tools_Exec
  So do i think it will be much easier to read this thing down to the end, make
 
  > std
- >   mov al ':', ecx 0FFFF | repne scasb | repne scasb   ; >>> edi > C:\Pr...
+ >   Mov al ':', ecx 0FFFF | repne scasb | repne scasb   ; >>> edi > C:\Pr...
  > cld
 
  store a copy in place of default, and go on (3 simple lines instead of 3 uncertain pages).
@@ -88,20 +88,20 @@ TITLE Tools_Exec
 
 Calc:
     If B$OnCalc = &TRUE
-      call 'KERNEL32.TerminateProcess' D$ProcessInfos D$CalcExitCode
+      Call 'KERNEL32.TerminateProcess' D$ProcessInfos D$CalcExitCode
     End_If
 
-    call 'KERNEL32.CreateProcessA'  CalcName  0 0 0  0  0 0 0  STARTUPINFO  ProcessInfos
+    Call 'KERNEL32.CreateProcessA'  CalcName  0 0 0  0  0 0 0  STARTUPINFO  ProcessInfos
 
     On eax = 0,
-      call 'KERNEL32.CreateProcessA'  CalcLinkName  0 0 0  0  0 0 0  STARTUPINFO  ProcessInfos
+      Call 'KERNEL32.CreateProcessA'  CalcLinkName  0 0 0  0  0 0 0  STARTUPINFO  ProcessInfos
 
     If eax = 0
-      call 'User32.MessageBoxA' D$hwnd, CalcMessage, FileNotFound,
+      Call 'User32.MessageBoxA' D$H.MainWindow, CalcMessage, FileNotFound,
                                 &MB_ICONINFORMATION+&MB_SYSTEMMODAL
     Else
-      call 'KERNEL32.GetExitCodeProcess' D$ProcessInfos CalcExitCode
-      mov B$OnCalc &TRUE
+      Call 'KERNEL32.GetExitCodeProcess' D$ProcessInfos CalcExitCode
+      Mov B$OnCalc &TRUE
     End_If
 ret
 ________________________________________________________________________________________
@@ -115,9 +115,9 @@ ________________________________________________________________________________
 or run [Config] menu option" 0]
 
 Opcodes_Hlp:
-    call 'Shell32.ShellExecuteA' D$hwnd open  OpcodeHlpName NoParameter &NULL &SW_SHOWDEFAULT
+    Call 'Shell32.ShellExecuteA' D$H.MainWindow open  OpcodeHlpName NoParameter &NULL &SW_SHOWDEFAULT
     If eax <= 32
-      call 'User32.MessageBoxA' 0 OpCodesMessage, FileNotFound, &MB_ICONINFORMATION+&MB_SYSTEMMODAL
+      Call 'User32.MessageBoxA' 0 OpCodesMessage, FileNotFound, &MB_ICONINFORMATION+&MB_SYSTEMMODAL
     End_If
 ret
 ;;
@@ -126,7 +126,7 @@ ret
 or run [Config] menu option", 0]
 
 Win32_Hlp:
-    call Help Win32HlpName, NoParameter, WinHlpMessage
+    Call Help Win32HlpName, NoParameter, WinHlpMessage
 ret
 
 ;;
@@ -134,9 +134,9 @@ ret
 or run [Config] menu option", 0]
 
 Asm32_Hlp:
-    call 'Shell32.ShellExecuteA' D$hwnd open Asm32TutName NoParameter &NULL &SW_SHOWDEFAULT
+    Call 'Shell32.ShellExecuteA' D$H.MainWindow open Asm32TutName NoParameter &NULL &SW_SHOWDEFAULT
     If eax <= 32
-      call 'User32.MessageBoxA' 0 Asm32HlpMessage, FileNotFound, &MB_ICONINFORMATION+&MB_SYSTEMMODAL
+      Call 'User32.MessageBoxA' 0 Asm32HlpMessage, FileNotFound, &MB_ICONINFORMATION+&MB_SYSTEMMODAL
     End_If
 ret
 ;;
@@ -145,7 +145,7 @@ ret
 or run [Config] menu option", 0]
 
 Mmedia_Hlp:
-    call Help MmediaHlpName, NoParameter, MmediaHlpMessage
+    Call Help MmediaHlpName, NoParameter, MmediaHlpMessage
 ret
 
 
@@ -153,7 +153,7 @@ ret
 or run [Config] menu option", 0]
 
 OpenGl_Hlp:
-    call Help OpenGlHlpName, NoParameter, OpenGlHlpMessage
+    Call Help OpenGlHlpName, NoParameter, OpenGlHlpMessage
 ret
 
 
@@ -161,7 +161,7 @@ ret
 or run [Config] menu option", 0]
 
 WinSock_Hlp:
-    call Help WinSockHlpName, NoParameter, WinSockHlpMessage
+    Call Help WinSockHlpName, NoParameter, WinSockHlpMessage
 ret
 
 
@@ -169,7 +169,7 @@ ret
 or run [Config] menu option", 0]
 
 SDL_Hlp:
-    call Help SDLRefName, NoParameter, SDLRefHlpMessage
+    Call Help SDLRefName, NoParameter, SDLRefHlpMessage
 ret
 
 
@@ -177,7 +177,7 @@ ret
 or run [Config] menu option", 0]
 
 sqlite_Hlp:
-    call Help sqliteName, NoParameter, sqliteHlpMessage
+    Call Help sqliteName, NoParameter, sqliteHlpMessage
 ret
 
 
@@ -185,7 +185,7 @@ ret
 or run [Config] menu option", 0]
 
 DevIL_Hlp:
-    call Help DevILName, NoParameter, DxHlpMessage
+    Call Help DevILName, NoParameter, DxHlpMessage
 ret
 
 
@@ -193,16 +193,16 @@ ret
 or run [Config] menu option", 0]
 
 Dx_Hlp:
-    call Help DxHlpName, NoParameter, DxHlpMessage
+    Call Help DxHlpName, NoParameter, DxHlpMessage
 ret
 
 ;;
 [WinDataFileMessage: "Run [Config] menu option and define a File    ", 0]
 
 WinDataFile:
-    call 'Shell32.ShellExecuteA' D$hwnd open WinDataFileName NoParameter &NULL &SW_SHOWDEFAULT
+    Call 'Shell32.ShellExecuteA' D$H.MainWindow open WinDataFileName NoParameter &NULL &SW_SHOWDEFAULT
     If eax <= 32
-      call 'User32.MessageBoxA' 0 WinDataFileMessage, FileNotFound, &MB_ICONINFORMATION+&MB_SYSTEMMODAL
+      Call 'User32.MessageBoxA' 0 WinDataFileMessage, FileNotFound, &MB_ICONINFORMATION+&MB_SYSTEMMODAL
     End_If
 ret
 ;;
@@ -229,7 +229,7 @@ for a first Run.
 ", 0]
 
 RosAsmHelp:
-    call Help B_U_AsmName, B_U_AsmTop, RosAsmHlpMessage
+    Call Help B_U_AsmName, B_U_AsmTop, RosAsmHlpMessage
 ret
 
 
@@ -238,7 +238,7 @@ to be activated by [F2] is not available", 0]
 
 F2Help:
     If D$F2Name <> 0
-        call Help F2Name, NoParameter, F2HlpMessage
+        Call Help F2Name, NoParameter, F2HlpMessage
     End_If
 ret
 
@@ -246,23 +246,23 @@ ret
 [RosAsmLicenceHelp: 'RosAsm_License', 0]
 
 LicenseView:
-    call Help, B_U_AsmName, RosAsmLicenceHelp, ContextHlpMessage
+    Call Help, B_U_AsmName, RosAsmLicenceHelp, ContextHlpMessage
 
-    call 'USER32.MessageBoxA' D$hwnd,
+    Call 'USER32.MessageBoxA' D$H.MainWindow,
         {"
         RosAsm License viewed       
         
                    Accept?", 0},
         {'License', 0}, &MB_SYSTEMMODAL__&MB_YESNO
 
-    On eax = &IDNO, call 'KERNEL32.ExitProcess' 0
+    On eax = &IDNO, Call 'KERNEL32.ExitProcess' 0
 ret
 
 
 [GplHelp: 'GPL', 0]
 
 GPLView:
-    call Help, B_U_AsmName, GplHelp, ContextHlpMessage
+    Call Help, B_U_AsmName, GplHelp, ContextHlpMessage
 ret
 
 
@@ -288,20 +288,20 @@ ret
 
 [ContextHlpMessage: 'Run [Configuration]/|Files Locations]/[RosAsm]     ' 0]
 
-;[ContextHelp | call 'Shell32.ShellExecuteA' D$hwnd open, B_U_AsmName, #1, &NULL, &SW_SHOWNORMAL
+;[ContextHelp | Call 'Shell32.ShellExecuteA' D$H.MainWindow open, B_U_AsmName, #1, &NULL, &SW_SHOWNORMAL
 ; cmp eax 32 | ja M0>
-;    call 'User32.MessageBoxA' D$hwnd ContextHlpMessage, FileNotFound, &MB_ICONINFORMATION+&MB_SYSTEMMODAL
+;    Call 'User32.MessageBoxA' D$H.MainWindow ContextHlpMessage, FileNotFound, &MB_ICONINFORMATION+&MB_SYSTEMMODAL
 ; M0: ]
 
 
 Proc ContextHelp:
     Argument @Doc, @ErrorMessage
 
-        call 'Shell32.ShellExecuteA' D$hwnd, open, B_U_AsmName, D@Doc, &NULL,
+        Call 'Shell32.ShellExecuteA' D$H.MainWindow, open, B_U_AsmName, D@Doc, &NULL,
                                      &SW_SHOWNORMAL
 
         If eax <= 32
-            call 'User32.MessageBoxA' D$hwnd, D@ErrorMessage, FileNotFound,
+            Call 'User32.MessageBoxA' D$H.MainWindow, D@ErrorMessage, FileNotFound,
                                       &MB_ICONINFORMATION+&MB_SYSTEMMODAL
         End_If
 EndP
@@ -310,11 +310,11 @@ EndP
 Proc Help:
     Arguments @HelpFile, @Page, @ErrorMessage
 
-        call 'Shell32.ShellExecuteA' D$hwnd, open, D@HelpFile, D@Page, &NULL,
+        Call 'Shell32.ShellExecuteA' D$H.MainWindow, open, D@HelpFile, D@Page, &NULL,
                                      &SW_SHOWNORMAL
         If eax <= 32
             push eax
-                call 'User32.MessageBoxA' D$hwnd, D@ErrorMessage, FileNotFound,
+                Call 'User32.MessageBoxA' D$H.MainWindow, D@ErrorMessage, FileNotFound,
                                           &MB_ICONINFORMATION+&MB_SYSTEMMODAL
             pop eax
         End_If
@@ -325,10 +325,10 @@ EndP
 
 UserDefinedAction:
     sub eax 2000  ; eax = 0 to 8
-    mov ecx (64*4) | mul ecx
+    Mov ecx (64*4) | mul ecx
     add eax UserMenu0Path
 
-    call 'Shell32.ShellExecuteA' D$hwnd, open, eax, NoParameter, &NULL, &SW_SHOWDEFAULT
+    Call 'Shell32.ShellExecuteA' D$H.MainWindow, open, eax, NoParameter, &NULL, &SW_SHOWDEFAULT
 ret
 
 ______________________________________________________________________________________
@@ -360,42 +360,42 @@ AsciiTable:
     End_If
 
     push ebp
-        mov edi AsciiData, ebx 0, ecx 10, ebp 0
-        mov al tab | stosb
+        Mov edi AsciiData, ebx 0, ecx 10, ebp 0
+        Mov al tab | stosb
         .While ebp < 256
-            mov al bl | On al < 32, mov al 2 | stosb
-            mov al tab | stosb
-            mov eax ebx | add edi 2
-            mov edx 0 | div ecx
-            add dl '0' | mov B$edi dl
+            Mov al bl | On al < 32, Mov al 2 | stosb
+            Mov al tab | stosb
+            Mov eax ebx | add edi 2
+            Mov edx 0 | div ecx
+            add dl '0' | Mov B$edi dl
             dec edi
-            mov edx 0 | div ecx
-            add dl '0' | mov B$edi dl
+            Mov edx 0 | div ecx
+            add dl '0' | Mov B$edi dl
             dec edi
-            mov edx 0 | div ecx
-            add dl '0' | mov B$edi dl
-            add edi 3 | mov al tab | stosb
+            Mov edx 0 | div ecx
+            add dl '0' | Mov B$edi dl
+            add edi 3 | Mov al tab | stosb
 
-            mov al '0' | stosb
-            mov eax ebx, edx eax | shr eax 4
+            Mov al '0' | stosb
+            Mov eax ebx, edx eax | shr eax 4
             and eax 0F | add al '0' | On al > '9', add al 7
             stosb
-            mov eax edx
+            Mov eax edx
             and eax 0F | add al '0' | On al > '9', add al 7
             stosb
 
             add ebx 32
             cmp ebx 255 | jna L2>
             sub ebx 255
-            mov al CR | stosb | mov al LF | stosb
-            mov al tab | stosb | jmp L3>
-L2:         mov al tab | stosb | stosb
+            Mov al CR | stosb | Mov al LF | stosb
+            Mov al tab | stosb | jmp L3>
+L2:         Mov al tab | stosb | stosb
 L3:         inc ebp
         .End_While
 
-        mov eax 0 | stosd
+        Mov eax 0 | stosd
        ; Show resulting box:
-        call 'User32.DialogBoxIndirectParamA' D$hinstance, AsciiDialog, 0, AsciiProc, 0
+        Call 'User32.DialogBoxIndirectParamA' D$hinstance, AsciiDialog, 0, AsciiProc, 0
     pop ebp
 ret
 
@@ -403,32 +403,32 @@ ret
 [TabDimPtr: 10] [AsciiDialogHandle: ?]
 
 Proc AsciiProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    .If D@Message = &WM_COMMAND
+    .If D@msg = &WM_COMMAND
         If D@wParam = &IDCANCEL
-            mov D$AsciiDialogHandle 0
-            call 'User32.EndDialog' D@Adressee 0
+            Mov D$AsciiDialogHandle 0
+            Call 'User32.EndDialog' D@hwnd 0
         Else
-            call 'User32.GetDlgItem' D@Adressee 0100
-            call 'User32.SendMessageA' eax &EM_SETSEL  0-1 0
+            Call 'User32.GetDlgItem' D@hwnd 0100
+            Call 'User32.SendMessageA' eax &EM_SETSEL  0-1 0
         End_If
 
-    .Else_If D@Message = &WM_INITDIALOG
-        move D$AsciiDialogHandle D@Adressee
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
-        call 'User32.GetDlgItem' D@Adressee 0100
-        call 'User32.SendMessageA' eax &EM_SETTABSTOPS 1 TabDimPtr
-        call 'User32.SetDlgItemTextA' D@Adressee 0100 AsciiData
+    .Else_If D@msg = &WM_INITDIALOG
+        move D$AsciiDialogHandle D@hwnd
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call 'User32.GetDlgItem' D@hwnd 0100
+        Call 'User32.SendMessageA' eax &EM_SETTABSTOPS 1 TabDimPtr
+        Call 'User32.SetDlgItemTextA' D@hwnd 0100 AsciiData
 
     .Else
-       popad | mov eax &FALSE | jmp L9>
+       popad | Mov eax &FALSE | jmp L9>
 
     .End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
@@ -439,7 +439,7 @@ ________________________________________________________________________________
 ___________________________________________________________________________________________
 ___________________________________________________________________________________________
 
-; This Structure is for call 'Comdlg32.PrintDlgA'. We really use only 'PD_Flags' to tell
+; This Structure is for Call 'Comdlg32.PrintDlgA'. We really use only 'PD_Flags' to tell
 ; if we want/propose a user selected block to print or not:
 
 [PRINTDLG:
@@ -459,7 +459,7 @@ ________________________________________________________________________________
 [DOCINFO: DI_cbSize: len  DI_lpszDocName: DocName  DI_lpszOutput: 0  DI_lpszDatatype: 0
            DI_fwType: 0]
 
-; This is for call 'Comdlg32.ChooseFontA'. Important:
+; This is for Call 'Comdlg32.ChooseFontA'. Important:
 
 ;[CF_PRINTERFONTS 2  CF_FIXEDPITCHONLY 04000  CF_INITTOLOGFONTSTRUCT 040]
 
@@ -502,72 +502,72 @@ Print:
     On D$SourceLen = 0, ret
 
     If B$PrinterDCavailable = &TRUE
-        call 'GDI32.DeleteDC' D$PD_hDC
-        call 'GDI32.DeleteObject' D$UserChoosenPrinterFont
+        Call 'GDI32.DeleteDC' D$PD_hDC
+        Call 'GDI32.DeleteObject' D$UserChoosenPrinterFont
     End_If
 
     If B$BlockInside = &TRUE
-        mov D$PD_Flags &PD_RETURNDC+&PD_SELECTION
+        Mov D$PD_Flags &PD_RETURNDC+&PD_SELECTION
     Else
-        mov D$PD_Flags &PD_RETURNDC+&PD_NOSELECTION
+        Mov D$PD_Flags &PD_RETURNDC+&PD_NOSELECTION
     End_If
 
-    call 'Comdlg32.PrintDlgA' PRINTDLG | On eax = 0, ret    ; The Printer dialog sets
-    move D$CF_hDC D$PD_hDC,  D$CF_hWndOwner D$hwnd          ; the DC handle in PRINTDLG struc
+    Call 'Comdlg32.PrintDlgA' PRINTDLG | On eax = 0, ret    ; The Printer dialog sets
+    move D$CF_hDC D$PD_hDC,  D$CF_hWndOwner D$H.MainWindow          ; the DC handle in PRINTDLG struc
     If D$PD_Flags = &PD_RETURNDC+&PD_SELECTION
         move D$PrintStartPtr D$BlockStartTextPtr, D$PrintEndPtr D$BlockEndTextPtr
     Else
-        mov eax D$UpperLine | mov D$PrintStartPtr eax
-        add eax D$SourceLen | mov D$PrintEndPtr eax
+        Mov eax D$UpperLine | Mov D$PrintStartPtr eax
+        add eax D$SourceLen | Mov D$PrintEndPtr eax
     End_If
 
-    call 'Comdlg32.ChooseFontA' CHOOSEFONT | On eax = 0, ret    ; user sets the font:
-    call 'GDI32.CreateFontIndirectA' cbbuffer
-        mov D$UserChoosenPrinterFont eax
+    Call 'Comdlg32.ChooseFontA' CHOOSEFONT | On eax = 0, ret    ; user sets the font:
+    Call 'GDI32.CreateFontIndirectA' cbbuffer
+        Mov D$UserChoosenPrinterFont eax
 
-    call UpdateRegistry                                 ; To save last used Printer Font.
+    Call UpdateRegistry                                 ; To save last used Printer Font.
 
 StartControlP:
-    call 'GDI32.GetDeviceCaps' D$PD_hDC &VERTRES | mov D$PageHight eax   ; we set the sizes:
-    call 'GDI32.GetTextMetricsA' D$PD_hDC PrintTextMetric
-        mov eax D$PrintTextMetric, D$CharHight eax
+    Call 'GDI32.GetDeviceCaps' D$PD_hDC &VERTRES | Mov D$PageHight eax   ; we set the sizes:
+    Call 'GDI32.GetTextMetricsA' D$PD_hDC PrintTextMetric
+        Mov eax D$PrintTextMetric, D$CharHight eax
         shl eax 4 | sub D$PageHight eax                 ; sub 16 lines for top/bottom blanks
 
-    call 'GDI32.StartDocA' D$PD_hDC  DOCINFO | On eax le 0, jmp L7>>; we print:
-        call 'GDI32.StartPage' D$PD_hDC | On eax le 0, jmp L7>>
-            call 'GDI32.SelectObject' D$PD_hDC D$UserChoosenPrinterFont
+    Call 'GDI32.StartDocA' D$PD_hDC  DOCINFO | On eax le 0, jmp L7>>; we print:
+        Call 'GDI32.StartPage' D$PD_hDC | On eax le 0, jmp L7>>
+            Call 'GDI32.SelectObject' D$PD_hDC D$UserChoosenPrinterFont
 
-          mov esi D$PrintStartPtr, edx 0
-L0:       mov ebx esi, ecx 0
+          Mov esi D$PrintStartPtr, edx 0
+L0:       Mov ebx esi, ecx 0
 L1:       cmp B$esi ' ' | jb L2>
             lodsb | inc ecx | cmp esi D$PrintEndPtr | jae L3>
               jmp L1<
 L2:       add esi 2                                                      ; strip CR/LR
 L3:       push esi, edx
             On ecx > 0
-              call 'USER32.TabbedTextOutA'  D$PD_hDC 0 edx ebx ecx 0,0,0
+              Call 'USER32.TabbedTextOutA'  D$PD_hDC 0 edx ebx ecx 0,0,0
             End_If
           pop edx esi
           add edx D$CharHight
           If edx >= D$PageHight                                          ; Next page?:
             pushad
-              call 'GDI32.EndPage' D$PD_hDC | On eax le 0, jmp L7>>
-                call 'GDI32.StartPage' D$PD_hDC | On eax le 0, jmp L7>>
-                  call 'GDI32.SelectObject' D$PD_hDC D$UserChoosenPrinterFont
+              Call 'GDI32.EndPage' D$PD_hDC | On eax le 0, jmp L7>>
+                Call 'GDI32.StartPage' D$PD_hDC | On eax le 0, jmp L7>>
+                  Call 'GDI32.SelectObject' D$PD_hDC D$UserChoosenPrinterFont
             popad
-            mov edx 0
+            Mov edx 0
           End_If
           On esi < D$PrintEndPtr, jmp L0<<
 
-        call 'GDI32.EndPage' D$PD_hDC | On eax le 0, jmp L7>>
-      call 'GDI32.EndDoc' D$PD_hDC
-    mov B$PrinterDCavailable &TRUE | ret
+        Call 'GDI32.EndPage' D$PD_hDC | On eax le 0, jmp L7>>
+      Call 'GDI32.EndDoc' D$PD_hDC
+    Mov B$PrinterDCavailable &TRUE | ret
 
-L7: call 'GDI32.AbortDoc' D$PD_hDC
-    call 'GDI32.DeleteObject' D$UserChoosenPrinterFont
-    call 'GDI32.DeleteDC' D$PD_hDC
+L7: Call 'GDI32.AbortDoc' D$PD_hDC
+    Call 'GDI32.DeleteObject' D$UserChoosenPrinterFont
+    Call 'GDI32.DeleteDC' D$PD_hDC
 
-    mov B$PrinterDCavailable &FALSE
+    Mov B$PrinterDCavailable &FALSE
 ret
 
 
@@ -588,7 +588,7 @@ ________________________________________________________________________________
 
 ViewSysResources:
     If D$ViewSysResourcesHandle = 0
-        call 'USER32.DialogBoxParamA' D$hinstance 29000 &NULL ViewSysResourcesProc &NULL
+        Call 'USER32.DialogBoxParamA' D$hinstance 29000 &NULL ViewSysResourcesProc &NULL
     Else
         Beep
     End_If
@@ -598,95 +598,95 @@ ret
 [ViewSysResourcesHandle: ?    SysBitMapsHandle: ?    SysIconsHandle: ?    SysCursorsHandle: ?]
 
 Proc ViewSysResourcesProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_INITDIALOG
-        move D$ViewSysResourcesHandle D@Adressee
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
-        call 'USER32.GetDlgItem' D@Adressee 10 | mov D$SysBitMapsHandle eax
-        call 'USER32.GetDlgItem' D@Adressee 11 | mov D$SysIconsHandle eax
-        call 'USER32.GetDlgItem' D@Adressee 12 | mov D$SysCursorsHandle eax
-        call InitViewSysResourcesListBoxes
-        mov D$SysButtonText 0 | jmp L8>>
+    ...If D@msg = &WM_INITDIALOG
+        move D$ViewSysResourcesHandle D@hwnd
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call 'USER32.GetDlgItem' D@hwnd 10 | Mov D$SysBitMapsHandle eax
+        Call 'USER32.GetDlgItem' D@hwnd 11 | Mov D$SysIconsHandle eax
+        Call 'USER32.GetDlgItem' D@hwnd 12 | Mov D$SysCursorsHandle eax
+        Call InitViewSysResourcesListBoxes
+        Mov D$SysButtonText 0 | jmp L8>>
 
-    ...Else_If D@Message = &WM_COMMAND
-        mov eax D@wParam | and D@wParam 0FFFF | shr eax 16
+    ...Else_If D@msg = &WM_COMMAND
+        Mov eax D@wParam | and D@wParam 0FFFF | shr eax 16
 
         ..If eax = &LBN_SELCHANGE
-            call 'USER32.SendDlgItemMessageA' D@Adressee D@wParam &LB_GETCURSEL 0 0
+            Call 'USER32.SendDlgItemMessageA' D@hwnd D@wParam &LB_GETCURSEL 0 0
 
             add D@wParam 10     ; Listy Box ID + 10 >>> Static Control ID
 
             If D@wParam = 20
                 SetOKButtonSysText SysBitMapsStrings SysBitMapsIDs
                 lea ebx D$SysBitMapsIDs+eax*4
-                call 'USER32.LoadBitmapA' &NULL D$ebx
-                mov ecx &IMAGE_BITMAP
+                Call 'USER32.LoadBitmapA' &NULL D$ebx
+                Mov ecx &IMAGE_BITMAP
             Else_If D@wParam = 21
                 SetOKButtonSysText SysIconsStrings SysIconsIDs
                 lea ebx D$SysIconsIDs+eax*4
-                call 'USER32.LoadIconA' &NULL D$ebx
-                mov ecx &IMAGE_ICON
+                Call 'USER32.LoadIconA' &NULL D$ebx
+                Mov ecx &IMAGE_ICON
             Else_If D@wParam = 22
                 SetOKButtonSysText SysCursorsStrings SysCursorsIDs
                 lea ebx D$SysCursorsIDs+eax*4
-                call 'USER32.LoadCursorA' &NULL D$ebx
-                mov ecx &IMAGE_CURSOR
+                Call 'USER32.LoadCursorA' &NULL D$ebx
+                Mov ecx &IMAGE_CURSOR
             End_If
 
-            call 'USER32.SendDlgItemMessageA' D@Adressee D@wParam &STM_SETIMAGE ecx eax
-            call 'USER32.SendDlgItemMessageA' D@Adressee 1 &WM_SETTEXT 0 SysButtonText
+            Call 'USER32.SendDlgItemMessageA' D@hwnd D@wParam &STM_SETIMAGE ecx eax
+            Call 'USER32.SendDlgItemMessageA' D@hwnd 1 &WM_SETTEXT 0 SysButtonText
 
         ..Else_If D@wParam = &IDCANCEL
             jmp L1>
 
         ..Else_If D@wParam = &IDOK
             If B$SysButtonText <> 0
-                mov esi SysButtonText, edi SysButtonText
+                Mov esi SysButtonText, edi SysButtonText
                 While B$esi > 0
                     movsb
                     On W$esi = '&&', inc esi
                 End_While
-                mov B$edi 0
+                Mov B$edi 0
 
-                mov eax SysButtonText, D$BlockStartTextPtr eax
+                Mov eax SysButtonText, D$BlockStartTextPtr eax
                 While B$eax > 0 | inc eax | End_While
-                dec eax | mov D$BlockEndTextPtr eax, B$BlockInside &TRUE
-                call ControlC | mov B$BlockInside &FALSE
+                dec eax | Mov D$BlockEndTextPtr eax, B$BlockInside &TRUE
+                Call ControlC | Mov B$BlockInside &FALSE
             End_If
 
-L1:         mov D$ViewSysResourcesHandle 0
-            call 'USER32.EndDialog' D@Adressee 0
+L1:         Mov D$ViewSysResourcesHandle 0
+            Call 'USER32.EndDialog' D@hwnd 0
 
         ..End_If
 
-    ...Else_If D@Message = &WM_CTLCOLOREDIT
+    ...Else_If D@msg = &WM_CTLCOLOREDIT
         jmp L1>
 
-    ...Else_If D@Message = &WM_CTLCOLORLISTBOX
-L1:     call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+    ...Else_If D@msg = &WM_CTLCOLORLISTBOX
+L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
 
     ...Else
-L8:     popad | mov eax &FALSE | jmp L9>
+L8:     popad | Mov eax &FALSE | jmp L9>
 
     ...End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
 
-[SetOKButtonSysText | mov edi #1 | mov edx #2 | call OKButtonSysText]
+[SetOKButtonSysText | Mov edi #1 | Mov edx #2 | Call OKButtonSysText]
 
 ; Example: edi > SysBitMapsStrings // eax = zero Based Indice
 
 [SysButtonText: ? #12]
-[SysBitMapApiCall: "call 'USER32.LoadBitmapA' &&NULL &&" 0
- SysIconApiCall: "call 'USER32.LoadIconA' &&NULL &&" 0
- SysCursorApiCall: "call 'USER32.LoadCursorA' &&NULL &&" 0]
+[SysBitMapApiCall: "Call 'USER32.LoadBitmapA' &&NULL &&" 0
+ SysIconApiCall: "Call 'USER32.LoadIconA' &&NULL &&" 0
+ SysCursorApiCall: "Call 'USER32.LoadCursorA' &&NULL &&" 0]
 
 OKButtonSysText:
     push eax, ebx
@@ -696,13 +696,13 @@ OKButtonSysText:
         .End_While
 
         push edi
-            mov edi SysButtonText
+            Mov edi SysButtonText
             If edx = SysBitMapsIDs
-                mov esi SysBitMapApiCall
+                Mov esi SysBitMapApiCall
             Else_If edx = SysIconsIDs
-                mov esi SysIconApiCall
+                Mov esi SysIconApiCall
             Else
-                mov esi SysCursorApiCall
+                Mov esi SysCursorApiCall
             End_If
             While B$esi <> 0 | movsb | End_While
         pop esi
@@ -710,11 +710,11 @@ OKButtonSysText:
       ; Copy the Equate in the Button Buffer:
         inc esi
         While B$esi <> 0 | movsb | End_While
-        mov D$edi ' ; =', B$edi+4 ' ' | add edi 5
+        Mov D$edi ' ; =', B$edi+4 ' ' | add edi 5
 
     pop ebx, eax
     push eax, ebx
-        mov eax D$edx+eax*4 | call WriteEax | mov B$edi 0
+        Mov eax D$edx+eax*4 | Call WriteEax | Mov B$edi 0
     pop ebx, eax
 ret
 
@@ -758,28 +758,28 @@ ret
  &IDC_NO        &IDC_APPSTARTING   &IDC_HELP]
 
 InitViewSysResourcesListBoxes:
-    mov edi SysBitMapsStrings
+    Mov edi SysBitMapsStrings
     While B$edi <> 0
         push edi
-        call 'USER32.SendMessageA' D$SysBitMapsHandle &LB_ADDSTRING 0 edi
+        Call 'USER32.SendMessageA' D$SysBitMapsHandle &LB_ADDSTRING 0 edi
         pop edi
-        mov al 0, ecx 0FF | repne scasb
+        Mov al 0, ecx 0FF | repne scasb
     End_While
 
-    mov edi SysIconsStrings
+    Mov edi SysIconsStrings
     While B$edi <> 0
         push edi
-        call 'USER32.SendMessageA' D$SysIconsHandle &LB_ADDSTRING 0 edi
+        Call 'USER32.SendMessageA' D$SysIconsHandle &LB_ADDSTRING 0 edi
         pop edi
-        mov al 0, ecx 0FF | repne scasb
+        Mov al 0, ecx 0FF | repne scasb
     End_While
 
-    mov edi SysCursorsStrings
+    Mov edi SysCursorsStrings
     While B$edi <> 0
         push edi
-        call 'USER32.SendMessageA' D$SysCursorsHandle &LB_ADDSTRING 0 edi
+        Call 'USER32.SendMessageA' D$SysCursorsHandle &LB_ADDSTRING 0 edi
         pop edi
-        mov al 0, ecx 0FF | repne scasb
+        Mov al 0, ecx 0FF | repne scasb
     End_While
 ret
 
@@ -793,7 +793,7 @@ ________________________________________________________________________________
 
 ShowSourceImports:
     If D$ImportDialogHandle = 0
-        call 'USER32.DialogBoxParamA' D$hinstance, 1100, &NULL,
+        Call 'USER32.DialogBoxParamA' D$hinstance, 1100, &NULL,
                                       ViewSourceImportsProc, &NULL
     End_If
 ret
@@ -801,7 +801,7 @@ ret
 
 ShowSourceExports:
     If D$ExportDialogHandle = 0
-        call 'USER32.DialogBoxParamA' D$hinstance, 1101, &NULL,
+        Call 'USER32.DialogBoxParamA' D$hinstance, 1101, &NULL,
                                       ViewSourceExportsProc, &NULL
     End_If
 ret
@@ -812,15 +812,15 @@ ret
 Proc Enable:
     Arguments @ParentHandle, @ID
 
-        call 'User32.GetDlgItem' D@ParentHandle, D@ID
-        call 'User32.EnableWindow' eax &TRUE
+        Call 'User32.GetDlgItem' D@ParentHandle, D@ID
+        Call 'User32.EnableWindow' eax &TRUE
 EndP
 
 Proc Disable:
     Arguments @ParentHandle, @ID
 
-        call 'User32.GetDlgItem' D@ParentHandle, D@ID
-        call 'User32.EnableWindow' eax &FALSE
+        Call 'User32.GetDlgItem' D@ParentHandle, D@ID
+        Call 'User32.EnableWindow' eax &FALSE
 EndP
 
 
@@ -829,120 +829,120 @@ EndP
 ; Tag Dialog 1100
 
 Proc ViewSourceImportsProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_COMMAND
-        mov eax D@wParam | and eax 0FFFF
+    ...If D@msg = &WM_COMMAND
+        Mov eax D@wParam | and eax 0FFFF
         ..If eax = &IDCANCEL
-            mov D$ImportDialogHandle 0
-            call 'User32.EndDialog' D@Adressee, 0
+            Mov D$ImportDialogHandle 0
+            Call 'User32.EndDialog' D@hwnd, 0
 
         ..Else
             .If W@wParam = 10
                 If W@wParam+2 = &LBN_SELCHANGE
-                    call RestoreRealSource
-                    call ViewDllFunctionList
-                    call SetPartialEditionFromPos
+                    Call RestoreRealSource
+                    Call ViewDllFunctionList
+                    Call SetPartialEditionFromPos
                 End_If
-                call 'USER32.SetDlgItemInt' D@Adressee, 12, 0, &FALSE
-                call Disable D@adressee, 3
-                call Disable D@adressee, 4
+                Call 'USER32.SetDlgItemInt' D@hwnd, 12, 0, &FALSE
+                Call Disable D@hwnd, 3
+                Call Disable D@hwnd, 4
 
             .Else_If W@wParam = 11
                 If W@wParam+2 = &LBN_SELCHANGE
-                    call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle,
+                    Call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle,
                                                &LB_GETCURSEL, 0, 0
 
-                    call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle,
+                    Call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle,
                                                &LB_GETITEMDATA, eax, 0
 
-                    call 'USER32.SetDlgItemInt' D@Adressee, 12, eax, &FALSE
-                    call 'USER32.SendDlgItemMessageA' D@Adressee, 3, &WM_ENABLE,
+                    Call 'USER32.SetDlgItemInt' D@hwnd, 12, eax, &FALSE
+                    Call 'USER32.SendDlgItemMessageA' D@hwnd, 3, &WM_ENABLE,
                                                       &TRUE, 0
-                    call Enable D@adressee, 3
-                    call Disable D@adressee, 4
+                    Call Enable D@hwnd, 3
+                    Call Disable D@hwnd, 4
 
                 End_If
 
             .Else_If W@wParam = 3
-                call ImportFunctionFindFirst
+                Call ImportFunctionFindFirst
 
-                call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle, &LB_GETCURSEL, 0, 0
-                call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle, &LB_GETITEMDATA,
+                Call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle, &LB_GETCURSEL, 0, 0
+                Call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle, &LB_GETITEMDATA,
                                            eax, 0
-                On eax > 1, call Enable D@adressee, 4
+                On eax > 1, Call Enable D@hwnd, 4
 
             .Else_If W@wParam = 4
-                call ImportFunctionFindNext
+                Call ImportFunctionFindNext
 
             .End_If
         ..End_If
 
-    ...Else_If D@Message = &WM_INITDIALOG
-        move D$ImportDialogHandle D@Adressee
+    ...Else_If D@msg = &WM_INITDIALOG
+        move D$ImportDialogHandle D@hwnd
 
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
 
-        call 'USER32.GetDlgItem' D@Adressee, 10 | mov D$DLLsProcListHandle eax
-        call 'USER32.GetDlgItem' D@Adressee, 11 | mov D$DLLsProcFunctionsListHandle eax
+        Call 'USER32.GetDlgItem' D@hwnd, 10 | Mov D$DLLsProcListHandle eax
+        Call 'USER32.GetDlgItem' D@hwnd, 11 | Mov D$DLLsProcFunctionsListHandle eax
 
-        call Disable D@adressee, 3
-        call Disable D@adressee, 4
+        Call Disable D@hwnd, 3
+        Call Disable D@hwnd, 4
 
-        call RestoreRealSource
-        call InitImportsProcList
-        call SetPartialEditionFromPos
+        Call RestoreRealSource
+        Call InitImportsProcList
+        Call SetPartialEditionFromPos
 
         If B$DLLsFoundInSource = &FALSE
-            call 'USER32.MessageBoxA' D$hwnd, {'No Import Function found in this Source', 0},
+            Call 'USER32.MessageBoxA' D$H.MainWindow, {'No Import Function found in this Source', 0},
                                      {'Failure:', 0}, 0
-            call 'USER32.EndDialog' D@Adressee, 0
+            Call 'USER32.EndDialog' D@hwnd, 0
         End_If
 
-        popad | mov eax &FALSE | ExitP
+        popad | Mov eax &FALSE | ExitP
 
     ...Else
-        popad | mov eax &FALSE | ExitP
+        popad | Mov eax &FALSE | ExitP
 
     ...End_If
 
-L8: popad | mov eax &TRUE
+L8: popad | Mov eax &TRUE
 EndP
 
 
 ExportFunctionFindFirst:
-    call 'USER32.SendMessageA' D$DLLsProcListHandle, &LB_GETCURSEL, 0, 0
-    call 'USER32.SendMessageA' D$DLLsProcListHandle, &LB_GETTEXT, eax, SearchString
+    Call 'USER32.SendMessageA' D$DLLsProcListHandle, &LB_GETCURSEL, 0, 0
+    Call 'USER32.SendMessageA' D$DLLsProcListHandle, &LB_GETTEXT, eax, SearchString
 
     ON eax = &LB_ERR, ret
-    mov cl B$SearchString+eax-1 | cmp cl '"' | je L1> | cmp cl "'" | je L1>
-    mov W$SearchString+eax '::' | add eax 2 | jmp L1>
+    Mov cl B$SearchString+eax-1 | cmp cl '"' | je L1> | cmp cl "'" | je L1>
+    Mov W$SearchString+eax '::' | add eax 2 | jmp L1>
 
 ImportFunctionFindFirst:
-    call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle, &LB_GETCURSEL, 0, 0
-    call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle, &LB_GETTEXT, eax, SearchString
+    Call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle, &LB_GETCURSEL, 0, 0
+    Call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle, &LB_GETTEXT, eax, SearchString
 
     .If eax <> &LB_ERR
-        mov D$SearchString+eax "'" | inc eax
-L1:     mov D$LenOfSearchedString eax
+        Mov D$SearchString+eax "'" | inc eax
+L1:     Mov D$LenOfSearchedString eax
 
-        call RestoreRealSource
+        Call RestoreRealSource
 
         push D$DownSearch, D$CaseSearch, D$WholeWordSearch
-            mov B$DownSearch &TRUE, B$CaseSearch &TRUE, B$WholeWordSearch &FALSE
+            Mov B$DownSearch &TRUE, B$CaseSearch &TRUE, B$WholeWordSearch &FALSE
             move D$CurrentWritingPos D$CodeSource
-            call SetCaret D$CodeSource | move D$UpperLine D$CodeSource
-            call AskForRedrawNow
+            Call SetCaret D$CodeSource | move D$UpperLine D$CodeSource
+            Call AskForRedrawNow
 
-                mov D$NextSearchPos 0
+                Mov D$NextSearchPos 0
 
-                call StringSearch
+                Call StringSearch
 
         pop D$WholeWordSearch, D$CaseSearch, D$DownSearch
 
-        call SetPartialEditionFromPos
+        Call SetPartialEditionFromPos
 
     .End_If
 ret
@@ -950,21 +950,21 @@ ret
 
 ImportFunctionFindNext:
 ExportFunctionFindNext:
-    call RestoreRealSource
+    Call RestoreRealSource
         push D$DownSearch, D$CaseSearch, D$WholeWordSearch
-            call StringSearch
+            Call StringSearch
         pop D$WholeWordSearch, D$CaseSearch, D$DownSearch
-    call SetPartialEditionFromPos
+    Call SetPartialEditionFromPos
 ret
 
 
 [DLLsFoundInSource: ?]
 
 InitImportsProcList:
-    mov esi D$CodeSource, edx D$SourceEnd, B$DLLsFoundInSource &FALSE
+    Mov esi D$CodeSource, edx D$SourceEnd, B$DLLsFoundInSource &FALSE
 
     .While esi < edx
-        mov eax D$esi
+        Mov eax D$esi
         ..If al = '"'
             inc esi
             While B$esi <> '"'
@@ -998,23 +998,23 @@ InitImportsProcList:
             End_If
 
             While B$esi = ' ' | inc esi | End_While
-            mov al B$esi
+            Mov al B$esi
             .If al = '"'
                 jmp L1>
             .Else_If al = "'"
-L1:             inc esi | mov ebx esi
+L1:             inc esi | Mov ebx esi
                 While B$esi <> al
                     On B$esi <= ' ', jmp L2>
                     If B$esi = '.'
-                        mov B$DLLsFoundInSource &TRUE
+                        Mov B$DLLsFoundInSource &TRUE
                         push eax, edx, D$esi, esi
-                            mov B$esi 0
+                            Mov B$esi 0
                             push ebx
-                             call Lb_FindString D$DLLsProcListHandle, ebx
-         ; call 'USER32.SendMessageA' D$DLLsProcListHandle, &LB_FINDSTRING, 0, ebx
+                             Call Lb_FindString D$DLLsProcListHandle, ebx
+         ; Call 'USER32.SendMessageA' D$DLLsProcListHandle, &LB_FINDSTRING, 0, ebx
                             pop ebx
                             On eax = &LB_ERR,
-                            call 'USER32.SendMessageA' D$DLLsProcListHandle,
+                            Call 'USER32.SendMessageA' D$DLLsProcListHandle,
                                                        &LB_ADDSTRING, 0, ebx
                         pop esi, D$esi, edx, eax
                         jmp L2>
@@ -1039,10 +1039,10 @@ L9: ret
 
 
 InitExportsProcList:
-    mov esi D$CodeSource, edx D$SourceEnd, B$DLLsFoundInSource &FALSE
+    Mov esi D$CodeSource, edx D$SourceEnd, B$DLLsFoundInSource &FALSE
 
     .While esi < edx
-        mov eax D$esi
+        Mov eax D$esi
         ..If al = '"'
             inc esi
             While B$esi <> '"'
@@ -1066,12 +1066,12 @@ InitExportsProcList:
                 While B$esi >= ' ' | inc esi | End_While
 
         ..Else_If ax = '::'
-                        mov B$DLLsFoundInSource &TRUE
+                        Mov B$DLLsFoundInSource &TRUE
                         push edx, esi
-                            mov edi esi
-                            mov al B$esi+2 | cmp al '"' | je L0> | cmp al "'" | jne l2>
-L0:                         lea edi D$esi+3 | mov ecx 0FF | repne scasb
-L2:                         push D$edi | mov B$edi 0
+                            Mov edi esi
+                            Mov al B$esi+2 | cmp al '"' | je L0> | cmp al "'" | jne l2>
+L0:                         lea edi D$esi+3 | Mov ecx 0FF | repne scasb
+L2:                         push D$edi | Mov B$edi 0
                             While B$esi-1 = ' ' | dec esi | End_While
 L0:                         cmp B$esi-1 ' ' | jbe L1>
                             cmp B$esi-1 '[' | je L1>
@@ -1080,7 +1080,7 @@ L0:                         cmp B$esi-1 ' ' | jbe L1>
                             cmp B$esi-1 '|' | je L1>
                             dec esi | jmp L0<
 L1:
-                            call 'USER32.SendMessageA' D$DLLsProcListHandle,
+                            Call 'USER32.SendMessageA' D$DLLsProcListHandle,
                                                        &LB_ADDSTRING, 0, esi
                             pop D$edi
                         pop esi, edx
@@ -1095,15 +1095,15 @@ L9: ret
 [CurrentSelectionInDLLsList: ?]
 
 ViewDllFunctionList:
-    call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle, &LB_RESETCONTENT, 0, 0
+    Call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle, &LB_RESETCONTENT, 0, 0
 
-    call 'USER32.SendMessageA' D$DLLsProcListHandle, &LB_GETCURSEL, 0, 0
-    mov D$CurrentSelectionInDLLsList eax
+    Call 'USER32.SendMessageA' D$DLLsProcListHandle, &LB_GETCURSEL, 0, 0
+    Mov D$CurrentSelectionInDLLsList eax
 
-    mov esi D$CodeSource, edx D$SourceEnd
+    Mov esi D$CodeSource, edx D$SourceEnd
 
     ..While esi < edx
-        mov eax D$esi
+        Mov eax D$esi
         On al = 'C', or eax 020202020 | On al = 'c', or eax 020202020
         On al = 'J', or eax 020202020 | On al = 'j', or eax 020202020
         ...If al = '"'
@@ -1134,43 +1134,43 @@ ViewDllFunctionList:
         ...Else_If eax = 'call'
             add esi 4
 L1:         While B$esi = ' ' | inc esi | End_While
-            mov al B$esi
+            Mov al B$esi
             ..If al = "'"
-L1:             inc esi | mov ebx esi
+L1:             inc esi | Mov ebx esi
                 .While B$esi <> al
                     On B$esi <= ' ', jmp L2>>
                     .If B$esi = '.'
                         push eax, ebx, edx, D$esi, esi
-                            mov B$esi 0
-                                call Lb_FindString D$DLLsProcListHandle, ebx
-                            mov ecx eax
+                            Mov B$esi 0
+                                Call Lb_FindString D$DLLsProcListHandle, ebx
+                            Mov ecx eax
                         pop esi, D$esi, edx, ebx, eax
 
                         On ecx <> D$CurrentSelectionInDLLsList, jmp L2>>
 
-                            inc esi | mov ebx esi
+                            inc esi | Mov ebx esi
 
                             While B$esi <> al
                                 inc esi | On esi >= edx, jmp L9>>
                             End_While
                             push D$esi, esi, edx
-                                mov B$esi 0
+                                Mov B$esi 0
                                 push ebx
-                                    call Lb_FindString D$DLLsProcFunctionsListHandle, ebx
+                                    Call Lb_FindString D$DLLsProcFunctionsListHandle, ebx
                                 pop ebx
 
                                 If eax = &LB_ERR
-                                    call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle,
+                                    Call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle,
                                                                &LB_ADDSTRING, 0, ebx
-                                    call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle,
+                                    Call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle,
                                                                &LB_SETITEMDATA, eax, 1
                                 Else
                                     push eax
-                                    call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle,
+                                    Call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle,
                                                                &LB_GETITEMDATA, eax, 0
                                     inc eax
                                     pop edx
-                                    call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle,
+                                    Call 'USER32.SendMessageA' D$DLLsProcFunctionsListHandle,
                                                                &LB_SETITEMDATA, edx, eax
                                 End_If
 
@@ -1204,23 +1204,23 @@ Proc Lb_FindString:
     Local @FirstFound
     Uses esi, edi, edx
 
-        mov edx 0-1, D@FirstFound edx
+        Mov edx 0-1, D@FirstFound edx
 
 L0:     push edx
-            call 'USER32.SendMessageA' D@Lb_Handle, &LB_FINDSTRING, edx, D@Pointer
+            Call 'USER32.SendMessageA' D@Lb_Handle, &LB_FINDSTRING, edx, D@Pointer
         pop edx
 
         .If eax <> &LB_ERR
             push eax
-                call 'USER32.SendMessageA' D@Lb_Handle, &LB_GETTEXT, eax, SearchString
+                Call 'USER32.SendMessageA' D@Lb_Handle, &LB_GETTEXT, eax, SearchString
             pop edx
 
-            mov esi D@Pointer, edi SearchString | lodsb
+            Mov esi D@Pointer, edi SearchString | lodsb
             and al UPPERCASEMASK | and B$edi UPPERCASEMASK
 
             While al = B$edi
                 If al = 0
-                    mov eax edx | ExitP
+                    Mov eax edx | ExitP
                 End_If
 
                 lodsb | inc edi
@@ -1228,9 +1228,9 @@ L0:     push edx
             End_While
 
             If D@FirstFound = 0-1
-                mov D@FirstFound edx | inc edx | jmp L0<
+                Mov D@FirstFound edx | inc edx | jmp L0<
             Else_If edx = D@FirstFound
-                mov eax &LB_ERR
+                Mov eax &LB_ERR
             Else
                 inc edx | jmp L0<
             EndIf
@@ -1245,52 +1245,52 @@ ________________________________________________________________________________
 ; Tag Dialog 1101
 
 Proc ViewSourceExportsProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_COMMAND
-        mov eax D@wParam | and eax 0FFFF
+    ...If D@msg = &WM_COMMAND
+        Mov eax D@wParam | and eax 0FFFF
 
         ..If eax = &IDCANCEL
-            mov D$ExportDialogHandle 0
-            call 'User32.EndDialog' D@Adressee, 0
+            Mov D$ExportDialogHandle 0
+            Call 'User32.EndDialog' D@hwnd, 0
 
         ..Else
             .If W@wParam = 10
                 If W@wParam+2 = &LBN_SELCHANGE
-                    call ExportFunctionFindFirst
+                    Call ExportFunctionFindFirst
                 End_If
 
             .End_If
 
         ..End_If
 
-    ...Else_If D@Message = &WM_INITDIALOG
-        move D$ExportDialogHandle D@Adressee
+    ...Else_If D@msg = &WM_INITDIALOG
+        move D$ExportDialogHandle D@hwnd
 
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
 
-        call 'USER32.GetDlgItem' D@Adressee, 10 | mov D$DLLsProcListHandle eax
+        Call 'USER32.GetDlgItem' D@hwnd, 10 | Mov D$DLLsProcListHandle eax
 
-        call RestoreRealSource
-        call InitExportsProcList
-        call SetPartialEditionFromPos
+        Call RestoreRealSource
+        Call InitExportsProcList
+        Call SetPartialEditionFromPos
 
         If B$DLLsFoundInSource = &FALSE
-            call 'USER32.MessageBoxA' D$hwnd, {'No Export Function found in this Source', 0},
+            Call 'USER32.MessageBoxA' D$H.MainWindow, {'No Export Function found in this Source', 0},
                                      {'Failure:', 0}, 0
-            call 'USER32.EndDialog' D@Adressee, 0
+            Call 'USER32.EndDialog' D@hwnd, 0
         End_If
 
-        popad | mov eax &FALSE | ExitP
+        popad | Mov eax &FALSE | ExitP
 
     ...Else
-        popad | mov eax &FALSE | ExitP
+        popad | Mov eax &FALSE | ExitP
 
     ...End_If
 
-L8: popad | mov eax &TRUE
+L8: popad | Mov eax &TRUE
 EndP
 
 ____________________________________________________________________________________________
@@ -1299,19 +1299,19 @@ ________________________________________________________________________________
 ; DLLs Scan.
 
 ExportScanner:
-    call GetExportScannerFile
+    Call GetExportScannerFile
 
     ..If D$SfFileMemory <> 0
         push D$UserPeStart
             move D$UserPeStart D$SfFileMemory
 
-            call StartScan
+            Call StartScan
 
             .If eax <> 0
-                call ReAlignPE | call GetExportDirPointer
+                Call ReAlignPE | Call GetExportDirPointer
 
                 If D$NumberOfDisExportedFunctions <> 0
-                    call 'USER32.DialogBoxParamA' D$hInstance, 30500, &NULL,
+                    Call 'USER32.DialogBoxParamA' D$hInstance, 30500, &NULL,
                                                   ViewExport, &NULL
 
                 Else
@@ -1319,7 +1319,7 @@ ExportScanner:
 
                 End_If
             .Else
-L7:             call 'USER32.MessageBoxA' D$hwnd, {'No Export found in this File', 0}, SfFile, 0
+L7:             Call 'USER32.MessageBoxA' D$H.MainWindow, {'No Export found in this File', 0}, SfFile, 0
 
             .End_If
 
@@ -1335,34 +1335,34 @@ ret
 ; Simplified version of 'StartNewDisFile', reuse the same Variables:
 
 StartScan:
-    mov edi FirstDisVirtualData, eax 0
-    mov ecx LastDisVirtualData | sub ecx edi | shr ecx 2 | repe stosd
-    mov D$DisPeOrigine 0 | GetPeHeader PeHeaderPointer
-    mov eax D$eax | sub eax 080 | mov D$DisPeOrigine eax
+    Mov edi FirstDisVirtualData, eax 0
+    Mov ecx LastDisVirtualData | sub ecx edi | shr ecx 2 | repe stosd
+    Mov D$DisPeOrigine 0 | GetPeHeader PeHeaderPointer
+    Mov eax D$eax | sub eax 080 | Mov D$DisPeOrigine eax
   ; (080 is the RosAsm Data 'PeHeaderPointer')
 
     GetPeHeader PeHeader
 
     ..If eax < D$SfFileMemory
-        mov eax 0
+        Mov eax 0
 
     ..Else_If eax > D$SfFileMemoryEnd
-        mov eax 0
+        Mov eax 0
 
     ..Else
-        mov eax D$eax
+        Mov eax D$eax
 
         .If eax = D$PeHeader
             GetPeHeader NumberOfSections | movzx eax W$eax
 
             If eax <> 0
-                mov D$DisNumberOfSections eax
-                GetPeHeader ImageBase | mov ebx D$eax, D$DisImageBase ebx
+                Mov D$DisNumberOfSections eax
+                GetPeHeader ImageBase | Mov ebx D$eax, D$DisImageBase ebx
                 move D$DisRvaSectionAlignment D$eax+4, D$DisFileSectionAlignment D$eax+8
             End_If
 
         .Else
-            mov eax 0
+            Mov eax 0
 
         .End_If
 
@@ -1373,23 +1373,23 @@ ret
 ; SImplified version of 'CheckExport':
 
 GetExportDirPointer:
-    GetPeHeader SectionTable | mov edx D$eax
+    GetPeHeader SectionTable | Mov edx D$eax
 
     and D$NumberOfDisExportedFunctions 0
 
     If edx <> 0
-        mov ecx D$DisNumberOfSections
+        Mov ecx D$DisNumberOfSections
 
         GetPeHeader SectionsHeaders
 
-L0:     mov ebx D$eax+SECTION_RVA |  cmp edx ebx | jb L1>
+L0:     Mov ebx D$eax+SECTION_RVA |  cmp edx ebx | jb L1>
             add ebx D$eax+SECTION_FILESIZE | cmp edx ebx | jb L2>
 
 L1:     add eax SECTIONHEADERSIZE | loop L0<
             ret
 
-L2:     add edx D$UserPeStart | mov eax D$edx+(5*4), ebx D$edx+(6*4), ecx D$edx+(4*4)
-        mov D$NumberOfDisExportedFunctions eax, D$NumberOfDisExportNames ebx, D$DisExportOrdBase ecx
+L2:     add edx D$UserPeStart | Mov eax D$edx+(5*4), ebx D$edx+(6*4), ecx D$edx+(4*4)
+        Mov D$NumberOfDisExportedFunctions eax, D$NumberOfDisExportNames ebx, D$DisExportOrdBase ecx
     End_If
 ret
 
@@ -1421,32 +1421,32 @@ ret
 [SfFileHandle: ?    SfFileLen: ?    SfFileMemory: ?   SfFileMemoryEnd: ?]
 
 GetExportScannerFile:
-    mov D$SfFile 0, D$SfFileMemory 0
-    move D$SF.hwndOwner D$hwnd ;, D$SF.hInstance D$hInstance
-    call 'Comdlg32.GetOpenFileNameA' SF
+    Mov D$SfFile 0, D$SfFileMemory 0
+    move D$SF.hwndOwner D$H.MainWindow ;, D$SF.hInstance D$hInstance
+    Call 'Comdlg32.GetOpenFileNameA' SF
 
     ..If D$SfFile <> 0
-        call 'KERNEL32.CreateFileA' SfFile,
+        Call 'KERNEL32.CreateFileA' SfFile,
                                     &GENERIC_READ, &FILE_SHARE_READ,
                                     0, &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, &NULL
 
         .If eax = &INVALID_HANDLE_VALUE
-            mov eax D$BusyFilePtr | call MessageBox | ret
+            Mov eax D$BusyFilePtr | Call MessageBox | ret
 
         .Else
-            mov D$SfFileHandle eax
-            call 'KERNEL32.GetFileSize' eax, 0 | mov D$SfFileLen eax
+            Mov D$SfFileHandle eax
+            Call 'KERNEL32.GetFileSize' eax, 0 | Mov D$SfFileLen eax
 
             VirtualAlloc SfFileMemory D$SfFileLen
-            add eax D$SfFileLen | mov D$SfFileMemoryEnd eax
+            add eax D$SfFileLen | Mov D$SfFileMemoryEnd eax
 
-            call 'KERNEL32.ReadFile' D$SfFileHandle, D$SfFileMemory D$SfFileLen,
+            Call 'KERNEL32.ReadFile' D$SfFileHandle, D$SfFileMemory D$SfFileLen,
                                      NumberOfReadBytes, 0
 
-            call 'KERNEL32.CloseHandle' D$SfFileHandle
+            Call 'KERNEL32.CloseHandle' D$SfFileHandle
 
           ; Is it a PE?
-            mov eax D$SfFileMemory | On W$eax <> 'MZ', jmp L7>
+            Mov eax D$SfFileMemory | On W$eax <> 'MZ', jmp L7>
             add eax D$eax+03C | lea ecx D$eax+078
             On ecx > D$SfFileMemoryEnd, jmp L7>
             On ecx < D$SfFileMemory, jmp L7>
@@ -1457,7 +1457,7 @@ GetExportScannerFile:
 ret
 
 L7: VirtualFree D$SfFileMemory
-    mov eax D$NotPeExePtr | call MessageBox
+    Mov eax D$NotPeExePtr | Call MessageBox
 ret
 
 
@@ -1490,69 +1490,69 @@ ret
 ; Tag Dialog 30500
 
 Proc ViewExport:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
     Structure @RECT 16, @leftDis 0,  @topDis 4,  @rightDis 8,  @bottomDis 12
 
     pushad
 
-    ...If D@Message = &WM_COMMAND
-        mov eax D@wParam | and eax 0FFFF
+    ...If D@msg = &WM_COMMAND
+        Mov eax D@wParam | and eax 0FFFF
         ..If eax = &IDCANCEL
-            call 'User32.EndDialog' D@Adressee, 0
+            Call 'User32.EndDialog' D@hwnd, 0
 
         ..Else
-            call 'USER32.SendDlgItemMessageA' D@Adressee, 10, &EM_SETSEL, 0-1, 0
+            Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &EM_SETSEL, 0-1, 0
 
         ..End_If
 
-    ...Else_If D@Message = &WM_INITDIALOG
+    ...Else_If D@msg = &WM_INITDIALOG
 
-        call 'USER32.GetDlgItem' D@Adressee, 10 | mov D$SfListHandle eax
+        Call 'USER32.GetDlgItem' D@hwnd, 10 | Mov D$SfListHandle eax
 
-        call 'USER32.GetClientRect' D$SfListHandle D@RECT
-        mov eax D@rightDis | sub eax D@leftDis | mov D@bottomDis eax
-        shr eax 3 | mov D$LV_COLUMN@cx eax | sub D@bottomDis eax
+        Call 'USER32.GetClientRect' D$SfListHandle D@RECT
+        Mov eax D@rightDis | sub eax D@leftDis | Mov D@bottomDis eax
+        shr eax 3 | Mov D$LV_COLUMN@cx eax | sub D@bottomDis eax
 
         push eax
-            mov D$LV_COLUMN@pszText {'Ordinal', 0}
-            call 'USER32.SendMessageA' D$SfListHandle, &LVM_INSERTCOLUMN, 0, LV_COLUMN
+            Mov D$LV_COLUMN@pszText {'Ordinal', 0}
+            Call 'USER32.SendMessageA' D$SfListHandle, &LVM_INSERTCOLUMN, 0, LV_COLUMN
 
-            shl D$LV_COLUMN@cx 1 | mov eax D$LV_COLUMN@cx | sub D@bottomDis eax
-            mov D$LV_COLUMN@pszText {'Relative Address', 0}
-            call 'USER32.SendMessageA' D$SfListHandle, &LVM_INSERTCOLUMN, 1, LV_COLUMN
+            shl D$LV_COLUMN@cx 1 | Mov eax D$LV_COLUMN@cx | sub D@bottomDis eax
+            Mov D$LV_COLUMN@pszText {'Relative Address', 0}
+            Call 'USER32.SendMessageA' D$SfListHandle, &LVM_INSERTCOLUMN, 1, LV_COLUMN
 
             move D$LV_COLUMN@cx D@bottomDis
         pop eax
 
-        mov D$LV_COLUMN@pszText {'Name', 0}
-        call 'USER32.SendMessageA' D$SfListHandle, &LVM_INSERTCOLUMN, 2, LV_COLUMN
+        Mov D$LV_COLUMN@pszText {'Name', 0}
+        Call 'USER32.SendMessageA' D$SfListHandle, &LVM_INSERTCOLUMN, 2, LV_COLUMN
 
       ; 'ExportSectionComments'
 
-        GetPeHeader SectionTable | mov edi D$eax | add edi D$UserPeStart
+        GetPeHeader SectionTable | Mov edi D$eax | add edi D$UserPeStart
 
-            mov eax D$edi+(3*4) | add eax D$UserPeStart
+            Mov eax D$edi+(3*4) | add eax D$UserPeStart
             If eax > D$UserPeStart
                 On eax < D$UserPeEnd,
-                        call 'USER32.SendMessageA', D@Adressee, &WM_SETTEXT, 0, eax
+                        Call 'USER32.SendMessageA', D@hwnd, &WM_SETTEXT, 0, eax
             End_If
 
-            call 'USER32.SendMessageA' D$SfListHandle, &LVM_SETITEMCOUNT, D$edi+(5*4), 0
+            Call 'USER32.SendMessageA' D$SfListHandle, &LVM_SETITEMCOUNT, D$edi+(5*4), 0
 
       ; Number of Functions:
-        mov ecx D$edi+(5*4)
+        Mov ecx D$edi+(5*4)
       ; Pointer to ExportAdressesTable:
-        mov ebx D$edi+(7*4) | On ebx <> 0, add ebx D$UserPeStart
+        Mov ebx D$edi+(7*4) | On ebx <> 0, add ebx D$UserPeStart
       ; Pointer to ExportNamesTable:
-        mov esi D$edi+(8*4) | On esi <> 0, add esi D$UserPeStart
+        Mov esi D$edi+(8*4) | On esi <> 0, add esi D$UserPeStart
       ; Pointer to ExportOrdinals:
-        mov edx D$edi+(9*4) | On edx <> 0, add edx D$UserPeStart
+        Mov edx D$edi+(9*4) | On edx <> 0, add edx D$UserPeStart
 
         If esi = edx
-         mov esi 0, edx 0
+         Mov esi 0, edx 0
         End_If
 
-        mov D$LV_ITEM@iItem 0
+        Mov D$LV_ITEM@iItem 0
 L0:
         If D$ebx = 0
            pushad
@@ -1560,57 +1560,57 @@ L0:
            jmp L5>>
         End_If
 ; Write the Ordinal:
-        mov eax ebx | sub eax D$UserPeStart | sub eax D$edi+(7*4) | shr eax 2
+        Mov eax ebx | sub eax D$UserPeStart | sub eax D$edi+(7*4) | shr eax 2
         pushad
-        add eax D$edi+(4*4) | mov edi ExportViewBuffer | call WriteEax | mov B$edi 0
-        mov D$LV_ITEM@iSubItem 0
-        call 'USER32.SendMessageA' D$SfListHandle, &LVM_INSERTITEM, 0, LV_ITEM
+        add eax D$edi+(4*4) | Mov edi ExportViewBuffer | Call WriteEax | Mov B$edi 0
+        Mov D$LV_ITEM@iSubItem 0
+        Call 'USER32.SendMessageA' D$SfListHandle, &LVM_INSERTITEM, 0, LV_ITEM
         popad
 ; Write the Relative Address:
         pushad
-        mov eax D$ebx
-        mov edi ExportViewBuffer | call WriteEax | mov B$edi 0
-        mov D$LV_ITEM@iSubItem 1
-        call 'USER32.SendMessageA' D$SfListHandle, &LVM_SETITEM, 0, LV_ITEM
+        Mov eax D$ebx
+        Mov edi ExportViewBuffer | Call WriteEax | Mov B$edi 0
+        Mov D$LV_ITEM@iSubItem 1
+        Call 'USER32.SendMessageA' D$SfListHandle, &LVM_SETITEM, 0, LV_ITEM
         popad
 
         pushad
         cmp edx 0 | je L5>>
-        mov ecx D$edi+(6*4) | mov edi edx | repne scasw | jne L5>>
-        sub edi 2 |sub edi edx | shl edi 1 | mov esi D$esi+edi | test esi esi | je L5>>
-        add esi D$UserPeStart | mov edi ExportViewBuffer
+        Mov ecx D$edi+(6*4) | Mov edi edx | repne scasw | jne L5>>
+        sub edi 2 |sub edi edx | shl edi 1 | Mov esi D$esi+edi | test esi esi | je L5>>
+        add esi D$UserPeStart | Mov edi ExportViewBuffer
         .If esi =< D$UserPeStart
-            mov D$edi '???'
+            Mov D$edi '???'
         .Else_If esi >= D$UserPeEnd
-            mov D$edi '???'
+            Mov D$edi '???'
         .Else
             While B$esi <> 0
                If B$esi < ' '
-                  mov D$ExportViewBuffer '???' | jmp L2>
+                  Mov D$ExportViewBuffer '???' | jmp L2>
                End_If
                movsb
                If edi = AfterExportViewBuffer
-                  mov D$edi-3 '...' | jmp L2>
+                  Mov D$edi-3 '...' | jmp L2>
                End_If
                If esi = D$UserPeEnd
-                  mov D$edi '???' | jmp L2>
+                  Mov D$edi '???' | jmp L2>
                End_If
-            End_While | mov B$edi 0
+            End_While | Mov B$edi 0
         .End_If
 L2:
-        mov D$LV_ITEM@iSubItem 2
-        call 'USER32.SendMessageA' D$SfListHandle, &LVM_SETITEM, 0, LV_ITEM
+        Mov D$LV_ITEM@iSubItem 2
+        Call 'USER32.SendMessageA' D$SfListHandle, &LVM_SETITEM, 0, LV_ITEM
 L5:
         popad | add ebx 4 | inc D$LV_ITEM@iItem | dec ecx | jnz L0<<
-        call 'USER32.SendMessageA' D$SfListHandle, &LVM_SETITEMCOUNT, D$LV_ITEM@iItem, 0
-L7:     popad | mov eax &FALSE | ExitP
+        Call 'USER32.SendMessageA' D$SfListHandle, &LVM_SETITEMCOUNT, D$LV_ITEM@iItem, 0
+L7:     popad | Mov eax &FALSE | ExitP
 
     ...Else
-        popad | mov eax &FALSE | ExitP
+        popad | Mov eax &FALSE | ExitP
 
     ...End_If
 
-L8: popad | mov eax &TRUE
+L8: popad | Mov eax &TRUE
 EndP
 
 ____________________________________________________________________________________________
@@ -1622,11 +1622,11 @@ ________________________________________________________________________________
 
 ; All of this GUIDs stuff and the associated GUD file is to be used with:
 ;
-; [COMCall | mov eax D$#1 eax D$eax | push #L>3 | Call D$eax+#1.#2 D$#1]
+; [COMCall | Mov eax D$#1 eax D$eax | push #L>3 | Call D$eax+#1.#2 D$#1]
 
 ViewGUIDs:
     If D$ShowGUIDsHandle = 0
-        call 'USER32.CreateDialogParamA' D$hInstance, 35, D$hWnd, ShowGUIDsProc, &NULL
+        Call 'USER32.CreateDialogParamA' D$hInstance, 35, D$H.MainWindow, ShowGUIDsProc, &NULL
     End_If
 ret
 
@@ -1636,57 +1636,57 @@ ret
 ; Tag Dialog 35
 
 Proc ShowGUIDsProc:
-     Arguments @Adressee, @Message, @wParam, @lParam
+     Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ..If D@Message = &WM_COMMAND
+    ..If D@msg = &WM_COMMAND
         .If D@wParam = &IDCANCEL
-L7:        mov D$ShowGUIDsHandle 0
+L7:        Mov D$ShowGUIDsHandle 0
            VirtualFree D$GUIDsFileMemory
-           call 'User32.EndDialog' D@Adressee, 0
+           Call 'User32.EndDialog' D@hwnd, 0
 
         .Else_If D@wParam = &IDOK
-L8:         call 'USER32.SendDlgItemMessageA' D@Adressee, 10, &LB_GETCURSEL, 0, 0
-            call 'USER32.SendDlgItemMessageA' D@Adressee, 10, &LB_GETTEXT, eax,
+L8:         Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &LB_GETCURSEL, 0, 0
+            Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &LB_GETTEXT, eax,
                                               TrashString
 
-            call GetGUID eax | On D$GUIDsPastingType <> 101, jmp L7<<
+            Call GetGUID eax | On D$GUIDsPastingType <> 101, jmp L7<<
 
         .Else_If D@wParam = &IDHELP
-            call Help, B_U_AsmName, GUIDsHelp, ContextHlpMessage
+            Call Help, B_U_AsmName, GUIDsHelp, ContextHlpMessage
 
         .Else_If D@wParam = 100
-            mov D$GUIDsPastingType 100
+            Mov D$GUIDsPastingType 100
 
         .Else_If D@wParam = 101
-            mov D$GUIDsPastingType 101
+            Mov D$GUIDsPastingType 101
 
         .Else
-            mov eax D@wParam | shr eax 16
+            Mov eax D@wParam | shr eax 16
             On eax = &LBN_DBLCLK, jmp L8<<
 
         .End_If
 
-    ..Else_If D@Message = &WM_INITDIALOG
-        move D$ShowGUIDsHandle D@Adressee
-        call 'USER32.GetDlgItem' D@Adressee, 10
-        call InitGUIDsView eax | On B$GUIDsInit = &FALSE, jmp L7<<
+    ..Else_If D@msg = &WM_INITDIALOG
+        move D$ShowGUIDsHandle D@hwnd
+        Call 'USER32.GetDlgItem' D@hwnd, 10
+        Call InitGUIDsView eax | On B$GUIDsInit = &FALSE, jmp L7<<
 
         If B$SourceReady = &FALSE
-            call Disable D@Adressee 100
-            call Disable D@Adressee 101
+            Call Disable D@hwnd 100
+            Call Disable D@hwnd 101
         End_If
 
-        On D$GUIDsPastingType = 0, mov D$GUIDsPastingType 101
+        On D$GUIDsPastingType = 0, Mov D$GUIDsPastingType 101
 
         If D$GUIDsPastingType = 100
-            call 'User32.SendDlgItemMessageA' D@Adressee, 100, &BM_SETCHECK, &TRUE, 0
+            Call 'User32.SendDlgItemMessageA' D@hwnd, 100, &BM_SETCHECK, &TRUE, 0
         Else
-            call 'User32.SendDlgItemMessageA' D@Adressee, 101, &BM_SETCHECK, &TRUE, 0
+            Call 'User32.SendDlgItemMessageA' D@hwnd, 101, &BM_SETCHECK, &TRUE, 0
         End_If
 
-    ..Else_If D@Message = &WM_VKEYTOITEM
+    ..Else_If D@msg = &WM_VKEYTOITEM
             If W@wParam = &VK_RETURN
                 jmp L8<<
 
@@ -1695,16 +1695,16 @@ L8:         call 'USER32.SendDlgItemMessageA' D@Adressee, 10, &LB_GETCURSEL, 0, 
 
             End_If
 
-    ..Else_If D@Message = &WM_CTLCOLORLISTBOX
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+    ..Else_If D@msg = &WM_CTLCOLORLISTBOX
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
 
     ..Else
-        popad | mov eax &FALSE | jmp L9>
+        popad | Mov eax &FALSE | jmp L9>
 
     ..End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 L9: EndP
 ____________________________________________________________________________________________
 
@@ -1721,37 +1721,37 @@ in the RosAsmFiles Directory
 ", 0]
 
 Proc InitGUIDsView:
-    Argument @Handle
+    Argument @hwnd
 
-    mov esi IncludeFileName, edi GUIDsFilePath
+    Mov esi IncludeFileName, edi GUIDsFilePath
     While B$esi <> 0 | movsb | End_While
     While B$edi-1 <> '\' | dec edi | End_While
-    mov D$GUIDsFileNamePointer edi
-    mov W$edi '*.', D$edi+2 'GUD'
+    Mov D$GUIDsFileNamePointer edi
+    Mov W$edi '*.', D$edi+2 'GUD'
 
-    call 'KERNEL32.FindFirstFileA' GUIDsFilePath, FindFile
+    Call 'KERNEL32.FindFirstFileA' GUIDsFilePath, FindFile
 
     ...If eax <> &INVALID_HANDLE_VALUE
-        call 'KERNEL32.FindClose' eax
+        Call 'KERNEL32.FindClose' eax
 
-        mov esi FindFile.cFileName, edi D$GUIDsFileNamePointer
-        While B$esi <> 0 | movsb | End_While | mov B$edi 0
+        Mov esi FindFile.cFileName, edi D$GUIDsFileNamePointer
+        While B$esi <> 0 | movsb | End_While | Mov B$edi 0
 
-        call 'KERNEL32.CreateFileA' GUIDsFilePath, &GENERIC_READ,
+        Call 'KERNEL32.CreateFileA' GUIDsFilePath, &GENERIC_READ,
                                     &FILE_SHARE_READ, 0, &OPEN_EXISTING,
                                     &FILE_ATTRIBUTE_NORMAL, 0
-        mov D$GUIDsFileHandle eax
+        Mov D$GUIDsFileHandle eax
 
-        call 'KERNEL32.GetFileSize' eax, 0 | mov D$GUIDsFileLength eax
+        Call 'KERNEL32.GetFileSize' eax, 0 | Mov D$GUIDsFileLength eax
 
         VirtualAlloc GUIDsFileMemory eax
 
-        call 'KERNEL32.ReadFile' D$GUIDsFileHandle, D$GUIDsFileMemory,
+        Call 'KERNEL32.ReadFile' D$GUIDsFileHandle, D$GUIDsFileMemory,
                                  D$GUIDsFileLength, NumberOfReadBytes, 0
 
-        call 'KERNEL32.CloseHandle' D$GUIDsFileHandle
+        Call 'KERNEL32.CloseHandle' D$GUIDsFileHandle
 
-        mov esi D$GUIDsFileMemory, edx esi | add edx D$GUIDsFileLength
+        Mov esi D$GUIDsFileMemory, edx esi | add edx D$GUIDsFileLength
 
         .While esi < edx
             .If B$esi = '['
@@ -1759,10 +1759,10 @@ Proc InitGUIDsView:
                 If B$esi = '&'
                     ;While B$esi <> '_' | inc esi | End_While |
                     inc esi
-                    mov edi TrashString
-                    While B$esi <> ':' | movsb | End_While | mov B$edi 0
+                    Mov edi TrashString
+                    While B$esi <> ':' | movsb | End_While | Mov B$edi 0
                     push edx
-                        call 'USER32.SendMessageA' D@Handle, &LB_ADDSTRING, 0, TrashString
+                        Call 'USER32.SendMessageA' D@hwnd, &LB_ADDSTRING, 0, TrashString
                     pop edx
                 End_If
             .End_If
@@ -1771,10 +1771,10 @@ Proc InitGUIDsView:
 
         .End_While
 
-        mov B$GUIDsInit &TRUE
+        Mov B$GUIDsInit &TRUE
 
     ...Else
-        call 'USER32.MessageBoxA', 0, MissingGUIDsFile, {'File not found', 0}, 0
+        Call 'USER32.MessageBoxA', 0, MissingGUIDsFile, {'File not found', 0}, 0
 
     ...End_If
 EndP
@@ -1785,25 +1785,25 @@ ________________________________________________________________________________
 Proc GetGUID:
     Argument @Length
 
-    mov D$SourceComment 0
-    mov esi D$GUIDsFileMemory, edx esi | add edx D$GUIDsFileLength
+    Mov D$SourceComment 0
+    Mov esi D$GUIDsFileMemory, edx esi | add edx D$GUIDsFileLength
 
     .While esi < edx
         .If B$esi = '['
-            mov ebx esi
+            Mov ebx esi
             inc esi
             If B$esi = '&' ;'IID_'
                 ;While B$esi <> '_' | inc esi | End_While |
                 inc esi
-                mov D$GUID_MotherNamePointer TrashString
-                mov edi TrashString, ecx D@Length | repe cmpsb | je L5>
+                Mov D$GUID_MotherNamePointer TrashString
+                Mov edi TrashString, ecx D@Length | repe cmpsb | je L5>
 
             End_If
 
         .Else_If B$esi = ';'
           ; Example: "; SOURCE FILE -> strmf.h"
             If D$esi+2 = 'SOUR'
-                On D$esi+6 = 'CE F', mov D$SourceComment esi
+                On D$esi+6 = 'CE F', Mov D$SourceComment esi
             End_If
 
         .End_If
@@ -1817,42 +1817,42 @@ Proc GetGUID:
 L5:
 
   ; ebx pointing to the wanted GUID.
-    mov esi ebx, edi Trash
+    Mov esi ebx, edi Trash
 
     If D$SourceComment <> 0
         push esi
-            mov esi D$SourceComment
+            Mov esi D$SourceComment
             While B$esi <> CR | movsb | End_While
-            mov D$edi CRLF2 | add edi 4
+            Mov D$edi CRLF2 | add edi 4
         pop esi
     End_If
 
   ; Copy the GUID Data, with the Sizes Markers:
-    mov B$edi '[' | inc edi | add esi 2
+    Mov B$edi '[' | inc edi | add esi 2
     While B$esi <> ':' | movsb | End_While | Movsb
 
-    mov D$edi ' D$ ' | add edi 4
+    Mov D$edi ' D$ ' | add edi 4
     While B$esi = ' ' | inc esi | End_While
-    call MovsbHexa
+    Call MovsbHexa
 
-    mov D$edi ' W$ ' | add edi 4
+    Mov D$edi ' W$ ' | add edi 4
     While B$esi = ' ' | inc esi | End_While
-    call MovsbHexa
+    Call MovsbHexa
 
-    mov D$edi ' W$ ' | add edi 4
+    Mov D$edi ' W$ ' | add edi 4
     While B$esi = ' ' | inc esi | End_While
-    call MovsbHexa
+    Call MovsbHexa
 
-    mov D$edi ' B$ ' | add edi 4
+    Mov D$edi ' B$ ' | add edi 4
     .While B$esi <> ']'
         While B$esi = ' ' | inc esi | End_While
-        call MovsbHexa
-        mov B$edi ' ' | inc edi
+        Call MovsbHexa
+        Mov B$edi ' ' | inc edi
     .End_While
-    mov B$edi-1 ']'
+    Mov B$edi-1 ']'
     While B$esi <> CR | inc esi | End_While
 
-    mov D$edi CRLF2 | add edi 4
+    Mov D$edi CRLF2 | add edi 4
     While B$esi <= ' '  | inc esi | End_While
 
   ; Copy the other stuff:
@@ -1860,10 +1860,10 @@ L5:
         If W$esi = '[.'
             push edx
               ; Skip the "IID_" thingies:
-                mov eax D$GUID_MotherNamePointer
+                Mov eax D$GUID_MotherNamePointer
                 While B$eax <> '_' | inc eax | End_While | inc eax
-                mov D$GUID_MotherNamePointer eax
-                call BuildGUIDvTable | call InsertGUIDsObjectHandle
+                Mov D$GUID_MotherNamePointer eax
+                Call BuildGUIDvTable | Call InsertGUIDsObjectHandle
             pop edx
         Else_If W$esi = '[&'
             jmp L5>
@@ -1874,17 +1874,17 @@ L5:
         End_If
     .End_While
 
-L5: mov B$edi 0
+L5: Mov B$edi 0
 
     push D$BlockInside, D$BlockEndTextPtr, D$BlockStartTextPtr
-        mov B$BlockInside &TRUE, D$BlockStartTextPtr Trash
-        dec edi | mov D$BlockEndTextPtr edi
+        Mov B$BlockInside &TRUE, D$BlockStartTextPtr Trash
+        dec edi | Mov D$BlockEndTextPtr edi
 
-        call ControlC
+        Call ControlC
 
         If D$GUIDsPastingType = 101
-            mov B$BlockInside &FALSE
-            call ControlV | call AskForRedrawNow
+            Mov B$BlockInside &FALSE
+            Call ControlV | Call AskForRedrawNow
         End_If
 
     pop D$BlockStartTextPtr, D$BlockEndTextPtr, D$BlockInside
@@ -1893,16 +1893,16 @@ EndP
 
 InsertGUIDsObjectHandle:
   ; Insert the Object Handle Declaration:
-    mov D$edi CRLF2 | add edi 4
+    Mov D$edi CRLF2 | add edi 4
 
-    mov B$edi '[' | inc edi
+    Mov B$edi '[' | inc edi
     push esi
-        mov esi D$GUID_MotherNamePointer
+        Mov esi D$GUID_MotherNamePointer
         ;While B$esi <> '_' | inc esi | End_While | inc esi
         While B$esi <> 0 | movsb | End_While
-        mov B$edi ':' | inc edi
+        Mov B$edi ':' | inc edi
     pop esi
-    mov D$edi ' ?]' | add edi 3
+    Mov D$edi ' ?]' | add edi 3
 ret
 ____________________________________________________________________________________________
 
@@ -1929,32 +1929,32 @@ ________________________________________________________________________________
  vTableRelease: '.Release', 0]
 
 BuildGUIDvTable:
-    mov D$GUIDDisplacementEquate 0
+    Mov D$GUIDDisplacementEquate 0
   ; Copy the '[':
     movsb
     push esi
         zCopy D$GUID_MotherNamePointer, vTableQueryInterface
-        call WriteGUIDDisplacementEquate
-        mov B$edi ' ' | inc edi
+        Call WriteGUIDDisplacementEquate
+        Mov B$edi ' ' | inc edi
         zCopy D$GUID_MotherNamePointer, vTableAddRef
-        call WriteGUIDDisplacementEquate
-        mov B$edi ' ' | inc edi
+        Call WriteGUIDDisplacementEquate
+        Mov B$edi ' ' | inc edi
         zCopy D$GUID_MotherNamePointer, vTableRelease
-        call WriteGUIDDisplacementEquate
+        Call WriteGUIDDisplacementEquate
     pop esi
 
     .While B$esi <> ']'
-        mov B$edi ' ' | inc edi
+        Mov B$edi ' ' | inc edi
         push esi | zCopy D$GUID_MotherNamePointer | pop esi
         While B$esi <> CR
-            mov al B$esi, B$edi al | inc edi | inc esi
+            Mov al B$esi, B$edi al | inc edi | inc esi
             If al = ']'
-                dec edi | call WriteGUIDDisplacementEquate
-                sub edi 2 | mov B$edi ']' | inc edi | ret
+                dec edi | Call WriteGUIDDisplacementEquate
+                sub edi 2 | Mov B$edi ']' | inc edi | ret
             End_If
         End_While
 
-        call WriteGUIDDisplacementEquate
+        Call WriteGUIDDisplacementEquate
 
         While B$esi <= ' ' | inc esi | End_While
     .End_While
@@ -1965,12 +1965,12 @@ ________________________________________________________________________________
 
 WriteGUIDDisplacementEquate:
     push ebx, edx, esi
-        mov B$edi ' ' | inc edi
-        mov eax D$GUIDDisplacementEquate
-        call WriteEax
+        Mov B$edi ' ' | inc edi
+        Mov eax D$GUIDDisplacementEquate
+        Call WriteEax
         add D$GUIDDisplacementEquate 4
     pop esi, edx, ebx
-    mov W$edi CRLF | add edi 2
+    Mov W$edi CRLF | add edi 2
 ret
 ____________________________________________________________________________________________
 

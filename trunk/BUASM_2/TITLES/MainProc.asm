@@ -52,7 +52,7 @@ ________________________________________________________________________________
 
 [CloseDebuggerOrIgnore
     If D$DebugDialogHandle <> 0
-        call KillDebugger | On eax = &IDNO, jmp L9>>
+        Call KillDebugger | On eax = &IDNO, jmp L9>>
     End_If]
 
 ; buffer for returned filename:
@@ -61,7 +61,32 @@ ________________________________________________________________________________
 ; size of buffer for filename:
 [cch: D$ &MAXPATH]
 
+[STR.A.AppName: "  BUAsm, The Bottom-Up Assembler -V.0.00.001-" EOS]
+
 Proc MainWindowProc:
+;;
+    TODO Double left-clic -> Search from Top
+
+    [TopOffCode] -> Right-clic
+    
+    [MAIN]
+    
+    AppName -> STR.A.AppName
+    H.MainWindow -> H.MainWindow
+    @Adressee -> @hwnd
+    @Handle -> @hwnd
+    @Message -> @msg
+    
+    call -> Call
+    Mov -> Mov
+    
+    Call 'MODULE.ApiName' selon convention
+    
+    Implémentation d'une partie des nouvelles Macros conventionées
+    
+    implémentation des Equates HLL et [D$HWND] etc pour éviter les transmissions via arguments 
+;;
+
 ;;
     At the attention of all RosAsm contributors ---> 'Rules'
     
@@ -81,43 +106,46 @@ Proc MainWindowProc:
   'KillTrailingSpaces', 'NewFileNameDialog', 'DataToStructureProc'
 ;;
 
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd,
+              @msg,
+              @wParam,
+              @lParam
 
     pushad
 
-    If D@Message = &WM_CREATE
-        call 'SHELL32.DragAcceptFiles' D@Adressee, &TRUE | jmp L9>>
+    If D@msg = &WM_CREATE
+        Call 'SHELL32.DragAcceptFiles' D@hwnd, &TRUE | jmp L9>>
 
-    Else_If D@Message = &WM_DROPFILES
-        call 'SHELL32.DragQueryFile' D@wParam, 0, lpszFile, D$cch
-        mov esi lpszFile, edi SaveFilter
+    Else_If D@msg = &WM_DROPFILES
+        Call 'SHELL32.DragQueryFile' D@wParam, 0, lpszFile, D$cch
+        Mov esi lpszFile, edi SaveFilter
         while B$esi <> 0 | movsb | End_While | movsb
-        call DirectLoad
-        call StartEdition
-        call ReInitUndo
-        call SetPartialEditionFromPos
-        call EnableMenutems
-        call LoadBookMarks
-        call AskForRedraw
+        Call DirectLoad
+        Call StartEdition
+        Call ReInitUndo
+        Call SetPartialEditionFromPos
+        Call EnableMenutems
+        Call LoadBookMarks
+        Call AskForRedraw
     End_If
 
-    mov eax D@Adressee
+    Mov eax D@hwnd
 
-    .If eax = D$hwnd
+    .If eax = D$H.MainWindow
         ; OK
     .Else_If eax = D$EditWindowHandle
-        mov eax D$wc_hCursor
+        Mov eax D$wc_hCursor
         If D$ActualCursor <> eax
-            mov D$ActualCursor eax
-            call 'USER32.SetClassLongA' D$EditWindowHandle, &GCL_HCURSOR, eax
+            Mov D$ActualCursor eax
+            Call 'USER32.SetClassLongA' D$EditWindowHandle, &GCL_HCURSOR, eax
         End_If
     .Else_If eax = D$ScrollWindowHandle
         ; OK
     .Else_If eax = D$BpWindowHandle
-        mov eax D$Bp_hCursor
+        Mov eax D$Bp_hCursor
         If D$ActualCursor <> eax
-            mov D$ActualCursor eax
-            call 'USER32.SetClassLongA' D$BpWindowHandle, &GCL_HCURSOR, eax
+            Mov D$ActualCursor eax
+            Call 'USER32.SetClassLongA' D$BpWindowHandle, &GCL_HCURSOR, eax
         End_If
     .Else
         jmp NoClient
@@ -129,106 +157,106 @@ Proc MainWindowProc:
 
 ; General purpose Callback:
 
-    mov eax D@Message
+    Mov eax D@msg
 
     ...If eax = &WM_KEYDOWN
         .If B$SourceReady = &TRUE
-            movzx eax B@Wparam | mov B$Keys+eax 1
+            movzx eax B@Wparam | Mov B$Keys+eax 1
 
-            call KeyMessage ; CharMessage
+            Call KeyMessage ; CharMessage
 
-            On B$BlinkingCaretWanted = &TRUE, call ResetBlinkCursor
+            On B$BlinkingCaretWanted = &TRUE, Call ResetBlinkCursor
             If B$KeyHasModifedSource = &TRUE
 
-                mov B$SourceHasChanged &TRUE
-                call AskForRedraw |
+                Mov B$SourceHasChanged &TRUE
+                Call AskForRedraw |
               jmp NotReadyToRun
            ; Else_If B$KeyHasMovedCaret = &TRUE
-           ;     call AskForRedraw
+           ;     Call AskForRedraw
             End_If
 
         .Else_If D@wParam = &VK_F1
-            call RosAsmHelp
+            Call RosAsmHelp
 
         .Else_If D@wParam = &VK_F2
-            call F2Help
+            Call F2Help
 
         .End_If
 
     ...Else_If eax = &WM_KEYUP
-        movzx eax B@Wparam | mov B$Keys+eax 0
-        On eax = &VK_MENU, mov B$keys+&VK_CONTROL &FALSE
+        movzx eax B@Wparam | Mov B$Keys+eax 0
+        On eax = &VK_MENU, Mov B$keys+&VK_CONTROL &FALSE
 
     ...Else_If eax = &WM_CLOSE
         CloseDebuggerOrIgnore
 
-        On B$OnDialogEdition = &TRUE, call CloseDialogEdition
+        On B$OnDialogEdition = &TRUE, Call CloseDialogEdition
 
-        call Security | On eax = &IDCANCEL, jmp L9>>
+        Call Security | On eax = &IDCANCEL, jmp L9>>
 
         If B$SaveMainPosFlag = &TRUE
-            call 'USER32.ShowWindow' D$hwnd, &SW_RESTORE
-            call 'USER32.GetWindowRect' D$hwnd, WindowX
-            mov eax D$WindowX | sub D$WindowW eax
-            mov eax D$WindowY | sub D$WindowH eax
-            call UpdateRegistry
+            Call 'USER32.ShowWindow' D$H.MainWindow, &SW_RESTORE
+            Call 'USER32.GetWindowRect' D$H.MainWindow, WindowX
+            Mov eax D$WindowX | sub D$WindowW eax
+            Mov eax D$WindowY | sub D$WindowH eax
+            Call UpdateRegistry
         End_If
 
-        On B$ToolBarChange = &TRUE, call SaveToolBar
+        On B$ToolBarChange = &TRUE, Call SaveToolBar
 
-        call LeftButtonUp                            ; ensure no confined mouse
-        call CloseHelp
+        Call LeftButtonUp                            ; ensure no confined mouse
+        Call CloseHelp
 
-        On D$EditedDialogHandle <> 0, call 'User32.DestroyWindow' D$EditedDialogHandle
-        On D$DialogEditorHandle <> 0 call 'User32.EndDialog' D$DialogEditorHandle
+        On D$EditedDialogHandle <> 0, Call 'User32.DestroyWindow' D$EditedDialogHandle
+        On D$DialogEditorHandle <> 0 Call 'User32.EndDialog' D$DialogEditorHandle
 
-        call 'USER32.DestroyWindow' D$hwnd | jmp L9>> ; works too with 'jmp NoClient'
+        Call 'USER32.DestroyWindow' D$H.MainWindow | jmp L9>> ; works too with 'jmp NoClient'
 
     ...Else_If eax = &WM_GETMINMAXINFO
-        mov eax D@lParam
-        mov D$eax+24 500, D$eax+28 300
-        popad | mov eax &FALSE | ExitP
+        Mov eax D@lParam
+        Mov D$eax+24 500, D$eax+28 300
+        popad | Mov eax &FALSE | ExitP
 
     ...Else_If eax = &WM_SIZE
-        On D$TitleWindowHandle > 0, call KillTitleTab
+        On D$TitleWindowHandle > 0, Call KillTitleTab
 
-        call MainResize
+        Call MainResize
 
     ...Else_If eax = &WM_MOVING
-        On D$TitleWindowHandle <> 0, call KillTitleTab
+        On D$TitleWindowHandle <> 0, Call KillTitleTab
 
     ...Else_If eax = &WM_DESTROY
-        On B$OnDialogEdition = &TRUE, call CloseDialogEdition
-        call DeleteUndoFiles | call KillUndo
-        call ReleaseResourceMemory
-        call 'User32.PostQuitMessage' 0 | jmp L9>>
+        On B$OnDialogEdition = &TRUE, Call CloseDialogEdition
+        Call DeleteUndoFiles | Call KillUndo
+        Call ReleaseResourceMemory
+        Call 'User32.PostQuitMessage' 0 | jmp L9>>
 
-    ...Else_If D@Message = &WM_NOTIFY
-        call KillCompletionList
+    ...Else_If D@msg = &WM_NOTIFY
+        Call KillCompletionList
       ; ebx > NMHDR // eax > hwndFrom.
-        mov ebx D@lParam, eax D$ebx
+        Mov ebx D@lParam, eax D$ebx
       ; ToolBar Messages:
         .If D$ebx+TOOLTIPTEXT_NMHDR_code = &TTN_NEEDTEXT
-            mov eax D$ebx+TOOLTIPTEXT_NMHDR_idfrom
+            Mov eax D$ebx+TOOLTIPTEXT_NMHDR_idfrom
           ; Pointing with esi to the Buttons List IDs:
             lea esi D$ToolBarButtons+4
-            mov ecx 0
+            Mov ecx 0
             While D$esi <> eax
                 add esi 20 | inc ecx | On ecx > TOOLBUTTONS_NUMBER, ExitP
             End_While
-            mov eax D$PointersToToolTipsStrings+ecx*4
-            mov D$ebx+TOOLTIPTEXT_lpszText eax
+            Mov eax D$PointersToToolTipsStrings+ecx*4
+            Mov D$ebx+TOOLTIPTEXT_lpszText eax
 
         .Else_If D$ebx+TOOLTIPTEXT_NMHDR_code = &TBN_QUERYINSERT ; May be inserted ?
-            popad | mov eax &TRUE | ExitP                   ; > yes for all.
+            popad | Mov eax &TRUE | ExitP                   ; > yes for all.
 
         .Else_If D$ebx+TOOLTIPTEXT_NMHDR_code = &TBN_QUERYDELETE ; May be deleted?
-                        popad | mov eax &TRUE | ExitP                   ; > yes for all.
+                        popad | Mov eax &TRUE | ExitP                   ; > yes for all.
 
         .Else_If D$ebx+TOOLTIPTEXT_NMHDR_code = &TBN_FIRST  ; = &TBN_GETBUTTONINFO (missing?)
-            mov ecx D$ebx+TB_NOTIFY_Item, edx ecx
+            Mov ecx D$ebx+TB_NOTIFY_Item, edx ecx
             If ecx a TOOLBUTTONS_NUMBER
-                popad | mov eax &FALSE | ExitP
+                popad | Mov eax &FALSE | ExitP
             End_If
             lea ecx D$ecx*4+ecx | shl ecx 2                 ; ecx = ecx * 20 >>>
             add ecx ToolBarButtons                          ; Pointer to whished Button Data
@@ -237,30 +265,30 @@ Proc MainWindowProc:
             move D$ebx+TB_NOTIFY_TBBUTTON_fsState D$ecx+8
             move D$ebx+TB_NOTIFY_TBBUTTON_dwData D$ecx+12
             move D$ebx+TB_NOTIFY_TBBUTTON_iString D$ecx+16
-            mov edi D$ebx+TB_NOTIFY_TextPtr
-            mov edx D$ebx+TB_NOTIFY_Item | shl edx 2        ; Displacement to pointers
-            mov eax PointersToToolTipsStrings | add eax edx ; Pointer
-            mov esi D$eax                                   ; Source
-            mov ecx 0-1                                     ; Counter for Non-zero-ended text
+            Mov edi D$ebx+TB_NOTIFY_TextPtr
+            Mov edx D$ebx+TB_NOTIFY_Item | shl edx 2        ; Displacement to pointers
+            Mov eax PointersToToolTipsStrings | add eax edx ; Pointer
+            Mov esi D$eax                                   ; Source
+            Mov ecx 0-1                                     ; Counter for Non-zero-ended text
             Do
                 lodsb | stosb | inc ecx
             Loop_Until al = 0
-            mov D$ebx+TB_NOTIFY_CharCount ecx               ; Lenght of String    (+36)
-            popad | mov eax &TRUE | ExitP
+            Mov D$ebx+TB_NOTIFY_CharCount ecx               ; Lenght of String    (+36)
+            popad | Mov eax &TRUE | ExitP
 
         .Else_If D$ebx+TOOLTIPTEXT_NMHDR_code = &TBN_TOOLBARCHANGE
-            mov B$ToolBarChange &TRUE                       ; For Saving at Exit if TRUE.
+            Mov B$ToolBarChange &TRUE                       ; For Saving at Exit if TRUE.
 
             ; Next instruction of no use usually, but, under some unknown circumstances
             ; the Buttons Size may be changed (Win98 without IE). So, as it can't hurt:
-            call 'USER32.SendMessageA' D$ToolBarHandle, &TB_SETBUTTONSIZE, 0, 014_0014
+            Call 'USER32.SendMessageA' D$ToolBarHandle, &TB_SETBUTTONSIZE, 0, 014_0014
 
         .Else_If D$ebx+TOOLTIPTEXT_NMHDR_code = &TBN_RESET
-            call 'USER32.SendMessageA' D$ToolBarHandle, &TB_SAVERESTORE, &FALSE,
+            Call 'USER32.SendMessageA' D$ToolBarHandle, &TB_SAVERESTORE, &FALSE,
                                     TOOLBAR_REGISTRY        ; FALSE > restore
 
         .Else_If D$ebx+TOOLTIPTEXT_NMHDR_code = &TBN_CUSTHELP
-            call 'USER32.MessageBoxA' D$hwnd, HelpToolBar, HelpToolBarTitle,
+            Call 'USER32.MessageBoxA' D$H.MainWindow, HelpToolBar, HelpToolBarTitle,
                                     &MB_OK__&MB_SYSTEMMODAL
         .End_If
 
@@ -270,304 +298,304 @@ Proc MainWindowProc:
 ; Main window CallBack: User choices open-file independant:
 
     ...Else_If eax = &WM_COMMAND
-        call KillCompletionList
+        Call KillCompletionList
 
-        mov eax D@wParam | and eax 0FFFF
+        Mov eax D@wParam | and eax 0FFFF
 
         If B$IncludesOK = &FALSE
-            call Configuration | call 'User32.SendMessageA' D$hwnd &WM_CLOSE 0 0
+            Call Configuration | Call 'User32.SendMessageA' D$H.MainWindow &WM_CLOSE 0 0
         End_If
 
         ..If eax = M00_Open
             CloseDebuggerOrIgnore
 
-            call Security | On eax = &IDCANCEL, jmp L9>>
+            Call Security | On eax = &IDCANCEL, jmp L9>>
 
-            call OpenRosAsmPE
+            Call OpenRosAsmPE
 
-            call UpdateTitlesFromIncludeFiles
+            Call UpdateTitlesFromIncludeFiles
 
             If D$SaveFilter <> 0
-                call ReInitUndo
-                call SetPartialEditionFromPos | call EnableMenutems
-                call LoadBookMarks
+                Call ReInitUndo
+                Call SetPartialEditionFromPos | Call EnableMenutems
+                Call LoadBookMarks
             End_If
 
         ..Else_If eax = M00_Open_Source_Only
             CloseDebuggerOrIgnore
 
-            call Security | On eax = &IDCANCEL, jmp L9>>
+            Call Security | On eax = &IDCANCEL, jmp L9>>
 
-            call LooseResources
+            Call LooseResources
             .If B$KeepResources = &FALSE
-                call ReInitUndo | call OpenSourceOnly
-                call UpdateTitlesFromIncludeFiles
+                Call ReInitUndo | Call OpenSourceOnly
+                Call UpdateTitlesFromIncludeFiles
                 If D$SourceLen > 0
-                    call SetPartialEditionFromPos | call EnableMenutems
-                    call LoadBookMarks
+                    Call SetPartialEditionFromPos | Call EnableMenutems
+                    Call LoadBookMarks
                 End_If
             .End_If
 
         ..Else_If eax = M00_Exit
-            call 'User32.SendMessageA' D$hwnd &WM_CLOSE 0 0
+            Call 'User32.SendMessageA' D$H.MainWindow &WM_CLOSE 0 0
 
         ..Else_If eax = M00_Sources_Editor
-            call Help, B_U_AsmName, SourceEditor, ContextHlpMessage
+            Call Help, B_U_AsmName, SourceEditor, ContextHlpMessage
 
         ..Else_If eax = M00_Main_Icon
             CloseDebuggerOrIgnore
-            call IconEdition | jmp NotReadyToRun
+            Call IconEdition | jmp NotReadyToRun
 
         ..Else_If eax = M00_New_Menu
             CloseDebuggerOrIgnore
-            call NewMenu | mov D$ActualMenutestID 0 | call EnableMenutems | jmp NotReadyToRun
+            Call NewMenu | Mov D$ActualMenutestID 0 | Call EnableMenutems | jmp NotReadyToRun
 
         ..Else_If eax = M00_Existing_Menu
             CloseDebuggerOrIgnore
-            call ExistingMenu | mov D$ActualMenutestID 0 | jmp NotReadyToRun
+            Call ExistingMenu | Mov D$ActualMenutestID 0 | jmp NotReadyToRun
 
         ..Else_If eax = M00_Delete_a_Menu
             CloseDebuggerOrIgnore
-            call DeleteMenu | mov D$ActualMenutestID 0 | call EnableMenutems | jmp NotReadyToRun
+            Call DeleteMenu | Mov D$ActualMenutestID 0 | Call EnableMenutems | jmp NotReadyToRun
 
         ..Else_If eax = M00_Save_to_Binary_Menu_File
             CloseDebuggerOrIgnore
-            call SaveMenuBinaryFile
+            Call SaveMenuBinaryFile
 
         ..Else_If eax = M00_Load_Binary_Menu_File
             CloseDebuggerOrIgnore
-            call LoadMenuBinaryFile | jmp NotReadyToRun
+            Call LoadMenuBinaryFile | jmp NotReadyToRun
 
         ..Else_If eax = M00_Replace_from_Binary_Menu_File
             CloseDebuggerOrIgnore
-            call ReplaceMenuBinaryFile | jmp NotReadyToRun
+            Call ReplaceMenuBinaryFile | jmp NotReadyToRun
 
-        ..Else_If eax = M00_About | call AboutBox
+        ..Else_If eax = M00_About | Call AboutBox
 
-        ..Else_If eax = M00_About_ToolBar | call About_ToolBar
+        ..Else_If eax = M00_About_ToolBar | Call About_ToolBar
 
-        ..Else_If eax = M00_GPL_License | call GPLView
+        ..Else_If eax = M00_GPL_License | Call GPLView
 
-        ..Else_If eax = M00_RosAsm_License | call LicenseView
+        ..Else_If eax = M00_RosAsm_License | Call LicenseView
 
-        ..Else_If eax = M00_B_U_Asm | call RosAsmHelp
+        ..Else_If eax = M00_B_U_Asm | Call RosAsmHelp
 
-        ..Else_If eax = M00_Configuration | call Configuration
+        ..Else_If eax = M00_Configuration | Call Configuration
 
-        ..Else_If eax = M00_Create_Config_bin | call Create_Config_bin
+        ..Else_If eax = M00_Create_Config_bin | Call Create_Config_bin
 
-        ..Else_If eax = M00_Api_Functions | call ViewApiList
+        ..Else_If eax = M00_Api_Functions | Call ViewApiList
 
         ..Else_If eax = M00_New
             CloseDebuggerOrIgnore
-            call Security | On eax = &IDCANCEL, jmp L9>>
-            call AutoNew
+            Call Security | On eax = &IDCANCEL, jmp L9>>
+            Call AutoNew
             and D$RelocsWanted 0 ; jE!
-            call ChangeName
+            Call ChangeName
             cmp D$SavingExtension '.DLL' | setz B$RelocsWanted ; jE! Relocs for Dll
-            call StartNewFile
+            Call StartNewFile
 
         ..Else_If eax = M00_New_Model
             CloseDebuggerOrIgnore
-            call Security | On eax = &IDCANCEL, jmp L9>>
-            call NewFileNameDialog
+            Call Security | On eax = &IDCANCEL, jmp L9>>
+            Call NewFileNameDialog
 
-        ..Else_If eax = M00_Change_Compile_Name | call ChangeName
+        ..Else_If eax = M00_Change_Compile_Name | Call ChangeName
 
-        ..Else_If eax = M00_Calc | call Calc
+        ..Else_If eax = M00_Calc | Call Calc
 
-        ..Else_If eax = M00_DLLs_Scanner | call ExportScanner
+        ..Else_If eax = M00_DLLs_Scanner | Call ExportScanner
 
-        ..Else_If eax = M00_Libs_Scanner | call LibScanner
+        ..Else_If eax = M00_Libs_Scanner | Call LibScanner
 
         ..Else_If eax = M00_New_Dialog
             CloseDebuggerOrIgnore
             If B$OnDialogEdition = &FALSE
-                mov B$SameIdAllowed &FALSE
-                On B$BlinkingCaretWanted = &TRUE, call KillBlinkCursor
-                    call InitDialogEdition | call ReleaseDialogMemories
-                On B$BlinkingCaretWanted = &TRUE, call ResetBlinkCursor
-                call EnableMenutems | jmp NotReadyToRun
+                Mov B$SameIdAllowed &FALSE
+                On B$BlinkingCaretWanted = &TRUE, Call KillBlinkCursor
+                    Call InitDialogEdition | Call ReleaseDialogMemories
+                On B$BlinkingCaretWanted = &TRUE, Call ResetBlinkCursor
+                Call EnableMenutems | jmp NotReadyToRun
             End_If
 
         ..Else_If eax = M00_Load_from_ClipBoard
             CloseDebuggerOrIgnore
             If B$OnDialogEdition = &FALSE
-                mov B$SameIdAllowed &FALSE
-                On B$BlinkingCaretWanted = &TRUE, call KillBlinkCursor
-                    call ReleaseDialogMemories | call LoadDialogFromClipBoard
-                On B$BlinkingCaretWanted = &TRUE, call ResetBlinkCursor
-                call EnableMenutems | jmp NotReadyToRun
+                Mov B$SameIdAllowed &FALSE
+                On B$BlinkingCaretWanted = &TRUE, Call KillBlinkCursor
+                    Call ReleaseDialogMemories | Call LoadDialogFromClipBoard
+                On B$BlinkingCaretWanted = &TRUE, Call ResetBlinkCursor
+                Call EnableMenutems | jmp NotReadyToRun
             End_If
 
         ..Else_If eax = M00_Load_from_File
             CloseDebuggerOrIgnore
             If B$OnDialogEdition = &FALSE
-                mov B$SameIdAllowed &FALSE
-                On B$BlinkingCaretWanted = &TRUE, call KillBlinkCursor
-                    call ReleaseDialogMemories | call LoadDialogFromFile
-                On B$BlinkingCaretWanted = &TRUE, call ResetBlinkCursor
-                call EnableMenutems | jmp NotReadyToRun
+                Mov B$SameIdAllowed &FALSE
+                On B$BlinkingCaretWanted = &TRUE, Call KillBlinkCursor
+                    Call ReleaseDialogMemories | Call LoadDialogFromFile
+                On B$BlinkingCaretWanted = &TRUE, Call ResetBlinkCursor
+                Call EnableMenutems | jmp NotReadyToRun
             End_If
 
         ..Else_If eax = M00_Load_from_Resources
             CloseDebuggerOrIgnore
             If B$OnDialogEdition = &FALSE
-                mov B$SameIdAllowed &TRUE
-                On B$BlinkingCaretWanted = &TRUE, call KillBlinkCursor
-                    call ReleaseDialogMemories | call LoadFromResources
-                On B$BlinkingCaretWanted = &TRUE, call ResetBlinkCursor
+                Mov B$SameIdAllowed &TRUE
+                On B$BlinkingCaretWanted = &TRUE, Call KillBlinkCursor
+                    Call ReleaseDialogMemories | Call LoadFromResources
+                On B$BlinkingCaretWanted = &TRUE, Call ResetBlinkCursor
                 jmp NotReadyToRun
             End_If
 
         ..Else_If eax = M00_Save_to_Binary_File
             CloseDebuggerOrIgnore
-            call SaveToBinaryFile
+            Call SaveToBinaryFile
 
         ..Else_If eax = M00_Load_from_Binary_File
             CloseDebuggerOrIgnore
-            mov B$SameIdAllowed &TRUE
-            call LoadFromBinaryFile | call EnableMenutems | jmp NotReadyToRun
+            Mov B$SameIdAllowed &TRUE
+            Call LoadFromBinaryFile | Call EnableMenutems | jmp NotReadyToRun
 
         ..Else_If eax = M00_Replace_from_Binary_File
             CloseDebuggerOrIgnore
-            call ReplaceFromBinaryFile | jmp NotReadyToRun
+            Call ReplaceFromBinaryFile | jmp NotReadyToRun
 
         ..Else_If eax = M00_Delete_Resources_Dialog
             CloseDebuggerOrIgnore
-            On B$BlinkingCaretWanted = &TRUE, call KillBlinkCursor
-                call DeleteDialog | call EnableMenutems
-            On B$BlinkingCaretWanted = &TRUE, call ResetBlinkCursor
+            On B$BlinkingCaretWanted = &TRUE, Call KillBlinkCursor
+                Call DeleteDialog | Call EnableMenutems
+            On B$BlinkingCaretWanted = &TRUE, Call ResetBlinkCursor
             jmp NotReadyToRun
 
         ..Else_If eax = M00_Load_BitMap
             CloseDebuggerOrIgnore
-            call LoadBitMap | call EnableMenutems | jmp NotReadyToRun
+            Call LoadBitMap | Call EnableMenutems | jmp NotReadyToRun
 
         ..Else_If eax = M00_Delete_BitMap
             CloseDebuggerOrIgnore
-            call DeleteBitMap | call EnableMenutems | jmp NotReadyToRun
+            Call DeleteBitMap | Call EnableMenutems | jmp NotReadyToRun
 
-        ..Else_If eax = M00_BitMaps_IDs | call ShowBitMapsIds
+        ..Else_If eax = M00_BitMaps_IDs | Call ShowBitMapsIds
 
         ..Else_If eax = M00_Load_Wave
             CloseDebuggerOrIgnore
-            call ReadWaveFile | call EnableMenutems | jmp NotReadyToRun
+            Call ReadWaveFile | Call EnableMenutems | jmp NotReadyToRun
 
         ..Else_If eax = M00_Delete_Wave
             CloseDebuggerOrIgnore
-            call DeleteWave | call EnableMenutems | jmp NotReadyToRun
+            Call DeleteWave | Call EnableMenutems | jmp NotReadyToRun
 
         ..Else_If eax = M00_Load_Avi
             CloseDebuggerOrIgnore
-            call ReadAviFile | call EnableMenutems | jmp NotReadyToRun
+            Call ReadAviFile | Call EnableMenutems | jmp NotReadyToRun
 
         ..Else_If eax = M00_Delete_Avi
             CloseDebuggerOrIgnore
-            call DeleteAviFile | call EnableMenutems | jmp NotReadyToRun
+            Call DeleteAviFile | Call EnableMenutems | jmp NotReadyToRun
 
         ..Else_If eax = M00_Load_RC
             CloseDebuggerOrIgnore
-            call ReadRcData | call EnableMenutems | jmp NotReadyToRun
+            Call ReadRcData | Call EnableMenutems | jmp NotReadyToRun
 
         ..Else_If eax = M00_Save_RC
             CloseDebuggerOrIgnore
-            call SaveRcData | jmp NotReadyToRun
+            Call SaveRcData | jmp NotReadyToRun
 
         ..Else_If eax = M00_Delete_RC
             CloseDebuggerOrIgnore
-            call DeleteRcData | call EnableMenutems | jmp NotReadyToRun
+            Call DeleteRcData | Call EnableMenutems | jmp NotReadyToRun
 
-        ..Else_If eax = M00_Ascii_Table | call AsciiTable
+        ..Else_If eax = M00_Ascii_Table | Call AsciiTable
 
-        ..Else_If eax = M00_Win32_hlp | call Win32_Hlp
+        ..Else_If eax = M00_Win32_hlp | Call Win32_Hlp
 
-        ..Else_If eax = M00_Mmedia_hlp | call Mmedia_Hlp
+        ..Else_If eax = M00_Mmedia_hlp | Call Mmedia_Hlp
 
-        ..Else_If eax = M00_OpenGl_hlp | call OpenGl_Hlp
+        ..Else_If eax = M00_OpenGl_hlp | Call OpenGl_Hlp
 
-        ..Else_If eax = M00_WinSock_hlp | call WinSock_Hlp
+        ..Else_If eax = M00_WinSock_hlp | Call WinSock_Hlp
 
-        ..Else_If eax = M00_Dx_hlp | call Dx_Hlp
+        ..Else_If eax = M00_Dx_hlp | Call Dx_Hlp
 
-        ..Else_If eax = M00_SDL | call SDL_hlp
+        ..Else_If eax = M00_SDL | Call SDL_hlp
 
-        ..Else_If eax = M00_sqlite | call sqlite_Hlp
+        ..Else_If eax = M00_sqlite | Call sqlite_Hlp
 
-        ..Else_If eax = M00_DevIl | call DevIL_Hlp
+        ..Else_If eax = M00_DevIl | Call DevIL_Hlp
 
-        ..Else_If eax = M00_Win32_Data_Types | call ShowTypes
+        ..Else_If eax = M00_Win32_Data_Types | Call ShowTypes
 
-        ..Else_If eax = M00_Win32_Equates | call ShowEquates
+        ..Else_If eax = M00_Win32_Equates | Call ShowEquates
 
         ..Else_If eax = M00_Strings
             CloseDebuggerOrIgnore
-            call StringsResources | jmp NotReadyToRun
+            Call StringsResources | jmp NotReadyToRun
 
         ..Else_If eax = M00_Load_Cursor
             CloseDebuggerOrIgnore
-            call ReadCursor | call EnableMenutems | jmp NotReadyToRun
+            Call ReadCursor | Call EnableMenutems | jmp NotReadyToRun
 
         ..Else_If eax = M00_Delete_Cursor
             CloseDebuggerOrIgnore
-            call DeleteCursor | call EnableMenutems | jmp NotReadyToRun
+            Call DeleteCursor | Call EnableMenutems | jmp NotReadyToRun
 
         ..Else_If eax = M00_Load_Icon
             CloseDebuggerOrIgnore
-            call ReadIcon | call EnableMenutems | jmp NotReadyToRun
+            Call ReadIcon | Call EnableMenutems | jmp NotReadyToRun
 
         ..Else_If eax = M00_Delete_Icon
             CloseDebuggerOrIgnore
-            call DeleteIcon | call EnableMenutems | jmp NotReadyToRun
+            Call DeleteIcon | Call EnableMenutems | jmp NotReadyToRun
 
-        ..Else_If eax = M00_Clip_File | call Templates
-           ; call SetQwordCheckSum String2
+        ..Else_If eax = M00_Clip_File | Call Templates
+           ; Call SetQwordCheckSum String2
 
-        ..Else_If eax = M00_Data_to_Equates | call DataToStructure
+        ..Else_If eax = M00_Data_to_Equates | Call DataToStructure
 
-        ..Else_If eax = M00_Structures | call StructDialog
+        ..Else_If eax = M00_Structures | Call StructDialog
 
-        ..Else_If eax = M00_Sys_Resources | call ViewSysResources
+        ..Else_If eax = M00_Sys_Resources | Call ViewSysResources
 
-        ..Else_If eax = M00_GUIDs | call ViewGUIDs
+        ..Else_If eax = M00_GUIDs | Call ViewGUIDs
 
-        ..Else_If eax = M00_Show_RosAsm_Mems | call ViewRosAsmMems
+        ..Else_If eax = M00_Show_RosAsm_Mems | Call ViewRosAsmMems
 
-        ..Else_If eax = M00_Show_Symbols_Repartition | call TestRepartition
+        ..Else_If eax = M00_Show_Symbols_Repartition | Call TestRepartition
 
-        ..Else_If eax = M00_Local_mem_Tests | call TestLocals
+        ..Else_If eax = M00_Local_mem_Tests | Call TestLocals
 
-        ..Else_If eax = M00_Serial_Compilations | call MultipleCompileTests
+        ..Else_If eax = M00_Serial_Compilations | Call MultipleCompileTests
 
         ..Else_If eax = M00_Encoding
             CloseDebuggerOrIgnore
 
-            call ViewEncoding
+            Call ViewEncoding
 
             jmp NotReadyToRun
 
         ..Else
             .If eax > 6999                      ; Clip Files
-                call Templates
+                Call Templates
 
             .Else_If eax > 5999                  ; Wizards
                 CloseDebuggerOrIgnore
 
                 On B$SourceReady = &FALSE,
-                    call 'USER32.SendMessageA', D$hwnd, &WM_COMMAND, M00_New, 0
+                    Call 'USER32.SendMessageA', D$H.MainWindow, &WM_COMMAND, M00_New, 0
 
-                On B$SourceReady = &TRUE, call NewWizardForm
+                On B$SourceReady = &TRUE, Call NewWizardForm
 
             .Else_If eax > 4999                  ; Visual Tuts
                 If eax < 5100
-                   call VisualTuts
+                   Call VisualTuts
                 Else
                     jmp L5>>
                 End_If
 
             .Else_If eax > 3999             ; Added FloatMenu under [Struct].
                 If eax < 4010
-                    mov D$MenuID eax | call StructDialog ; OpenStructureFile
+                    Mov D$MenuID eax | Call StructDialog ; OpenStructureFile
                 Else
                     jmp L5>>
                 End_If
@@ -576,20 +604,20 @@ Proc MainWindowProc:
                 If eax < 3005
                     CloseDebuggerOrIgnore
                     push eax
-                        call Security       ; 'Security' also uses eax as return Value.
+                        Call Security       ; 'Security' also uses eax as return Value.
                     pop ebx
                     On eax = &IDCANCEL, jmp L9>>
-                        mov eax ebx         ; ... and 'LoadRMUfile' as input.
-                        call LoadRMUfile
+                        Mov eax ebx         ; ... and 'LoadRMUfile' as input.
+                        Call LoadRMUfile
                         On eax = &FALSE, jmp L5>
-                        call SetPartialEditionFromPos
-                        call LoadBookMarks | call EnableMenutems | call LoadBookMarks
+                        Call SetPartialEditionFromPos
+                        Call LoadBookMarks | Call EnableMenutems | Call LoadBookMarks
                 Else
                     jmp L5>
                 End_If
             .Else_If eax > 1999             ; User defined menu:
                 If eax < 2009
-                    mov eax D@wParam | call UserDefinedAction
+                    Mov eax D@wParam | Call UserDefinedAction
                 Else
                     jmp L5>
                 End_If
@@ -602,43 +630,43 @@ Proc MainWindowProc:
     ...End_If
 
 L5: If B$SourceReady = &FALSE
-        On D@Message = &WM_PAINT, call SplashScreen
+        On D@msg = &WM_PAINT, Call SplashScreen
         jmp NoClient
     End_If
  __________________________________________
 
  ; Main window CallBack going on: With opened file only:
 
-    mov eax D@Message
+    Mov eax D@msg
 
     ...If eax = &WM_PAINT
         .If D$CodeSource > 0
-            call TextPos
-            mov eax D@Adressee
+            Call TextPos
+            Mov eax D@hwnd
             If eax = D$EditWindowHandle
-                call PrintColorText
+                Call PrintColorText
             Else_If eax = D$BpWindowHandle
-                call PrintBp
+                Call PrintBp
             End_If
 
             If B$MovingBlock = &TRUE
-                call SetBlock | call AskForRedraw
+                Call SetBlock | Call AskForRedraw
             End_If
 
-            call StatusBar
+            Call StatusBar
 
-            mov B$RedrawFlag &FALSE
+            Mov B$RedrawFlag &FALSE
         .End_If
 
-        mov eax D$EditWindowHandle | On D@Adressee <> eax, jmp NoClient
+        Mov eax D$EditWindowHandle | On D@hwnd <> eax, jmp NoClient
 
     ...Else_If eax = &WM_CHAR
         ..If B$RedrawFlag = &FALSE
-            mov B$RedrawFlag &TRUE
+            Mov B$RedrawFlag &TRUE
 
-            call CharMessage D@wParam | or B$SourceHasChanged al
+            Call CharMessage D@wParam | or B$SourceHasChanged al
 
-            call AskForRedraw | jmp NotReadyToRun
+            Call AskForRedraw | jmp NotReadyToRun
         ..End_If
 ;;
    Note from Betov: This 'WM_IME_CHAR' case and according Routine have been implemented
@@ -663,172 +691,172 @@ L5: If B$SourceReady = &FALSE
         .If B$RedrawFlag = &FALSE
             CloseDebuggerOrIgnore
 
-            mov B$RedrawFlag &TRUE
-            mov eax D@Wparam | call InsertDoubleByte | call AskForRedraw
+            Mov B$RedrawFlag &TRUE
+            Mov eax D@Wparam | Call InsertDoubleByte | Call AskForRedraw
             jmp NotReadyToRun
         .End_If
 
     ...Else_If eax = &WM_MOUSEWHEEL
-        mov eax D@wParam | call WheelMsg | call KillCompletionList
+        Mov eax D@wParam | Call WheelMsg | Call KillCompletionList
 
     ...Else_If eax = &WM_XBUTTONDOWN
         ..If W@Wparam+2 = &XBUTTON1
-            mov B$BlockInside &FALSE
-            call RestoreRealSource | call BackClick | call SetPartialEditionFromPos
+            Mov B$BlockInside &FALSE
+            Call RestoreRealSource | Call BackClick | Call SetPartialEditionFromPos
 
         ..Else_If W@Wparam+2 = &XBUTTON2
-            mov B$BlockInside &FALSE
-            call RestoreRealSource | call ForwardClick | call SetPartialEditionFromPos
+            Mov B$BlockInside &FALSE
+            Call RestoreRealSource | Call ForwardClick | Call SetPartialEditionFromPos
         ..End_If
 
-        popad | mov eax &TRUE | ExitP
+        popad | Mov eax &TRUE | ExitP
 
     ...Else_If eax = &WM_COMMAND
-        mov eax D@Wparam | and eax 0FFFF
+        Mov eax D@Wparam | and eax 0FFFF
 
         ..If eax = M00_<<<<_
-            mov B$BlockInside &FALSE
-            call RestoreRealSource | call BackClick | call SetPartialEditionFromPos
+            Mov B$BlockInside &FALSE
+            Call RestoreRealSource | Call BackClick | Call SetPartialEditionFromPos
 
         ..Else_If eax = M00_>>>>_
-            mov B$BlockInside &FALSE
-            call RestoreRealSource | call ForwardClick | call SetPartialEditionFromPos
+            Mov B$BlockInside &FALSE
+            Call RestoreRealSource | Call ForwardClick | Call SetPartialEditionFromPos
 
         ..Else_If eax = M00_Compile
-            mov D$ShowStats &TRUE
-            call Compile
+            Mov D$ShowStats &TRUE
+            Call Compile
 
         ..Else_If eax = M00_Run
-            call Run
+            Call Run
 
         ..Else_If eax = M00_Optimize_Jumps_Sizes
-            call Optimize
+            Call Optimize
 
-       ; ..Else_If eax = M00_Profile | call Profiler
+       ; ..Else_If eax = M00_Profile | Call Profiler
 
         ..Else_If eax = M00_Paste_at_Pos
             On D$IsDebugging = &TRUE, jmp L9>>
-            call RestoreRealSource | call IncludeSource | call SetPartialEditionFromPos
-            mov B$SourceHasChanged &TRUE, B$FirstBlockDraw &FALSE
-            call SetCaret D$CurrentWritingPos
+            Call RestoreRealSource | Call IncludeSource | Call SetPartialEditionFromPos
+            Mov B$SourceHasChanged &TRUE, B$FirstBlockDraw &FALSE
+            Call SetCaret D$CurrentWritingPos
 
         ..Else_If eax = M00_Find
-            mov D$NextSearchPos 0 | call SetSimpleSearchBox
+            Mov D$NextSearchPos 0 | Call SetSimpleSearchBox
 
         ..Else_If eax = M00_Replace
-            mov D$NextSearchPos 0 | On D$IsDebugging = &FALSE, call SetFindReplaceBox
+            Mov D$NextSearchPos 0 | On D$IsDebugging = &FALSE, Call SetFindReplaceBox
 
         ..Else_If eax = M00_Undo
-            call ControlZ
+            Call ControlZ
 
         ..Else_If eax = M00_Redo
-            call ControlShiftZ
+            Call ControlShiftZ
 
         ..Else_If eax = M00_Copy
-            call ControlC
+            Call ControlC
 
         ..Else_If eax = M00_Paste
-            call ControlV | call AskForRedraw
+            Call ControlV | Call AskForRedraw
 
         ..Else_If eax = M00_Delete
-            call ControlD | call AskForRedraw
+            Call ControlD | Call AskForRedraw
 
         ..Else_If eax = M00_Cut
-            call ControlX | call AskForRedraw
+            Call ControlX | Call AskForRedraw
 
         ..Else_If eax = M00_Save_Source_only
-            call ControlS
+            Call ControlS
 
         ..Else_If eax = M00_Replace_Source_Only
             On D$IsDebugging = &TRUE, jmp L9>>
-            call ReInitUndoOnly
-            call ReplaceSourceOnly
-            call UpdateTitlesFromIncludeFiles
-            On D$SourceLen > 0, call SetPartialEditionFromPos
+            Call ReInitUndoOnly
+            Call ReplaceSourceOnly
+            Call UpdateTitlesFromIncludeFiles
+            On D$SourceLen > 0, Call SetPartialEditionFromPos
 
         ..Else_If eax = M00_Tree
-            call CreateTreeViewList | call SetTreeDialogPos
+            Call CreateTreeViewList | Call SetTreeDialogPos
 
         ..Else_If eax = M00_Import
-           call ShowSourceImports
+           Call ShowSourceImports
 
         ..Else_If eax = M00_Export
-           call ShowSourceExports
+           Call ShowSourceExports
 
-        ..Else_If eax = M00_Print | call Print
+        ..Else_If eax = M00_Print | Call Print
 
         ..Else_If eax = Float_Copy
-            call CopyFromFloatMenu | call AskForRedraw
-            call 'USER32.DestroyMenu' D$FloatHandle
+            Call CopyFromFloatMenu | Call AskForRedraw
+            Call 'USER32.DestroyMenu' D$FloatHandle
 
         ..Else_If eax = Float_Delete
-            call ControlX | call AskForRedraw
-            call 'USER32.DestroyMenu' D$FloatHandle
+            Call ControlX | Call AskForRedraw
+            Call 'USER32.DestroyMenu' D$FloatHandle
 
         ..Else_If eax = Float_Replace
-            call ControlD | call ControlV | call AskForRedraw
-            call 'USER32.DestroyMenu' D$FloatHandle
+            Call ControlD | Call ControlV | Call AskForRedraw
+            Call 'USER32.DestroyMenu' D$FloatHandle
 
         ..Else_If eax = Float_SearchUp
-            call RestoreRealSource
-            call StorePosInBackTable | call SearchUpFromFloatMenu
-            call SetPartialEditionFromPos
-            call 'USER32.DestroyMenu' D$FloatHandle
+            Call RestoreRealSource
+            Call StorePosInBackTable | Call SearchUpFromFloatMenu
+            Call SetPartialEditionFromPos
+            Call 'USER32.DestroyMenu' D$FloatHandle
 
         ..Else_If eax = Float_SearchDown
-            call RestoreRealSource
-            call StorePosInBackTable | call SearchDownFromFloatMenu
-            call SetPartialEditionFromPos
-            call 'USER32.DestroyMenu' D$FloatHandle
+            Call RestoreRealSource
+            Call StorePosInBackTable | Call SearchDownFromFloatMenu
+            Call SetPartialEditionFromPos
+            Call 'USER32.DestroyMenu' D$FloatHandle
 
         ..Else_If eax = Float_SearchFromTop
-            call RestoreRealSource
-            call StorePosInBackTable | call SearchFromTopFromFloatMenu
-            call SetPartialEditionFromPos
-            call 'USER32.DestroyMenu' D$FloatHandle
+            Call RestoreRealSource
+            Call StorePosInBackTable | Call SearchFromTopFromFloatMenu
+            Call SetPartialEditionFromPos
+            Call 'USER32.DestroyMenu' D$FloatHandle
 
         ..Else_If eax = Float_Unfold
-            call 'USER32.DestroyMenu' D$FloatHandle
-            call RestoreRealSource | call ShowUnfoldMacro | call SetPartialEditionFromPos
+            Call 'USER32.DestroyMenu' D$FloatHandle
+            Call RestoreRealSource | Call ShowUnfoldMacro | Call SetPartialEditionFromPos
 
-        ..Else_If eax = Float_BookMark | call StoreBookMark
-            call 'USER32.DestroyMenu' D$FloatHandle
+        ..Else_If eax = Float_BookMark | Call StoreBookMark
+            Call 'USER32.DestroyMenu' D$FloatHandle
 
-        ..Else_If eax = Float_UnBookMark | call DeleteBookMark
-            call 'USER32.DestroyMenu' D$FloatHandle
+        ..Else_If eax = Float_UnBookMark | Call DeleteBookMark
+            Call 'USER32.DestroyMenu' D$FloatHandle
 
-        ..Else_If eax = Float_Number | call ViewClickedNumber
-            call 'USER32.DestroyMenu' D$FloatHandle
+        ..Else_If eax = Float_Number | Call ViewClickedNumber
+            Call 'USER32.DestroyMenu' D$FloatHandle
 
         ..Else_If eax = Float_SelReplace
-            call 'USER32.DestroyMenu' D$FloatHandle | call BlockReplaceAll
+            Call 'USER32.DestroyMenu' D$FloatHandle | Call BlockReplaceAll
 
         ..Else_If eax = FloatSetBp
-            call 'USER32.DestroyMenu' D$FloatHandle
-            call SetBreakPoint | call DoStoreBP | jmp NotReadyToRun
+            Call 'USER32.DestroyMenu' D$FloatHandle
+            Call SetBreakPoint | Call DoStoreBP | jmp NotReadyToRun
 
         ..Else_If eax = FloatDelBp
-            call 'USER32.DestroyMenu' D$FloatHandle
-            call DeleteBreakPoint | call DoStoreRemoveBP | jmp NotReadyToRun
+            Call 'USER32.DestroyMenu' D$FloatHandle
+            Call DeleteBreakPoint | Call DoStoreRemoveBP | jmp NotReadyToRun
 
         ..Else_If eax = FloatDelAllBp
-            call 'USER32.DestroyMenu' D$FloatHandle
-            call DeleteAllBreakpoints | jmp NotReadyToRun
+            Call 'USER32.DestroyMenu' D$FloatHandle
+            Call DeleteAllBreakpoints | jmp NotReadyToRun
 
         ..Else_If eax = Float_BadDisLabel
-            call 'USER32.DestroyMenu' D$FloatHandle
-            call ForcedFlags
+            Call 'USER32.DestroyMenu' D$FloatHandle
+            Call ForcedFlags
 
         ..Else_If eax = M00_Output
-            call OutputFormat | call EnableMenutems | jmp NotReadyToRun
+            Call OutputFormat | Call EnableMenutems | jmp NotReadyToRun
 
         ..End_If
 
     ...Else_If eax = &WM_SETCURSOR
-        mov eax D@wParam
+        Mov eax D@wParam
         .If eax = D$StatusBarHandle
             If D$TitleWindowHandle = 0
-                call ShowTitles
+                Call ShowTitles
             End_If
         .End_If
 
@@ -836,83 +864,83 @@ L5: If B$SourceReady = &FALSE
 
     ...Else_If eax = &WM_MOUSEMOVE
         .If D$TitleWindowHandle > 0
-            mov ebx D$TabWindowY
-            On W@lParam+2 < bx, call KillTitleTab
+            Mov ebx D$TabWindowY
+            On W@lParam+2 < bx, Call KillTitleTab
         .End_If
 
         If D@Wparam <> &MK_LBUTTON                          ; Is the Left Button Down?
-            call 'USER32.ClipCursor' &NULL | jmp NoClient
+            Call 'USER32.ClipCursor' &NULL | jmp NoClient
         End_If
 
         On B$UserHaveClickDown = &FALSE, jmp NoClient
             On B$UserClickAfterEnd = &TRUE, jmp NoClient
                 push D@Lparam | pop W$MousePosX, W$MousePosY
 
-                call SetBlock
+                Call SetBlock
 
                 If B$FirstBlockDraw = &FALSE
-                    On B$BlockRedraw = &TRUE, call AskForRedrawNow
+                    On B$BlockRedraw = &TRUE, Call AskForRedrawNow
                 End_If
 
     ...Else_If eax = &WM_LBUTTONDOWN
-        mov B$ShiftBlockInside &FALSE
+        Mov B$ShiftBlockInside &FALSE
 
-        call KillCompletionList
+        Call KillCompletionList
 
-        On B$BlinkingCaretWanted = &TRUE, call ResetBlinkCursor
+        On B$BlinkingCaretWanted = &TRUE, Call ResetBlinkCursor
         push D@Lparam | pop W$MousePosX, W$MousePosY
 
-        mov B$BlockInside &FALSE, eax D@Adressee | call LeftButton
+        Mov B$BlockInside &FALSE, eax D@hwnd | Call LeftButton
 
-        call AskForRedrawNow
-        mov D$NextSearchPos 0, B$UserHaveClickDown &TRUE
+        Call AskForRedrawNow
+        Mov D$NextSearchPos 0, B$UserHaveClickDown &TRUE
 
     ...Else_If eax = &WM_LBUTTONUP
-        On B$BlinkingCaretWanted = &TRUE, call ResetBlinkCursor
-        On B$FirstBlockDraw = &TRUE, mov B$BlockInside &FALSE
-        call LeftButtonUp | mov B$UserHaveClickDown &FALSE | call AskForRedrawNow
+        On B$BlinkingCaretWanted = &TRUE, Call ResetBlinkCursor
+        On B$FirstBlockDraw = &TRUE, Mov B$BlockInside &FALSE
+        Call LeftButtonUp | Mov B$UserHaveClickDown &FALSE | Call AskForRedrawNow
 
     ...Else_If eax = &WM_RBUTTONUP
-        call KillCompletionList
-        On B$BlinkingCaretWanted = &TRUE, call ResetBlinkCursor
+        Call KillCompletionList
+        On B$BlinkingCaretWanted = &TRUE, Call ResetBlinkCursor
 
-        mov eax D@Adressee
+        Mov eax D@hwnd
         .If eax = D$BpWindowHandle
             If D$DBPMenuOn = RIGHT_CLICK_ACTION
-                mov B$ShiftBlockInside &FALSE
+                Mov B$ShiftBlockInside &FALSE
 
-                call KillCompletionList
+                Call KillCompletionList
 
-                On B$BlinkingCaretWanted = &TRUE, call ResetBlinkCursor
-                call RestoreRealSource
+                On B$BlinkingCaretWanted = &TRUE, Call ResetBlinkCursor
+                Call RestoreRealSource
                     push D@Lparam | pop W$MousePosX, W$MousePosY
-                    call MarginRightClick
-                call SetPartialEditionFromPos
+                    Call MarginRightClick
+                Call SetPartialEditionFromPos
             End_If
 
             jmp NoClient
         .End_If
 
-        call RestoreRealSource
+        Call RestoreRealSource
             push D@Lparam | pop W$MousePosX, W$MousePosY
-            call RightClick
-        call SetPartialEditionFromPos
+            Call RightClick
+        Call SetPartialEditionFromPos
 
     ...Else_If eax = &WM_LBUTTONDBLCLK
-        mov B$ShiftBlockInside &FALSE
+        Mov B$ShiftBlockInside &FALSE
 
-        call KillCompletionList
+        Call KillCompletionList
 
-        On B$BlinkingCaretWanted = &TRUE, call ResetBlinkCursor
-        call RestoreRealSource
+        On B$BlinkingCaretWanted = &TRUE, Call ResetBlinkCursor
+        Call RestoreRealSource
             push D@Lparam | pop W$MousePosX, W$MousePosY
-            call DoubleClick
-        call SetPartialEditionFromPos
+            Call DoubleClick
+        Call SetPartialEditionFromPos
 
     ...Else_If eax = D$FindStringMessage
-        call KillCompletionList
+        Call KillCompletionList
 
-        call StringSearch | call AskForRedraw
+        Call StringSearch | Call AskForRedraw
 
     ...Else
         jmp NoClient
@@ -920,20 +948,20 @@ L5: If B$SourceReady = &FALSE
     ...End_If
  ____________________________________
 
-L9: popad | mov eax &FALSE | jmp P9>>
+L9: popad | Mov eax &FALSE | jmp P9>>
 
 L7: ; NotReadyToRun:
     .If B$ReadyToRun = &TRUE         ; (Something has just been modified).
-        mov B$ReadyToRun &FALSE
+        Mov B$ReadyToRun &FALSE
         VirtualFree D$IpTable, D$StatementsTable, D$StatementsTable2
     .End_If
 
-    mov B$SourceHasChanged &TRUE
+    Mov B$SourceHasChanged &TRUE
 
-    popad | mov eax &FALSE | jmp P9>
+    popad | Mov eax &FALSE | jmp P9>
 
 L8: ; NoClient:
-    popad | call 'User32.DefWindowProcA' D@Adressee D@Message D@wParam D@lParam
+    popad | Call 'User32.DefWindowProcA' D@hwnd D@msg D@wParam D@lParam
 EndP
 
 ____________________________________________________________________________________________
@@ -943,87 +971,87 @@ Compile:
             On B$Compiling = &TRUE, ret
             On D$IsDebugging = &TRUE, ret
         Else
-            mov D$ShowStats &FALSE
+            Mov D$ShowStats &FALSE
         End_If
 
-        mov B$RecompileWanted &FALSE, B$Compiling &TRUE
-        call RestoreRealSource
+        Mov B$RecompileWanted &FALSE, B$Compiling &TRUE
+        Call RestoreRealSource
 
-        On D$UnusedCodeAndDataDialogHandle <> 0, call ReInitUnusedDialog
+        On D$UnusedCodeAndDataDialogHandle <> 0, Call ReInitUnusedDialog
 
-        call AsmMain | mov D$OldStackPointer 0
+        Call AsmMain | Mov D$OldStackPointer 0
 
         If B$CompileErrorHappend = &FALSE
-            mov B$ReadyToRun &TRUE, B$SourceHasChanged &FALSE
+            Mov B$ReadyToRun &TRUE, B$SourceHasChanged &FALSE
         End_If
 
-        call SetPartialEditionFromPos
-        call AskForRedraw
+        Call SetPartialEditionFromPos
+        Call AskForRedraw
 
-        mov B$Compiling &FALSE | call ResetKeys
+        Mov B$Compiling &FALSE | Call ResetKeys
 ret
 
 
 Run:
     If D$UnusedCodeAndDataDialogHandle <> &FALSE
       ; 'UnusedCodeAndDataDialogCallBack'
-        call 'USER32.EndDialog' D$UnusedCodeAndDataDialogHandle, 0
-        mov D$UnusedCodeAndDataDialogHandle 0
-        mov B$Compiling &FALSE, B$UnusedSymbolsDialogWanted &FALSE, B$ShowStats &FALSE
-        mov B$UnusedSymbolsDialogWanted &FALSE
+        Call 'USER32.EndDialog' D$UnusedCodeAndDataDialogHandle, 0
+        Mov D$UnusedCodeAndDataDialogHandle 0
+        Mov B$Compiling &FALSE, B$UnusedSymbolsDialogWanted &FALSE, B$ShowStats &FALSE
+        Mov B$UnusedSymbolsDialogWanted &FALSE
     End_If
 
     On B$Compiling = &TRUE, ret
     On D$IsDebugging = &TRUE, ret
 
-    mov B$ShowStats &FALSE, B$Compiling &TRUE, B$RecompileWanted &FALSE
+    Mov B$ShowStats &FALSE, B$Compiling &TRUE, B$RecompileWanted &FALSE
 
-    call RestoreRealSource
+    Call RestoreRealSource
 
     If B$ReadyToRun = &FALSE
-        mov B$ShowStats &FALSE
-        call AsmMain
-        mov D$OldStackPointer 0
-        mov D$UnusedSymbolsDialogWanted &FALSE
+        Mov B$ShowStats &FALSE
+        Call AsmMain
+        Mov D$OldStackPointer 0
+        Mov D$UnusedSymbolsDialogWanted &FALSE
 
-        On B$CompileErrorHappend = &FALSE, mov B$ReadyToRun &TRUE
+        On B$CompileErrorHappend = &FALSE, Mov B$ReadyToRun &TRUE
     End_If
 
-    call SetPartialEditionFromPos
+    Call SetPartialEditionFromPos
 
     If B$CompileErrorHappend = &FALSE
-        mov B$SourceHasChanged &FALSE
-        call Debugger
+        Mov B$SourceHasChanged &FALSE
+        Call Debugger
     End_If
 
-    mov B$Compiling &FALSE | call ResetKeys
+    Mov B$Compiling &FALSE | Call ResetKeys
 ret
 
 
 Optimize:
-    mov B$AlignFound &FALSE
+    Mov B$AlignFound &FALSE
 
     If D$UnusedCodeAndDataDialogHandle <> &FALSE
       ; 'UnusedCodeAndDataDialogCallBack'
-        call 'USER32.EndDialog' D$UnusedCodeAndDataDialogHandle, 0
-        mov D$UnusedCodeAndDataDialogHandle 0
-        mov B$Compiling &FALSE, B$UnusedSymbolsDialogWanted &FALSE, B$ShowStats &FALSE
+        Call 'USER32.EndDialog' D$UnusedCodeAndDataDialogHandle, 0
+        Mov D$UnusedCodeAndDataDialogHandle 0
+        Mov B$Compiling &FALSE, B$UnusedSymbolsDialogWanted &FALSE, B$ShowStats &FALSE
     End_If
 
     If B$ReadyToRun = &FALSE
-        mov D$ShowStats &FALSE
-        call Compile
+        Mov D$ShowStats &FALSE
+        Call Compile
     End_If
 
     .If B$ReadyToRun = &TRUE
         If B$AlignFound = &TRUE
-            call 'USER32.MessageBoxA' &NULL, NoptimizeMessage,
+            Call 'USER32.MessageBoxA' &NULL, NoptimizeMessage,
                                       NoptimizeTitle, &MB_SYSTEMMODAL
         Else
-            mov B$ShortenJumpsWanted &TRUE
-            mov D$ShowStats &TRUE
-            call Compile
-            mov B$ShortenJumpsWanted &FALSE
+            Mov B$ShortenJumpsWanted &TRUE
+            Mov D$ShowStats &TRUE
+            Call Compile
+            Mov B$ShortenJumpsWanted &FALSE
         End_If
     .End_If
 ret
@@ -1037,52 +1065,52 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 Proc ScrollBarProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     On B$SourceReady = &FALSE, jmp L8>>
 
     pushad
 
-    ...If D@Message = &WM_VSCROLL
-        call KillCompletionList
+    ...If D@msg = &WM_VSCROLL
+        Call KillCompletionList
 
-        call 'USER32.IsMenu' D$FloatHandle
+        Call 'USER32.IsMenu' D$FloatHandle
         ..If eax = &FALSE
             .If W@wParam = &SB_THUMBTRACK
                 If D$TotalNumberOfLines < 0FFFF
                     movzx edx W@wParam+2
                 Else
-                    call 'USER32.GetScrollInfo' D$ScrollWindowHandle, &SB_VERT, VScroll
-                    mov edx D$VScroll.nTrackPos
+                    Call 'USER32.GetScrollInfo' D$ScrollWindowHandle, &SB_VERT, VScroll
+                    Mov edx D$VScroll.nTrackPos
                 End_If
-                call RePosFromScroll
+                Call RePosFromScroll
 
             .Else_If W@wParam = &SB_LINEDOWN    ; SB > ScrollBar.
-                call DownOneLine
+                Call DownOneLine
 
             .Else_If W@wParam = &SB_LINEUP
-                call UpOneLine
+                Call UpOneLine
 
             .Else_If W@wParam = &SB_PAGEDOWN
-                mov ecx D$LineNumber
-L4:             push ecx | call DownOneLine | pop ecx | loop L4<
+                Mov ecx D$LineNumber
+L4:             push ecx | Call DownOneLine | pop ecx | loop L4<
 
             .Else_If W@wParam = &SB_PAGEUP
-                mov ecx D$LineNumber
-L0:             call UpOneLine | loop L0<
+                Mov ecx D$LineNumber
+L0:             Call UpOneLine | loop L0<
 
             .End_If
-            call AskForRedraw
+            Call AskForRedraw
         ..End_If
 
-        popad | mov eax &FALSE | ExitP
+        popad | Mov eax &FALSE | ExitP
 
      ...End_If
 
-     On D$TitleWindowHandle > 0, call KillTitleTab
+     On D$TitleWindowHandle > 0, Call KillTitleTab
 
     popad
-L8: call 'User32.DefWindowProcA' D@Adressee D@Message D@wParam D@lParam
+L8: Call 'User32.DefWindowProcA' D@hwnd D@msg D@wParam D@lParam
 EndP
 
 ____________________________________________________________________________________________
@@ -1092,20 +1120,20 @@ ________________________________________________________________________________
 QuitMessage: 'Source has changed. Save/Compile now?', 0]
 
 Security:
-    mov eax &IDNO
+    Mov eax &IDNO
 
     On D$CodeSource = 0, ret
 
     ...If B$SecurityWanted = &TRUE
         ..If B$SourceHasChanged = &TRUE
-            call 'MessageBoxA' D$hwnd, QuitMessage, QuitTitle, &MB_YESNOCANCEL
+            Call 'MessageBoxA' D$H.MainWindow, QuitMessage, QuitTitle, &MB_YESNOCANCEL
             .If eax = &IDYES
-                call RestoreRealSource
-                call AsmMain | mov D$OldStackPointer 0
+                Call RestoreRealSource
+                Call AsmMain | Mov D$OldStackPointer 0
                 If B$CompileErrorHappend = &FALSE
-                    mov B$ReadyToRun &TRUE, B$SourceHasChanged &FALSE, eax &IDNO
+                    Mov B$ReadyToRun &TRUE, B$SourceHasChanged &FALSE, eax &IDNO
                 Else
-                    call SetPartialEditionFromPos | mov eax &IDCANCEL
+                    Call SetPartialEditionFromPos | Mov eax &IDCANCEL
                 End_If
             .End_if
         ..End_If
@@ -1119,20 +1147,20 @@ ________________________________________________________________________________
 Proc CharMessage:
     Argument @wParam
 
-    mov eax D@wParam | On eax = &VK_ESCAPE, ExitP
+    Mov eax D@wParam | On eax = &VK_ESCAPE, ExitP
 
     On B$keys+&VK_CONTROL = &TRUE, jmp L2>>
 
     .If D$DebugDialogHandle <> 0
         push eax
-        call KillDebugger
+        Call KillDebugger
             If eax = &IDNO
-                mov eax &FALSE | ExitP
+                Mov eax &FALSE | ExitP
             End_If
         pop eax
     .End_If
 
-    move D$OldBlockInside D$BlockInside | mov B$BlockInside &FALSE
+    move D$OldBlockInside D$BlockInside | Mov B$BlockInside &FALSE
 
     If B$WriteCheckerWanted = &TRUE
         cmp eax 32 | je L1>
@@ -1141,90 +1169,90 @@ Proc CharMessage:
         cmp eax 8 | je L1>
        ; cmp eax ':' | je L1>
         cmp eax Tab | jne L0>
-L1:     call WriteChecker D$CurrentWritingPos, eax
+L1:     Call WriteChecker D$CurrentWritingPos, eax
     End_If
 
 L0: cmp eax CR | jne L1>
         If D$CompletionListHandle <> 0
-            call ToCompletionList CR | ExitP
+            Call ToCompletionList CR | ExitP
         End_If
-        call CarriageReturn | jmp P8>>
+        Call CarriageReturn | jmp P8>>
 L1: cmp eax 8 | jne L1>
-        call BackSpace | jmp P8>>
+        Call BackSpace | jmp P8>>
 L1: cmp al 167 | jne L1>   ; 167 = Paragraph Char (no more available).
-        On B$DollarOnly = &TRUE, mov al '$'
-L1: mov B$SimulatedBlock &FALSE
+        On B$DollarOnly = &TRUE, Mov al '$'
+L1: Mov B$SimulatedBlock &FALSE
     cmp B$keys+&VK_SHIFT &TRUE | jne L1>
-        On B$OldBlockInside = &FALSE, call SimulateBlockForBackIndent
+        On B$OldBlockInside = &FALSE, Call SimulateBlockForBackIndent
 L1: cmp B$OldBlockInside &TRUE | jne L1>
         cmp al Tab | jne L1>
-            call IsItBlockIndent
+            Call IsItBlockIndent
             .If B$SimulatedBlock = &TRUE
-                mov B$BlockInside &FALSE
-                mov esi D$CurrentWritingPos
+                Mov B$BlockInside &FALSE
+                Mov esi D$CurrentWritingPos
                 If B$esi-1 = LF
-                    call StartOfLine
+                    Call StartOfLine
                 Else
-                    call StartOfLine | call AskForRedrawNow | call StartOfLine
+                    Call StartOfLine | Call AskForRedrawNow | Call StartOfLine
                 End_If
             .End_If
             On B$BlockIndent = &TRUE, jmp P8>>
 L1: ;mov D$OldBlockInside &FALSE
     cmp B$Overwrite &TRUE | jne L1>
-        call OverwriteSource | jmp P8>>
-L1:     call InsertSource | jmp P8>>
+        Call OverwriteSource | jmp P8>>
+L1:     Call InsertSource | jmp P8>>
 
-L2: call GetCtrlKeyState
+L2: Call GetCtrlKeyState
 
     .If eax = 03
-        call ControlC | mov eax &FALSE
+        Call ControlC | Mov eax &FALSE
     .Else_If eax = 016
         ;mov B$BlockInside &FALSE
-        call ControlV | mov eax &TRUE
-        mov B$BlockInside &FALSE
+        Call ControlV | Mov eax &TRUE
+        Mov B$BlockInside &FALSE
     .Else_If eax = 018
-        call ControlX | mov eax &TRUE
+        Call ControlX | Mov eax &TRUE
     .Else_If eax = 04
-        call ControlD | mov eax &TRUE
+        Call ControlD | Mov eax &TRUE
     .Else_If eax = 01A
         If B$Keys+&VK_SHIFT = &TRUE
-            call ControlShiftZ | mov eax &FALSE ; ??? What use is this, here ???
+            Call ControlShiftZ | Mov eax &FALSE ; ??? What use is this, here ???
         Else
-            call ControlZ | mov eax &TRUE  ; ???
+            Call ControlZ | Mov eax &TRUE  ; ???
         End_If
     .Else_If eax = 1
-        call ControlA | mov eax &FALSE
+        Call ControlA | Mov eax &FALSE
     .Else_If eax = 010
-        call ControlP | mov eax &FALSE
+        Call ControlP | Mov eax &FALSE
     .Else_If eax = 012
-        mov D$NextSearchPos 0 | call SetFindReplaceBox
-        mov B$keys+&VK_CONTROL &FALSE, eax &TRUE
+        Mov D$NextSearchPos 0 | Call SetFindReplaceBox
+        Mov B$keys+&VK_CONTROL &FALSE, eax &TRUE
     .Else_If eax = 013
-        call ControlS | mov eax &FALSE
-        mov B$keys+&VK_CONTROL &FALSE
+        Call ControlS | Mov eax &FALSE
+        Mov B$keys+&VK_CONTROL &FALSE
     .Else_If eax = 0B
-        call ControlK | mov eax &FALSE
-        mov B$keys+&VK_CONTROL &FALSE
+        Call ControlK | Mov eax &FALSE
+        Mov B$keys+&VK_CONTROL &FALSE
     .Else_If eax = 06
-        mov D$NextSearchPos 0 | call SetSimpleSearchBox
-        mov B$keys+&VK_CONTROL &FALSE
-        mov eax &FALSE
-        mov B$keys+&VK_CONTROL &FALSE
+        Mov D$NextSearchPos 0 | Call SetSimpleSearchBox
+        Mov B$keys+&VK_CONTROL &FALSE
+        Mov eax &FALSE
+        Mov B$keys+&VK_CONTROL &FALSE
     .Else_If eax = 019
         If B$CtrlYFlag = &TRUE
-            call ControlY | mov eax &TRUE
+            Call ControlY | Mov eax &TRUE
         End_If
     .Else_If eax = 020
-        On B$Underline = &TRUE, call Completion
-        mov eax &TRUE
-        mov B$keys+&VK_CONTROL &FALSE
+        On B$Underline = &TRUE, Call Completion
+        Mov eax &TRUE
+        Mov B$keys+&VK_CONTROL &FALSE
     .Else
-        mov eax &FALSE
+        Mov eax &FALSE
     .End_If
 
-    push eax | call CheckCtrlKeyState | pop eax | mov D$OldBlockInside &FALSE | ExitP
+    push eax | Call CheckCtrlKeyState | pop eax | Mov D$OldBlockInside &FALSE | ExitP
 
-P8: mov D$OldBlockInside &FALSE, eax &TRUE
+P8: Mov D$OldBlockInside &FALSE, eax &TRUE
 EndP
 ____________________________________________________________________________________________
 
@@ -1234,15 +1262,15 @@ ________________________________________________________________________________
 
 GetCtrlKeyState:
     push eax
-        call 'USER32.GetKeyState' &VK_CONTROL
-        and eax 0FFFF | mov D$CtrlKeyState eax
+        Call 'USER32.GetKeyState' &VK_CONTROL
+        and eax 0FFFF | Mov D$CtrlKeyState eax
     pop eax
 ret
 
 
 CheckCtrlKeyState:
-    call 'USER32.GetKeyState' &VK_CONTROL | and eax 0_FFFF
-    On eax <> D$CtrlKeyState, mov B$keys+&VK_CONTROL &FALSE
+    Call 'USER32.GetKeyState' &VK_CONTROL | and eax 0_FFFF
+    On eax <> D$CtrlKeyState, Mov B$keys+&VK_CONTROL &FALSE
 ret
 ____________________________________________________________________________________________
 
@@ -1250,15 +1278,15 @@ ________________________________________________________________________________
 
 SimulateBlockForBackIndent:
     push esi
-        mov esi D$CurrentWritingPos
+        Mov esi D$CurrentWritingPos
         While B$esi-1 <> LF | dec esi | End_While
-        mov D$BlockStartTextPtr esi
+        Mov D$BlockStartTextPtr esi
 
-        mov esi D$CurrentWritingPos
+        Mov esi D$CurrentWritingPos
         While B$esi <> CR | inc esi | End_While | dec esi
-        mov D$BlockEndTextPtr esi
+        Mov D$BlockEndTextPtr esi
 
-        mov B$OldBlockInside &TRUE, B$SimulatedBlock &TRUE
+        Mov B$OldBlockInside &TRUE, B$SimulatedBlock &TRUE
     pop esi
 ret
 
@@ -1266,10 +1294,10 @@ ret
 [BlockIndent: ?]
 
 IsItBlockIndent:
-    mov B$BlockIndent &FALSE
+    Mov B$BlockIndent &FALSE
 
   ; Verify that the Block includes a start of Line (accept non included Labels):
-    mov esi D$BlockStartTextPtr
+    Mov esi D$BlockStartTextPtr
     While B$esi <> LF
         dec esi
         If B$esi = ':'
@@ -1280,7 +1308,7 @@ IsItBlockIndent:
     End_While
 
   ; Verify that the Block is not empty:
-L2: mov esi D$BlockStartTextPtr
+L2: Mov esi D$BlockStartTextPtr
     While esi < D$BlockEndTextPtr
         On B$esi > ' ', jmp L2>
         inc esi
@@ -1288,7 +1316,7 @@ L2: mov esi D$BlockStartTextPtr
     jmp L9>>
 
   ; Verify that the last selected line is complete (does not stop before CRLF):
-L2: mov esi D$BlockEndTextPtr
+L2: Mov esi D$BlockEndTextPtr
 
     While W$esi+1 <> CRLF
         On esi < D$BlockStartTextPtr, jmp L9>>
@@ -1299,14 +1327,14 @@ L2: mov esi D$BlockEndTextPtr
   ; Insert or retrieve as many Tab as Lines (but preserve Labels):
 L2: On B$keys+&VK_SHIFT = &TRUE, jmp RetrieveBlockIndent
 
-L2: mov esi D$BlockStartTextPtr, B$FirstBlockLine &TRUE
+L2: Mov esi D$BlockStartTextPtr, B$FirstBlockLine &TRUE
 
     ..While esi < D$BlockEndTextPtr
       ; Go to Start of Line:
-        mov ebx esi | While B$ebx <> LF | dec ebx | End_While
+        Mov ebx esi | While B$ebx <> LF | dec ebx | End_While
       ; Go to Start of first member, and save in eax:
         While B$ebx <= ' ' | inc ebx | End_While
-        mov eax ebx
+        Mov eax ebx
         .While B$ebx > ' '
             inc ebx
             If B$ebx = ':'
@@ -1315,52 +1343,52 @@ L2: mov esi D$BlockStartTextPtr, B$FirstBlockLine &TRUE
                     inc ebx | On B$ebx = CR, jmp L8>>
                 End_While
           ; New Start of first memeber if first one was a label:
-            mov eax ebx
+            Mov eax ebx
             End_If
         .End_While
       ; eax > real first member to move. Adjust Block Start if necessary:
         If B$FirstBlockLine = &TRUE
-            mov D$BlockStartTextPtr eax
-            mov B$FirstBlockLine &FALSE
+            Mov D$BlockStartTextPtr eax
+            Mov B$FirstBlockLine &FALSE
         End_If
         push eax, D$SourceLen
-            call SetCaret eax | dec D$CaretRow | move D$PhysicalCaretRow D$CaretRow
-            mov al Tab | call InsertSourceOnBlockIndent
+            Call SetCaret eax | dec D$CaretRow | move D$PhysicalCaretRow D$CaretRow
+            Mov al Tab | Call InsertSourceOnBlockIndent
         pop ecx, esi
       ; Next Line:
         While B$esi <> CR | inc esi | End_While | inc esi
-        mov eax D$SourceLen | sub eax ecx | add D$BlockEndTextPtr eax
+        Mov eax D$SourceLen | sub eax ecx | add D$BlockEndTextPtr eax
     ..End_While
 
-    mov eax D$BlockStartTextPtr
+    Mov eax D$BlockStartTextPtr
     While B$eax = ' ' | inc eax | End_While
-    mov D$BlockStartTextPtr eax
+    Mov D$BlockStartTextPtr eax
 
-    call SetCaret D$BlockEndTextPtr | mov B$RightScroll 0
+    Call SetCaret D$BlockEndTextPtr | Mov B$RightScroll 0
 
   ; 'KeyMessage'
   ;  move D$ShiftBlockCol D$CaretRow
   ;  move D$ShiftBlockLine D$CaretLine
   ;  move D$PhysicalCaretRow D$CaretRow
-  ;  mov D$CaretEndOfLine &TRUE
-  ;  call KeyMessage
+  ;  Mov D$CaretEndOfLine &TRUE
+  ;  Call KeyMessage
 
-L8: mov B$BlockIndent &TRUE, B$BlockInside &TRUE
+L8: Mov B$BlockIndent &TRUE, B$BlockInside &TRUE
 L9: ret
 
 
 [FirstBlockLine: ?    NewCaretBlockPos: ?]
 
 RetrieveBlockIndent:
-    mov B$BlockIndent &TRUE, D$NewCaretBlockPos 0
+    Mov B$BlockIndent &TRUE, D$NewCaretBlockPos 0
   ; Are there enough free Spaces to be deleted on each Line? If not, abort:
-    mov esi D$BlockStartTextPtr
+    Mov esi D$BlockStartTextPtr
     ..While esi < D$BlockEndTextPtr
       ; Go to Start of Line:
-        mov ebx esi | While B$ebx <> LF | dec ebx | End_While
+        Mov ebx esi | While B$ebx <> LF | dec ebx | End_While
       ; Go to Start of first member, and save in eax:
         While B$ebx <= ' ' | inc ebx | End_While
-        mov eax ebx
+        Mov eax ebx
       ; If Label, jmp over it:
         .While B$ebx > ' '
             inc ebx
@@ -1370,13 +1398,13 @@ RetrieveBlockIndent:
                     inc ebx | On B$ebx = CR, jmp L8>>
                 End_While
               ; New Start of first memeber if first one was a label:
-                mov eax ebx
+                Mov eax ebx
             End_If
         .End_While
 
       ; eax > now real first member to move. Are there enough Spaces in front of it?
         push eax
-            mov ecx D$TabIs
+            Mov ecx D$TabIs
 L0:         dec eax
             If B$eax <> ' '
                 pop eax | jmp L8>>
@@ -1388,13 +1416,13 @@ L0:         dec eax
     ..End_While
 
   ; OK, enough Spaces on each Line > Delete:
-    mov esi D$BlockStartTextPtr, B$FirstBlockLine &TRUE
+    Mov esi D$BlockStartTextPtr, B$FirstBlockLine &TRUE
     ..While esi < D$BlockEndTextPtr
       ; Go to Start of Line:
-        mov ebx esi | While B$ebx <> LF | dec ebx | End_While
+        Mov ebx esi | While B$ebx <> LF | dec ebx | End_While
       ; Go to Start of first member, and save in eax:
         While B$ebx <= ' ' | inc ebx | End_While
-        mov eax ebx
+        Mov eax ebx
         .While B$ebx > ' '
             inc ebx
             If B$ebx = ':'
@@ -1403,20 +1431,20 @@ L0:         dec eax
                     inc ebx | On B$ebx = CR, jmp L8>>
                 End_While
               ; New Start of first member if first one was a label:
-                mov eax ebx
+                Mov eax ebx
             End_If
         .End_While
       ; eax > real first member to move:
-        On D$NewCaretBlockPos = 0, mov D$NewCaretBlockPos eax
+        On D$NewCaretBlockPos = 0, Mov D$NewCaretBlockPos eax
 
         If B$FirstBlockLine = &TRUE
-            mov D$BlockStartTextPtr eax, B$FirstBlockLine &FALSE
+            Mov D$BlockStartTextPtr eax, B$FirstBlockLine &FALSE
         End_If
         push eax, D$SourceLen
-            call SetCaret eax | dec D$CaretRow | move D$PhysicalCaretRow D$CaretRow
-            mov ecx D$TabIs
+            Call SetCaret eax | dec D$CaretRow | move D$PhysicalCaretRow D$CaretRow
+            Mov ecx D$TabIs
 L0:         push ecx
-                mov al Tab | call BackSpace | dec D$BlockEndTextPtr
+                Mov al Tab | Call BackSpace | dec D$BlockEndTextPtr
             pop ecx | loop L0<
         pop ecx, esi
       ; Next Line:
@@ -1424,15 +1452,15 @@ L0:         push ecx
         While B$esi <> CR | inc esi | End_While | inc esi
     ..End_While
 
-    mov eax D$TabIs | sub D$BlockStartTextPtr eax
-    mov eax D$NewCaretBlockPos | sub eax D$TabIs | dec eax | call SetCaret eax
+    Mov eax D$TabIs | sub D$BlockStartTextPtr eax
+    Mov eax D$NewCaretBlockPos | sub eax D$TabIs | dec eax | Call SetCaret eax
 
    ; move D$ShiftBlockCol D$CaretRow
    ; move D$ShiftBlockLine D$CaretLine
    ; move D$PhysicalCaretRow D$CaretRow
-   ; mov D$CaretEndOfLine &FALSE
+   ; Mov D$CaretEndOfLine &FALSE
 
-L8: mov B$BlockIndent &TRUE, B$BlockInside &TRUE
+L8: Mov B$BlockIndent &TRUE, B$BlockInside &TRUE
 L9: ret
 
 
@@ -1446,7 +1474,7 @@ L9: ret
 KeyMessage:
     On B$SourceReady = &FALSE, ret
 
-    mov B$KeyHasModifedSource &FALSE, B$KeyHasMovedCaret &FALSE
+    Mov B$KeyHasModifedSource &FALSE, B$KeyHasMovedCaret &FALSE
 
     ..If B$BlockInside = &TRUE
         .If B$ShiftBlockInside = &TRUE
@@ -1454,94 +1482,94 @@ KeyMessage:
                 move D$CaretRow D$ShiftBlockCol
                 move D$CaretLine D$ShiftBlockLine
                 move D$PhysicalCaretRow D$CaretRow
-                mov D$CaretEndOfLine &FALSE
+                Mov D$CaretEndOfLine &FALSE
             End_If
         .Else
-            mov D$ShiftDown 0
+            Mov D$ShiftDown 0
         .End_If
     ..End_If
 
   ; Under some configurations, it appears that [Atl-Gr] (Right [Alt]), may generate
   ; a Key Down Message not followed by a Key Up message, for the Control Key... So:
     ...If B$keys+&VK_MENU = &TRUE
-        mov B$keys+&VK_MENU &FALSE, B$keys+&VK_CONTROL &FALSE
+        Mov B$keys+&VK_MENU &FALSE, B$keys+&VK_CONTROL &FALSE
 
     ...Else_If B$keys+&VK_CONTROL = &TRUE
         .If B$keys+&VK_PGDN = &TRUE
-            call FullDown | mov B$BlockInside &FALSE
-            mov B$KeyHasMovedCaret &TRUE
+            Call FullDown | Mov B$BlockInside &FALSE
+            Mov B$KeyHasMovedCaret &TRUE
             If B$keys+&VK_SHIFT = &TRUE
-                call AskForRedrawNow | jmp L1>>
+                Call AskForRedrawNow | jmp L1>>
             End_If
 
-            On B$ShiftBlockInside = &TRUE, mov B$BlockInside &FALSE, B$ShiftBlockInside &FALSE
+            On B$ShiftBlockInside = &TRUE, Mov B$BlockInside &FALSE, B$ShiftBlockInside &FALSE
 
         .Else_If B$keys+&VK_PGUP = &TRUE
-            call FullUp | mov B$BlockInside &FALSE
-            mov B$KeyHasMovedCaret &TRUE
+            Call FullUp | Mov B$BlockInside &FALSE
+            Mov B$KeyHasMovedCaret &TRUE
             If B$keys+&VK_SHIFT = &TRUE
-                call AskForRedrawNow | jmp L1>>
+                Call AskForRedrawNow | jmp L1>>
             End_If
 
-            On B$ShiftBlockInside = &TRUE, mov B$BlockInside &FALSE, B$ShiftBlockInside &FALSE
+            On B$ShiftBlockInside = &TRUE, Mov B$BlockInside &FALSE, B$ShiftBlockInside &FALSE
 
         .Else_If B$keys+&VK_LEFT = &TRUE
-            call StartOfWord | mov B$KeyHasMovedCaret &TRUE
+            Call StartOfWord | Mov B$KeyHasMovedCaret &TRUE
             If B$keys+&VK_SHIFT = &TRUE
-                call AskForRedrawNow | jmp L1>>
+                Call AskForRedrawNow | jmp L1>>
             End_If
 
-            On B$ShiftBlockInside = &TRUE, mov B$BlockInside &FALSE, B$ShiftBlockInside &FALSE
-            mov B$keys+&VK_LEFT &FALSE
+            On B$ShiftBlockInside = &TRUE, Mov B$BlockInside &FALSE, B$ShiftBlockInside &FALSE
+            Mov B$keys+&VK_LEFT &FALSE
 
         .Else_If B$keys+&VK_RIGHT = &TRUE
-            call EndOfWord | mov B$KeyHasMovedCaret &TRUE
+            Call EndOfWord | Mov B$KeyHasMovedCaret &TRUE
             If B$keys+&VK_SHIFT = &TRUE
-                call AskForRedrawNow | jmp L1>>
+                Call AskForRedrawNow | jmp L1>>
             End_If
 
-            On B$ShiftBlockInside = &TRUE, mov B$BlockInside &FALSE, B$ShiftBlockInside &FALSE
-            mov B$keys+&VK_RIGHT &FALSE
+            On B$ShiftBlockInside = &TRUE, Mov B$BlockInside &FALSE, B$ShiftBlockInside &FALSE
+            Mov B$keys+&VK_RIGHT &FALSE
 
         .Else_If B$keys+&VK_DOWN = &TRUE
-            call DownOneLine | mov B$KeyHasMovedCaret &TRUE
+            Call DownOneLine | Mov B$KeyHasMovedCaret &TRUE
             If B$keys+&VK_SHIFT = &TRUE
-                call AskForRedrawNow | jmp L1>>
+                Call AskForRedrawNow | jmp L1>>
             End_If
 
-            On B$ShiftBlockInside = &TRUE, mov B$BlockInside &FALSE, B$ShiftBlockInside &FALSE
-            mov B$keys+&VK_DOWN &FALSE
+            On B$ShiftBlockInside = &TRUE, Mov B$BlockInside &FALSE, B$ShiftBlockInside &FALSE
+            Mov B$keys+&VK_DOWN &FALSE
 
         .Else_If B$keys+&VK_UP = &TRUE
-            call UpOneLine | mov B$KeyHasMovedCaret &TRUE
+            Call UpOneLine | Mov B$KeyHasMovedCaret &TRUE
             If B$keys+&VK_SHIFT = &TRUE
-                call AskForRedrawNow | jmp L1>>
+                Call AskForRedrawNow | jmp L1>>
             End_If
 
-            On B$ShiftBlockInside = &TRUE, mov B$BlockInside &FALSE, B$ShiftBlockInside &FALSE
-            mov B$keys+&VK_UP &FALSE
+            On B$ShiftBlockInside = &TRUE, Mov B$BlockInside &FALSE, B$ShiftBlockInside &FALSE
+            Mov B$keys+&VK_UP &FALSE
 
         .Else_If B$keys+&VK_DELETE = &TRUE
             On D$DebugDialogHandle <> 0, ret
-            call ControlD | mov B$keys+&VK_DELETE &FALSE, B$KeyHasModifedSource &TRUE
+            Call ControlD | Mov B$keys+&VK_DELETE &FALSE, B$KeyHasModifedSource &TRUE
 
         .Else_If B$keys+&VK_INSERT = &TRUE
             On D$DebugDialogHandle <> 0, ret
-            call ControlC | mov B$keys+&VK_INSERT &FALSE, B$KeyHasModifedSource &TRUE
+            Call ControlC | Mov B$keys+&VK_INSERT &FALSE, B$KeyHasModifedSource &TRUE
 
         .Else_If B$keys+&VK_BACK = &TRUE
             On D$DebugDialogHandle <> 0, ret
-            call ControlX | mov B$keys+&VK_BACK &FALSE, B$KeyHasModifedSource &TRUE
-            mov B$RedrawFlag &TRUE
+            Call ControlX | Mov B$keys+&VK_BACK &FALSE, B$KeyHasModifedSource &TRUE
+            Mov B$RedrawFlag &TRUE
           ; This 'RedrawFlag' is to kill the next coming WM_CHAR holding
           ; ([Ctrl][Back] sends a char).
 
         .Else_If B$keys+&VK_F4 = &TRUE
-            call RestoreRealSource
-                call SetCaret D$CurrentWritingPos
-                mov eax 0, ebx D$CaretLine | call MarginAction
-            call SetPartialEditionFromPos
-            mov B$keys+&VK_F4 0
+            Call RestoreRealSource
+                Call SetCaret D$CurrentWritingPos
+                Mov eax 0, ebx D$CaretLine | Call MarginAction
+            Call SetPartialEditionFromPos
+            Mov B$keys+&VK_F4 0
 
         .Else
             On B$keys+&VK_SHIFT = &TRUE, jmp L1>
@@ -1552,393 +1580,393 @@ KeyMessage:
 
     ...Else_If B$keys+&VK_SHIFT = &TRUE
 L1:     .If B$keys+&VK_LEFT = &TRUE
-            call SetPhysicalCaretRow
-            On B$keys+&VK_CONTROL = &FALSE, call KeyLeft
+            Call SetPhysicalCaretRow
+            On B$keys+&VK_CONTROL = &FALSE, Call KeyLeft
             If D$ShiftDown <> 0
-                call SetShiftBlock
+                Call SetShiftBlock
             Else
-                mov B$BlockInside &FALSE
+                Mov B$BlockInside &FALSE
             End_If
-            mov B$KeyHasMovedCaret &TRUE
+            Mov B$KeyHasMovedCaret &TRUE
             move D$PhysicalCaretRow D$CaretRow
 
         .Else_If B$keys+&VK_RIGHT = &TRUE
-            On B$keys+&VK_CONTROL = &FALSE, call KeyRight
+            On B$keys+&VK_CONTROL = &FALSE, Call KeyRight
             If D$ShiftDown <> 0
-                call SetShiftBlock
+                Call SetShiftBlock
             Else
-                mov B$BlockInside &FALSE
+                Mov B$BlockInside &FALSE
             End_If
-            mov B$KeyHasMovedCaret &TRUE
+            Mov B$KeyHasMovedCaret &TRUE
 
         .Else_If B$keys+&VK_UP = &TRUE
-            On B$keys+&VK_CONTROL = &FALSE, call KeyUp
+            On B$keys+&VK_CONTROL = &FALSE, Call KeyUp
             If D$ShiftDown <> 0
-                call SetShiftBlock
+                Call SetShiftBlock
             Else
-                mov B$BlockInside &FALSE
+                Mov B$BlockInside &FALSE
             End_If
-            mov B$KeyHasMovedCaret &TRUE
+            Mov B$KeyHasMovedCaret &TRUE
 
         .Else_If B$keys+&VK_DOWN = &TRUE
-            On B$keys+&VK_CONTROL = &FALSE, call KeyDown
+            On B$keys+&VK_CONTROL = &FALSE, Call KeyDown
             If D$ShiftDown <> 0
-                call SetShiftBlock
+                Call SetShiftBlock
             Else
-                mov B$BlockInside &FALSE
+                Mov B$BlockInside &FALSE
             End_If
-            mov B$KeyHasMovedCaret &TRUE
+            Mov B$KeyHasMovedCaret &TRUE
 
         .Else_If B$keys+&VK_PGUP = &TRUE
-            On B$keys+&VK_CONTROL = &FALSE, call OnlyOnePageUp
+            On B$keys+&VK_CONTROL = &FALSE, Call OnlyOnePageUp
             If D$ShiftDown <> 0
-                call SetShiftBlock
+                Call SetShiftBlock
             Else
-                mov B$BlockInside &FALSE
+                Mov B$BlockInside &FALSE
             End_If
-            mov B$KeyHasMovedCaret &TRUE
+            Mov B$KeyHasMovedCaret &TRUE
 
         .Else_If B$keys+&VK_PGDN = &TRUE
-            On B$keys+&VK_CONTROL = &FALSE, call OnlyOnePageDown
+            On B$keys+&VK_CONTROL = &FALSE, Call OnlyOnePageDown
             If D$ShiftDown <> 0
-                call SetShiftBlock
+                Call SetShiftBlock
             Else
-                mov B$BlockInside &FALSE
+                Mov B$BlockInside &FALSE
             End_If
-            mov B$KeyHasMovedCaret &TRUE
+            Mov B$KeyHasMovedCaret &TRUE
 
         .Else_If B$keys+&VK_HOME = &TRUE
-            call StartOfLine
+            Call StartOfLine
             If D$ShiftDown <> 0
-                call SetShiftBlock
+                Call SetShiftBlock
             Else
-                mov B$BlockInside &FALSE
+                Mov B$BlockInside &FALSE
             End_If
-            mov B$KeyHasMovedCaret &TRUE
+            Mov B$KeyHasMovedCaret &TRUE
 
         .Else_If B$keys+&VK_END = &TRUE
-            call EndOfLine
+            Call EndOfLine
             If D$ShiftDown <> 0
-                call SetShiftBlock
+                Call SetShiftBlock
             Else
-                mov B$BlockInside &FALSE
+                Mov B$BlockInside &FALSE
             End_If
-            mov B$KeyHasMovedCaret &TRUE
+            Mov B$KeyHasMovedCaret &TRUE
 
         .Else_If B$keys+&VK_INSERT = &TRUE
             On D$DebugDialogHandle <> 0, ret
-            call ControlV | mov B$keys+&VK_INSERT &FALSE, B$KeyHasModifedSource &TRUE
+            Call ControlV | Mov B$keys+&VK_INSERT &FALSE, B$KeyHasModifedSource &TRUE
 
         .Else_If B$keys+&VK_DELETE = &TRUE
             On D$DebugDialogHandle <> 0, ret
-            call ControlX | mov B$keys+&VK_DELETE &FALSE, B$KeyHasModifedSource &TRUE
+            Call ControlX | Mov B$keys+&VK_DELETE &FALSE, B$KeyHasModifedSource &TRUE
 
         .Else_If B$keys+&VK_F4 = &TRUE
-            call RestoreRealSource
-                call SetCaret D$CurrentWritingPos
-                mov eax 0, ebx D$CaretLine | call MarginAction
-            call SetPartialEditionFromPos
-            mov B$keys+&VK_F4 0
+            Call RestoreRealSource
+                Call SetCaret D$CurrentWritingPos
+                Mov eax 0, ebx D$CaretLine | Call MarginAction
+            Call SetPartialEditionFromPos
+            Mov B$keys+&VK_F4 0
 
         .Else
             If B$BlockInside = &FALSE
                 move D$ShiftDown D$CurrentWritingPos | ret
            ; Else
-           ;     mov B$BlockInside &FALSE | call AskForRedraw | ret
+           ;     Mov B$BlockInside &FALSE | Call AskForRedraw | ret
             End_If
 
         .End_If
 
     ...Else
         ..If eax = &VK_PGDN
-            call OnlyOnePageDown | mov B$BlockInside &FALSE
+            Call OnlyOnePageDown | Mov B$BlockInside &FALSE
 
         ..Else_If eax = &VK_PGUP
-            call OnlyOnePageUp | mov B$BlockInside &FALSE
+            Call OnlyOnePageUp | Mov B$BlockInside &FALSE
 
         ..Else_If eax = &VK_DOWN
             If D$CompletionListHandle <> 0
-                mov B$Keys+eax 0
-                call ToCompletionList &VK_DOWN
+                Mov B$Keys+eax 0
+                Call ToCompletionList &VK_DOWN
               ; To save from downward 'KeyHasMovedCaret' Flag modification:
                 ret
             Else
-                call KeyDown | mov B$BlockInside &FALSE
+                Call KeyDown | Mov B$BlockInside &FALSE
             End_If
 
         ..Else_If eax = &VK_UP
             If D$CompletionListHandle <> 0
-                mov B$Keys+eax 0
-                call ToCompletionList &VK_UP
+                Mov B$Keys+eax 0
+                Call ToCompletionList &VK_UP
               ; To save from downward 'KeyHasMovedCaret' Flag modification:
                 ret
             Else
-                call KeyUp | mov B$BlockInside &FALSE
+                Call KeyUp | Mov B$BlockInside &FALSE
             End_If
 
         ..Else_If eax = &VK_LEFT
-            call KeyLeft | mov B$BlockInside &FALSE
+            Call KeyLeft | Mov B$BlockInside &FALSE
 
         ..Else_If eax = &VK_RIGHT
-            call KeyRight | mov B$BlockInside &FALSE
+            Call KeyRight | Mov B$BlockInside &FALSE
 
         ..Else_If eax = &VK_INSERT
-            call KeyInsert | mov B$BlockInside &FALSE
+            Call KeyInsert | Mov B$BlockInside &FALSE
 
         ..Else_If eax = &VK_DELETE
             .If D$DebugDialogHandle <> 0
-                mov B$Keys+eax 0
-                call KillDebugger | On eax = &IDNO, ret
+                Mov B$Keys+eax 0
+                Call KillDebugger | On eax = &IDNO, ret
             .End_If
-            call KeyDelete | mov B$BlockInside &FALSE, B$KeyHasModifedSource &TRUE
+            Call KeyDelete | Mov B$BlockInside &FALSE, B$KeyHasModifedSource &TRUE
 
         ..Else_If eax = &VK_END
-            call EndOfLine | mov B$BlockInside &FALSE
+            Call EndOfLine | Mov B$BlockInside &FALSE
 
         ..Else_If eax = &VK_HOME
-            call StartOfLine | mov B$BlockInside &FALSE
+            Call StartOfLine | Mov B$BlockInside &FALSE
 
         ..Else_If eax = &VK_ESCAPE
             If D$CompletionListHandle <> 0
-                call 'USER32.SendMessageA' D$CompletionListHandle, &WM_COMMAND, &IDCANCEL, 0
-                mov B$keys+&VK_ESCAPE &FALSE | ret
+                Call 'USER32.SendMessageA' D$CompletionListHandle, &WM_COMMAND, &IDCANCEL, 0
+                Mov B$keys+&VK_ESCAPE &FALSE | ret
             End_If
 
         ..Else_If eax = &VK_F1
-            call RosAsmHelp | mov B$keys+&VK_F1 &FALSE
+            Call RosAsmHelp | Mov B$keys+&VK_F1 &FALSE
 
         ..Else_If eax = &VK_F2
-            call F2Help | mov B$keys+&VK_F2 &FALSE
+            Call F2Help | Mov B$keys+&VK_F2 &FALSE
 
         ..Else_If eax = &VK_F3
-            call RestoreRealSource | call StringSearch | call SetPartialEditionFromPos
-            mov B$keys+&VK_F3 0
+            Call RestoreRealSource | Call StringSearch | Call SetPartialEditionFromPos
+            Mov B$keys+&VK_F3 0
 
         ..Else_If eax = &VK_F4  ; BpMenu / SetBreakPoint / DeleteBreakpoint
-            call RestoreRealSource
-                call SetCaret D$CurrentWritingPos
-                mov eax 0, ebx D$CaretLine | call MarginAction
-            call SetPartialEditionFromPos
-            mov B$keys+&VK_F4 0
+            Call RestoreRealSource
+                Call SetCaret D$CurrentWritingPos
+                Mov eax 0, ebx D$CaretLine | Call MarginAction
+            Call SetPartialEditionFromPos
+            Mov B$keys+&VK_F4 0
 
         ..Else_If eax = &VK_F5
-            mov B$keys+&VK_F5 &FALSE
-            mov D$ShowStats &TRUE
-            call Compile
+            Mov B$keys+&VK_F5 &FALSE
+            Mov D$ShowStats &TRUE
+            Call Compile
 
         ..Else_If eax = &VK_F6
-            mov B$keys+&VK_F6 &FALSE
+            Mov B$keys+&VK_F6 &FALSE
 
             If D$DebugDialogHandle <> 0
                 ret
             Else
-                call Run
+                Call Run
             End_If
 
         ..Else_If eax = &VK_F8
             If D$DebugDialogHandle <> 0
-                mov B$keys+&VK_F2 &FALSE
-                call KillDebugger | On eax = &IDNO, ret
+                Mov B$keys+&VK_F2 &FALSE
+                Call KillDebugger | On eax = &IDNO, ret
             End_If
-            call DrawOneLine
+            Call DrawOneLine
 
         ..Else_If eax = &VK_F9
-            mov B$Keys+eax 0
+            Mov B$Keys+eax 0
             ;mov eax D$BreakPointsTables | int3
             ret
 ;;
 ; Problem if someone want to implement a Key doinf the same job as Right-Click:
 ; How to get back after Editor moves?
 
-            call KillCompletionList
+            Call KillCompletionList
   
-            call RowToX D$CaretRow | mov D$MousePosY eax
-            call LineToY D$CaretLine | mov D$MousePosY eax
-            call 'USER32.SetCursorPos' D$MousePosX, D$MousePosY
+            Call RowToX D$CaretRow | Mov D$MousePosY eax
+            Call LineToY D$CaretLine | Mov D$MousePosY eax
+            Call 'USER32.SetCursorPos' D$MousePosX, D$MousePosY
 
-            call RestoreRealSource
-                call RightClick
-            call SetPartialEditionFromPos
-            mov B$keys+&VK_F9 &FALSE
+            Call RestoreRealSource
+                Call RightClick
+            Call SetPartialEditionFromPos
+            Mov B$keys+&VK_F9 &FALSE
 ;;
         ..Else_If eax = &VK_F11
-            call SavePosOnF11
+            Call SavePosOnF11
 
         ..Else_If eax = &VK_F12
-            call SetPosOnF12
+            Call SetPosOnF12
 
         ..Else
-            mov B$Keys+eax 0 | ret
+            Mov B$Keys+eax 0 | ret
 
         ..End_If
       ; Necessity for clearing by hand because, with lengthy case (like upper 'StringSearch'),
       ; the OS clear the remaining Messages (here WM_KEYUP!!!) for the Message Flow.
-       ; pop eax | mov B$Keys+eax 0
-        mov B$KeyHasMovedCaret &TRUE
+       ; pop eax | Mov B$Keys+eax 0
+        Mov B$KeyHasMovedCaret &TRUE
 
     ...End_If
 
 
-    On B$KeyHasMovedCaret = &TRUE, call KillCompletionList
+    On B$KeyHasMovedCaret = &TRUE, Call KillCompletionList
 ret
 ____________________________________________________________________________________________
 
 ResetKeys:
-    mov edi keys, eax 0, ecx (0100/4) | rep stosd
+    Mov edi keys, eax 0, ecx (0100/4) | rep stosd
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
 EnableMenutems:
-   ; call 'USER32.EnableMenuItem' D$MenuHandle, M00_Profile, &MF_GRAYED
+   ; Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Profile, &MF_GRAYED
 
     .If B$SourceReady = &FALSE
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Tree, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Paste_at_Pos, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Change_Compile_Name, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_Source_Only, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Source_Only, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Output, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Print, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Find, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Undo, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Redo, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Copy, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Paste, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Cut, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Compile, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Run, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Import, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Export, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_GUIDs, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Tree, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Paste_at_Pos, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Change_Compile_Name, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_Source_Only, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Source_Only, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Output, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Print, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Find, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Undo, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Redo, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Copy, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Paste, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Cut, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Compile, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Run, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Import, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Export, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_GUIDs, &MF_GRAYED
 
     .Else
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Tree, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Paste_at_Pos, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Change_Compile_Name, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_Source_Only, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Source_Only, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Output, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Print, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Find, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Undo, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Redo, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Copy, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Paste, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Cut, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Compile, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Run, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Import, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Export, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_GUIDs, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Tree, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Paste_at_Pos, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Change_Compile_Name, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_Source_Only, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Source_Only, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Output, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Print, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Find, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Undo, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Redo, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Copy, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Paste, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Cut, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Compile, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Run, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Import, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Export, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_GUIDs, &MF_ENABLED
 
     .End_If
 
     If D$SavingExtension = '.SYS'
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Run, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Run, &MF_GRAYED
     Else_If B$SourceReady = &TRUE
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Run, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Run, &MF_ENABLED
     End_If
 
     If D$IconList = 0
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Icon, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Icon_IDs, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Icon, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Icon, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Icon_IDs, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Icon, &MF_GRAYED
     Else
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Icon, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Icon_IDs, &MF_GRAYED ; &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Icon, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Icon, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Icon_IDs, &MF_GRAYED ; &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Icon, &MF_GRAYED ;&MF_ENABLED
     End_If
 
     If D$BitMapList = 0
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_BitMap, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_BitMaps_IDs, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_BitMap, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_BitMap, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_BitMaps_IDs, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_BitMap, &MF_GRAYED
     Else
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_BitMap, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_BitMaps_IDs, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_BitMap, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_BitMap, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_BitMaps_IDs, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_BitMap, &MF_GRAYED ;&MF_ENABLED
     End_If
 
     If D$CursorList = 0
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Cursor, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Cursors_IDs, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Cursor, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Cursor, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Cursors_IDs, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Cursor, &MF_GRAYED
     Else
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Cursor, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Cursors_IDs, &MF_GRAYED ;&MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Cursor, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Cursor, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Cursors_IDs, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Cursor, &MF_GRAYED ;&MF_ENABLED
     End_If
 
     If D$WaveList = 0
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Wave, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Waves_IDs, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Wave, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Wave, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Waves_IDs, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Wave, &MF_GRAYED
     Else
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Wave, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Waves_IDs, &MF_GRAYED ;&MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Wave, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Wave, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Waves_IDs, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Wave, &MF_GRAYED ;&MF_ENABLED
     End_If
 
     If D$AviList = 0
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Avi, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Avi_IDs, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Avi, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Avi, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Avi_IDs, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Avi, &MF_GRAYED
     Else
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Avi, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Avi_IDs, &MF_GRAYED ;&MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Avi, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Avi, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Avi_IDs, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Avi, &MF_GRAYED ;&MF_ENABLED
     End_If
 
     If D$RCDataList = 0
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_RC, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_RCs_IDs, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_RC, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_RC, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_RCs_IDs, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_RC, &MF_GRAYED
     Else
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_RC, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_RCs_IDs, &MF_GRAYED ;&MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_RC, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_RC, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_RCs_IDs, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_RC, &MF_ENABLED
     End_If
 
     If D$DialogList = 0
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_from_Resources, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Resources_Dialog, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_to_Binary_File, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_from_Binary_File, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_from_Resources, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Resources_Dialog, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_to_Binary_File, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_from_Binary_File, &MF_GRAYED
     Else
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_from_Resources, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Resources_Dialog, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_to_Binary_File, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_from_Binary_File, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_from_Resources, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Resources_Dialog, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_to_Binary_File, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_from_Binary_File, &MF_ENABLED
     End_If
 
     If B$SourceReady = &FALSE
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_from_Binary_File, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_from_Binary_File, &MF_GRAYED
     Else
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_from_Binary_File, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_from_Binary_File, &MF_ENABLED
     End_If
 
     If D$MenuList = 0
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Existing_Menu, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_a_Menu, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_to_Binary_Menu_File, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_Binary_Menu_File, &MF_GRAYED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_from_Binary_Menu_File, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Existing_Menu, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_a_Menu, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_to_Binary_Menu_File, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_Binary_Menu_File, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_from_Binary_Menu_File, &MF_GRAYED
     Else
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Existing_Menu, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_a_Menu, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_to_Binary_Menu_File, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_Binary_Menu_File, &MF_ENABLED
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_from_Binary_Menu_File, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Existing_Menu, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_a_Menu, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_to_Binary_Menu_File, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_Binary_Menu_File, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_from_Binary_Menu_File, &MF_ENABLED
     End_If
 
-    call 'USER32.DrawMenuBar' D$hwnd
+    Call 'USER32.DrawMenuBar' D$H.MainWindow
 ret
 
 
@@ -1949,15 +1977,15 @@ ret
 
 
 EnableHelpMenutems:
-    call EnableHelpMenutem B_U_AsmName, M00_B_U_Asm
-    call EnableHelpMenutem Win32HlpName, M00_Win32_hlp
-    call EnableHelpMenutem MmediaHlpName, M00_Mmedia_hlp
-    call EnableHelpMenutem OpenGlHlpName, M00_OpenGl_hlp
-    call EnableHelpMenutem DxHlpName, M00_Dx_hlp
-    call EnableHelpMenutem WinsockHlpName, M00_WinSock_hlp
-    call EnableHelpMenutem SDLRefName, M00_SDL
-    call EnableHelpMenutem sqliteName, M00_sqlite
-    call EnableHelpMenutem DevILName, M00_DevIL
+    Call EnableHelpMenutem B_U_AsmName, M00_B_U_Asm
+    Call EnableHelpMenutem Win32HlpName, M00_Win32_hlp
+    Call EnableHelpMenutem MmediaHlpName, M00_Mmedia_hlp
+    Call EnableHelpMenutem OpenGlHlpName, M00_OpenGl_hlp
+    Call EnableHelpMenutem DxHlpName, M00_Dx_hlp
+    Call EnableHelpMenutem WinsockHlpName, M00_WinSock_hlp
+    Call EnableHelpMenutem SDLRefName, M00_SDL
+    Call EnableHelpMenutem sqliteName, M00_sqlite
+    Call EnableHelpMenutem DevILName, M00_DevIL
 ret
 
 
@@ -1965,53 +1993,53 @@ ret
 
 EnableVisualTutsMenu:
   ; Enable the 'Visual Tuts' Item and create the Pop-Up if some Visual Tuts are there:
-    mov esi EquatesName, edi VisualTutPath, ecx (&MAXPATH / 4) | rep movsd
+    Mov esi EquatesName, edi VisualTutPath, ecx (&MAXPATH / 4) | rep movsd
 
-    mov esi VisualTutPath | While B$esi <> 0 | inc esi | End_While
+    Mov esi VisualTutPath | While B$esi <> 0 | inc esi | End_While
     While B$esi <> '\' | dec esi | End_While
-    mov D$esi+1 'IVT*', D$esi+5 '.exe', B$esi+9 0
+    Mov D$esi+1 'IVT*', D$esi+5 '.exe', B$esi+9 0
 
-    call 'KERNEL32.FindFirstFileA' VisualTutPath, FindFile
+    Call 'KERNEL32.FindFirstFileA' VisualTutPath, FindFile
 
     .If eax = &INVALID_HANDLE_VALUE
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Visual_Tuts, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Visual_Tuts, &MF_GRAYED
 
     .Else
-        mov D$VisualTutsFindHandle eax
+        Mov D$VisualTutsFindHandle eax
 
-        call 'USER32.CreatePopupMenu' | mov D$VisualTutsMenuHandle eax
+        Call 'USER32.CreatePopupMenu' | Mov D$VisualTutsMenuHandle eax
 
-        mov edi IVTFilesNames1, ecx 0
+        Mov edi IVTFilesNames1, ecx 0
 
-L1:     mov esi FindFile.cFileName | inc ecx
+L1:     Mov esi FindFile.cFileName | inc ecx
 
-        While B$esi <> 0 | movsb | End_While | mov B$edi 0 | inc edi
+        While B$esi <> 0 | movsb | End_While | Mov B$edi 0 | inc edi
 
         push ecx
-            call 'KERNEL32.FindNextFileA' D$VisualTutsFindHandle, FindFile
+            Call 'KERNEL32.FindNextFileA' D$VisualTutsFindHandle, FindFile
         pop ecx
 
         On eax = &TRUE, jmp L1<
 
-        call zStringsSort IVTFilesNames1, IVTFilesNames2, ecx
+        Call zStringsSort IVTFilesNames1, IVTFilesNames2, ecx
         ____________________________________________________
 
-        mov B$PreviousIVT '0', D$VisualTutMenuID 5000
+        Mov B$PreviousIVT '0', D$VisualTutMenuID 5000
 
-        call 'USER32.CreatePopupMenu' | mov D$VisualTutsMenuHandle eax
+        Call 'USER32.CreatePopupMenu' | Mov D$VisualTutsMenuHandle eax
 
-        mov esi IVTFilesNames2
+        Mov esi IVTFilesNames2
 
 L1:     add esi 6
 
         push esi
-            mov al B$esi-3
+            Mov al B$esi-3
             If al <> B$PreviousIVT
-                mov B$PreviousIVT al
-                call 'USER32.AppendMenuA' D$VisualTutsMenuHandle, &MF_SEPARATOR, 0, 0
+                Mov B$PreviousIVT al
+                Call 'USER32.AppendMenuA' D$VisualTutsMenuHandle, &MF_SEPARATOR, 0, 0
             End_If
 
-            call 'USER32.AppendMenuA' D$VisualTutsMenuHandle, &MF_ENABLED__&MF_STRING,
+            Call 'USER32.AppendMenuA' D$VisualTutsMenuHandle, &MF_ENABLED__&MF_STRING,
                                       D$VisualTutMenuID, esi
         pop esi
 
@@ -2021,13 +2049,13 @@ L1:     add esi 6
             inc D$VisualTutMenuID | jmp L1<
         End_If
 
-        call 'USER32.InsertMenuA' D$MenuHandle, M00_Visual_Tuts,
+        Call 'USER32.InsertMenuA' D$MenuHandle, M00_Visual_Tuts,
                                   &MF_BYCOMMAND__&MF_POPUP__&MF_STRING,
                                   D$VisualTutsMenuHandle, VisualTutsItem
 
-        call 'USER32.DeleteMenu' D$MenuHandle, M00_Visual_Tuts, &MF_BYCOMMAND
+        Call 'USER32.DeleteMenu' D$MenuHandle, M00_Visual_Tuts, &MF_BYCOMMAND
 
-        call 'KERNEL32.FindClose' D$VisualTutsFindHandle
+        Call 'KERNEL32.FindClose' D$VisualTutsFindHandle
     .End_If
 ret
 
@@ -2035,7 +2063,7 @@ ret
 VisualTuts:
     push eax
         .If D$DebugDialogHandle <> 0
-            call KillDebugger
+            Call KillDebugger
             If eax = &IDNO
                 pop eax | ret
             End_If
@@ -2044,7 +2072,7 @@ VisualTuts:
         ...If B$SourceReady = &TRUE
             ..If B$ReadyToRun = &FALSE
                 .If B$SecurityWanted = &TRUE
-                    call 'USER32.MessageBoxA' D$hwnd, {'Close the Actual File ?', 0},
+                    Call 'USER32.MessageBoxA' D$H.MainWindow, {'Close the Actual File ?', 0},
                                               {'Visual Tutorial', 0}, &MB_YESNO
                     If eax = &IDNO
                         pop eax | ret
@@ -2054,25 +2082,25 @@ VisualTuts:
         ...End_If
     pop eax
 
-    mov esi VisualTutPath | While D$esi <> '\IVT' | inc esi | End_While
-    add esi 4 | mov D$esi '???' | add esi 3
-    call 'USER32.GetMenuStringA' D$MenuHandle, eax, esi, 100, &MF_BYCOMMAND
+    Mov esi VisualTutPath | While D$esi <> '\IVT' | inc esi | End_While
+    add esi 4 | Mov D$esi '???' | add esi 3
+    Call 'USER32.GetMenuStringA' D$MenuHandle, eax, esi, 100, &MF_BYCOMMAND
 
-    call 'KERNEL32.FindFirstFileA' VisualTutPath, FindFile
+    Call 'KERNEL32.FindFirstFileA' VisualTutPath, FindFile
 
     .If eax <> &INVALID_HANDLE_VALUE
-        mov D$VisualTutsFindHandle eax
-        call 'KERNEL32.FindClose' D$VisualTutsFindHandle
+        Mov D$VisualTutsFindHandle eax
+        Call 'KERNEL32.FindClose' D$VisualTutsFindHandle
 
-        mov esi VisualTutPath, edi SaveFilter
+        Mov esi VisualTutPath, edi SaveFilter
         While D$esi <> '\IVT' | movsb | End_While | movsb
-        mov esi FindFile.cFileName | While B$esi <> 0 | movsb | End_While | movsb
+        Mov esi FindFile.cFileName | While B$esi <> 0 | movsb | End_While | movsb
 
-        call DirectLoad
+        Call DirectLoad
 
-        call ReInitUndo
-        call SetPartialEditionFromPos | call EnableMenutems
-        call LoadBookMarks
+        Call ReInitUndo
+        Call SetPartialEditionFromPos | Call EnableMenutems
+        Call LoadBookMarks
     .End_If
 ret
 
@@ -2080,17 +2108,17 @@ ret
 Proc EnableHelpMenutem:
     Argument @FileName, @Item
 
-    call 'KERNEL32.FindFirstFileA' D@FileName, FindFile
+    Call 'KERNEL32.FindFirstFileA' D@FileName, FindFile
     push eax
         If eax = &INVALID_HANDLE_VALUE
-            mov eax &MF_GRAYED
+            Mov eax &MF_GRAYED
         Else
-            mov eax &MF_ENABLED
+            Mov eax &MF_ENABLED
         End_If
 
-        call 'USER32.EnableMenuItem' D$MenuHandle, D@Item, eax
+        Call 'USER32.EnableMenuItem' D$MenuHandle, D@Item, eax
     pop eax
-    call 'KERNEL32.FindClose' eax
+    Call 'KERNEL32.FindClose' eax
 EndP
 ____________________________________________________________________________________________
 
@@ -2100,58 +2128,58 @@ ________________________________________________________________________________
 [WizardsItem: 'Wizards', 0]
 
 EnableWizardsMenu:
-    call ClearTrashTables
+    Call ClearTrashTables
 
   ; Enable the 'Visual Tuts' Item and create the Pop-Up if some Visual Tuts are there:
-    mov esi EquatesName, edi WizardPath, ecx (&MAXPATH / 4) | rep movsd
+    Mov esi EquatesName, edi WizardPath, ecx (&MAXPATH / 4) | rep movsd
 
-    mov esi WizardPath | While B$esi <> 0 | inc esi | End_While
+    Mov esi WizardPath | While B$esi <> 0 | inc esi | End_While
     While B$esi <> '\' | dec esi | End_While
 
-    mov D$esi+1 'WZRD', D$esi+5 '*.*'
+    Mov D$esi+1 'WZRD', D$esi+5 '*.*'
 
-    call 'KERNEL32.FindFirstFileA' WizardPath, FindFile
+    Call 'KERNEL32.FindFirstFileA' WizardPath, FindFile
 
     .If eax = &INVALID_HANDLE_VALUE
-        call 'USER32.EnableMenuItem' D$MenuHandle, M00_Wizards, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Wizards, &MF_GRAYED
 
     .Else
-        mov D$WizardsFindHandle eax
+        Mov D$WizardsFindHandle eax
 
-        call 'USER32.CreatePopupMenu' | mov D$WizardsMenuHandle eax
+        Call 'USER32.CreatePopupMenu' | Mov D$WizardsMenuHandle eax
 
-        mov edi Trash1, ecx 0
+        Mov edi Trash1, ecx 0
 
-L1:     mov esi FindFile.cFileName | inc ecx
+L1:     Mov esi FindFile.cFileName | inc ecx
 
-        While B$esi <> 0 | movsb | End_While | mov B$edi 0 | inc edi
+        While B$esi <> 0 | movsb | End_While | Mov B$edi 0 | inc edi
 
         push ecx
-            call 'KERNEL32.FindNextFileA' D$WizardsFindHandle, FindFile
+            Call 'KERNEL32.FindNextFileA' D$WizardsFindHandle, FindFile
         pop ecx
 
         On eax = &TRUE, jmp L1<
 
-        call zStringsSort Trash1, Trash2, ecx
+        Call zStringsSort Trash1, Trash2, ecx
 
         ____________________________________________________
 
-        mov B$PreviousWZRD '0', D$WizardMenuID 6000
+        Mov B$PreviousWZRD '0', D$WizardMenuID 6000
 
-        call 'USER32.CreatePopupMenu' | mov D$WizardsMenuHandle eax
+        Call 'USER32.CreatePopupMenu' | Mov D$WizardsMenuHandle eax
 
-        mov esi Trash2
+        Mov esi Trash2
 
 L1:     add esi 4
 
         push esi
-           ; mov al B$esi-3
+           ; Mov al B$esi-3
            ; If al <> B$PreviousWZRD
-           ;     mov B$PreviousWZRD al
-           ;     call 'USER32.AppendMenuA' D$VisualTutsMenuHandle, &MF_SEPARATOR, 0, 0
+           ;     Mov B$PreviousWZRD al
+           ;     Call 'USER32.AppendMenuA' D$VisualTutsMenuHandle, &MF_SEPARATOR, 0, 0
            ; End_If
 
-            call 'USER32.AppendMenuA' D$WizardsMenuHandle, &MF_ENABLED__&MF_STRING,
+            Call 'USER32.AppendMenuA' D$WizardsMenuHandle, &MF_ENABLED__&MF_STRING,
                                       D$WizardMenuID, esi
         pop esi
 
@@ -2161,13 +2189,13 @@ L1:     add esi 4
             inc D$VisualTutMenuID | jmp L1<
         End_If
 
-        call 'USER32.InsertMenuA' D$MenuHandle, M00_Wizards,
+        Call 'USER32.InsertMenuA' D$MenuHandle, M00_Wizards,
                                   &MF_BYCOMMAND__&MF_POPUP__&MF_STRING,
                                   D$WizardsMenuHandle, WizardsItem
 
-        call 'USER32.DeleteMenu' D$MenuHandle, M00_Wizards, &MF_BYCOMMAND
+        Call 'USER32.DeleteMenu' D$MenuHandle, M00_Wizards, &MF_BYCOMMAND
 
-        call 'KERNEL32.FindClose' D$WizardsFindHandle
+        Call 'KERNEL32.FindClose' D$WizardsFindHandle
     .End_If
 ret
 ____________________________________________________________________________________________
@@ -2187,18 +2215,18 @@ Proc StoreClipMenuStrings:
     Argument @Source
     uses esi, edi
 
-        mov edi ClipMenuStrings
+        Mov edi ClipMenuStrings
 L1:     While B$edi <> 0 | inc edi | End_While
         If edi <> ClipMenuStrings
             inc edi | On B$edi <> 0, jmp L1<
         End_If
-        mov esi D@Source
+        Mov esi D@Source
         While B$esi <> 0 | movsb | End_While
 EndP
 
 
 EnableClipMenu: ; M00_Clip_File / 'LoadClipFile'
-    call 'KERNEL32.FindFirstFileA' ClipName, FindFile
+    Call 'KERNEL32.FindFirstFileA' ClipName, FindFile
 ;;
   Assuming Multiple Clip Files had never been planed, and the whole implementation
   is supposed to work withnone single 'Clip.txt', which Path is given in 'ClipName',
@@ -2210,47 +2238,47 @@ EnableClipMenu: ; M00_Clip_File / 'LoadClipFile'
         jmp L9>>
 
     ...Else
-        call 'KERNEL32.FindClose' eax
+        Call 'KERNEL32.FindClose' eax
 
-        mov esi ClipName, edi ClipFilesPath
+        Mov esi ClipName, edi ClipFilesPath
         While B$esi <> 0 | movsb | End_While
         While B$edi <> '\' | dec edi | End_While | inc edi
-        mov D$edi '*Cli', D$edi+4 'p.tx', W$edi+8 't'
+        Mov D$edi '*Cli', D$edi+4 'p.tx', W$edi+8 't'
 
-        call 'KERNEL32.FindFirstFileA' ClipFilesPath, FindFile
+        Call 'KERNEL32.FindFirstFileA' ClipFilesPath, FindFile
 
         ..If eax = &INVALID_HANDLE_VALUE
             jmp L9>>
 
         ..Else
-            mov D$FindClipFilesHandle eax
+            Mov D$FindClipFilesHandle eax
 
 L1:         If D$ClipFilePopUpMenuHandle = 0
-                call 'USER32.CreatePopupMenu' | mov D$ClipFilePopUpMenuHandle eax
+                Call 'USER32.CreatePopupMenu' | Mov D$ClipFilePopUpMenuHandle eax
             End_If
 
             inc D$NumberOfClipFiles
 
-            call 'USER32.AppendMenuA' D$ClipFilePopUpMenuHandle,
+            Call 'USER32.AppendMenuA' D$ClipFilePopUpMenuHandle,
                                       &MF_ENABLED__&MF_STRING,
                                       D$ClipMenuID, FindFile.cFileName
 
-            call StoreClipMenuStrings FindFile.cFileName
+            Call StoreClipMenuStrings FindFile.cFileName
 
             inc D$ClipMenuID
 
-            call 'KERNEL32.FindNextFileA' D$FindClipFilesHandle, FindFile
+            Call 'KERNEL32.FindNextFileA' D$FindClipFilesHandle, FindFile
             On eax = &TRUE, jmp L1<<
 
-            call 'KERNEL32.FindClose' D$FindClipFilesHandle
+            Call 'KERNEL32.FindClose' D$FindClipFilesHandle
 
             .If D$ClipFilePopUpMenuHandle <> 0
                 If D$NumberOfClipFiles > 1
-                    call 'USER32.InsertMenuA' D$MenuHandle, M00_ClipFile,
+                    Call 'USER32.InsertMenuA' D$MenuHandle, M00_ClipFile,
                                               &MF_BYCOMMAND__&MF_POPUP__&MF_STRING,
                                               D$ClipFilePopUpMenuHandle, ClipFilesItem
 
-                    call 'USER32.DeleteMenu' D$MenuHandle, M00_ClipFile, &MF_BYCOMMAND
+                    Call 'USER32.DeleteMenu' D$MenuHandle, M00_ClipFile, &MF_BYCOMMAND
                 End_If
             .End_If
 
@@ -2262,10 +2290,10 @@ ________________________________________________________________________________
 
 
 SetShiftBlock:
-    mov eax D$CaretRow, ebx D$CaretLine
+    Mov eax D$CaretRow, ebx D$CaretLine
     push eax, ebx
 
-        call SearchTxtPtr               ; >>> eax = new Pos.
+        Call SearchTxtPtr               ; >>> eax = new Pos.
 
         .If B$BlockInside = &FALSE
             If eax > D$ShiftDown
@@ -2274,7 +2302,7 @@ SetShiftBlock:
 
         .Else
             If eax = D$ShiftDown
-                mov B$BlockInside &FALSE | jmp L9>
+                Mov B$BlockInside &FALSE | jmp L9>
             Else_If eax > D$ShiftDown
                 dec eax
             End_If
@@ -2288,7 +2316,7 @@ SetShiftBlock:
             move D$BlockStartTextPtr D$ShiftDown, D$BlockEndTextPtr eax
         End_If
 
-        mov B$BlockInside &TRUE, B$ShiftBlockInside &TRUE
+        Mov B$BlockInside &TRUE, B$ShiftBlockInside &TRUE
 
 L9: pop D$ShiftBlockLine, D$ShiftBlockCol
 ret
@@ -2297,27 +2325,27 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 SplashScreen:
-    call 'USER32.BeginPaint' D$EditWindowHandle, PAINTSTRUCT | mov D$hdc eax
+    Call 'USER32.BeginPaint' D$EditWindowHandle, PAINTSTRUCT | Mov D$hdc eax
 
-    call 'User32.GetClientRect' D$EditWindowHandle, RECT
+    Call 'User32.GetClientRect' D$EditWindowHandle, RECT
 
     shr D$RECTright 1 | shr D$RECTbottom 1
     sub D$RECTright 75 | sub D$RECTbottom 75
 
-    call 'USER32.LoadBitmapA' D$hInstance, 5 | mov D$BitMapHandle eax
+    Call 'USER32.LoadBitmapA' D$hInstance, 5 | Mov D$BitMapHandle eax
 
-    call 'GDI32.CreateCompatibleDC' D$hdc | mov D$hMemDC eax
+    Call 'GDI32.CreateCompatibleDC' D$hdc | Mov D$hMemDC eax
 
-    call 'GDI32.SelectObject' eax, D$BitMapHandle
+    Call 'GDI32.SelectObject' eax, D$BitMapHandle
 
-    call 'GDI32.BitBlt' D$hdc, D$RECTright, D$RECTbottom, 150, 150,
+    Call 'GDI32.BitBlt' D$hdc, D$RECTright, D$RECTbottom, 150, 150,
                         D$hMemDC, 0, 0, &SRCCOPY
 
-    call 'GDI32.DeleteDC' D$hMemDC
+    Call 'GDI32.DeleteDC' D$hMemDC
 
-    call 'GDI32.DeleteObject' D$BitMapHandle
+    Call 'GDI32.DeleteObject' D$BitMapHandle
 
-    call 'USER32.EndPaint' D$EditWindowHandle, PAINTSTRUCT
+    Call 'USER32.EndPaint' D$EditWindowHandle, PAINTSTRUCT
 ret
 
 ____________________________________________________________________________________________

@@ -325,7 +325,7 @@ a)
 [szTimeString: B$ ? #64] ; Lenght of the time string. (Maximum is &MAX_UTC_TIME_LEN)
 
 
-        call TimeDateStampToString D$DataPointer {"yyyy/MM/dd ddd ", 0},
+        Call TimeDateStampToString D$DataPointer {"yyyy/MM/dd ddd ", 0},
                                                  {"HH:mm:ss UTC", 0},
                                                   szDateString szTimeString
 
@@ -340,7 +340,7 @@ b)
 [szTimeString: B$ ? #64] ; Lenght of the time string. (Maximum is &MAX_UTC_TIME_LEN)
 
 
-        call TimeDateStampToString D$DataPointer Sz_Year Sz_Hour szDateString szTimeString
+        Call TimeDateStampToString D$DataPointer Sz_Year Sz_Hour szDateString szTimeString
 
 c)
 
@@ -353,7 +353,7 @@ c)
  Hour_Len: D$ len]
 
 
-        call TimeDateStampToString D$DataPointer Sz_Year Sz_Hour Year_Len Hour_Len
+        Call TimeDateStampToString D$DataPointer Sz_Year Sz_Hour Year_Len Hour_Len
         
 
 Notes:
@@ -366,11 +366,11 @@ I - Concerning the Equates
         
         or
         
-        mov eax &MAX_UTC_TIME_LEN
+        Mov eax &MAX_UTC_TIME_LEN
         
         or
         
-        call XXXX &MAX_UTC_TIME_LEN YYYYY
+        Call XXXX &MAX_UTC_TIME_LEN YYYYY
         
         
         etc etc
@@ -389,7 +389,7 @@ I - Concerning the Equates
         
         or
         
-        mov eax Q$Data01
+        Mov eax Q$Data01
         
         etc etc
         
@@ -429,8 +429,8 @@ I - Concerning the Equates
     
     
       
-        mov eax D$edi+FileHeader.TimeDateStampDis
-        mov edx 10000000
+        Mov eax D$edi+FileHeader.TimeDateStampDis
+        Mov edx 10000000
         mul edx
 
                    
@@ -438,13 +438,13 @@ I - Concerning the Equates
         adc edx 019DB1DE ; 019DB1DE
 
  
-        mov D$St_DateTimeStamp.dwLowDateTime eax
-        mov D$St_DateTimeStamp.dwHighDateTime edx
+        Mov D$St_DateTimeStamp.dwLowDateTime eax
+        Mov D$St_DateTimeStamp.dwHighDateTime edx
         
-        call 'kernel32.FileTimeToSystemTime' St_DateTimeStamp St_UTC;stLocal
+        Call 'kernel32.FileTimeToSystemTime' St_DateTimeStamp St_UTC;stLocal
 
-        call 'KERNEL32.GetDateFormatA' &LOCALE_SYSTEM_DEFAULT &NULL St_UTC Sz_Year2 szDateString 64
-        call 'KERNEL32.GetTimeFormatA' &LOCALE_SYSTEM_DEFAULT &NULL St_UTC Sz_Hour2 szTimeString 64
+        Call 'KERNEL32.GetDateFormatA' &LOCALE_SYSTEM_DEFAULT &NULL St_UTC Sz_Year2 szDateString 64
+        Call 'KERNEL32.GetTimeFormatA' &LOCALE_SYSTEM_DEFAULT &NULL St_UTC Sz_Hour2 szTimeString 64
 
 
 II - Structures used
@@ -508,26 +508,26 @@ Bibliographic Reference:
 Proc TimeDateStampToString:
     Arguments @TimeStamp, @DateFmt, @TimeFmt, @DateOut, @TimeOut
 
-        mov eax D@TimeStamp
-        mov edx &SECS_TO_100NS
+        Mov eax D@TimeStamp
+        Mov edx &SECS_TO_100NS
         mul edx
 
         add eax &EPOCH_DIFF_SECS_INTERVAL_LOW
         adc edx &EPOCH_DIFF_SECS_INTERVAL_HIGH
 
-        mov D$St_DateTimeStamp.dwLowDateTime eax
-        mov D$St_DateTimeStamp.dwHighDateTime edx
+        Mov D$St_DateTimeStamp.dwLowDateTime eax
+        Mov D$St_DateTimeStamp.dwHighDateTime edx
 
-        call 'kernel32.FileTimeToSystemTime' St_DateTimeStamp, St_UTC
+        Call 'kernel32.FileTimeToSystemTime' St_DateTimeStamp, St_UTC
 
-        call 'KERNEL32.GetDateFormatA' &LOCALE_SYSTEM_DEFAULT,
+        Call 'KERNEL32.GetDateFormatA' &LOCALE_SYSTEM_DEFAULT,
                                        &NULL,
                                        St_UTC,
                                        D@DateFmt,
                                        D@DateOut,
                                        &MAX_UTC_TIME_LEN
 
-        call 'KERNEL32.GetTimeFormatA' &LOCALE_SYSTEM_DEFAULT,
+        Call 'KERNEL32.GetTimeFormatA' &LOCALE_SYSTEM_DEFAULT,
                                        &NULL,
                                        St_UTC,
                                        D@TimeFmt,
@@ -691,7 +691,7 @@ a)
 [szTimeString: B$ ? #64] ; Lenght of the time string. (Maximum is &MAX_UTC_TIME_LEN)
 
 
-        call CurrentTimeDateStampToString {"yyyy/MM/dd ddd ", 0}, {"HH:mm:ss UTC", 0}, szDateString, szTimeString, &NULL, &NULL
+        Call CurrentTimeDateStampToString {"yyyy/MM/dd ddd ", 0}, {"HH:mm:ss UTC", 0}, szDateString, szTimeString, &NULL, &NULL
 
 b)
 
@@ -702,7 +702,7 @@ b)
 [szTimeString: B$ ? #64] ; Lenght of the time string. (Maximum is &MAX_UTC_TIME_LEN)
 
 
-        call CurrentTimeDateStampToString Sz_Year, Sz_Hour, szDateString, szTimeString, &NULL, &NULL
+        Call CurrentTimeDateStampToString Sz_Year, Sz_Hour, szDateString, szTimeString, &NULL, &NULL
 
 c)
 
@@ -729,7 +729,7 @@ c)
  Hour_Len: D$ len]
 
 
-        call CurrentTimeDateStampToString Sz_Year, Sz_Hour, Year_Len, Hour_Len, system_time, St_DateTimeStamp
+        Call CurrentTimeDateStampToString Sz_Year, Sz_Hour, Year_Len, Hour_Len, system_time, St_DateTimeStamp
         
 ;;
 
@@ -738,32 +738,32 @@ Proc CurrentTimeDateStampToString:
     Structure @St_UTC 16, @St_UTC.wYearDis 0,  @St_UTC.wMonthDis 2,  @St_UTC.wDayOfWeekDis 4,  @St_UTC.wDayDis 6,  @St_UTC.wHourDis 8,  @St_UTC.wMinuteDis 10,  @St_UTC.wSecondDis 12,  @St_UTC.wMillisecondsDis 14
     Local @St_DateTimeStamp.dwLowDateTime, @St_DateTimeStamp.dwHighDateTime
 
-    call 'KERNEL32.GetLocalTime' D@St_UTC
+    Call 'KERNEL32.GetLocalTime' D@St_UTC
     If D@SysTimeStr <> 0
-        mov edi D@SysTimeStr
-        mov esi D@St_UTC
-        mov ecx 0
+        Mov edi D@SysTimeStr
+        Mov esi D@St_UTC
+        Mov ecx 0
         While ecx <> Size_Of_SYSTEMTIME
             movsb
             inc ecx
         End_While
     End_If
     lea eax D@St_DateTimeStamp.dwLowDateTime
-    call 'KERNEL32.SystemTimeToFileTime' D@St_UTC, D$eax
+    Call 'KERNEL32.SystemTimeToFileTime' D@St_UTC, D$eax
 
     lea eax D@St_DateTimeStamp.dwLowDateTime
-    call 'kernel32.FileTimeToSystemTime' D$eax, D@St_UTC
+    Call 'kernel32.FileTimeToSystemTime' D$eax, D@St_UTC
     If D@FileTimeStr <> 0
-        mov edi D@FileTimeStr
-        mov esi D@St_DateTimeStamp.dwLowDateTime
-        mov ecx 0
+        Mov edi D@FileTimeStr
+        Mov esi D@St_DateTimeStamp.dwLowDateTime
+        Mov ecx 0
         While ecx <> Size_Of_FILETIME
             movsb
             inc ecx
         End_While
     End_If
-    call 'KERNEL32.GetDateFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@DateFmt D@DateOut &MAX_UTC_TIME_LEN
-    call 'KERNEL32.GetTimeFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@TimeFmt D@TimeOut &MAX_UTC_TIME_LEN
+    Call 'KERNEL32.GetDateFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@DateFmt D@DateOut &MAX_UTC_TIME_LEN
+    Call 'KERNEL32.GetTimeFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@TimeFmt D@TimeOut &MAX_UTC_TIME_LEN
 
 EndP
 
@@ -964,7 +964,7 @@ a)
 [szTimeString: B$ "01:54:10 UTC", 0]
 [TimeStamp: D$ 0]
 
-        call TimeDateStringtoDword TimeStamp, {"yyyy/MM/dd ddd ", 0}, {"HH:mm:ss UTC", 0}, szDateString, szTimeString
+        Call TimeDateStringtoDword TimeStamp, {"yyyy/MM/dd ddd ", 0}, {"HH:mm:ss UTC", 0}, szDateString, szTimeString
         
         The output will be:
         [TimeStamp: D$ 042FAAFC2]
@@ -985,46 +985,46 @@ Proc TimeDateStringtoDword:
 ;   1St Step. Get the Time Stamp
 ; _________________________________________________________________
 
-    mov edi TimeBuffer
-    mov eax D@TimeFmt
-    mov esi D@TimeString
+    Mov edi TimeBuffer
+    Mov eax D@TimeFmt
+    Mov esi D@TimeString
 
     ; Initialize all Local variables.
-    mov D@TimeMark 0
-    mov D@TmpHour 0
-    mov D@TmpMinute 0
-    mov D@TmpSecond 0
-    mov D@TmpYear 0
-    mov D@TmpDayofWeek 0
-    mov D@UseFullWeek_Month 0
-    mov D@TmpMonth 0
-    mov D@TmpDay 0
-    mov D@FoundSourceLen 0
+    Mov D@TimeMark 0
+    Mov D@TmpHour 0
+    Mov D@TmpMinute 0
+    Mov D@TmpSecond 0
+    Mov D@TmpYear 0
+    Mov D@TmpDayofWeek 0
+    Mov D@UseFullWeek_Month 0
+    Mov D@TmpMonth 0
+    Mov D@TmpDay 0
+    Mov D@FoundSourceLen 0
 
     ; 1St Locate the Hour chars. It can be "HH", "H", "hh", "h"
 
-    mov edi TimeBuffer
-    mov esi D@TimeFmt
-    mov ecx 0
+    Mov edi TimeBuffer
+    Mov esi D@TimeFmt
+    Mov ecx 0
 
     .While B$esi <> 0
 
         ..If B$esi = 'H'
             .If B$esi+1 = 'H' ; Is it of the Format 'HH' ?
-                mov esi D@TimeString
+                Mov esi D@TimeString
                 add esi ecx
                 movsw       ; copy the Decimal String (Hour) to the buffer
-                mov B$edi 0 ; ensure it ends with 0
+                Mov B$edi 0 ; ensure it ends with 0
                 sub edi 2   ; decrease it by 2 to ensure it will point to the start of the string.
             .Else
                 ; Found only the 'H' time format. Check the byte immediate after it to get the end of the string
                 ; ecx = starting point of the address
                 movzx edx B$esi+1 ; edx is the ending char we need to find.
 
-                mov esi D@TimeString
+                Mov esi D@TimeString
                 add esi ecx ; esi is now the starting address
                 push esi
-                    mov eax 0 ; Our byte counter
+                    Mov eax 0 ; Our byte counter
                     While B$esi <> dl ; is it equal to the lower part of edx ? (The lower part is where it is stored our char)
                         inc eax
                         inc esi
@@ -1033,37 +1033,37 @@ Proc TimeDateStringtoDword:
 
                 If eax = 1
                     movsb
-                    mov B$edi 0 ; ensure it ends with 0
+                    Mov B$edi 0 ; ensure it ends with 0
                 Else
                     movsw
-                    mov B$edi 0 ; ensure it ends with 0
+                    Mov B$edi 0 ; ensure it ends with 0
                 End_If
                 sub edi eax
             .End_If
 
-            call String2Dword edi ; convert the Decimal String to Dword
+            Call String2Dword edi ; convert the Decimal String to Dword
             ; At eax we have the dword value of the Hour. Now we need to put it on the St_UTC structure
-            mov D@TmpHour eax
-            mov D@TimeMark 0 ; No Time Marks (AM/PM, A/P)
+            Mov D@TmpHour eax
+            Mov D@TimeMark 0 ; No Time Marks (AM/PM, A/P)
             jmp @HourFound
 
 
         ..Else_If B$esi = 'h'
             .If B$esi+1 = 'h' ; Is it of the Format 'hh' ?
-                mov esi D@TimeString
+                Mov esi D@TimeString
                 add esi ecx
                 movsw       ; copy the Decimal String (Hour) to the buffer
-                mov B$edi 0 ; ensure it ends with 0
+                Mov B$edi 0 ; ensure it ends with 0
                 sub edi 2   ; decrease it by 2 to ensure it will point to the start of the string.
             .Else
                 ; Found only the 'h' time format. Check the byte immediate after it to get the end of the string
                 ; ecx = starting point of the address
                 movzx edx B$esi+1 ; edx is the ending char we need to find.
 
-                mov esi D@TimeString
+                Mov esi D@TimeString
                 add esi ecx ; esi is now the starting address
                 push esi
-                    mov eax 0 ; Our byte counter
+                    Mov eax 0 ; Our byte counter
                     While B$esi <> dl ; is it equal to the lower part of edx ? (The lower part is where it is stored our char)
                         inc eax
                         inc esi
@@ -1072,33 +1072,33 @@ Proc TimeDateStringtoDword:
 
                 If eax = 1
                     movsb
-                    mov B$edi 0 ; ensure it ends with 0
+                    Mov B$edi 0 ; ensure it ends with 0
                 Else
                     movsw
-                    mov B$edi 0 ; ensure it ends with 0
+                    Mov B$edi 0 ; ensure it ends with 0
                 End_If
                 sub edi eax
             .End_If
 
-            call String2Dword edi ; convert the Decimal String to Dword
+            Call String2Dword edi ; convert the Decimal String to Dword
             ; At eax we have the dword value of the Hour. Now we need to put it on the St_UTC structure
-            mov D@TmpHour eax
+            Mov D@TmpHour eax
 
             ; Now we check for the time markers (AM/PM, A/P)
 
-            mov esi D@TimeFmt
-            mov ecx 0
+            Mov esi D@TimeFmt
+            Mov ecx 0
 
             While B$esi <> 0
                 .If B$esi = 't'
-                    mov esi D@TimeString
+                    Mov esi D@TimeString
                     add esi ecx
                     If B$esi = 'A'
-                        mov D@TimeMark 1 ; AM
+                        Mov D@TimeMark 1 ; AM
                     Else_If B$esi = 'P'
-                        mov D@TimeMark 2 ;PM
+                        Mov D@TimeMark 2 ;PM
                     Else ; something is wrong. Set it to 0
-                        mov D@TimeMark 0
+                        Mov D@TimeMark 0
                     End_If
                     jmp @HourFound
                 .End_If
@@ -1106,7 +1106,7 @@ Proc TimeDateStringtoDword:
                 inc esi
             End_While
 
-            mov D@TimeMark 0
+            Mov D@TimeMark 0
             jmp @HourFound
 
         ..End_If
@@ -1115,35 +1115,35 @@ Proc TimeDateStringtoDword:
     .End_While
 
 @HourNotFound:
-    mov W$St_UTC.wHour 0  ; Could not find any Hours chars. It is possible that it is something wrong with the Hour Format
+    Mov W$St_UTC.wHour 0  ; Could not find any Hours chars. It is possible that it is something wrong with the Hour Format
                             ; so we settle the Hour to 0.
 
 @HourFound:
 
     ; 2nd Locate the Minutes chars. It can be 'mm', 'm'
 
-    mov edi TimeBuffer
-    mov esi D@TimeFmt
-    mov ecx 0
+    Mov edi TimeBuffer
+    Mov esi D@TimeFmt
+    Mov ecx 0
 
     .While B$esi <> 0
 
         ..If B$esi = 'm'
             .If B$esi+1 = 'm' ; Is it of the Format 'mm' ?
-                mov esi D@TimeString
+                Mov esi D@TimeString
                 add esi ecx
                 movsw       ; copy the Decimal String (Minute) to the buffer
-                mov B$edi 0 ; ensure it ends with 0
+                Mov B$edi 0 ; ensure it ends with 0
                 sub edi 2   ; decrease it by 2 to ensure it will point to the start of the string.
             .Else
                 ; Found only the 'm' time format. Check the byte immediate after it to get the end of the string
                 ; ecx = starting point of the address
                 movzx edx B$esi+1 ; edx is the ending char we need to find.
 
-                mov esi D@TimeString
+                Mov esi D@TimeString
                 add esi ecx ; esi is now the starting address
                 push esi
-                    mov eax 0 ; Our byte counter
+                    Mov eax 0 ; Our byte counter
                     While B$esi <> dl ; is it equal to the lower part of edx ? (The lower part is where it is stored our char)
                         inc eax
                         inc esi
@@ -1152,17 +1152,17 @@ Proc TimeDateStringtoDword:
 
                 If eax = 1
                     movsb
-                    mov B$edi 0 ; ensure it ends with 0
+                    Mov B$edi 0 ; ensure it ends with 0
                 Else
                     movsw
-                    mov B$edi 0 ; ensure it ends with 0
+                    Mov B$edi 0 ; ensure it ends with 0
                 End_If
                 sub edi eax
             .End_If
 
-            call String2Dword edi ; convert the Decimal String to Dword
+            Call String2Dword edi ; convert the Decimal String to Dword
             ; At eax we have the dword value of the Hour. Now we need to put it on the St_UTC structure
-            mov D@TmpMinute eax
+            Mov D@TmpMinute eax
             jmp @MinuteFound
 
         ..End_If
@@ -1171,34 +1171,34 @@ Proc TimeDateStringtoDword:
     .End_While
 
 @MinuteNotFound:
-    mov W$St_UTC.wMinute 0  ; Could not find any Hours chars. It is possible that it is something wrong with the Hour Format
+    Mov W$St_UTC.wMinute 0  ; Could not find any Hours chars. It is possible that it is something wrong with the Hour Format
                             ; so we settle the Hour to 0.
 
 @MinuteFound:
 
     ; 3rd Locate the Seconds chars. It can be 'ss', 's'
-    mov edi TimeBuffer
-    mov esi D@TimeFmt
-    mov ecx 0
+    Mov edi TimeBuffer
+    Mov esi D@TimeFmt
+    Mov ecx 0
 
     .While B$esi <> 0
 
         ..If B$esi = 's'
             .If B$esi+1 = 's' ; Is it of the Format 'mm' ?
-                mov esi D@TimeString
+                Mov esi D@TimeString
                 add esi ecx
                 movsw       ; copy the Decimal String (Minute) to the buffer
-                mov B$edi 0 ; ensure it ends with 0
+                Mov B$edi 0 ; ensure it ends with 0
                 sub edi 2   ; decrease it by 2 to ensure it will point to the start of the string.
             .Else
                 ; Found only the 's' time format. Check the byte immediate after it to get the endof the string
                 ; ecx = starting point of the address
                 movzx edx B$esi+1 ; edx is the ending char we need to find.
 
-                mov esi D@TimeString
+                Mov esi D@TimeString
                 add esi ecx ; esi is now the starting address
                 push esi
-                    mov eax 0 ; Our byte counter
+                    Mov eax 0 ; Our byte counter
                     While B$esi <> dl ; is it equal to the lower part of edx ? (The lower part is where it is stored our char)
                         inc eax
                         inc esi
@@ -1206,17 +1206,17 @@ Proc TimeDateStringtoDword:
                 pop esi
                 If eax = 1
                     movsb
-                    mov B$edi 0 ; ensure it ends with 0
+                    Mov B$edi 0 ; ensure it ends with 0
                 Else
                     movsw
-                    mov B$edi 0 ; ensure it ends with 0
+                    Mov B$edi 0 ; ensure it ends with 0
                 End_If
                 sub edi eax
             .End_If
 
-            call String2Dword edi ; convert the Decimal String to Dword
+            Call String2Dword edi ; convert the Decimal String to Dword
             ; At eax we have the dword value of the Hour. Now we need to put it on the St_UTC structure
-            mov D@TmpSecond eax
+            Mov D@TmpSecond eax
             jmp @SecondFound
 
         ..End_If
@@ -1225,7 +1225,7 @@ Proc TimeDateStringtoDword:
     .End_While
 
 @SecondNotFound:
-    mov W$St_UTC.wSecond 0  ; Could not find any Hours chars. It is possible that it is something wrong with the Hour Format
+    Mov W$St_UTC.wSecond 0  ; Could not find any Hours chars. It is possible that it is something wrong with the Hour Format
                             ; so we settle the Hour to 0.
 
 @SecondFound:
@@ -1241,7 +1241,7 @@ Proc TimeDateStringtoDword:
         
         ; So, let's check if the values are smaller then 12
         If D@TmpHour > 12
-            mov eax 1
+            Mov eax 1
             ExitP
         End_If
         
@@ -1273,9 +1273,9 @@ Proc TimeDateStringtoDword:
 
     ; 1st Locate the Year chars. It can be 'yyyy', 'yy', 'y'
 
-    mov edi TimeBuffer
-    mov esi D@DateFmt
-    mov ecx 0
+    Mov edi TimeBuffer
+    Mov esi D@DateFmt
+    Mov ecx 0
 
     ; 1st Since we can have string with unknown len (from dddd or MMMM)
 L1:
@@ -1284,60 +1284,60 @@ L1:
         ..If W$esi = 'dd' ; Full week name
 
             If W$esi+2 = 'dd' ; is it 'dddd' ?
-                mov D$FullWeekFmt 'dddd'
-                mov B$FullWeekFmt+4 0 ; ensure it will end with 0
+                Mov D$FullWeekFmt 'dddd'
+                Mov B$FullWeekFmt+4 0 ; ensure it will end with 0
             Else_If B$esi+2 = 'd' ; is it 'ddd' ?
-                mov W$FullWeekFmt 'dd'
-                mov B$FullWeekFmt+2 'd'
-                mov B$FullWeekFmt+3 0 ; ensure it will end with 0
-                mov B$FullWeekFmt+4 0 ; ensure it will end with 0
+                Mov W$FullWeekFmt 'dd'
+                Mov B$FullWeekFmt+2 'd'
+                Mov B$FullWeekFmt+3 0 ; ensure it will end with 0
+                Mov B$FullWeekFmt+4 0 ; ensure it will end with 0
             Else
                 ; Found only 'dd' or 'd'
                 jmp Z5>>
             End_If
 
             ; Compare the full week name and mark it as a dword already.
-            mov edx ecx ; edx = starting address of the found string.
-            mov ecx 1
+            Mov edx ecx ; edx = starting address of the found string.
+            Mov ecx 1
 
             .Do
 
-                call GetDayofWeekinCurrentMonth ecx, FullWeekFmt, TimeBuffer; 0 = monday
-                mov D@TmpDayofWeek eax
-                call StrLenProc D@DateString
-                mov esi eax
-                call StrLenProc TimeBuffer
-                mov D@FoundSourceLen eax
-                call SBMBinSearch 0, D@DateString, esi, TimeBuffer, eax
+                Call GetDayofWeekinCurrentMonth ecx, FullWeekFmt, TimeBuffer; 0 = monday
+                Mov D@TmpDayofWeek eax
+                Call StrLenProc D@DateString
+                Mov esi eax
+                Call StrLenProc TimeBuffer
+                Mov D@FoundSourceLen eax
+                Call SBMBinSearch 0, D@DateString, esi, TimeBuffer, eax
                 .If eax <> 0-1
-                    mov ebx eax
+                    Mov ebx eax
                     add ebx D@FoundSourceLen
                     ; The String was found
                     ; At eax we have the pos (in bytes) where the string starts.
                     ; At ebx we have ending pos of the found string
-                    mov edi TimeMap
+                    Mov edi TimeMap
                     If D@UseFullWeek_Month = &FALSE
-                        mov esi D@DateFmt
+                        Mov esi D@DateFmt
                     Else
-                        mov esi NewDateBuffer
+                        Mov esi NewDateBuffer
                     End_If
                     ; Copy the initial part before the changes
-                    mov ecx edx
+                    Mov ecx edx
                     rep movsb
-                    mov B$edi 0
+                    Mov B$edi 0
 
                    ; Copy the changed part
-                    mov ecx ebx
+                    Mov ecx ebx
                     sub ecx eax
-                    mov al 'z'
+                    Mov al 'z'
                     rep stosb
 
                     ; Copy the final part to the new changed one.
 
                     If D@UseFullWeek_Month = &FALSE
-                        mov esi D@DateFmt
+                        Mov esi D@DateFmt
                     Else
-                        mov esi NewDateBuffer
+                        Mov esi NewDateBuffer
                     End_If
 
                     add esi edx
@@ -1352,11 +1352,11 @@ L1:
                         movsb
                     End_While
 
-                    mov B$edi 0
-                    mov esi TimeMap
-                    mov edi NewDateBuffer
+                    Mov B$edi 0
+                    Mov esi TimeMap
+                    Mov edi NewDateBuffer
                     push esi | ZCopy TimeMap | pop esi
-                    mov D@UseFullWeek_Month &TRUE
+                    Mov D@UseFullWeek_Month &TRUE
 
                     jmp L1<< ; do again to we see if we don´ have the 'MMMM' format type
 
@@ -1367,58 +1367,58 @@ L1:
         ..Else_If W$esi = 'MM'
 
             If W$esi+2 = 'MM' ; is it 'MMMM' ?
-                mov D$FullWeekFmt 'MMMM'
-                mov B$FullWeekFmt+4 0 ; ensure it will end with 0
+                Mov D$FullWeekFmt 'MMMM'
+                Mov B$FullWeekFmt+4 0 ; ensure it will end with 0
             Else_If B$esi+2 = 'M' ; is it 'MMM' ?
-                mov W$FullWeekFmt 'MM'
-                mov B$FullWeekFmt+2 'M'
-                mov B$FullWeekFmt+3 0 ; ensure it will end with 0
-                mov B$FullWeekFmt+4 0 ; ensure it will end with 0
+                Mov W$FullWeekFmt 'MM'
+                Mov B$FullWeekFmt+2 'M'
+                Mov B$FullWeekFmt+3 0 ; ensure it will end with 0
+                Mov B$FullWeekFmt+4 0 ; ensure it will end with 0
             Else
                 jmp Z5>> ; Found only 'MM' or 'M'
             End_If
             ; Compare the full week name and mark it as a dword already.
-            mov edx ecx ; edx = starting address of the found string.
-            mov ecx 1
+            Mov edx ecx ; edx = starting address of the found string.
+            Mov ecx 1
 
             .Do
 
-                call GetMonthStringandValue ecx, FullWeekFmt, TimeBuffer; 0 = monday
-                mov D@TmpMonth eax
-                call StrLenProc D@DateString
-                mov esi eax
-                call StrLenProc TimeBuffer
-                mov D@FoundSourceLen eax
-                call SBMBinSearch 0, D@DateString, esi, TimeBuffer, eax
+                Call GetMonthStringandValue ecx, FullWeekFmt, TimeBuffer; 0 = monday
+                Mov D@TmpMonth eax
+                Call StrLenProc D@DateString
+                Mov esi eax
+                Call StrLenProc TimeBuffer
+                Mov D@FoundSourceLen eax
+                Call SBMBinSearch 0, D@DateString, esi, TimeBuffer, eax
                 .If eax <> 0-1
-                    mov ebx eax
+                    Mov ebx eax
                     add ebx D@FoundSourceLen
                     ; The String was found
                     ; At eax we have the pos (in bytes) where the string starts.
                     ; At ebx we have ending pos of the found string
-                    mov edi TimeMap
+                    Mov edi TimeMap
 
                     ; Copy the initial part before the changes
                     If D@UseFullWeek_Month = &FALSE
-                        mov esi D@DateFmt
+                        Mov esi D@DateFmt
                     Else
-                        mov esi NewDateBuffer
+                        Mov esi NewDateBuffer
                     End_If
-                    mov ecx edx
+                    Mov ecx edx
                     rep movsb
-                    mov B$edi 0
+                    Mov B$edi 0
 
                    ; Copy the changed part
-                    mov ecx ebx
+                    Mov ecx ebx
                     sub ecx eax
-                    mov al 'x'
+                    Mov al 'x'
                     rep stosb
 
                     ; Copy the final part to the new changed one.
                     If D@UseFullWeek_Month = &FALSE
-                        mov esi D@DateFmt
+                        Mov esi D@DateFmt
                     Else
-                        mov esi NewDateBuffer
+                        Mov esi NewDateBuffer
                     End_If
                     add esi edx
 
@@ -1432,11 +1432,11 @@ L1:
                         movsb
                     End_While
 
-                    mov B$edi 0
-                    mov esi TimeMap
-                    mov edi NewDateBuffer
+                    Mov B$edi 0
+                    Mov esi TimeMap
+                    Mov edi NewDateBuffer
                     push esi | ZCopy TimeMap | pop esi
-                    mov D@UseFullWeek_Month &TRUE
+                    Mov D@UseFullWeek_Month &TRUE
                     jmp L1<< ; do again to we see if we don´ have the 'MMMM' format type
 
                 .End_If
@@ -1455,41 +1455,41 @@ Z5:
     xor ecx ecx ; clear ecx
 
     If D@UseFullWeek_Month = &TRUE
-        mov esi NewDateBuffer
+        Mov esi NewDateBuffer
     Else
-        mov esi D@DateFmt
+        Mov esi D@DateFmt
     End_If
 
     .While B$esi <> 0
 
         ..If D$esi = 'yyyy'
-            mov esi D@DateString
+            Mov esi D@DateString
             add esi ecx
             movsd       ; copy the Decimal String (Minute) to the buffer
-            mov B$edi 0 ; ensure it ends with 0
+            Mov B$edi 0 ; ensure it ends with 0
             sub edi 4   ; decrease it by 2 to ensure it will point to the start of the string.
-            call String2Dword edi ; convert the Decimal String to Dword
+            Call String2Dword edi ; convert the Decimal String to Dword
             ; At eax we have the dword value of the Year. Now we need to put it on the St_UTC structure
-            mov D@TmpYear eax
+            Mov D@TmpYear eax
             jmp @YearFound
 
         ..Else_If B$esi = 'y' ; In any case (yy or y), we must check with the actual system date, because we are dealing with decade.
                               ; It means that the year is smaller then 10
             .If B$esi+1 = 'y' ; Is it of the Format 'mm' ?
-                mov esi D@DateString
+                Mov esi D@DateString
                 add esi ecx
                 movsw       ; copy the Decimal String (Minute) to the buffer
-                mov B$edi 0 ; ensure it ends with 0
+                Mov B$edi 0 ; ensure it ends with 0
                 sub edi 2   ; decrease it by 2 to ensure it will point to the start of the string.
             .Else
                 ; Found only the 'y' time format. Check the byte immediate after it to get the end of the string
                 ; ecx = starting point of the address
                 movzx edx B$esi+1 ; edx is the ending char we need to find.
 
-                mov esi D@DateString
+                Mov esi D@DateString
                 add esi ecx ; esi is now the starting address
                 push esi
-                    mov eax 0 ; Our byte counter
+                    Mov eax 0 ; Our byte counter
                     While B$esi <> dl ; is it equal to the lower part of edx ? (The lower part is where it is stored our char)
                         inc eax
                         inc esi
@@ -1498,27 +1498,27 @@ Z5:
 
                 If eax = 1
                     movsb
-                    mov B$edi 0 ; ensure it ends with 0
+                    Mov B$edi 0 ; ensure it ends with 0
                 Else
                     movsw
-                    mov B$edi 0 ; ensure it ends with 0
+                    Mov B$edi 0 ; ensure it ends with 0
                 End_If
                 sub edi eax
             .End_If
 
-            call String2Dword edi ; convert the Decimal String to Dword
-            mov ecx eax ; copy the Date Value to ecx
+            Call String2Dword edi ; convert the Decimal String to Dword
+            Mov ecx eax ; copy the Date Value to ecx
             ; Now, since we are dealing with 'yy' or 'y' format, we have to find which full year we are.
             ; This is because the formats we are parsing refers to the current decade (values from 0 to 9).
             ; For example. now it is year 2006. If we found a value of 02, it means that the year we parsed is 2002
 
-            call CurrentDateStampToString {"yyyy", 0}, edi, &NULL, &NULL
-            mov B$edi+3 '0' ; Zero the last String Byte. Ex: 2006 turns onto 2000
+            Call CurrentDateStampToString {"yyyy", 0}, edi, &NULL, &NULL
+            Mov B$edi+3 '0' ; Zero the last String Byte. Ex: 2006 turns onto 2000
 
-            call String2Dword edi ; convert the Decimal String to Dword
+            Call String2Dword edi ; convert the Decimal String to Dword
             add eax ecx ; eax = eax+ecx (2000+6)
             ; At eax we have the dword value of the Year. Now we need to put it on the St_UTC structure
-            mov D@TmpYear eax
+            Mov D@TmpYear eax
             jmp @YearFound
 
         ..End_If
@@ -1527,21 +1527,21 @@ Z5:
     .End_While
 
 @YearNotFound:
-    mov W$St_UTC.wYear 0  ; Could not find any Hours chars. It is possible that it is something wrong with the Hour Format
+    Mov W$St_UTC.wYear 0  ; Could not find any Hours chars. It is possible that it is something wrong with the Hour Format
                             ; so we settle the Hour to 0.
 
 @YearFound:
 
 
     ; 3rd Locate the Day of Month chars. It can be 'dd', 'd'
-    mov edi TimeBuffer
+    Mov edi TimeBuffer
 
     xor ecx ecx ; clear ecx
 
     If D@UseFullWeek_Month = &TRUE
-        mov esi NewDateBuffer
+        Mov esi NewDateBuffer
     Else
-        mov esi D@DateFmt
+        Mov esi D@DateFmt
     End_If
 
 
@@ -1549,20 +1549,20 @@ Z5:
 
         ..If B$esi = 'd'
             .If B$esi+1 = 'd' ; Is it of the Format 'dd' ?
-                mov esi D@DateString
+                Mov esi D@DateString
                 add esi ecx
                 movsw       ; copy the Decimal String (Minute) to the buffer
-                mov B$edi 0 ; ensure it ends with 0
+                Mov B$edi 0 ; ensure it ends with 0
                 sub edi 2   ; decrease it by 2 to ensure it will point to the start of the string.
             .Else
                 ; Found only the 's' time format. Check the byte immediate after it to get the endof the string
                 ; ecx = starting point of the address
                 movzx edx B$esi+1 ; edx is the ending char we need to find.
 
-                mov esi D@DateString
+                Mov esi D@DateString
                 add esi ecx ; esi is now the starting address
                 push esi
-                    mov eax 0 ; Our byte counter
+                    Mov eax 0 ; Our byte counter
                     While B$esi <> dl ; is it equal to the lower part of edx ? (The lower part is where it is stored our char)
                         inc eax
                         inc esi
@@ -1570,17 +1570,17 @@ Z5:
                 pop esi
                 If eax = 1
                     movsb
-                    mov B$edi 0 ; ensure it ends with 0
+                    Mov B$edi 0 ; ensure it ends with 0
                 Else
                     movsw
-                    mov B$edi 0 ; ensure it ends with 0
+                    Mov B$edi 0 ; ensure it ends with 0
                 End_If
                 sub edi eax
             .End_If
 
-            call String2Dword edi ; convert the Decimal String to Dword
+            Call String2Dword edi ; convert the Decimal String to Dword
             ; At eax we have the dword value of the Hour. Now we need to put it on the St_UTC structure
-            mov D@TmpDay eax
+            Mov D@TmpDay eax
             jmp @DayofMonth
 
         ..End_If
@@ -1589,7 +1589,7 @@ Z5:
     .End_While
 
 @DayofMonthNotFound:
-    mov W$St_UTC.wDay 0  ; Could not find any Hours chars. It is possible that it is something wrong with the Hour Format
+    Mov W$St_UTC.wDay 0  ; Could not find any Hours chars. It is possible that it is something wrong with the Hour Format
                             ; so we settle the Hour to 0.
 
 @DayofMonth:
@@ -1597,14 +1597,14 @@ Z5:
 
 
     ; 3rd Locate the Month chars. It can be 'MM', 'M'
-    mov edi TimeBuffer
+    Mov edi TimeBuffer
 
     xor ecx ecx ; clear ecx
 
     If D@UseFullWeek_Month = &TRUE
-        mov esi NewDateBuffer
+        Mov esi NewDateBuffer
     Else
-        mov esi D@DateFmt
+        Mov esi D@DateFmt
     End_If
 
 
@@ -1612,20 +1612,20 @@ Z5:
 
         ..If B$esi = 'M'
             .If B$esi+1 = 'M' ; Is it of the Format 'dd' ?
-                mov esi D@DateString;D@TimeString
+                Mov esi D@DateString;D@TimeString
                 add esi ecx
                 movsw       ; copy the Decimal String (Minute) to the buffer
-                mov B$edi 0 ; ensure it ends with 0
+                Mov B$edi 0 ; ensure it ends with 0
                 sub edi 2   ; decrease it by 2 to ensure it will point to the start of the string.
             .Else
                 ; Found only the 's' time format. Check the byte immediate after it to get the endof the string
                 ; ecx = starting point of the address
                 movzx edx B$esi+1 ; edx is the ending char we need to find.
 
-                mov esi D@DateString
+                Mov esi D@DateString
                 add esi ecx ; esi is now the starting address
                 push esi
-                    mov eax 0 ; Our byte counter
+                    Mov eax 0 ; Our byte counter
                     While B$esi <> dl ; is it equal to the lower part of edx ? (The lower part is where it is stored our char)
                         inc eax
                         inc esi
@@ -1633,17 +1633,17 @@ Z5:
                 pop esi
                 If eax = 1
                     movsb
-                    mov B$edi 0 ; ensure it ends with 0
+                    Mov B$edi 0 ; ensure it ends with 0
                 Else
                     movsw
-                    mov B$edi 0 ; ensure it ends with 0
+                    Mov B$edi 0 ; ensure it ends with 0
                 End_If
                 sub edi eax
             .End_If
 
-            call String2Dword edi ; convert the Decimal String to Dword
+            Call String2Dword edi ; convert the Decimal String to Dword
             ; At eax we have the dword value of the Hour. Now we need to put it on the St_UTC structure
-            mov D@TmpMonth eax
+            Mov D@TmpMonth eax
             jmp @Month
 
         ..End_If
@@ -1652,7 +1652,7 @@ Z5:
     .End_While
 
 @MonthNotFound:
-    mov W$St_UTC.wMonth 0  ; Could not find any Hours chars. It is possible that it is something wrong with the Hour Format
+    Mov W$St_UTC.wMonth 0  ; Could not find any Hours chars. It is possible that it is something wrong with the Hour Format
                             ; so we settle the Hour to 0.
 @Month:
 
@@ -1671,9 +1671,9 @@ Z5:
     move W$St_UTC.wHour W@TmpHour
     move W$St_UTC.wMinute W@TmpMinute
     move W$St_UTC.wSecond W@TmpSecond
-    mov W$St_UTC.wMilliseconds 0
+    Mov W$St_UTC.wMilliseconds 0
 
-    call 'KERNEL32.SystemTimeToFileTime' St_UTC, St_DateTimeStamp
+    Call 'KERNEL32.SystemTimeToFileTime' St_UTC, St_DateTimeStamp
 
 
 ; _________________________________________________________________
@@ -1681,30 +1681,30 @@ Z5:
 ; _________________________________________________________________
 
 
-        mov eax D$St_DateTimeStamp.dwLowDateTime
-        mov edx D$St_DateTimeStamp.dwHighDateTime
+        Mov eax D$St_DateTimeStamp.dwLowDateTime
+        Mov edx D$St_DateTimeStamp.dwHighDateTime
 
 
         sub eax &EPOCH_DIFF_SECS_INTERVAL_LOW
         sbb edx &EPOCH_DIFF_SECS_INTERVAL_HIGH
 
         ; The following routines are used to divide a Qword with a Dword
-        mov D$St_DateTimeStamp.dwLowDateTime eax
-        mov D$St_DateTimeStamp.dwHighDateTime edx
+        Mov D$St_DateTimeStamp.dwLowDateTime eax
+        Mov D$St_DateTimeStamp.dwHighDateTime edx
 
         xor edx edx
         xor eax eax
 
-        mov eax D$St_DateTimeStamp.dwHighDateTime
-        mov ecx &SECS_TO_100NS
+        Mov eax D$St_DateTimeStamp.dwHighDateTime
+        Mov ecx &SECS_TO_100NS
         div ecx
 
-        mov eax D$St_DateTimeStamp.dwLowDateTime
-        mov ecx &SECS_TO_100NS
+        Mov eax D$St_DateTimeStamp.dwLowDateTime
+        Mov ecx &SECS_TO_100NS
         div ecx
 
-        mov edi D@TimeStamp
-        mov D$edi eax
+        Mov edi D@TimeStamp
+        Mov D$edi eax
 
 ;;
 Error Types:
@@ -1784,14 +1784,14 @@ Usage Examples:
 a)
 
 [TimeBuffer: B$ 0 #80]
-        call GetMonthStringandValue 2, {"MMMM", 0}, TimeBuffer
+        Call GetMonthStringandValue 2, {"MMMM", 0}, TimeBuffer
 
     It will output on the timeBuffer the string "february" (Of course, depending of the language on your system).
     At eax it will output the value of the month. In case it is 2 (The same as the input).
 b)
 
 [TimeBuffer: B$ 0 #80]
-        call GetMonthStringandValue 2, {"MMM", 0}, TimeBuffer
+        Call GetMonthStringandValue 2, {"MMM", 0}, TimeBuffer
 
     It will output on the timeBuffer the string "feb" (Of course, depending of the language on your system).
     At eax it will output the value of the month. In case it is 2 (The same as the input).
@@ -1804,16 +1804,16 @@ Proc GetDayofWeekinCurrentMonth:
     Local @CurrentDay, @Weekday
 
     pushad
-        call 'KERNEL32.GetLocalTime' D@St_UTC
+        Call 'KERNEL32.GetLocalTime' D@St_UTC
         movzx eax W@St_UTC.wDayDis
         push eax
-            mov ecx D@InputDay
-            mov W@St_UTC.wDayDis cx
-            call 'KERNEL32.GetDateFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@DateFmt D@DateOut &MAX_UTC_TIME_LEN
+            Mov ecx D@InputDay
+            Mov W@St_UTC.wDayDis cx
+            Call 'KERNEL32.GetDateFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@DateFmt D@DateOut &MAX_UTC_TIME_LEN
         pop eax
         ; current Day. 5 = Friday ; 6 Saturday, 0 Sunday, 1 Monday ...
         movzx ecx W@InputDay
-        mov W@St_UTC.wDayDis cx ; inputed day
+        Mov W@St_UTC.wDayDis cx ; inputed day
         move W@Weekday W@St_UTC.wDayOfWeekDis
         ; Calculate the dword value related to the day-of-the-week to be found
         .If eax >= ecx ; If current day is bigger or equal to the inputed day
@@ -1823,7 +1823,7 @@ Proc GetDayofWeekinCurrentMonth:
                 dec eax ; decrease current day
                 dec W@St_UTC.wDayOfWeekDis
                 If W@St_UTC.wDayOfWeekDis = 0-1 ; when we reach here. we are on Saturday. so we must set it to the proper value
-                    mov W@St_UTC.wDayOfWeekDis 6 ; Saturday
+                    Mov W@St_UTC.wDayOfWeekDis 6 ; Saturday
                 End_If
 
             .End_While
@@ -1836,7 +1836,7 @@ Proc GetDayofWeekinCurrentMonth:
                 inc eax ; increase current day
                 inc W@St_UTC.wDayOfWeekDis
                 If W@St_UTC.wDayOfWeekDis = 7 ; when we reach here. we are on Sunday. so we must set it to the proper value
-                    mov W@St_UTC.wDayOfWeekDis 0 ; Sunday
+                    Mov W@St_UTC.wDayOfWeekDis 0 ; Sunday
                 End_If
 
             .End_While
@@ -1917,14 +1917,14 @@ Usage Examples:
 a)
 
 [TimeBuffer: B$ 0 #80]
-        call GetMonthStringandValue 2, {"MMMM", 0}, TimeBuffer
+        Call GetMonthStringandValue 2, {"MMMM", 0}, TimeBuffer
 
     It will output on the timeBuffer the string "february" (Of course, depending of the language on your system).
     At eax it will output the value of the month. In case it is 2 (The same as the input).
 b)
 
 [TimeBuffer: B$ 0 #80]
-        call GetMonthStringandValue 2, {"MMM", 0}, TimeBuffer
+        Call GetMonthStringandValue 2, {"MMM", 0}, TimeBuffer
 
     It will output on the timeBuffer the string "feb" (Of course, depending of the language on your system).
     At eax it will output the value of the month. In case it is 2 (The same as the input).
@@ -1937,15 +1937,15 @@ Proc GetMonthStringandValue:
     Local @CurrentDay, @Weekday
 
     pushad
-        call 'KERNEL32.GetLocalTime' D@St_UTC
+        Call 'KERNEL32.GetLocalTime' D@St_UTC
         movzx eax W@St_UTC.wMonthDis ; 1 = January ; 2 = February ; 3 = March....; 12 = December
         push eax
-            mov ecx D@InputMonth
-            mov W@St_UTC.wMonthDis cx
-            call 'KERNEL32.GetDateFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@DateFmt D@DateOut &MAX_UTC_TIME_LEN
+            Mov ecx D@InputMonth
+            Mov W@St_UTC.wMonthDis cx
+            Call 'KERNEL32.GetDateFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@DateFmt D@DateOut &MAX_UTC_TIME_LEN
         pop eax
     popad
-        mov eax D@InputMonth
+        Mov eax D@InputMonth
 
 EndP
 
@@ -2049,7 +2049,7 @@ a)
 
 [szDateString: B$ ? #64] ; Lenght of the date string. (Maximum is &MAX_UTC_TIME_LEN)
 
-        call CurrentDateStampToString {"yyyy", 0}, szDateString, &NULL, &NULL
+        Call CurrentDateStampToString {"yyyy", 0}, szDateString, &NULL, &NULL
 
 b)
 
@@ -2057,7 +2057,7 @@ b)
 
 [szDateString: B$ ? #64] ; Lenght of the date string. (Maximum is &MAX_UTC_TIME_LEN)
 
-        call CurrentDateStampToString Sz_Year, szDateString, &NULL, &NULL
+        Call CurrentDateStampToString Sz_Year, szDateString, &NULL, &NULL
 
 c)
 
@@ -2081,7 +2081,7 @@ c)
 [Sz_Year: B$ "yyyy/MM/dd ddd ",0]
 [szDateString: B$ ? #64] ; Lenght of the date string. (Maximum is &MAX_UTC_TIME_LEN)
 
-        call CurrentDateStampToString Sz_Year, szDateString, system_time, St_DateTimeStamp
+        Call CurrentDateStampToString Sz_Year, szDateString, system_time, St_DateTimeStamp
         
 ;;
 
@@ -2094,12 +2094,12 @@ Proc CurrentDateStampToString:
     Local @St_DateTimeStamp.dwLowDateTime, @St_DateTimeStamp.dwHighDateTime
     Uses ecx, edx
 
-    call 'KERNEL32.GetLocalTime' D@St_UTC
+    Call 'KERNEL32.GetLocalTime' D@St_UTC
 
     If D@SysTimeStr <> 0
-        mov edi D@SysTimeStr
-        mov esi D@St_UTC
-        mov ecx 0
+        Mov edi D@SysTimeStr
+        Mov esi D@St_UTC
+        Mov ecx 0
         While ecx <> Size_Of_SYSTEMTIME
             movsb
             inc ecx
@@ -2107,12 +2107,12 @@ Proc CurrentDateStampToString:
     End_If
 
     lea eax D@St_DateTimeStamp.dwLowDateTime
-    call 'KERNEL32.SystemTimeToFileTime' D@St_UTC, D$eax
+    Call 'KERNEL32.SystemTimeToFileTime' D@St_UTC, D$eax
 
     If D@FileTimeStr <> 0
-        mov edi D@FileTimeStr
-        mov esi D@St_DateTimeStamp.dwLowDateTime
-        mov ecx 0
+        Mov edi D@FileTimeStr
+        Mov esi D@St_DateTimeStamp.dwLowDateTime
+        Mov ecx 0
         While ecx <> Size_Of_FILETIME
             movsb
             inc ecx
@@ -2120,8 +2120,8 @@ Proc CurrentDateStampToString:
     End_If
 
     lea eax D@St_DateTimeStamp.dwLowDateTime
-    call 'kernel32.FileTimeToSystemTime' D$eax, D@St_UTC
-    call 'KERNEL32.GetDateFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@DateFmt D@DateOut &MAX_UTC_TIME_LEN
+    Call 'kernel32.FileTimeToSystemTime' D$eax, D@St_UTC
+    Call 'KERNEL32.GetDateFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@DateFmt D@DateOut &MAX_UTC_TIME_LEN
 
 EndP
 
@@ -2215,7 +2215,7 @@ a)
 
 [szTimeString: B$ ? #64] ; Lenght of the time string. (Maximum is &MAX_UTC_TIME_LEN)
 
-        call CurrentTimeStampToString {"HH:mm:ss UTC", 0}, szTimeString, &NULL, &NULL
+        Call CurrentTimeStampToString {"HH:mm:ss UTC", 0}, szTimeString, &NULL, &NULL
 
 b)
 
@@ -2223,7 +2223,7 @@ b)
 [szTimeString: B$ ? #64] ; Lenght of the time string. (Maximum is &MAX_UTC_TIME_LEN)
 
 
-        call CurrentTimeStampToString Sz_Hour, szTimeString, &NULL, &NULL
+        Call CurrentTimeStampToString Sz_Hour, szTimeString, &NULL, &NULL
 
 c)
 
@@ -2251,7 +2251,7 @@ c)
 
 [szTimeString: B$ ? #64]
 
-        call CurrentTimeStampToString {"HH:mm:ss UTC", 0}, szTimeString, system_time, St_DateTimeStamp
+        Call CurrentTimeStampToString {"HH:mm:ss UTC", 0}, szTimeString, system_time, St_DateTimeStamp
         
 ;;
 
@@ -2262,11 +2262,11 @@ Proc CurrentTimeStampToString:
 
     pushad
 
-    call 'KERNEL32.GetLocalTime' D@St_UTC
+    Call 'KERNEL32.GetLocalTime' D@St_UTC
     If D@SysTimeStr <> 0
-        mov edi D@SysTimeStr
-        mov esi D@St_UTC
-        mov ecx 0
+        Mov edi D@SysTimeStr
+        Mov esi D@St_UTC
+        Mov ecx 0
         While ecx <> Size_Of_SYSTEMTIME
             movsb
             inc ecx
@@ -2274,12 +2274,12 @@ Proc CurrentTimeStampToString:
     End_If
 
     lea eax D@St_DateTimeStamp.dwLowDateTime
-    call 'KERNEL32.SystemTimeToFileTime' D@St_UTC, D$eax
+    Call 'KERNEL32.SystemTimeToFileTime' D@St_UTC, D$eax
 
     If D@FileTimeStr <> 0
-        mov edi D@FileTimeStr
-        mov esi D@St_DateTimeStamp.dwLowDateTime
-        mov ecx 0
+        Mov edi D@FileTimeStr
+        Mov esi D@St_DateTimeStamp.dwLowDateTime
+        Mov ecx 0
         While ecx <> Size_Of_FILETIME
             movsb
             inc ecx
@@ -2287,8 +2287,8 @@ Proc CurrentTimeStampToString:
     End_If
 
     lea eax D@St_DateTimeStamp.dwLowDateTime
-    call 'kernel32.FileTimeToSystemTime' D$eax D@St_UTC
-    call 'KERNEL32.GetTimeFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@TimeFmt D@TimeOut &MAX_UTC_TIME_LEN
+    Call 'kernel32.FileTimeToSystemTime' D$eax D@St_UTC
+    Call 'KERNEL32.GetTimeFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@TimeFmt D@TimeOut &MAX_UTC_TIME_LEN
 
     popad
 EndP
@@ -2449,14 +2449,14 @@ a)
 [szDateString: B$ ? #64] ; Lenght of the time string. (Maximum is &MAX_UTC_TIME_LEN)
 [szTimeString: B$ ? #64] ; Lenght of the time string. (Maximum is &MAX_UTC_TIME_LEN)
 
-        call DOSTimeDateStampToString 024CF774A {"yyyy/MM/dd ddd ", 0} {"HH:mm:ss UTC", 0} szDateString szTimeString
+        Call DOSTimeDateStampToString 024CF774A {"yyyy/MM/dd ddd ", 0} {"HH:mm:ss UTC", 0} szDateString szTimeString
 b)
 
 [szDateString: B$ ? #64] ; Lenght of the time string. (Maximum is &MAX_UTC_TIME_LEN)
 [szTimeString: B$ ? #64] ; Lenght of the time string. (Maximum is &MAX_UTC_TIME_LEN)
 [DosDateStamp: D$ 024CF774A]
 
-        call DOSTimeDateStampToString D$DosDateStamp {"yyyy/MM/dd ddd ", 0} {"HH:mm:ss UTC", 0} szDateString szTimeString
+        Call DOSTimeDateStampToString D$DosDateStamp {"yyyy/MM/dd ddd ", 0} {"HH:mm:ss UTC", 0} szDateString szTimeString
 ;;
 
 
@@ -2470,13 +2470,13 @@ Proc DOSTimeDateStampToString:
         movzx ecx W@TimeStamp+2 ; DosFatTime
 
         lea eax D@St_DateTimeStamp.dwLowDateTime
-        call 'kernel32.DosDateTimeToFileTime' ecx, edx, D$eax
+        Call 'kernel32.DosDateTimeToFileTime' ecx, edx, D$eax
 
         lea eax D@St_DateTimeStamp.dwLowDateTime
-        call 'kernel32.FileTimeToSystemTime' D$eax, D@St_UTC
+        Call 'kernel32.FileTimeToSystemTime' D$eax, D@St_UTC
 
-        call 'KERNEL32.GetDateFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@DateFmt D@DateOut &MAX_UTC_TIME_LEN
-        call 'KERNEL32.GetTimeFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@TimeFmt D@TimeOut &MAX_UTC_TIME_LEN
+        Call 'KERNEL32.GetDateFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@DateFmt D@DateOut &MAX_UTC_TIME_LEN
+        Call 'KERNEL32.GetTimeFormatA' &LOCALE_SYSTEM_DEFAULT &NULL D@St_UTC D@TimeFmt D@TimeOut &MAX_UTC_TIME_LEN
     popad
 EndP
 _____________________________________________________________________________________________________________________
@@ -2575,14 +2575,14 @@ Return Values:
 Usage Examples:
 
 a)
-    call SBMBinSearch 0, {"Hi, my name is Guga. Now i´m typing this", 0}, 40, {"Guga", 0}, 4
+    Call SBMBinSearch 0, {"Hi, my name is Guga. Now i´m typing this", 0}, 40, {"Guga", 0}, 4
     
 b)
 
 [Data01: B$ 055 025 014 0 058 0 0 0 025 099 0FA 0DE 045 0DD]
 [Data02: B$ 025 099 0FA 0DE 045]
     
-    call SBMBinSearch 0, Data01, 14, Data02, 5
+    Call SBMBinSearch 0, Data01, 14, Data02, 5
 
 
 Authors:
@@ -2596,47 +2596,47 @@ Proc SBMBinSearch:
     Arguments @startpos, @lpSource, @srcLngth, @lpSubStr, @subLngth
     Uses ebx, esi, edi, ecx, edx
 
-    mov edx D@subLngth
+    Mov edx D@subLngth
 
     cmp edx 1 | jg @StrSizeOk
-        mov eax 0-2     ; string too short, must be > 1
+        Mov eax 0-2     ; string too short, must be > 1
 jmp @Cleanup
 
 @StrSizeOk: F4:
-    mov esi D@lpSource
+    Mov esi D@lpSource
     add esi D@srcLngth
     sub esi edx
-    mov ebx esi      ; set Exit Length
+    Mov ebx esi      ; set Exit Length
 
   ; ----------------------------------------
   ; load shift table with value in subLngth
   ; ----------------------------------------
-    mov ecx 256
-    mov eax edx
+    Mov ecx 256
+    Mov eax edx
     lea edi D$shift_table
     rep stosd
 
   ; ----------------------------------------------
   ; load decending count values into shift table
   ; ----------------------------------------------
-    mov ecx edx         ; SubString length in ECX
+    Mov ecx edx         ; SubString length in ECX
     dec ecx             ; correct for zero based index
-    mov esi D@lpSubStr   ; address of SubString in ESI
+    Mov esi D@lpSubStr   ; address of SubString in ESI
     lea edi D$shift_table
     xor eax eax
 
 @Write_Shift_Chars:
-    mov al B$esi        ; get the character
+    Mov al B$esi        ; get the character
     inc esi
-    mov D$edi+eax*4 ecx ; write shift for each character
+    Mov D$edi+eax*4 ecx ; write shift for each character
     dec ecx | jne @Write_Shift_Chars ; to ascii location in table
 
   ; -----------------------------
   ; set up for main compare loop
   ; -----------------------------
 
-    mov esi D@lpSource
-    mov edi D@lpSubStr
+    Mov esi D@lpSource
+    Mov edi D@lpSubStr
     dec edx
     xor eax eax         ; zero EAX
     add esi D@startpos    ; add starting position
@@ -2645,17 +2645,17 @@ jmp @Cmp_Loop
 @Calc_Suffix_Shift: L6:
     add ecx D$eax*4+shift_table   ; add shift value to loop counter
     sub ecx edx | jns @Pre_Compare        ; sub pattern length
-    mov ecx 01              ; minimum shift is 1
+    Mov ecx 01              ; minimum shift is 1
 
 @Pre_Compare: N2:
     add esi ecx     ; add suffix shift
-    mov ecx edx     ; reset counter for compare loop
+    Mov ecx edx     ; reset counter for compare loop
 
 @Exit_Text: N6:
     cmp ebx esi | jl @No_Match ; test exit condition
 
     xor eax eax         ; clear EAX for following partial writes
-    mov al B$ecx+esi
+    Mov al B$ecx+esi
     cmp al B$ecx+edi | je @KeepScan    ; cmp characters in ESI / EDI
     add esi D$eax*4+shift_table
 jmp @Exit_Text
@@ -2665,17 +2665,17 @@ jmp @Exit_Text
     xor eax eax         ; clear EAX for following partial writes
 
 @Cmp_Loop: A2:
-    mov al B$ecx+esi
+    Mov al B$ecx+esi
     cmp al B$ecx+edi | jne @Calc_Suffix_Shift ; cmp characters in ESI / EDI
     dec ecx | jns @Cmp_Loop  ; if not equal, get next shift
 
 @Match: ; match on fall through
     sub esi D@lpSource  ; sub source from ESI
-    mov eax esi         ; put length in eax
+    Mov eax esi         ; put length in eax
 jmp @Cleanup
 
 @No_Match: C2:
-    mov eax 0-1
+    Mov eax 0-1
 
 @Cleanup:
 

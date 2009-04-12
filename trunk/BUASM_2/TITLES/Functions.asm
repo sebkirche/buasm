@@ -6723,10 +6723,10 @@ ________________________________________________________________________________
  
  Only the usual Functions are available, actually.", 0]
 
-; In: edx = start of possible Api call (DLL or Function)
+; In: edx = start of possible Api Call (DLL or Function)
 
 WinApiFirstPass:
-    dec edx | mov esi edx
+    dec edx | Mov esi edx
 
     While B$esi-1 <> '.'
         inc esi
@@ -6737,13 +6737,13 @@ WinApiFirstPass:
         End_If
     End_While
 
-    mov edi Win32Functions, ecx 0
+    Mov edi Win32Functions, ecx 0
 
     .While edi < EndOfFunctionsList
-        mov al B$esi+ecx
+        Mov al B$esi+ecx
 
         ..If al > B$edi+ecx
-            While B$edi <> LF | inc edi | End_While | inc edi | mov ecx 0
+            While B$edi <> LF | inc edi | End_While | inc edi | Mov ecx 0
 
         ..Else_If al < B$edi+ecx
             ret
@@ -6752,13 +6752,13 @@ WinApiFirstPass:
             inc ecx
             .If B$edi+ecx = CR
               ; Name in List shorter than Source one:
-                add edi ecx | add edi 2 | mov ecx 0
+                add edi ecx | add edi 2 | Mov ecx 0
             .Else
                 If B$esi+ecx+1 = '"'
-                    call SearchInFunctionsFile
+                    Call SearchInFunctionsFile
                     VirtualFree D$Win32ApiList
                 Else_If B$esi+ecx+1 = "'"
-                    call SearchInFunctionsFile
+                    Call SearchInFunctionsFile
                     VirtualFree D$Win32ApiList
                 End_If
             .End_If
@@ -6769,14 +6769,14 @@ ret
 
 
 SearchInFunctionsFile:
-    mov edx esi | call OpenApiFunctionsFile | On B$ApiFileOK = &FALSE, ret
+    Mov edx esi | Call OpenApiFunctionsFile | On B$ApiFileOK = &FALSE, ret
 
 DirectSearchInFunctionsFile:
-    mov edi D$Win32ApiList
+    Mov edi D$Win32ApiList
 
-L1: mov esi edx, ecx D$ApiFileSize | sub ecx edi | add ecx D$Win32ApiList
+L1: Mov esi edx, ecx D$ApiFileSize | sub ecx edi | add ecx D$Win32ApiList
 
-    mov al '.' | repne scasb
+    Mov al '.' | repne scasb
     repe cmpsb
     ...If B$esi-1 = "'"
 L2:     ..If B$edi-1 = '('
@@ -6784,46 +6784,46 @@ L2:     ..If B$edi-1 = '('
             While B$edi <> CR
                dec edi
             End_While
-            mov esi edi, edi OneApiInfo, ecx 800
+            Mov esi edi, edi OneApiInfo, ecx 800
             movsw
-            mov eax 'call' | stosd |  mov ax " '" | stosw
+            Mov eax 'call' | stosd |  Mov ax " '" | stosw
 L5:         lodsb
             .If al = '('
-                mov al "'" | stosb
+                Mov al "'" | stosb
                 If B$esi <> CR
-                    mov al 0 | stosb | jmp L8>>
+                    Mov al 0 | stosb | jmp L8>>
                 End_If
-                mov al ','
+                Mov al ','
             .End_If
             stosb | cmp al LF | jne L5<
 
           ; Compute the Max Pos of Comments, for aligned presentation:
             push esi
-                mov D$ApiComment 0, D$ApiCommentMax 0
+                Mov D$ApiComment 0, D$ApiCommentMax 0
                 While B$esi <> ')'
                     lodsb | inc D$ApiComment
                     If al = ';'
-                        mov eax D$ApiCommentMax
+                        Mov eax D$ApiCommentMax
                         On D$ApiComment > eax, move D$ApiCommentMax D$ApiComment
                     Else_If al = LF
-                        mov D$ApiComment 0
+                        Mov D$ApiComment 0
                     End_If
                 End_While
             pop esi
 
-            mov eax '    ' | stosd | mov D$ApiComment 0 | add D$ApiCommentMax 8
+            Mov eax '    ' | stosd | Mov D$ApiComment 0 | add D$ApiCommentMax 8
 L5:         lodsb | stosb | inc D$ApiComment
             If al = LF
-                mov eax '    ' | stosd | mov D$ApiComment 0
+                Mov eax '    ' | stosd | Mov D$ApiComment 0
             Else_If al = ';'
                 dec edi
-                mov ecx D$ApiCommentMax | sub ecx D$ApiComment
-                mov al ' ' | rep stosb
-                mov al ';' | stosb
+                Mov ecx D$ApiCommentMax | sub ecx D$ApiComment
+                Mov al ' ' | rep stosb
+                Mov al ';' | stosb
             End_If
             cmp al ')' | jne L5<
-            mov B$edi 0, B$edi-1 ' '
-L8:         call 'USER32.DialogBoxParamA' D$hInstance 1000  &NULL ShowApiInfo &NULL
+            Mov B$edi 0, B$edi-1 ' '
+L8:         Call 'USER32.DialogBoxParamA' D$hInstance 1000  &NULL ShowApiInfo &NULL
             ret
         ..End_If
     ...Else_If B$esi-1 = '"'
@@ -6834,7 +6834,7 @@ L3:     On B$esi = "'", jmp L2<<
     ...Else_If B$esi-1 = 'W'
         jmp L3<
     ...End_If
-    mov al ')' | repne scasb | cmp B$edi 0 | je L9>
+    Mov al ')' | repne scasb | cmp B$edi 0 | je L9>
     add esi 2                                          ; +2 for CR/LF
         jmp L1<<
 L9:ret
@@ -6844,7 +6844,7 @@ L9:ret
 
 OpenApiFunctionsFile:  ; Like 'OpenStructureFile'
     pushad
-        mov esi EquatesName, edi IncludeFileName
+        Mov esi EquatesName, edi IncludeFileName
         While B$esi <> 0 | movsb | End_While
         dec edi
         While B$edi <> '.' | dec edi | End_While
@@ -6854,28 +6854,28 @@ L0:     dec edi | cmp B$edi '\' | je L1>
                   cmp edi IncludeFileName | ja L0<
                     jmp L2>
 L1:     inc edi
-L2:     mov D$edi 'Func', D$edi+4 'tion', D$edi+8 's.ap', B$edi+12 'i', B$edi+13 0
+L2:     Mov D$edi 'Func', D$edi+4 'tion', D$edi+8 's.ap', B$edi+12 'i', B$edi+13 0
 
-        call 'KERNEL32.CreateFileA' IncludeFileName &GENERIC_READ, &FILE_SHARE_READ, 0,
+        Call 'KERNEL32.CreateFileA' IncludeFileName &GENERIC_READ, &FILE_SHARE_READ, 0,
                                     &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
 
         .If eax = &INVALID_HANDLE_VALUE
-            call Help B_U_AsmName, IncludeFilesHelp, RosAsmHlpMessage
+            Call Help B_U_AsmName, IncludeFilesHelp, RosAsmHlpMessage
 
-            mov B$ApiFileOK &FALSE
+            Mov B$ApiFileOK &FALSE
 
         .Else
-            mov D$ApiFileHandle eax
+            Mov D$ApiFileHandle eax
 
-            call 'KERNEL32.GetFileSize' eax 0 | mov D$ApiFileSize eax
+            Call 'KERNEL32.GetFileSize' eax 0 | Mov D$ApiFileSize eax
             VirtualAlloc Win32ApiList eax
 
-            mov D$NumberOfReadBytes 0
-            call 'KERNEL32.ReadFile' D$ApiFileHandle, D$Win32ApiList,
+            Mov D$NumberOfReadBytes 0
+            Call 'KERNEL32.ReadFile' D$ApiFileHandle, D$Win32ApiList,
                                      D$ApiFileSize, NumberOfReadBytes, 0
-            mov B$ApiFileOK &TRUE
+            Mov B$ApiFileOK &TRUE
 
-            call 'KERNEL32.CloseHandle' D$ApiFileHandle
+            Call 'KERNEL32.CloseHandle' D$ApiFileHandle
         .End_If
     popad
 ret
@@ -6884,10 +6884,10 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 ViewApiList:
-    call OpenApiFunctionsFile
+    Call OpenApiFunctionsFile
 
     If B$ApiFileOK = &TRUE
-        call 'USER32.DialogBoxParamA' D$hInstance, 30_000, &NULL, ApiChoice, &NULL
+        Call 'USER32.DialogBoxParamA' D$hInstance, 30_000, &NULL, ApiChoice, &NULL
     End_If
 ret
 
@@ -6895,58 +6895,58 @@ ret
 [ShowApiDialogHandle: ?]
 
 Proc ApiChoice:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    .If D@Message = &WM_COMMAND
+    .If D@msg = &WM_COMMAND
          If D@wParam = &IDCANCEL
-            mov D$ShowApiDialogHandle 0
+            Mov D$ShowApiDialogHandle 0
             VirtualFree D$Win32ApiList
-            call 'User32.EndDialog' D@Adressee, 0
+            Call 'User32.EndDialog' D@hwnd, 0
          End_If
 
          shr D@wParam 16
 
-         On D@wParam = &CBN_SELCHANGE, call ViewOneApiInfos
+         On D@wParam = &CBN_SELCHANGE, Call ViewOneApiInfos
 
-    .Else_If D@Message = &WM_INITDIALOG
-        move D$ShowApiDialogHandle D@Adressee
-        call 'USER32.SetClassLongA' D@Adressee, &GCL_HICON, D$wc_hIcon
+    .Else_If D@msg = &WM_INITDIALOG
+        move D$ShowApiDialogHandle D@hwnd
+        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
 
-        call InitApiList
+        Call InitApiList
 
-    .Else_If D@Message = &WM_CTLCOLOREDIT
+    .Else_If D@msg = &WM_CTLCOLOREDIT
         If B$FirstCTLCOLOREDIT = &TRUE
-            call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0, 0
-            mov B$FirstCTLCOLOREDIT &FALSE
+            Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0, 0
+            Mov B$FirstCTLCOLOREDIT &FALSE
         End_If
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
 
     .Else
-        popad | mov eax &FALSE | jmp L9>
+        popad | Mov eax &FALSE | jmp L9>
 
     .End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
 
 
 InitApiList:
-    mov esi Win32Functions
+    Mov esi Win32Functions
 
     .While esi < EndOfFunctionsList
-        mov eax esi
-        While B$eax <> CR | inc eax | End_While | mov B$eax 0
+        Mov eax esi
+        While B$eax <> CR | inc eax | End_While | Mov B$eax 0
 
         push esi, eax
-            call 'USER32.SendDlgItemMessageA' D$ShowApiDialogHandle, 10, &CB_ADDSTRING, 0, esi
+            Call 'USER32.SendDlgItemMessageA' D$ShowApiDialogHandle, 10, &CB_ADDSTRING, 0, esi
         pop eax, esi
 
-        mov B$eax CR | add eax 2 | mov esi eax
+        Mov B$eax CR | add eax 2 | Mov esi eax
     .End_While
 ret
 
@@ -6954,15 +6954,15 @@ ret
 [ApiItem: ? #10]
 
 ViewOneApiInfos:
-    call 'USER32.SendDlgItemMessageA' D$ShowApiDialogHandle 10 &CB_GETCURSEL  0 0
-    call 'USER32.SendDlgItemMessageA' D$ShowApiDialogHandle 10 &CB_GETLBTEXT eax ApiItem
-    mov edx ApiItem
-    mov edi D$Win32ApiList
+    Call 'USER32.SendDlgItemMessageA' D$ShowApiDialogHandle 10 &CB_GETCURSEL  0 0
+    Call 'USER32.SendDlgItemMessageA' D$ShowApiDialogHandle 10 &CB_GETLBTEXT eax ApiItem
+    Mov edx ApiItem
+    Mov edi D$Win32ApiList
 
-L1: mov esi ApiItem, ecx D$ApiFileSize | sub ecx edi | add ecx D$Win32ApiList
+L1: Mov esi ApiItem, ecx D$ApiFileSize | sub ecx edi | add ecx D$Win32ApiList
     On ecx = 0, jmp L9>> ;ret
 
-    mov al '.' | repne scasb | On ecx = 0, ret
+    Mov al '.' | repne scasb | On ecx = 0, ret
 
     repe cmpsb
     ...If ecx = 0
@@ -6973,46 +6973,46 @@ L2:     ..If B$edi-1 = '('
             While B$edi <> CR
                dec edi
             End_While
-            mov esi edi, edi OneApiInfo, ecx 800
+            Mov esi edi, edi OneApiInfo, ecx 800
             movsw
-            mov eax 'call' | stosd |  mov ax " '" | stosw
+            Mov eax 'call' | stosd |  Mov ax " '" | stosw
 L5:         lodsb
             .If al = '('
-                mov al "'" | stosb
+                Mov al "'" | stosb
                 If B$esi <> CR
-                    mov al 0 | stosb | jmp L8>>
+                    Mov al 0 | stosb | jmp L8>>
                 End_If
-                mov al ','
+                Mov al ','
             .End_If
             stosb | cmp al LF | jne L5<
 
 ; Compute the Max Pos of Comments, for aligned presentation:
             push esi
-                mov D$ApiComment 0, D$ApiCommentMax 0
+                Mov D$ApiComment 0, D$ApiCommentMax 0
                 While B$esi <> ')'
                     lodsb | inc D$ApiComment
                     If al = ';'
-                        mov eax D$ApiCommentMax
+                        Mov eax D$ApiCommentMax
                         On D$ApiComment > eax, move D$ApiCommentMax D$ApiComment
                     Else_If al = LF
-                        mov D$ApiComment 0
+                        Mov D$ApiComment 0
                     End_If
                 End_While
             pop esi
 
-            mov eax '    ' | stosd | mov D$ApiComment 0 | add D$ApiCommentMax 8
+            Mov eax '    ' | stosd | Mov D$ApiComment 0 | add D$ApiCommentMax 8
 L5:         lodsb | stosb | inc D$ApiComment
             If al = LF
-                mov eax '    ' | stosd | mov D$ApiComment 0
+                Mov eax '    ' | stosd | Mov D$ApiComment 0
             Else_If al = ';'
                 dec edi
-                mov ecx D$ApiCommentMax | sub ecx D$ApiComment
-                mov al ' ' | rep stosb
-                mov al ';' | stosb
+                Mov ecx D$ApiCommentMax | sub ecx D$ApiComment
+                Mov al ' ' | rep stosb
+                Mov al ';' | stosb
             End_If
             cmp al ')' | jne L5<
-            mov B$edi 0, B$edi-1 ' '
-L8:         call 'USER32.SendDlgItemMessageA' D$ShowApiDialogHandle, 11, &WM_SETTEXT,
+            Mov B$edi 0, B$edi-1 ' '
+L8:         Call 'USER32.SendDlgItemMessageA' D$ShowApiDialogHandle, 11, &WM_SETTEXT,
                                               0, OneApiInfo
             ret
         ..End_If
@@ -7023,11 +7023,11 @@ L3:     On B$esi = 0, jmp L2<<
     ...Else_If B$esi-1 = 'W'
         jmp L3<
     ...End_If
-    mov al ')' | repne scasb | On B$edi = 0, jmp L9>
+    Mov al ')' | repne scasb | On B$edi = 0, jmp L9>
     On ecx = 0, jmp L9> ;ret
     add edi 2 | jmp L1<<                                       ; +2 for CR/LF
 
-L9: call 'USER32.SendDlgItemMessageA' D$ShowApiDialogHandle, 11, &WM_SETTEXT,
+L9: Call 'USER32.SendDlgItemMessageA' D$ShowApiDialogHandle, 11, &WM_SETTEXT,
                                       0, NotYetApiInfo
 ret
 

@@ -17,30 +17,30 @@ UsedByTheAssembler:
 [Int10: 10   CurrentConvertedDigit: 0   NumberOfDecimalPlaces: 0   FaultCharAndPos: 0]
 
 atof:
-    finit | mov D$FaultCharAndPos 0
+    finit | Mov D$FaultCharAndPos 0
     push edi, esi
-      call convert                  ; convert mantissa (returns with 'E' if exponent present)
+      Call convert                  ; convert mantissa (returns with 'E' if exponent present)
 
       neg edx                                ; save -1 * decimal places
-      mov D$NumberOfDecimalPlaces edx
+      Mov D$NumberOfDecimalPlaces edx
 
       IF al <> 'E'
-        mov B$FaultCharAndPos al             ; faulty char present in mantissa
-        pop ecx | mov edi esi | sub edi ecx  ; fault char pos
+        Mov B$FaultCharAndPos al             ; faulty char present in mantissa
+        pop ecx | Mov edi esi | sub edi ecx  ; fault char pos
         fldz                                 ; assume zero exponent
       Else_If al = 'E'
-        call convert                         ; convert exponent
-        mov B$FaultCharAndPos al      ; Save faulty character present in exponent
-        pop ecx | mov edi esi | sub edi ecx  ; fault char pos
+        Call convert                         ; convert exponent
+        Mov B$FaultCharAndPos al      ; Save faulty character present in exponent
+        pop ecx | Mov edi esi | sub edi ecx  ; fault char pos
       End_If
 
       fiadd D$NumberOfDecimalPlaces          ; adjust exponent for dec. places in mantissa
-      call falog                             ; raise 10 to power
+      Call falog                             ; raise 10 to power
       fmul                                   ; exponent * mantissa
 
       ; Provide information about faulty character and its position
 
-      mov eax edi                            ; Get possible fault position
+      Mov eax edi                            ; Get possible fault position
       shl eax 8                              ; shift to high word
       or eax D$FaultCharAndPos               ; OR faults togeter
     pop edi
@@ -59,7 +59,7 @@ _________________________________________________________________
 _________________________________________________________________        ;
 
 convert:                                ; convert numeric field
-    fldz | mov ecx 0, edx 0-1           ; initialize result, sign, decimal count
+    fldz | Mov ecx 0, edx 0-1           ; initialize result, sign, decimal count
 
    lodsb
         cmp al AddSign | je L2>         ; if + sign proceed
@@ -71,7 +71,7 @@ L2: lodsb                               ; get next character
 L3: cmp al '0' | jb L4>                 ; is character valid?
       cmp al,'9' | ja L4>
         and eax 0f                      ; isolate lower four bits
-        mov D$CurrentConvertedDigit eax ; and save digit value
+        Mov D$CurrentConvertedDigit eax ; and save digit value
         fimul D$int10                   ; previous value * 10
         fiadd D$CurrentConvertedDigit   ; accumulate new digit
 
@@ -84,7 +84,7 @@ L5:    jcxz L6>                         ; jump if result pos.
         fchs                            ; make result negative
 
 L6: or edx edx | jns L7>                ; decimal point found? yes > jump
-      mov edx 0                         ; no, return zero places
+      Mov edx 0                         ; no, return zero places
 
 L7: ret                                 ; return ST(0) = result
 
@@ -98,7 +98,7 @@ ________________________________________________________________________________
        ;
  Return:    st(0)     = antilog to base 10  ;
        ;
- Coprocessor should be initialised before call  ;
+ Coprocessor should be initialised before Call  ;
 -------------------------------------------------------;
 ;;
 ; FWAIT doesn't seam to be of any use (works the same without on my computer).
@@ -112,10 +112,10 @@ falog:
      ;   fwait
      ;   fstcw   W$Falogoldcw            ; store old control word
      ;   fwait                           ; wait 'till it arrives
-     ;   mov     ax W$Falogoldcw         ; Load control word
+     ;   Mov     ax W$Falogoldcw         ; Load control word
      ;   and     ax 0f3ff                ; Field to "round down"
      ;   or      ax 0400                 ; Set precision to 53 bit mantissa
-     ;   mov     W$Falognewcw ax         ; Got new control word
+     ;   Mov     W$Falognewcw ax         ; Got new control word
      ;   fldcw   W$Falognewcw            ; Force rounding mode
         frndint                         ; Round from real to integer
      ;   fldcw   W$Falogoldcw            ; Restore old rounding mode
@@ -169,7 +169,7 @@ Proc FloatToAscii:
   preserved.
 ____________________________________________________________________________________________
 
-  Calling:     > call FloatToAscii Source, Destination, Decimal, FLAG
+  Calling:     > Call FloatToAscii Source, Destination, Decimal, FLAG
   
   Source: Either a Pointer to a Data [T$Source: ...], or &NULL if you 
           "fld F$ / R$ / T$ Source"  before calling.
@@ -194,14 +194,14 @@ ________________________________________________________________________________
         fclex                   ;clear exception flags on FPU
 
       ; Get the specified number of decimals for result (MAX = 15):
-        On D@Decimal > 0F, mov D@Decimal 0F
+        On D@Decimal > 0F, Mov D@Decimal 0F
 
       ; The FPU will be initialized only if the source parameter is not taken
       ; from the FPU itself (D@ Source <> &NULL):
         .If D@Source = &NULL
             fld st0             ;copy it to preserve the original value
         .Else
-            mov eax D@Source
+            Mov eax D@Source
             If eax > 0400_000
                 finit | fld T$eax
               ; Check first if value on FPU is valid or equal to zero:
@@ -212,10 +212,10 @@ ________________________________________________________________________________
                 test W@stword 0100      ;now check it for NAN
                 jnz L1>                 ;Src is NAN or infinity - cannot convert
                   ; Here: Value to be converted = 0
-                    mov eax D@Destination | mov W$eax '0' ; Write '0', 0 szstring
-                    mov eax &TRUE | finit | ExitP
+                    Mov eax D@Destination | Mov W$eax '0' ; Write '0', 0 szstring
+                    Mov eax &TRUE | finit | ExitP
             Else
-L1:             finit | mov eax &FALSE | ExitP
+L1:             finit | Mov eax &FALSE | ExitP
             End_If
         .End_If
 
@@ -227,9 +227,9 @@ L0:     fld st0                 ;copy it
         fxch | fyl2x            ;->[log2(Src)]/[log2(10)] = log10(Src)
 
         fstcw W@oldcw           ;get current control word
-        mov ax W@oldcw
+        Mov ax W@oldcw
         or ax 0C00              ;code it for truncating
-        mov W@truncw ax
+        Mov W@truncw ax
         fldcw W@truncw          ;change rounding code of FPU to truncate
 
         fist D@eSize            ;store characteristic of logarithm
@@ -241,14 +241,14 @@ L0:     fld st0                 ;copy it
         jz L0>
             dec D@eSize
 
-L0:     On D@eSize > 15, mov D@Flag SCIENTIFIC
+L0:     On D@eSize > 15, Mov D@Flag SCIENTIFIC
 
       ; Multiply the number by a power of 10 to generate a 16-digit integer:
 L0:     fstp st0                ;get rid of the logarithm
-        mov eax 15
+        Mov eax 15
         sub eax D@eSize         ;exponent required to get a 16-digit integer
         jz L0>                  ;no need if already a 16-digit integer
-            mov D@temporary eax
+            Mov D@temporary eax
             fild D@temporary
             fldl2t | fmulp ST1 ST0       ;->log2(10)*exponent
             fld st0 | frndint | fxch
@@ -269,28 +269,28 @@ L0:     fbstp T@bcdstr          ;transfer it as a 16-digit packed decimal
       ; Unpack bcd, the 10 bytes returned by the FPU being in the little-endian style:
         push ecx, esi, edi
             lea esi D@bcdstr+9
-            mov edi D@Destination
-            mov al B$esi        ;sign byte
+            Mov edi D@Destination
+            Mov al B$esi        ;sign byte
             dec esi | dec esi
             If al = 080
-                mov al minusSign      ;insert sign if negative number
+                Mov al minusSign      ;insert sign if negative number
             Else
-                mov al Space      ;insert space if positive number
+                Mov al Space      ;insert space if positive number
             End_If
             stosb
 
             ...If D@Flag = REGULAR
               ; Verify number of decimals required vs maximum allowed:
-                mov eax 15 | sub eax D@eSize
+                Mov eax 15 | sub eax D@eSize
                 cmp eax D@Decimal | jae L0>
-                    mov D@Decimal eax
+                    Mov D@Decimal eax
 
               ; ;check for integer digits:
-L0:             mov ecx D@eSize
+L0:             Mov ecx D@eSize
                 or ecx ecx           ;is it negative
                 jns L3>
                   ; Insert required leading 0 before decimal digits:
-                    mov ax '0o' | stosw
+                    Mov ax '0o' | stosw
                     neg ecx
                     cmp ecx D@Decimal | jbe L0>
                         jmp L8>>
@@ -298,7 +298,7 @@ L0:             mov ecx D@eSize
 L0:                 dec ecx | jz L0>
                         stosb | jmp L0<
 L0:
-                    mov ecx D@Decimal | inc ecx
+                    Mov ecx D@Decimal | inc ecx
                     add ecx D@eSize | jg L4>
                         jmp L8>>
 
@@ -310,12 +310,12 @@ L0:             movzx eax B$esi | dec esi | ror ax 4 | ror ah 4
                     dec   edi
 
 L0:             cmp D@Decimal 0 | jz L8>>
-                    mov al pointSign | stosb
+                    Mov al pointSign | stosb
                     If ecx <> 0
-                        mov al ah | stosb
-                        mov ecx D@Decimal | dec ecx | jz L8>>
+                        Mov al ah | stosb
+                        Mov ecx D@Decimal | dec ecx | jz L8>>
                     Else
-                        mov ecx D@Decimal
+                        Mov ecx D@Decimal
                     End_If
 
               ; Do decimal digits:
@@ -329,11 +329,11 @@ L1:             jmp L8>>
 
           ; scientific notation
             ...Else
-                 mov ecx D@Decimal | inc ecx
+                 Mov ecx D@Decimal | inc ecx
                 movzx eax B$esi | dec esi
                 ror ax 4 | ror ah 4 | add ax '00' | stosb
-                mov al pointSign | stosb
-                mov al ah | stosb
+                Mov al pointSign | stosb
+                Mov al ah | stosb
                 sub ecx 2 | jz L7>
                 jns L0>
                     dec edi | jmp L7>
@@ -344,17 +344,17 @@ L0:             movzx eax B$esi
                 jz L7>
                     dec edi
 
-L7:             mov al 'E' | stosb
-                mov al plusSign, ecx D@eSize | or ecx ecx | jns L0>
-                    mov al minusSign | neg ecx
+L7:             Mov al 'E' | stosb
+                Mov al plusSign, ecx D@eSize | or ecx ecx | jns L0>
+                    Mov al minusSign | neg ecx
 L0:             stosb
               ; Note: the absolute value of the size could not exceed 4931
-                mov eax ecx
-                mov cl 100
+                Mov eax ecx
+                Mov cl 100
                 div cl          ;->thousands & hundreds in AL, tens & units in AH
                 push eax
                     and eax 0FF ;keep only the thousands & hundreds
-                    mov cl 10
+                    Mov cl 10
                     div cl      ;->thousands in AL, hundreds in AH
                     add ax '00' ;convert to characters
                     stosw       ;insert them
@@ -365,10 +365,10 @@ L0:             stosb
                 stosw           ;insert them
             ...End_If
 
-L8:         mov B$edi Space         ;string terminating character
+L8:         Mov B$edi Space         ;string terminating character
         pop edi, esi, ecx
 
-        finit | mov eax D@eSize
+        finit | Mov eax D@eSize
 EndP
 ____________________________________________________________________________________________
 Proc AsciitoFloat:
@@ -399,7 +399,7 @@ Proc AsciitoFloat:
   preserved.
 ____________________________________________________________________________________________
 
-  Calling:     > call AsciitoFloat Source, Destination
+  Calling:     > Call AsciitoFloat Source, Destination
   
   Source: Pointer to a Floating Point String (either regular or scientific 
           notation).
@@ -416,15 +416,15 @@ ________________________________________________________________________________
     Structure @BCD 12, @bcdstr 0
     Uses ebx, ecx, edx, esi, edi
 
-        mov eax 0, ebx 0, edx 0, ecx 19, D@ten 10
-        lea edi D@bcdstr | mov D$edi 0, D$edi+4 0, D$edi+8 0 | add edi 8
+        Mov eax 0, ebx 0, edx 0, ecx 19, D@ten 10
+        lea edi D@bcdstr | Mov D$edi 0, D$edi+4 0, D$edi+8 0 | add edi 8
 
-        mov esi D@lpSrc
-        mov al B$esi
+        Mov esi D@lpSrc
+        Mov al B$esi
         If al = Space       ; string empty?
             jmp E7>>
         Else_If al = minusSign
-            mov B$edi+1 080
+            Mov B$edi+1 080
             inc esi
         End_If
 
@@ -437,7 +437,7 @@ ________________________________________________________________________________
         End_While
 
       ; Convert the digits to packed decimal:
-L2:     lodsb | On al = 'e', mov al 'E'
+L2:     lodsb | On al = 'e', Mov al 'E'
 
       ; bh used to set the decimal point flag (one point only):
         ...If al = pointSign
@@ -448,7 +448,7 @@ L2:     lodsb | On al = 'e', mov al 'E'
             On cl < 19, jmp L6>>        ;error if no digit before E
         ...Else_If al = Space
             If cl < 19                  ;error if no digit before terminating Space
-                xor al al | rol al 4 | ror ax 4 | mov B$edi al | jmp L5>>
+                xor al al | rol al 4 | ror ax 4 | Mov B$edi al | jmp L5>>
             End_If
         ...Else
             ..If al >= '0'
@@ -457,8 +457,8 @@ L2:     lodsb | On al = 'e', mov al 'E'
                     If ecx > 0          ;error if more than 18 digits in number
                         sub al '0' | On bh = 0, inc bl
                         test ah 040 | jz L1>
-                            rol al 4 | ror ax 4 | mov B$edi al | dec edi | xor eax eax  | jmp L2<<
-L1:                     mov ah al | or ah 040 | jmp L2<<
+                            rol al 4 | ror ax 4 | Mov B$edi al | dec edi | xor eax eax  | jmp L2<<
+L1:                     Mov ah al | or ah 040 | jmp L2<<
                     End_If
                 .End_If
             ..End_If
@@ -468,13 +468,13 @@ L1:                     mov ah al | or ah 040 | jmp L2<<
 
       ; Output:
 L5:     fbld T@bcdstr
-        mov eax 18 | sub al bl | sub edx eax | call XexpY edx
+        Mov eax 18 | sub al bl | sub edx eax | Call XexpY edx
         fmulp ST1 ST0
         fstsw W@stword                      ;retrieve exception flags from FPU
         wait | test W@stword 1 | jnz E7>>   ;test for invalid operation
-        mov eax D@lpDest
+        Mov eax D@lpDest
         If D@lpDest <> &NULL
-            mov eax D@lpDest |  fstp T$eax      ;store result at specified address
+            Mov eax D@lpDest |  fstp T$eax      ;store result at specified address
         End_If
         jmp E8>>
 
@@ -491,7 +491,7 @@ L6:             pop eax | jmp E7>>          ;no exponent
 L0:         sub al '0' | jc L6<             ;unacceptable character
             cmp al 9 | ja L6<               ;unacceptable character
             push eax
-                mov eax edx | mul D@ten | mov edx eax
+                Mov eax edx | mul D@ten | Mov edx eax
             pop eax
             add edx eax | cmp edx 4931 | ja L6<     ;exponent too large
             lodsb
@@ -501,8 +501,8 @@ L0:         sub al '0' | jc L6<             ;unacceptable character
             neg edx
 L0:     jmp L5<<
 
-E7:     mov eax &FALSE | finit | jmp E9>
-E8:     mov eax &TRUE
+E7:     Mov eax &FALSE | finit | jmp E9>
+E8:     Mov eax &TRUE
 E9: EndP
 
 
@@ -754,7 +754,7 @@ ________________________________________________________________________________
 > [MyFPString: B$ ? #80]
 >
 > fld R$MyFp
-> call ST0ToAscii MyFpString, 4
+> Call ST0ToAscii MyFpString, 4
 ;;
 
 Proc ST0ToAscii:
@@ -763,29 +763,29 @@ Proc ST0ToAscii:
     Uses esi, edi, ecx, ebx, edx
     [@String: B$ ? #90] [@Real10: T$ ?]
 
-        mov eax @String | add eax 32 | add eax D@Decimals | mov D@AbortPosition eax
+        Mov eax @String | add eax 32 | add eax D@Decimals | Mov D@AbortPosition eax
 
       ; Zeroed output String (20 zeros // 1 Point // XXX++ zeros):
-        mov edi @String, eax '0000', ecx 23 | rep stosd | mov B@String+20 '.'
+        Mov edi @String, eax '0000', ecx 23 | rep stosd | Mov B@String+20 '.'
 
       ; Get a copy of ST0:
         fstp T@Real10 | fld T@Real10
 
       ; If Zero, Write and exit:
-        mov eax D@Real10 | or eax D@Real10+4
+        Mov eax D@Real10 | or eax D@Real10+4
         If eax = 0
-@Zero:      mov edi D@Destination, D$edi '0', D$edi+1 0 | ExitP
+@Zero:      Mov edi D@Destination, D$edi '0', D$edi+1 0 | ExitP
         End_If
 
       ; If negative, write the Sign and adjust the output Pointer to next Pos:
-        mov esi @Real10, edi D@Destination
+        Mov esi @Real10, edi D@Destination
         movzx ebx W$esi+8 | Test ebx 08000 | jz L0>
-            mov B$edi '-' | and ebx (not 08000) | inc D@Destination
+            Mov B$edi '-' | and ebx (not 08000) | inc D@Destination
 
       ; Biased signed Exponent in ebx:
 L0:     On ebx = 0, jmp @Zero
 
-        mov D@Exponent 0
+        Mov D@Exponent 0
 
       ; It seems that the Binary exponent = 07FFF means something like "undefined" (...)
       ; and seems to appear when dividing. OK. But:
@@ -809,27 +809,27 @@ L0:     On ebx = 0, jmp @Zero
 
         End_If
 
-L1:     sub ebx 03FFF | mov eax ebx | shl eax 2
+L1:     sub ebx 03FFF | Mov eax ebx | shl eax 2
 
       ; 'ebx' will hold the pointer to the Table of Pointers to Decimal Strings.
       ; For example, if eax = 0 (Exponent 0), ebx points to 'Fp.Bit1' Pointer,
       ; in 'FPBits' Table (4 'sub' because dWords Table):
-        mov ebx Fp.Bits | sub ebx eax | sub ebx 4
+        Mov ebx Fp.Bits | sub ebx eax | sub ebx 4
 
       ; Parse now the Mantissa (64 Bits). Each Bit is a power of 2 figured in the
       ; [FPBit64 // Fp.Bit64] Strings Table:
 
-L1:     mov ecx 32, edx @Real10, edx D$edx+4            ; (High dWord).
+L1:     Mov ecx 32, edx @Real10, edx D$edx+4            ; (High dWord).
 L0:     shr edx 1 | jnc L5>
             lea esi D$ebx+ecx*4
             cmp esi FPBits | jb L5>
             cmp esi LastFPBits | ja L6>>
-                mov esi D$esi, edi @String, eax 0
+                Mov esi D$esi, edi @String, eax 0
                 lodsb | add edi eax | cmp edi D@AbortPosition | ja L6>>
                 .While B$esi <> 0
                     On B$edi = '.', inc edi
                     cmp edi D@AbortPosition | ja L5>
-                    lodsb | sub al '0' | add B$edi al | mov eax 0
+                    lodsb | sub al '0' | add B$edi al | Mov eax 0
                   ; Left reporting, if needed:
                     While B$edi+eax > '9'
                         sub B$edi+eax 10
@@ -840,18 +840,18 @@ L0:     shr edx 1 | jnc L5>
                 .End_While
 L5:     loop L0<
 
-        mov ecx 32, edx @Real10, edx D$edx              ; (Low dWord).
+        Mov ecx 32, edx @Real10, edx D$edx              ; (Low dWord).
         add ebx 4+(31*4)
 L0:     shr edx 1 | jnc L5>
             lea esi D$ebx+ecx*4
             cmp esi FPBits | jb L5>
             cmp esi LastFPBits | ja L6>
-                mov esi D$esi, edi @String, eax 0
+                Mov esi D$esi, edi @String, eax 0
                 lodsb | add edi eax | cmp edi D@AbortPosition | ja L6>
                 .While B$esi <> 0
                     On B$edi = '.', inc edi
                     cmp edi D@AbortPosition | ja L5>
-                    lodsb | sub al '0' | add B$edi al | mov eax 0
+                    lodsb | sub al '0' | add B$edi al | Mov eax 0
                   ; Left reporting, if needed:
                     While B$edi+eax > '9'
                         sub B$edi+eax 10
@@ -863,29 +863,29 @@ L0:     shr edx 1 | jnc L5>
 L5:     loop L0<
 
 L6:   ; Now, format the String. First, cut off zeroed tail:
-        mov esi @String | add esi 89
-        While B$esi = '0' | dec esi | End_While | mov B$esi+1 0
+        Mov esi @String | add esi 89
+        While B$esi = '0' | dec esi | End_While | Mov B$esi+1 0
 
       ; Search for first significant Char:
-        mov esi @String | While B$esi = '0' | inc esi | End_While
+        Mov esi @String | While B$esi = '0' | inc esi | End_While
         On B$esi = '.' dec esi
 
       ; Copy to caller Destination:
-        mov edi D@Destination | While B$esi <> '.' | movsb | End_While
-        mov B$edi 0
+        Mov edi D@Destination | While B$esi <> '.' | movsb | End_While
+        Mov B$edi 0
       ; Copy the Point and the wanted Decimals, if not End_Of_String:
         ...If B$esi+1 <> 0
             movsb                                       ; Point.
-            mov ecx D@Decimals
+            Mov ecx D@Decimals
 L1:         lodsb | cmp al 0 | je L2>
                 .If D$esi = '9999'
                     If D$esi+4 = '9999'
-                        inc al | mov B$esi 0
+                        inc al | Mov B$esi 0
                     End_If
                 .End_If
                 stosb | loop L1<                        ; Decimals.
 
-L2:         While B$edi-1 = '0' | dec edi | End_While | mov B$edi 0
+L2:         While B$edi-1 = '0' | dec edi | End_While | Mov B$edi 0
 
         ...Else
             While B$edi-1 = '0' | dec edi | inc D@Exponent | End_While
@@ -897,24 +897,24 @@ L2:         While B$edi-1 = '0' | dec edi | End_While | mov B$edi 0
         While B$edi-1 = '0' | dec edi | inc D@Exponent | End_While
 
       ; Write Exponent if Needed:
-        mov eax D@Exponent
+        Mov eax D@Exponent
 
         If eax <> 0
             test eax 08000_0000 | jnz L1>
-                mov D$edi ' e+ ' | jmp L2>
-L1:             mov D$edi ' e- ' | neg eax
-L2:         add edi 3 | mov ecx 10
+                Mov D$edi ' e+ ' | jmp L2>
+L1:             Mov D$edi ' e- ' | neg eax
+L2:         add edi 3 | Mov ecx 10
 
-            mov dl 0FF | push edx                       ; Push stack end mark
-            mov ecx 10
-L0:         mov edx 0
+            Mov dl 0FF | push edx                       ; Push stack end mark
+            Mov ecx 10
+L0:         Mov edx 0
             div ecx | push edx | cmp eax 0 | ja L0<     ; Push remainders
 L2:         pop eax                                     ; Retrieve Backward
             cmp al 0FF | je L9>                         ; Over?
             add al '0' | stosb | jmp L2<                ; Write
         End_If
 
-L9:     mov B$edi 0
+L9:     Mov B$edi 0
 EndP
 
 ____________________________________________________________________________________________
@@ -936,7 +936,7 @@ ________________________________________________________________________________
 
 >   [SourceString: B$ '12345678.12345', 0]
 >
->   call AsciiToST0 SourceString 
+>   Call AsciiToST0 SourceString 
 >
 >   If eax = &NO_ERROR
 >       fstp F$MyReal4 // R$MyReal // ...
@@ -959,19 +959,19 @@ Proc AsciiToST0:
     Uses esi, edi, eax, ebx, ecx, edx
     [@Tempo: T$ ?]
 
-        mov esi D@String, D@Sign &FALSE
+        Mov esi D@String, D@Sign &FALSE
         While B$esi <= ' ' | inc esi | End_While
 
         If B$esi = '+'
             inc esi
         Else_If B$esi = '-'
-            inc esi | mov D@Sign &TRUE
+            inc esi | Mov D@Sign &TRUE
         End_If
 
         While B$esi <= ' ' | inc esi | End_While
         While B$esi = '0' | inc esi | End_While
 
-        mov ebx 0, ecx 0, edx 0, eax 0
+        Mov ebx 0, ecx 0, edx 0, eax 0
 L0:     lodsb
       ; cmp al '_' | je L0<
         cmp al '9' | ja L1>
@@ -985,16 +985,16 @@ L0:     lodsb
         cmp al '0' | jb L1>
             lea edx D$edx+edx*4 | lea edx D$eax+edx*2-030   ; edx = edx*10 + (al)-'0'
             inc ecx | cmp ecx 18 | jb L0<
-                mov eax TOOBIG_INTEGER | ExitP
+                Mov eax TOOBIG_INTEGER | ExitP
 
 L1:   ; The Integer part is now in ebx:edx. Write it in ST0:
-        mov D@Digits ecx
-        mov eax ebx | or eax edx
+        Mov D@Digits ecx
+        Mov eax ebx | or eax edx
         .If eax <> 0
-            mov D@Tempo ebx | fild D@Tempo
+            Mov D@Tempo ebx | fild D@Tempo
             If ecx > 10
                 sub ecx 10 | lea ecx D$TenTable+ecx*8 | fmul R$ecx
-                mov D@Tempo edx | fiadd D@Tempo
+                Mov D@Tempo edx | fiadd D@Tempo
             End_If
         .Else
             fldz
@@ -1007,7 +1007,7 @@ L1:   ; The Integer part is now in ebx:edx. Write it in ST0:
           ; Pop and save the Integer Part, in order to use only 1 Register:
             fstp R@Tempo
 
-            mov ebx 0, ecx 0, edx 0, eax 0
+            Mov ebx 0, ecx 0, edx 0, eax 0
 L0:         lodsb
           ; cmp al '_' | je L0<
             cmp al '9' | ja L1>
@@ -1023,14 +1023,14 @@ L0:         lodsb
                 inc ecx | cmp ecx 18 | jb L0<
                     ; Too much: No Error case for Decimals > cut off.
 
-L1:         mov eax ebx | or eax edx
+L1:         Mov eax ebx | or eax edx
           ; Decimal in ebx:edx, Write it in ST0:
             .If eax <> 0
-                mov D@Tempo ebx | fild D@Tempo
+                Mov D@Tempo ebx | fild D@Tempo
                 If ecx > 10
                     sub ecx 10
                         lea ecx D$TenTable+ecx*8 | fmul R$ecx
-                        mov D@Tempo edx | fiadd D@Tempo
+                        Mov D@Tempo edx | fiadd D@Tempo
                     add ecx 10
                 End_If
                 lea ecx D$TenTable+ecx*8 | fdiv R$ecx
@@ -1048,18 +1048,18 @@ L1:         mov eax ebx | or eax edx
       ; Scientific Notation. (The exponent must be within +4932/-4932).
         While B$esi-1 = ' ' | inc esi | End_While
 
-        mov al B$esi-1 | or al 32
+        Mov al B$esi-1 | or al 32
 
         ...If al = 'e'
-            mov edx &FALSE
+            Mov edx &FALSE
             If B$esi = '-'
-                mov edx &TRUE | inc esi
+                Mov edx &TRUE | inc esi
             Else_If B$esi = '+'
                 inc esi
             End_If
 
           ; Compute the Exponent Value:
-            mov ebx 0, eax 0, ecx 0
+            Mov ebx 0, eax 0, ecx 0
 L0:         lodsb
          ;  cmp al '_' | je L0<
             cmp al '9' | ja L1>
@@ -1068,16 +1068,16 @@ L0:         lodsb
                 inc ecx | cmp ecx 10 | jb L0<
 
 L1:         If ebx > 4932
-                mov eax TOOBIG_EXPONENT | ExitP
+                Mov eax TOOBIG_EXPONENT | ExitP
             End_If
 
           ; Negative Exponent, if edx = &TRUE // Exponent in ebx // User Number in ST0.
           ; No additional use of FPU Registers:
             While ebx > 0
                 If ebx > 18
-                    mov eax 18
+                    Mov eax 18
                 Else
-                    mov eax ebx
+                    Mov eax ebx
                 End_If
 
                 If edx = &TRUE
@@ -1093,9 +1093,9 @@ L1:         If ebx > 4932
 
         On B@Sign = &TRUE, fchs
 
-        dec esi | mov D$CharAfterFpNumber esi
+        dec esi | Mov D$CharAfterFpNumber esi
 
-        mov eax &NO_ERROR
+        Mov eax &NO_ERROR
 EndP
 
 ____________________________________________________________________________________________
@@ -1122,11 +1122,11 @@ local @numneg, @decplace, @expneg, @num, @exp
 ; IN:  esi = pointer to ascii string (terminated by <= space)
 ; OUT: st0 = floating point value
 
-    mov D@decplace 0
-    mov D@exp 0
-    mov D@num 0
+    Mov D@decplace 0
+    Mov D@exp 0
+    Mov D@num 0
 L1: cmp B$esi '-' | jne L1>
-        mov B@numneg 1
+        Mov B@numneg 1
         inc esi
 L1: xor ecx ecx
     xor edx edx
@@ -1141,9 +1141,9 @@ L0: lodsb | inc edx
         lea ecx D$eax+ecx*2         ;     ecx = eax + old ecx * 10       
     jmp L0<
 L1: xor edx edx | jmp L0<
-L2: mov D@num ecx
+L2: Mov D@num ecx
     lodsb | cmp al '-' | sete B@expneg
-    mov D@decplace edx
+    Mov D@decplace edx
     xor ecx ecx
     jmp L0<
 L8: ; Error case
@@ -1157,8 +1157,8 @@ L9: cmp B@decplace 0
     cmove eax ecx ; eax = number
     cmovne eax D@num
     cmovne edx ecx
-    mov D@num eax
-    mov D@exp edx
+    Mov D@num eax
+    Mov D@exp edx
    
     fld F$f0.1
     fld F$f10.0
@@ -1202,23 +1202,23 @@ UsedByTheDebugger:
            1.0e4096, 1.0e4352, 1.0e4608, 1.0e4864]
 
 Proc PowerOf10:
-    mov ecx, eax
+    Mov ecx, eax
     test eax 0_8000_0000 | jz L1>
         neg eax
 
 L1: fld1
 
-    mov dl al | and edx 0f
+    Mov dl al | and edx 0f
     If edx > 0
         lea edx D$edx+edx*4 | fld T$ten_1+edx*2-10 | fmulp st1 st0
     End_If
 
-    mov dl al | shr dl 4 | and edx 0F
+    Mov dl al | shr dl 4 | and edx 0F
     If edx > 0
         lea edx D$edx+edx*4 | fld T$ten_16+edx*2-10 | fmulp st1 st0
     End_If
 
-    mov dl ah | and edx 01F
+    Mov dl ah | and edx 01F
     If edx > 0
         lea edx D$edx+edx*4 | fld T$ten_256+edx*2-10 | fmulp st1 st0
     End_If
@@ -1233,10 +1233,10 @@ Proc FloatToBCD:
 
         fbstp T$BCDtempo
 
-        lea esi D$BCDtempo+8 | mov edi TempoAsciiFpu
-        mov ecx, 9
+        lea esi D$BCDtempo+8 | Mov edi TempoAsciiFpu
+        Mov ecx, 9
 
-L0:     mov al B$esi | dec esi | rol ax 12 | rol ah 4
+L0:     Mov al B$esi | dec esi | rol ax 12 | rol ah 4
         and ax 0f0f | add ax 03030 | stosw | loop L0<
 EndP
 
@@ -1247,19 +1247,19 @@ Proc FloatToUString:
     Local @iExp, @ControlWord, @MyControlWord
     Uses esi, edi, edx, ecx
 
-        mov edi D@DestinationPointer, eax D@Float80Pointer
+        Mov edi D@DestinationPointer, eax D@Float80Pointer
 
         ..If D$eax = 0
             .If D$eax+4 = 0
                 If W$eax+8 = 0
-                    mov B$edi '0', B$edi+1 0 | ExitP
+                    Mov B$edi '0', B$edi+1 0 | ExitP
                 End_If
             .End_If
         ..End_If
 
-        mov B$NegatedReg &FALSE
+        Mov B$NegatedReg &FALSE
         Test B$eax+9 0_80| jz L1>
-          xor D$eax+9 0_80 | mov B$NegatedReg &TRUE | mov B$edi '-' | inc edi
+          xor D$eax+9 0_80 | Mov B$NegatedReg &TRUE | Mov B$edi '-' | inc edi
 
 L1:     ;  _______________________________________________________
         ; |        |                 |             |              |
@@ -1284,20 +1284,20 @@ L1:     ;  _______________________________________________________
             ; test lower 32 bits of fraction
             test D$eax 0 | jnz L1>
             ; test upper 31 bits of fraction
-            mov edx D$eax+4 | and edx 0_7FFF_FFFF | jnz L1>
-            mov D$edi 'INF'
+            Mov edx D$eax+4 | and edx 0_7FFF_FFFF | jnz L1>
+            Mov D$edi 'INF'
             ExitP
 
 L1:         ; test most significant fraction bit
             test B$eax+7 040 | jz L1>
-            mov D$edi 'QNaN', B$edi+4 0
+            Mov D$edi 'QNaN', B$edi+4 0
             ExitP
 
-L1:         mov D$edi 'SNaN', B$edi+4 0
+L1:         Mov D$edi 'SNaN', B$edi+4 0
             ExitP
         EndIf
 
-        fclex | fstcw W@ControlWord | mov W@MyControlWord 027F | fldcw W@MyControlWord
+        fclex | fstcw W@ControlWord | Mov W@MyControlWord 027F | fldcw W@MyControlWord
 
         fld T$eax | fld st0
 
@@ -1306,64 +1306,64 @@ L1:         mov D$edi 'SNaN', B$edi+4 0
         .If D@iExp L 16
             fld st0 | frndint | fcomp st1 | fstsw ax
             Test ax 040 | jz L1>
-                call FloatToBCD
+                Call FloatToBCD
 
-                mov eax 17 | mov ecx D@iExp | sub eax ecx | inc ecx
+                Mov eax 17 | Mov ecx D@iExp | sub eax ecx | inc ecx
                 lea esi D$TempoAsciiFpu+eax
 
                 If B$esi = '0'
                     inc esi | dec ecx
                 End_If
 
-                mov eax 0
+                Mov eax 0
                 rep movsb | jmp L9>>
 
         .End_If
 
-L1:     mov eax, 6 | sub eax D@iExp
+L1:     Mov eax, 6 | sub eax D@iExp
 
-        call PowerOf10
+        Call PowerOf10
 
         fcom Q$ten7 | fstsw ax | Test ah 1 | jz L1>
             fmul Q$ten | dec D@iExp
 
-L1:     call FloatToBCD
+L1:     Call FloatToBCD
 
-        lea esi D$TempoAsciiFpu+11 | mov ecx D@iExp
+        lea esi D$TempoAsciiFpu+11 | Mov ecx D@iExp
 
         If ecx = 0-1
-            mov B$edi '0' | inc edi
+            Mov B$edi '0' | inc edi
         End_If
 
         inc ecx
 
         If ecx <= 7
-            mov eax 0
-            rep movsb | mov B$edi '.' | inc edi
-            mov ecx 6 | sub ecx D@iExp | rep movsb
+            Mov eax 0
+            rep movsb | Mov B$edi '.' | inc edi
+            Mov ecx 6 | sub ecx D@iExp | rep movsb
 
             While B$edi-1 = '0' | dec edi | End_While
             On B$edi-1 = '.', dec edi
 
             jmp L9>>
         Else
-            movsb | mov B$edi '.' | inc edi | movsd | movsw
+            movsb | Mov B$edi '.' | inc edi | movsd | movsw
 
-            mov B$edi 'e' | mov eax D@iExp
-            mov B$edi+1 '+'
+            Mov B$edi 'e' | Mov eax D@iExp
+            Mov B$edi+1 '+'
             Test eax 0_8000_0000 | jz L1>
-                neg eax | mov B$edi+1 '-'
+                neg eax | Mov B$edi+1 '-'
 
-L1:         mov ecx 10, edx 0 | div ecx | add dl '0' | mov B$edi+4 dl
-            mov edx 0 | div ecx | add dl '0' | mov B$edi+3 dl
-            mov edx 0 | div ecx | add dl, '0' | mov B$edi+2 dl
+L1:         Mov ecx 10, edx 0 | div ecx | add dl '0' | Mov B$edi+4 dl
+            Mov edx 0 | div ecx | add dl '0' | Mov B$edi+3 dl
+            Mov edx 0 | div ecx | add dl, '0' | Mov B$edi+2 dl
             add edi 5
         End_If
 
-L9:     mov B$edi 0 | fldcw W@ControlWord | fwait
+L9:     Mov B$edi 0 | fldcw W@ControlWord | fwait
 
         If B$NegatedReg = &TRUE
-            mov eax D@Float80Pointer | xor D$eax+9 0_80
+            Mov eax D@Float80Pointer | xor D$eax+9 0_80
         End_If
 EndP
 
@@ -1375,20 +1375,20 @@ Proc DisassemblerFloatToUString:
     Local @iExp, @ControlWord, @MyControlWord
     Uses esi, edi, edx, ecx
 
-        mov B$SpecialFPU &FALSE
-        mov edi D@DestinationPointer, eax D@Float80Pointer
+        Mov B$SpecialFPU &FALSE
+        Mov edi D@DestinationPointer, eax D@Float80Pointer
 
         ..If D$eax = 0
             .If D$eax+4 = 0
                 If W$eax+8 = 0
-                    mov B$edi '0', B$edi+1 0 | ExitP
+                    Mov B$edi '0', B$edi+1 0 | ExitP
                 End_If
             .End_If
         ..End_If
 
-        mov B$NegatedReg &FALSE
+        Mov B$NegatedReg &FALSE
         Test B$eax+9 0_80| jz L1>
-          xor D$eax+9 0_80 | mov B$NegatedReg &TRUE | mov B$edi '-' | inc edi
+          xor D$eax+9 0_80 | Mov B$NegatedReg &TRUE | Mov B$edi '-' | inc edi
 
 L1:     ;  _______________________________________________________
         ; |        |                 |             |              |
@@ -1408,10 +1408,10 @@ L1:     ;  _______________________________________________________
         movzx edx W$eax+8 | and edx 07FFF ; edx = E
 
         If edx = 07FFF
-            mov B$SpecialFPU &TRUE | ExitP
+            Mov B$SpecialFPU &TRUE | ExitP
         EndIf
 
-        fclex | fstcw W@ControlWord | mov W@MyControlWord 027F | fldcw W@MyControlWord
+        fclex | fstcw W@ControlWord | Mov W@MyControlWord 027F | fldcw W@MyControlWord
 
         fld T$eax | fld st0
 
@@ -1420,64 +1420,64 @@ L1:     ;  _______________________________________________________
         .If D@iExp L 16
             fld st0 | frndint | fcomp st1 | fstsw ax
             Test ax 040 | jz L1>
-                call FloatToBCD
+                Call FloatToBCD
 
-                mov eax 17 | mov ecx D@iExp | sub eax ecx | inc ecx
+                Mov eax 17 | Mov ecx D@iExp | sub eax ecx | inc ecx
                 lea esi D$TempoAsciiFpu+eax
 
                 If B$esi = '0'
                     inc esi | dec ecx
                 End_If
 
-                mov eax 0
+                Mov eax 0
                 rep movsb | jmp L9>>
 
         .End_If
 
-L1:     mov eax, 6 | sub eax D@iExp
+L1:     Mov eax, 6 | sub eax D@iExp
 
-        call PowerOf10
+        Call PowerOf10
 
         fcom Q$ten7 | fstsw ax | Test ah 1 | jz L1>
             fmul Q$ten | dec D@iExp
 
-L1:     call FloatToBCD
+L1:     Call FloatToBCD
 
-        lea esi D$TempoAsciiFpu+11 | mov ecx D@iExp
+        lea esi D$TempoAsciiFpu+11 | Mov ecx D@iExp
 
         If ecx = 0-1
-            mov B$edi '0' | inc edi
+            Mov B$edi '0' | inc edi
         End_If
 
         inc ecx
 
         If ecx <= 7
-            mov eax 0
-            rep movsb | mov B$edi '.' | inc edi
-            mov ecx 6 | sub ecx D@iExp | rep movsb
+            Mov eax 0
+            rep movsb | Mov B$edi '.' | inc edi
+            Mov ecx 6 | sub ecx D@iExp | rep movsb
 
             While B$edi-1 = '0' | dec edi | End_While
             On B$edi-1 = '.', dec edi
 
             jmp L9>>
         Else
-            movsb | mov B$edi '.' | inc edi | movsd | movsw
+            movsb | Mov B$edi '.' | inc edi | movsd | movsw
 
-            mov B$edi 'e' | mov eax D@iExp
-            mov B$edi+1 '+'
+            Mov B$edi 'e' | Mov eax D@iExp
+            Mov B$edi+1 '+'
             Test eax 0_8000_0000 | jz L1>
-                neg eax | mov B$edi+1 '-'
+                neg eax | Mov B$edi+1 '-'
 
-L1:         mov ecx 10, edx 0 | div ecx | add dl '0' | mov B$edi+4 dl
-            mov edx 0 | div ecx | add dl '0' | mov B$edi+3 dl
-            mov edx 0 | div ecx | add dl, '0' | mov B$edi+2 dl
+L1:         Mov ecx 10, edx 0 | div ecx | add dl '0' | Mov B$edi+4 dl
+            Mov edx 0 | div ecx | add dl '0' | Mov B$edi+3 dl
+            Mov edx 0 | div ecx | add dl, '0' | Mov B$edi+2 dl
             add edi 5
         End_If
 
-L9:     mov B$edi 0 | fldcw W@ControlWord | fwait
+L9:     Mov B$edi 0 | fldcw W@ControlWord | fwait
 
         If B$NegatedReg = &TRUE
-            mov eax D@Float80Pointer | xor D$eax+9 0_80
+            Mov eax D@Float80Pointer | xor D$eax+9 0_80
         End_If
 EndP
 

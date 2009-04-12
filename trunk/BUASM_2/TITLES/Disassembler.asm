@@ -152,7 +152,7 @@ ________________________________________________________________________________
  NODE           00_100  ; > Directely CALLed or JMPed Location (+INSTRUCTION+LABEL)
  LABEL         00_1000  ; > Labelled Data Location.
  CHUNKEND      00_1000  ; > Location after a RET or a JMP (should be LABEL+NODE)
- ACCESSED    00_1_0000  ; > Marks a chunk of Instructions by direct call or jump.
+ ACCESSED    00_1_0000  ; > Marks a chunk of Instructions by direct Call or jump.
  EXPORTNODE 00_10_0000  ; > Used for direct write of Exported Function Labels Names.
  INDIRECT  00_100_0000  ; > Data Reference to Code. No effect if not Instruction aligned.
  PUSH_EBP 00_1000_0000] ; > Futur NODE (typical CallBack entry-Point).
@@ -163,8 +163,7 @@ ________________________________________________________________________________
 ; 17    >>>   001_0001  ; Instruction / Accessed  //  0A EVOCATED+LABEL 012
 
 ; Sizes Flags: ; 014 045
-[BYTE 1, WORD 00_10, DWORD  00_100
- FP4 00_1000, FP8 00_1_0000, FP10 00_10_0000
+[FP4 00_1000, FP8 00_1_0000, FP10 00_10_0000
  POINTER 00_100_0000, STRINGS 00_1000_0000]
 
 [LeaInstruction: &FALSE]
@@ -174,18 +173,18 @@ Proc BuildCommentedCodeReference:
     Local @DataPos
     Uses edx, esi, ebx, eax
 
-        mov ebx D@DataPointer
+        Mov ebx D@DataPointer
 
       ; Get the actual position of the data label.
-        mov eax ebx
+        Mov eax ebx
         sub eax D$RoutingMap
-        mov D@DataPos eax
+        Mov D@DataPos eax
 
         Zcopy {W$ CRLF, B$ "; Referenced Routing Flags: Hex = ", 0}
         movzx eax B$ebx
 
         push eax
-            call Writeeax
+            Call Writeeax
         pop eax
 
 L1:     cmp al CHUNKEND | jnz L1>
@@ -217,7 +216,7 @@ L2:
         sub edi 2
     End_If
 
-    mov W$edi CRLF | add edi 2
+    Mov W$edi CRLF | add edi 2
 EndP
 
 
@@ -226,18 +225,18 @@ Proc BuildCommentedDataReference:
     Local @DataPos
     Uses edx, esi, ebx, eax
 
-        mov ebx D@DataPointer
+        Mov ebx D@DataPointer
 
       ; Get the actual position of the data label:
-        mov eax ebx
+        Mov eax ebx
         sub eax D$RoutingMap
-        mov D@DataPos eax
+        Mov D@DataPos eax
 
         Zcopy {W$ CRLF, B$ "; Referenced Size Flag for next data: Hex = ", 0}
         movzx eax B$ebx
 
         push eax
-            call WriteEax
+            Call WriteEax
         pop eax
 
         test eax STRINGS | jz L1>
@@ -262,7 +261,7 @@ L1:
             sub edi 2
         End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 EndP
 
 ____________________________________________________________________________________________
@@ -275,62 +274,62 @@ Proc ShowMaping:
 
         ;mov D$DisViewPos 0
 
-        mov esi D@Map, ecx D@MapEnd | sub ecx D@Map | shl ecx 6
+        Mov esi D@Map, ecx D@MapEnd | sub ecx D@Map | shl ecx 6
         VirtualAlloc TempoMemPointer ecx
 
-S0:     mov edi D$TempoMemPointer, esi D@Map, ecx D@MapEnd
+S0:     Mov edi D$TempoMemPointer, esi D@Map, ecx D@MapEnd
         sub ecx esi | dec ecx
 
-        mov eax esi | sub eax D@Map | add eax D$DisImageBase
-        call WriteEax | mov D$edi '    ' | add edi 4
+        Mov eax esi | sub eax D@Map | add eax D$DisImageBase
+        Call WriteEax | Mov D$edi '    ' | add edi 4
 
 L0:     lodsb | shr al 4 | add al '0' | On al > '9', add al 7 | stosb
         dec esi | lodsb | and al 0F | add al '0' | On al > '9', add al 7 | stosb
-        mov al ' ' | stosb
+        Mov al ' ' | stosb
 
         test ecx 00111 | jnz L1>
-            mov al ' ' | stosb
+            Mov al ' ' | stosb
 
         test ecx 001111 | jnz L1>
             sub esi 16
             push ecx
-                mov ecx 16
-T0:             lodsb | On al < ' ', mov al '.' | stosb | loop T0<
+                Mov ecx 16
+T0:             lodsb | On al < ' ', Mov al '.' | stosb | loop T0<
             pop ecx
-            mov ax 0A0D | stosw
-            mov eax esi | sub eax D@Map | add eax D$DisImageBase
-            call WriteEax | mov D$edi '    ' | add edi 4
+            Mov ax 0A0D | stosw
+            Mov eax esi | sub eax D@Map | add eax D$DisImageBase
+            Call WriteEax | Mov D$edi '    ' | add edi 4
 L1:     loop L0<
 ; Tag Dialog 1001
-        call 'USER32.DialogBoxParamA' D$hInstance, 1001, &NULL, DisViewProc, &NULL
+        Call 'USER32.DialogBoxParamA' D$hInstance, 1001, &NULL, DisViewProc, &NULL
 
         .If D$ViewCommand = 11
-            mov eax D$SectionsMap, D@Map eax
-            mov eax D$EndOfSectionsMap, D@MapEnd eax
+            Mov eax D$SectionsMap, D@Map eax
+            Mov eax D$EndOfSectionsMap, D@MapEnd eax
             jmp S0<<
         .Else_If D$ViewCommand = 12
-            mov eax D$RoutingMap, D@Map eax
-            mov eax D$EndOfRoutingMap, D@MapEnd eax
+            Mov eax D$RoutingMap, D@Map eax
+            Mov eax D$EndOfRoutingMap, D@MapEnd eax
             jmp S0<<
         .Else_If D$ViewCommand = 13
-            mov eax D$Sizesmap, D@Map eax
-            mov eax D$EndOfSizesMap, D@MapEnd eax
+            Mov eax D$Sizesmap, D@Map eax
+            Mov eax D$EndOfSizesMap, D@MapEnd eax
             jmp S0<<
         .Else_If D$ViewCommand = 14
-            mov eax D$UserPeStart, D@Map eax
-            mov eax D$UserPeEnd, D@MapEnd eax
+            Mov eax D$UserPeStart, D@Map eax
+            Mov eax D$UserPeEnd, D@MapEnd eax
             jmp S0<<
         .Else_If D$ViewCommand = 15
             If D$JumpsMap <> 0
-                mov eax D$JumpsMap, D@Map eax
-                mov eax D$EndOfJumpsMap, D@MapEnd eax
+                Mov eax D$JumpsMap, D@Map eax
+                Mov eax D$EndOfJumpsMap, D@MapEnd eax
                 jmp S0<<
             End_If
         .End_If
 
         VirtualFree D$TempoMemPointer
 
-        mov B$SilentMap &TRUE
+        Mov B$SilentMap &TRUE
         On B@Close = &TRUE, jmp DisFail
 EndP
 
@@ -338,46 +337,46 @@ EndP
 [DisViewPos: ?    ViewCommand: ?]
 
 Proc DisViewProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    .If D@Message = &WM_INITDIALOG
-        mov D$EmptyDialogHandle eax
-        call 'USER32.SetDlgItemTextA' D@Adressee, 100, D$TempoMemPointer
+    .If D@msg = &WM_INITDIALOG
+        Mov D$EmptyDialogHandle eax
+        Call 'USER32.SetDlgItemTextA' D@hwnd, 100, D$TempoMemPointer
         If D$DisViewPos <> 0
-            call 'User32.SendDlgItemMessageA' D@Adressee,100, &EM_LINESCROLL, 0, D$DisViewPos
+            Call 'User32.SendDlgItemMessageA' D@hwnd,100, &EM_LINESCROLL, 0, D$DisViewPos
         End_If
 
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
-        mov eax &TRUE
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Mov eax &TRUE
 
-    .Else_If D@Message = &WM_CLOSE
-        mov D$DisViewPos 0, D$ViewCommand 0
-        call 'User32.DestroyWindow' D@Adressee
+    .Else_If D@msg = &WM_CLOSE
+        Mov D$DisViewPos 0, D$ViewCommand 0
+        Call 'User32.DestroyWindow' D@hwnd
 
-    .Else_If D@Message = &WM_COMMAND
+    .Else_If D@msg = &WM_COMMAND
         If D@wparam < 11
             ;
         Else_If D@wparam > 15
             ;
         Else
             move D$ViewCommand D@wParam
-            call 'User32.SendDlgItemMessageA' D@Adressee, 100, &EM_GETFIRSTVISIBLELINE, 0, 0
-            mov D$DisViewPos eax
-            call 'User32.DestroyWindow' D@Adressee
+            Call 'User32.SendDlgItemMessageA' D@hwnd, 100, &EM_GETFIRSTVISIBLELINE, 0, 0
+            Mov D$DisViewPos eax
+            Call 'User32.DestroyWindow' D@hwnd
         End_If
 
-    .Else_If D@Message = &WM_CTLCOLOREDIT
-        call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0-1, 0
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+    .Else_If D@msg = &WM_CTLCOLOREDIT
+        Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0-1, 0
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
 
     .Else
-        popad | mov eax &FALSE | jmp L9>
+        popad | Mov eax &FALSE | jmp L9>
 
     .End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 ____________________________________________________________________________________________
@@ -395,20 +394,20 @@ ________________________________________________________________________________
 
 DisInitialise:
   ; Clear all Disassembler job Virtual Data:
-    mov edi FirstDisVirtualData, eax 0
+    Mov edi FirstDisVirtualData, eax 0
 
-    mov ecx LastDisVirtualData | sub ecx edi | shr ecx 2 | repe stosd
+    Mov ecx LastDisVirtualData | sub ecx edi | shr ecx 2 | repe stosd
 
     Align_On 4 D$UserPeLen
 
-    mov B$Disassembling &TRUE
+    Mov B$Disassembling &TRUE
 
-    call CloseTree | call ReInitUndo | call ReInitHeaderFormat
-    VirtualFree D$BookMarks | call ClearBackTable | call ReleaseResourceMemory
+    Call CloseTree | Call ReInitUndo | Call ReInitHeaderFormat
+    VirtualFree D$BookMarks | Call ClearBackTable | Call ReleaseResourceMemory
 
-    call BuildTruthAsciiTable
+    Call BuildTruthAsciiTable
 
-    call InitDisProgressBar
+    Call InitDisProgressBar
 ;;
   The steping of the Progress Bar is just a simple evaluation. The Range is set
   (in 'InitDisProgressBar') at 0 to 128. So that we have to shr 7 for having the
@@ -416,15 +415,15 @@ DisInitialise:
   1 for Pass2 / 1 for Pass3), we estimate the number of Passes at 8 (> shl 3).
   So 7-3 > 4.
 ;;
-    mov eax D$UserPeLen | shr eax 4 | or eax 1
-    mov D$DisBarStep eax | move D$NextDisBarPos D$UserPeStart
+    Mov eax D$UserPeLen | shr eax 4 | or eax 1
+    Mov D$DisBarStep eax | move D$NextDisBarPos D$UserPeStart
 
-    mov eax D$UserPeStart
+    Mov eax D$UserPeStart
     If D$eax+059 = 'spit'
-        On D$eax+069 = ' wiz', mov D$CompiledBy 'ROSA'
+        On D$eax+069 = ' wiz', Mov D$CompiledBy 'ROSA'
     End_If
 
-    mov D$DisMainWindowProc 0
+    Mov D$DisMainWindowProc 0
 ret
 ____________________________________________________________________________________________
 
@@ -444,47 +443,47 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 MarkRosAsmPeSections:
-    GetPeHeader SectionsHeaders | mov esi eax
+    GetPeHeader SectionsHeaders | Mov esi eax
 
-    mov ecx D$DisNumberOfSections
+    Mov ecx D$DisNumberOfSections
 
 L0: push ecx
-        mov edi D$esi+SECTION_RVA | add edi D$SectionsMap
-        mov ecx D$esi+SECTION_RVASIZE | Align_On 01000 ecx
+        Mov edi D$esi+SECTION_RVA | add edi D$SectionsMap
+        Mov ecx D$esi+SECTION_RVASIZE | Align_On 01000 ecx
 
-        mov eax D$esi
+        Mov eax D$esi
 
         .If eax = '.ida'
-            mov al IMPORTFLAG
+            Mov al IMPORTFLAG
         .Else_If eax = '.rsr'
-            mov al RESOURCESFLAG
+            Mov al RESOURCESFLAG
         .Else_If eax = '.dat'
-            mov al DATAFLAG, ecx D$esi+SECTION_RVASIZE, edx D$esi+SECTION_FILESIZE
+            Mov al DATAFLAG, ecx D$esi+SECTION_RVASIZE, edx D$esi+SECTION_FILESIZE
             On edx < ecx, xchg ecx edx
             Align_On 32 ecx
             push ecx
                 rep stosb
             pop eax
-            mov ecx D$esi+SECTION_RVASIZE, edx D$esi+SECTION_FILESIZE
+            Mov ecx D$esi+SECTION_RVASIZE, edx D$esi+SECTION_FILESIZE
             On edx > ecx, xchg ecx edx
             Align_On 01000 ecx | sub ecx eax
-            mov al VIRTUALFLAG
+            Mov al VIRTUALFLAG
         .Else_If eax = '.tex'
           ; Not CODEFLAG. It would kill the 'TryToDisassembleEvocated' job:
-            mov al 0, ecx D$esi+SECTION_RVASIZE, edx D$esi+SECTION_FILESIZE
+            Mov al 0, ecx D$esi+SECTION_RVASIZE, edx D$esi+SECTION_FILESIZE
             On edx < ecx, xchg ecx edx
             add ecx 7
             push ecx
                 rep stosb
             pop eax
-            mov ecx D$esi+SECTION_RVASIZE, edx D$esi+SECTION_FILESIZE
+            Mov ecx D$esi+SECTION_RVASIZE, edx D$esi+SECTION_FILESIZE
             On edx > ecx, xchg ecx edx
             Align_On 01000 ecx | sub ecx eax
-            mov al KILLFLAG
+            Mov al KILLFLAG
         .Else_If eax = '.eda'
-            mov al EXPORTFLAG
+            Mov al EXPORTFLAG
         .Else
-            mov al KILLFLAG
+            Mov al KILLFLAG
         .End_If
 
         rep stosb
@@ -500,42 +499,42 @@ ________________________________________________________________________________
 Proc SaveDisPeName:
     Argument @Destination
 
-        mov esi MainName, edi D@Destination
+        Mov esi MainName, edi D@Destination
 
         While B$esi <> 0 | movsb | End_While
 
-        mov eax D$SavingExtension | stosd | mov B$edi 0
+        Mov eax D$SavingExtension | stosd | Mov B$edi 0
 EndP
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
-;call ShowMaping D$SectionsMap, D$EndOfSectionsMap, 1
-;call ShowMaping D$RoutingMap, D$EndOfRoutingMap, 1
-;call ShowMaping D$ApiBuffer, D$EndOfApiBuffer, 1
-;call ShowMaping D$UserPeStart, D$UserPeEnd, 1
-;call ShowMaping D$SizesMap, D$EndOfSizesMap, 1
+;Call ShowMaping D$SectionsMap, D$EndOfSectionsMap, 1
+;Call ShowMaping D$RoutingMap, D$EndOfRoutingMap, 1
+;Call ShowMaping D$ApiBuffer, D$EndOfApiBuffer, 1
+;Call ShowMaping D$UserPeStart, D$UserPeEnd, 1
+;Call ShowMaping D$SizesMap, D$EndOfSizesMap, 1
 
 [MapingBase: 050A007] ;407967]
 
-[Map | call MapCall]
+[Map | Call MapCall]
 
 MapCall: MapView
 
 [MapView |  If D$MapingBase <> 0
-                mov eax D$MapingBase | sub eax D$DisImageBase | shr eax 4
-                mov D$DisViewPos eax
+                Mov eax D$MapingBase | sub eax D$DisImageBase | shr eax 4
+                Mov D$DisViewPos eax
             Else
-                mov D$DisViewPos 0
+                Mov D$DisViewPos 0
             End_If
 
-call ShowMaping D$SectionsMap, D$EndOfSectionsMap, 1]
+Call ShowMaping D$SectionsMap, D$EndOfSectionsMap, 1]
 
 [CompiledBy: ?    LastDisassemblyRoutingPass: ?]
 
 DisMain: ; 'MSVBVM' 'OpenRosAsmPe', 'DisassembleProc'
-    mov B$LastDisassemblyRoutingPass &FALSE
+    Mov B$LastDisassemblyRoutingPass &FALSE
 
-    call SaveDisPeName OriginalDisPe
+    Call SaveDisPeName OriginalDisPe
     ___________________________
   ; Initialise the Disassembly:
 ;;
@@ -544,16 +543,16 @@ DisMain: ; 'MSVBVM' 'OpenRosAsmPe', 'DisassembleProc'
   holds the length of the PE. All of this is the PE as found on Disk.
 ;;
   ; For 'DisFail' short exit:
-    mov eax esp, D$OldStackPointer eax, D$CompiledBy 0
+    Mov eax esp, D$OldStackPointer eax, D$CompiledBy 0
 
-    call DisInitialise | call FixMzParagraphsNumber
+    Call DisInitialise | Call FixMzParagraphsNumber
 
   ; 'ReadResourcesRecord' seems to fail at pointing out GoAsm Resources.
   ; Not sure: To be verified.
 
-    call LoadDisResources
+    Call LoadDisResources
 
-    call StartNewDisFile | call ReAlignPE | call AllocateDisTables
+    Call StartNewDisFile | Call ReAlignPE | Call AllocateDisTables
 
 ; 'OutputFormat'
 ; Hexprint D$SavingExtension | jmp DisFail
@@ -562,36 +561,36 @@ DisMain: ; 'MSVBVM' 'OpenRosAsmPe', 'DisassembleProc'
   The PE in Memory is now ready for analyzes.
 ;;
   ; We don't need .reloc and .debug:
-    call KillPeHeader | call KillSection RelocSectionTable | call KillSection DebugDir
+    Call KillPeHeader | Call KillSection RelocSectionTable | Call KillSection DebugDir
 ;map
   ; Check the secure Sections:
-    call CheckImport | call CheckExport
+    Call CheckImport | Call CheckExport
 ;map
-    call CheckResources
+    Call CheckResources
 ;map
-    call CheckVirtualData | call CheckExtendedVirtual
+    Call CheckVirtualData | Call CheckExtendedVirtual
 
-    call SmallBlanksToSameFlag
+    Call SmallBlanksToSameFlag
 ;map
-    call KillSectionsExtensions
+    Call KillSectionsExtensions
 ;map
     _____________________________________________________________
 
   ; If called from 'TryDisassembly' or from 'ReRunDisassembler':
     If B$WithForcedMapFile = &TRUE
-        call ReadForcedRecordsFile
-        On D$ForcedRecordsTable <> 0, call ForceRecordsToMaps
+        Call ReadForcedRecordsFile
+        On D$ForcedRecordsTable <> 0, Call ForceRecordsToMaps
     Else
-        call DeleteForcedFile
+        Call DeleteForcedFile
         VirtualFree D$ForcedRecordsTable
     End_If
 
   ; Sniff Recognition should come here...
     If D$CompiledBy = 'ROSA'
-        call MarkRosAsmPeSections
+        Call MarkRosAsmPeSections
 ;map
     Else_If D$CompiledBy = 'MSVB'
-        call MarkVbPe
+        Call MarkVbPe
     Else
       ; ...
     End_If
@@ -601,15 +600,15 @@ DisMain: ; 'MSVBVM' 'OpenRosAsmPe', 'DisassembleProc'
 ;;
     Guga D.I.S. Identification Plan:
   
-    call GetDisPath | call LoadOneDisFile {'Pe', 0}, '.dis'
+    Call GetDisPath | Call LoadOneDisFile {'Pe', 0}, '.dis'
     
     ; LoadPeDisFile
     
     .If B$DisFileOk = &TRUE
         VirtualAlloc PeDisMatches 01000 | move D$PeDisMatchesPointer D$PeDisMatches
   
-        call ParsePeDis
-        call GetBiggerPeDisID
+        Call ParsePeDis
+        Call GetBiggerPeDisID
         
         VirtualFree D$PeDisMatches
         jmp DisFail
@@ -621,72 +620,72 @@ DisMain: ; 'MSVBVM' 'OpenRosAsmPe', 'DisassembleProc'
   ; Positive Recognition for Data and Code:
 
   ; 'MarkEvocated' _MUST_ be kept _first_ Recognition.
-    call MarkEvocated | call ConditionalJumpsAnalyzes
+    Call MarkEvocated | Call ConditionalJumpsAnalyzes
 ;map
-    call MarkEntryPoint
-    call MarkProcedures | call MarkJumpsTables
+    Call MarkEntryPoint
+    Call MarkProcedures | Call MarkJumpsTables
 ;map
-    call MarkPointersFlows | call MarkAlternatedPointersFlows
+    Call MarkPointersFlows | Call MarkAlternatedPointersFlows
 ;map
-    call DisassembleForCodeRouting
+    Call DisassembleForCodeRouting
 ;map
-    call MarkVeryRepetitiveDataBytes ; (12 identical Bytes >>> Data)
+    Call MarkVeryRepetitiveDataBytes ; (12 identical Bytes >>> Data)
 ;Map
-    call MarkEvocatedSizes
+    Call MarkEvocatedSizes
 ;map
-    call MarkRepetitiveDataBytes ; (8 identical Bytes >>> Data)
+    Call MarkRepetitiveDataBytes ; (8 identical Bytes >>> Data)
 ;;;map
 ; Probably obsolete. Anyway, should not be at thins place:
-    ;call ExtendStrings | call FillStringsSizes
+    ;Call ExtendStrings | Call FillStringsSizes
 ;Map
-    call UnEvocatedProcedures
+    Call UnEvocatedProcedures
 
-    call DisassembleForCodeRouting
+    Call DisassembleForCodeRouting
 
-    mov B$Forced &TRUE
-    call AsciiRecognition 25 | call UnicodeRecognition 25
-    mov B$Forced &FALSE
+    Mov B$Forced &TRUE
+    Call AsciiRecognition 25 | Call UnicodeRecognition 25
+    Mov B$Forced &FALSE
 ;Map
-    call SmallBlanksToSameFlag
+    Call SmallBlanksToSameFlag
 ;Map
-    mov B$LastDisassemblyRoutingPass &TRUE
-    call DisassembleForCodeRouting
-    mov B$LastDisassemblyRoutingPass &FALSE
+    Mov B$LastDisassemblyRoutingPass &TRUE
+    Call DisassembleForCodeRouting
+    Mov B$LastDisassemblyRoutingPass &FALSE
 
-    call FlagTrueDataSection
+    Call FlagTrueDataSection
 ;map
-    call MarkIsolatedPointers
+    Call MarkIsolatedPointers
 ;map
-    call SmallBlanksToSameFlag
+    Call SmallBlanksToSameFlag
 ;map
-    call FlagsCleaner
+    Call FlagsCleaner
 ;map
-    ;call FlagTrueDataSection ; Better 4 lines above.
+    ;Call FlagTrueDataSection ; Better 4 lines above.
 ;map
 
     _________________________________________________________________
   ; Try&See recognitions of left Code // Negative Recognition of Data:
-    call 'User32.SendMessageA' D$hwndForBar, &WM_SETTEXT, 0, PointersAnalyzes
+    Call 'User32.SendMessageA' D$hwndForBar, &WM_SETTEXT, 0, PointersAnalyzes
 ;
-    call CodeFromPointers
+    Call CodeFromPointers
 
     If B$AttemptSuccess = &TRUE
-        call DisassembleForCodeRouting
-        call SmallBlanksToSameFlag
+        Call DisassembleForCodeRouting
+        Call SmallBlanksToSameFlag
     End_If
 
-    call 'User32.SendMessageA' D$hwndForBar, &WM_SETTEXT, 0, NegativeAnalyze
+    Call 'User32.SendMessageA' D$hwndForBar, &WM_SETTEXT, 0, NegativeAnalyze
 
-    call GetBiggerSectionsBlank | mov ecx D$BiggerZeroedSectionsChunk
+    Call GetBiggerSectionsBlank | Mov ecx D$BiggerZeroedSectionsChunk
 ;map
 
     .Do
 L0:     push ecx
-            call TryToDisassembleEvocated ecx
+            Call TryToDisassembleEvocated ecx
 
             If B$AttemptSuccess = &TRUE
-                call DisassembleForCodeRouting
-                call SmallBlanksToSameFlag
+                Call DisassembleForCodeRouting
+                Call SmallBlanksToSameFlag
 ;;
   This inner loop is Bound to "jmp L9>", in 'TryToDisassembleEvocated'. When these
   are uncommented, the results tend to be a little bit better. The problem is that
@@ -707,53 +706,53 @@ L0:     push ecx
         push ecx
             .If ecx < 100
                 If ecx > 50
-                    call AsciiRecognition 20 | call UnicodeRecognition 20 | jmp L9>
+                    Call AsciiRecognition 20 | Call UnicodeRecognition 20 | jmp L9>
                 End_If
             .End_If
 
             .If ecx <= 50
                 If ecx > 25
-                    call AsciiRecognition 15 | call UnicodeRecognition 15 | jmp L9>
+                    Call AsciiRecognition 15 | Call UnicodeRecognition 15 | jmp L9>
                 End_If
             .End_If
 
             .If ecx <= 25
                 If ecx > 13
-                    call AsciiRecognition 12 | call UnicodeRecognition 12 | jmp L9>
+                    Call AsciiRecognition 12 | Call UnicodeRecognition 12 | jmp L9>
                 End_If
             .End_If
 L9:     pop ecx
 
-        shr ecx 1 | mov eax ecx | shr eax 1 | add ecx eax
+        shr ecx 1 | Mov eax ecx | shr eax 1 | add ecx eax
   ; Let the ecx = 0. This is to say down to one _Instruction_:
     .Loop_Until ecx = 0
 ;map
-    call FlagsCleaner
+    Call FlagsCleaner
 
-    call DisassembleForCodeRouting
+    Call DisassembleForCodeRouting
 
-    call SmallBlanksToSameFlag
+    Call SmallBlanksToSameFlag
 ;Map
-    call DisAlign
+    Call DisAlign
 ;Map
-    ;call RemoveNonAccessedEvocatedData
+    ;Call RemoveNonAccessedEvocatedData
 ;Map
   ; All Code pointed out >>> Not flaged Chunks to Data:
-    call FillDataSection | call StripSectionsZeroEnd
+    Call FillDataSection | Call StripSectionsZeroEnd
 
-    call MarkIsolatedPointers ; Second call really helpfull?
+    Call MarkIsolatedPointers ; Second Call really helpfull?
 ;map
-    mov B$LastDisassemblyRoutingPass &TRUE
+    Mov B$LastDisassemblyRoutingPass &TRUE
 
-    call DisassembleForCodeRouting
+    Call DisassembleForCodeRouting
 ;Map
-    call CheckPointersInData
+    Call CheckPointersInData
 
-    call SplitBigData
+    Call SplitBigData
 ;map
-    call FlagsCoherency
+    Call FlagsCoherency
 
-    call FlagsCleaner
+    Call FlagsCleaner
 ;map
 
     _________________________________
@@ -763,45 +762,45 @@ L9:     pop ecx
     ________________________________________________________
   ; Now we write the Source. We need the original File Name. Save it first:
 
-    mov edi D$CodeSource | call WriteOriginalFileNameInSource
+    Mov edi D$CodeSource | Call WriteOriginalFileNameInSource
 
   ; then, Default Macros, and Data:
 
-    mov D$NextDisTITLE edi | add D$NextDisTITLE (TITLE_MAX/2) | mov W$DisTitle+12 '01'
+    Mov D$NextDisTITLE edi | add D$NextDisTITLE (TITLE_MAX/2) | Mov W$DisTitle+12 '01'
 
-    call 'User32.SendMessageA' D$hwndForBar, &WM_SETTEXT, 0, WritingData
+    Call 'User32.SendMessageA' D$hwndForBar, &WM_SETTEXT, 0, WritingData
 ;Map
     If B$WithMacros = &TRUE
-        On D$SavingExtension <> '.SYS', call WriteMacros
+        On D$SavingExtension <> '.SYS', Call WriteMacros
     End_If
 
-    mov D$EndOfDisData edi
+    Mov D$EndOfDisData edi
 
   ; ... and then Code:
 ;Map
-    mov D$NextDisBarPos 0 | call DisassembleAndWrite  ; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-;call TestStringsTable
+    Mov D$NextDisBarPos 0 | Call DisassembleAndWrite  ; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+;Call TestStringsTable
     pushad
-        call WriteMapFiles ; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        call WriteForcedRecordsFileBase
+        Call WriteMapFiles ; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        Call WriteForcedRecordsFileBase
     popad
 
     ________________________________
   ; Preparing for the Source Editor:
-    call SetDisSourceVariables
+    Call SetDisSourceVariables
 
   ; Searching for 'MainWindowProc' Location:
-   ;On D$SavingExtension <> '.DLL', call SearchMainWindowProc
+   ;On D$SavingExtension <> '.DLL', Call SearchMainWindowProc
 
     If B$MenuInside = &TRUE
          ; called from 'MenuIdsSubstitutions', 'PrepareDisMenuIDs' Builds the
            ; Table of Menu Ids Declarations
-            call MenuIdsSubstitutions
-            On B$WM_COMMAND_Found = &TRUE, call ResetMenusIDs
+            Call MenuIdsSubstitutions
+            On B$WM_COMMAND_Found = &TRUE, Call ResetMenusIDs
         End_If
     End_If
 
-    call NamedIdSubstitution
+    Call NamedIdSubstitution
 
     VirtualFree D$TruthAsciiTable, D$ApiBuffer
     VirtualFree D$UserPeStart | move D$UserPeStart D$CodeSource
@@ -816,50 +815,50 @@ L9:     pop ecx
 ;;
     SetWindowText
 
-    mov D$DestinationFile 0
+    Mov D$DestinationFile 0
 
-    mov D$OpenPEStruc+(12*4) ChangeNameTitle
-    mov esi SaveFilter
+    Mov D$OpenPEStruc+(12*4) ChangeNameTitle
+    Mov esi SaveFilter
     While B$esi <> 0 | inc esi | End_While
     dec esi | lea edi D$esi+2
     std
         Do
             movsb | On B$esi = '\', jmp L1>
         Loop_Until esi < SaveFilter
-L1:     inc esi | mov W$esi 'My'
+L1:     inc esi | Mov W$esi 'My'
     cld
 
     .If D$WithForcedMapFile = &FALSE
-        call ChangeName | mov D$OpenPEStruc+(12*4) OpenPEFileTitle
+        Call ChangeName | Mov D$OpenPEStruc+(12*4) OpenPEFileTitle
 
         If eax = &FALSE
-            call 'USER32.MessageBoxA' D$hwnd, DisWarningMessage, DisWarningTitle,
+            Call 'USER32.MessageBoxA' D$H.MainWindow, DisWarningMessage, DisWarningTitle,
                                     &MB_SYSTEMMODAL__&MB_ICONSTOP
         End_If
 
-        call SaveDisPeName UserDisPeName
+        Call SaveDisPeName UserDisPeName
 
     .Else
-        call SaveNewFileName | mov D$OpenPEStruc+(12*4) OpenPEFileTitle
-        call SaveDisPeName UserDisPeName
+        Call SaveNewFileName | Mov D$OpenPEStruc+(12*4) OpenPEFileTitle
+        Call SaveDisPeName UserDisPeName
         SetWindowText
 
     .End_If
 
-    call StartEdition | move D$UserPeStart D$CodeSource
+    Call StartEdition | move D$UserPeStart D$CodeSource
 
-    mov B$Disassembling &FALSE, B$SourceReady &TRUE
+    Mov B$Disassembling &FALSE, B$SourceReady &TRUE
 
-    call DestroyDisProgressBar
+    Call DestroyDisProgressBar
 
-    mov B$ThisSourceIsDisassembled &TRUE
+    Mov B$ThisSourceIsDisassembled &TRUE
 ret
 
 
 DestroyDisProgressBar:
-    On D$ProgressInst <> 0, call 'User32.DestroyWindow' D$ProgressInst
-    On D$hwndForBar <> 0, call 'User32.DestroyWindow' D$hwndForBar
-    mov D$ProgressInst 0, D$hwndForBar 0
+    On D$ProgressInst <> 0, Call 'User32.DestroyWindow' D$ProgressInst
+    On D$hwndForBar <> 0, Call 'User32.DestroyWindow' D$hwndForBar
+    Mov D$ProgressInst 0, D$hwndForBar 0
 ret
 ____________________________________________________________________________________________
 
@@ -867,17 +866,17 @@ ________________________________________________________________________________
 
 TestStringsTable:
     pushad
-        mov esi D$StringsMap
+        Mov esi D$StringsMap
 
         .While esi < D$EndOfStringsMap
             If D$esi <> 0
-                mov eax esi | sub eax D$StringsMap | shr eax 2 | add eax D$DisImageBase
-                mov edi Trash | call WriteEax | mov D$edi ' -> ' | add edi 4
+                Mov eax esi | sub eax D$StringsMap | shr eax 2 | add eax D$DisImageBase
+                Mov edi Trash | Call WriteEax | Mov D$edi ' -> ' | add edi 4
                 push esi
-                    mov esi D$esi
+                    Mov esi D$esi
                     While B$esi <> 0 | movsb | End_While
                 pop esi
-                mov B$edi 0
+                Mov B$edi 0
                 Showme Trash
             End_If
 
@@ -896,19 +895,19 @@ LoadDisResources:
   ; Next Lines are the same as the ones in 'OpenRosAsmPE' after having read the
   ; included Source:
 
-    mov B$MenuInside &FALSE
+    Mov B$MenuInside &FALSE
 
-    call SearchDisPEstartOfResource | On B$NoResourcesPE = &TRUE, jmp L9>>
+    Call SearchDisPEstartOfResource | On B$NoResourcesPE = &TRUE, jmp L9>>
 
   ; Here, 'UserPEStartOfResources' is the IMAGE_OPTIONAL_HEADER Sections aligned Pointer
   ; to Header.
-    mov eax D$UserPEStartOfResources, ebx 0 | On eax = 0, jmp L9>>
+    Mov eax D$UserPEStartOfResources, ebx 0 | On eax = 0, jmp L9>>
 
 L0: shl ebx 1 | or ebx 1 | test eax ebx | jz L0<
     shr ebx 1 | and eax ebx
 
     push eax
-        call SearchPEstartOfResource
+        Call SearchPEstartOfResource
       ; Here 'UserPEStartOfResources' is the Sections Header File Aligned Section Pointer.
       ; We need this one but with the eventual Dis to Header (header not necessary at
       ; first Section Byte.
@@ -919,33 +918,33 @@ L0: shl ebx 1 | or ebx 1 | test eax ebx | jz L0<
 
         move D$iExePtr D$UserPeStart
 
-        mov eax D$UserPEStartOfResources, D$iStartOfResources eax
-        call DisReadMainIcon
+        Mov eax D$UserPEStartOfResources, D$iStartOfResources eax
+        Call DisReadMainIcon
 
         If B$PeIconFound = &TRUE
-            mov esi eax | mov edi iIcon | rep movsb ; Copying to icon editor buffer
-            call StoreIcon                          ; and copy it to 'compilable' image
+            Mov esi eax | Mov edi iIcon | rep movsb ; Copying to icon editor buffer
+            Call StoreIcon                          ; and copy it to 'compilable' image
         End_If
 
-        call ReadRosAsmResources
+        Call ReadRosAsmResources
 
         If D$MenuList+4 <> 0
-            call ForceMenusExType | mov B$MenuInside &TRUE
+            Call ForceMenusExType | Mov B$MenuInside &TRUE
         End_If
     .End_If
 L9: ret
 
 
 SearchDisPEstartOfResource:
-    mov B$NoResourcesPE &TRUE, D$UserPEStartOfResources 0
-    mov esi D$DisPeTagPointer | On esi = 0, ret
+    Mov B$NoResourcesPE &TRUE, D$UserPEStartOfResources 0
+    Mov esi D$DisPeTagPointer | On esi = 0, ret
 
   ; RVA of resources from "Image Data Dir...":
     add esi 136 | lodsd
     If eax <> 0
-        add eax D$UserPeStart | mov D$UserPEStartOfResources eax
+        add eax D$UserPeStart | Mov D$UserPEStartOfResources eax
         move D$ResourcesSize D$esi
-        mov B$NoResourcesPE &FALSE
+        Mov B$NoResourcesPE &FALSE
     End_If
 ret
 ____________________________________________________________________________________________
@@ -954,12 +953,12 @@ ________________________________________________________________________________
 ; In case an old type is encounted we need a translation:
 
 ForceMenusExType:  ; ExistingMenu
-    mov ebx MenuList                                ; (ID / Ptr / Size)
+    Mov ebx MenuList                                ; (ID / Ptr / Size)
     While D$ebx+4 <> 0
-        mov esi D$ebx+4
+        Mov esi D$ebx+4
         If W$esi = 0
 
-            call TurnThisMenuToExType     ; First Header Word is 0 (old) / 1 (EX)
+            Call TurnThisMenuToExType     ; First Header Word is 0 (old) / 1 (EX)
 
         End_If
 
@@ -971,19 +970,19 @@ ret
 [DisExMenuMemoryPointer: ?]
 
 TurnThisMenuToExType:
-    mov D$PopUpNumber 1
+    Mov D$PopUpNumber 1
 
-    mov ecx D$ebx+8 | mov edx ecx | shl edx 3
+    Mov ecx D$ebx+8 | Mov edx ecx | shl edx 3
   ; esi > Menu Template // ecx Length of Menu Template (*8 estimation > edx).
     push ebx, esi
         VirtualAlloc DisExMenuMemoryPointer edx
     pop esi, ebx
 
   ; Menu Header:
-    mov edi D$DisExMenuMemoryPointer
-    mov W$edi 1 | add edi 2     ; Type.
-    mov W$edi 4 | add edi 2     ; Displacement to next Item.
-    mov D$edi 0 | add edi 4     ; Help ID.
+    Mov edi D$DisExMenuMemoryPointer
+    Mov W$edi 1 | add edi 2     ; Type.
+    Mov W$edi 4 | add edi 2     ; Displacement to next Item.
+    Mov D$edi 0 | add edi 4     ; Help ID.
     movzx eax W$esi+2 | add eax 4 | add esi eax
 
   ; Items:
@@ -996,14 +995,14 @@ L0:
     movzx eax W$esi
     and eax &MFT_BITMAP__&MFT_MENUBARBREAK__&MFT_MENUBREAK__&MFT_RIGHTJUSTIFY__&MFT_SEPARATOR
     stosd
-    mov ax W$esi
+    Mov ax W$esi
     and eax &MFS_CHECKED__&MFS_DEFAULT__&MFS_GRAYED__&MFS_HILITE
     stosd
-    mov ax W$esi
+    Mov ax W$esi
     and eax &MF_END__&MF_POPUP
     add esi 2
 
-    mov D$edi 0
+    Mov D$edi 0
     Test eax &MF_POPUP | jz L1>
         and eax (not &MF_POPUP) | or eax 1      ; 1 = My MF_POPUP substitution.
         inc D$PopUpNumber
@@ -1031,28 +1030,28 @@ L1:
     While W$esi <> 0 | movsw | End_While | movsw | Align_On 4, edi
 
 L1: Test eax 1 | jz L1>             ; 1 = My MF_POPUP substitution.
-        mov D$edi 0 | add edi 4
+        Mov D$edi 0 | add edi 4
 
 L1: cmp D$PopUpNumber 0 | ja L0<<
 
-L9: mov eax edi | sub eax D$DisExMenuMemoryPointer | mov D$ebx+8 eax
+L9: Mov eax edi | sub eax D$DisExMenuMemoryPointer | Mov D$ebx+8 eax
     push ebx, esi
         VirtualFree D$ebx+4
     pop esi, ebx
 
     move D$ebx+4 D$DisExMenuMemoryPointer
-    mov ecx edi | sub ecx D$DisExMenuMemoryPointer
+    Mov ecx edi | sub ecx D$DisExMenuMemoryPointer
 ret
 
 
 [BasemenuId: ?]
 
 ResetMenusIDs:
-    mov ebx MenuList                                ; (ID / Ptr / Size)
+    Mov ebx MenuList                                ; (ID / Ptr / Size)
     While D$ebx+4 > 0
         move D$BasemenuId D$ebx
         push ebx
-            call ResetThisMenuIDs
+            Call ResetThisMenuIDs
         pop ebx
         add ebx 12
     End_While
@@ -1060,7 +1059,7 @@ ret
 
 
 ResetThisMenuIDs:
-    mov esi D$ebx+4, edx D$ebx+8 | add edx esi
+    Mov esi D$ebx+4, edx D$ebx+8 | add edx esi
 
 ;[MENUEX_TEMPLATE_HEADER:
 ; wVersion: W$ 0
@@ -1099,12 +1098,12 @@ ret
 ____________________________________________________________________________________________
 
 SetDisSourceVariables:
-    mov D$SourceEnd edi
-    mov D$SourceLen edi, eax D$CodeSource | sub D$SourceLen eax
-    mov eax 0A0D0A0D, ecx 100 | rep stosd                            ; end security tail
+    Mov D$SourceEnd edi
+    Mov D$SourceLen edi, eax D$CodeSource | sub D$SourceLen eax
+    Mov eax 0A0D0A0D, ecx 100 | rep stosd                            ; end security tail
 
-    mov eax D$CodeSource
-    mov D$CurrentWritingPos eax, D$CaretLine 0, D$CaretRow 1
+    Mov eax D$CodeSource
+    Mov D$CurrentWritingPos eax, D$CaretLine 0, D$CaretRow 1
 
     move D$UpperLine D$CodeSource
 ret
@@ -1113,17 +1112,17 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 StartHllAnalyze:
-    mov eax D$SourceLen | add eax 1_000_000 | VirtualAlloc SymbolicCodeSource eax
+    Mov eax D$SourceLen | add eax 1_000_000 | VirtualAlloc SymbolicCodeSource eax
 
-    mov esi D$CodeSource, edi D$SymbolicCodeSource
-    mov eax 0A0D0A0D | stosd | stosd | add D$SymbolicCodeSource 8
+    Mov esi D$CodeSource, edi D$SymbolicCodeSource
+    Mov eax 0A0D0A0D | stosd | stosd | add D$SymbolicCodeSource 8
 ret
 
 
 CloseHllAnalyze:
     Exchange D$SymbolicCodeSource D$CodeSource
     VirtualFree D$SymbolicCodeSource
-    call SetDisSourceVariables
+    Call SetDisSourceVariables
 ret
 
 
@@ -1131,10 +1130,10 @@ ret
 
 HLLAnalyzes:
   ;;; Analyze1.
-    ; call StartHllAnalyze | call Analyze1 | call CloseHllAnalyze
+    ; Call StartHllAnalyze | Call Analyze1 | Call CloseHllAnalyze
 
   ;;; Analyze2.
-    ; call StartHllAnalyze | call Analyze2 | call CloseHllAnalyze
+    ; Call StartHllAnalyze | Call Analyze2 | Call CloseHllAnalyze
   ;;; ...
     ; ...
 ret
@@ -1154,7 +1153,7 @@ Analyze1:
     .While esi < D$SourceEnd
         ..If D$esi = 'call'
             If W$esi+4 = " '"
-                call BuildApiCallMacro | On B$ApiMacroSuccess = &FALSE, movsb
+                Call BuildApiCallMacro | On B$ApiMacroSuccess = &FALSE, movsb
             End_If
 
         ..Else
@@ -1168,7 +1167,7 @@ ret
 [ApiMacroSuccess: ?]
 
 BuildApiCallMacro:
-    mov B$ApiMacroSuccess &FALSE
+    Mov B$ApiMacroSuccess &FALSE
 ;;
    Good luck EveryBody :))
 
@@ -1184,7 +1183,7 @@ ________________________________________________________________________________
   We read all through the PE and search for Pointers to PE Locations.
   3 Processes are done:
   * Simple Evocations >>> EVOCATED
-  * Pointers to Code saying 'Push ebp | mov ebp esp' / 'Enter' >>> PUSH_EBP+EVOCATED
+  * Pointers to Code saying 'Push ebp | Mov ebp esp' / 'Enter' >>> PUSH_EBP+EVOCATED
   * Pointer Lists >>> EVOCATED+NODE+ACCESSED
 ;;
 
@@ -1192,11 +1191,11 @@ ________________________________________________________________________________
 Main:", 0]
 
 MarkEntryPoint:
-    mov eax D$DisEntryPoint | sub eax D$DisImageBase | add eax D$RoutingMap
+    Mov eax D$DisEntryPoint | sub eax D$DisImageBase | add eax D$RoutingMap
     or B$eax NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
-    sub eax D$RoutingMap | add eax D$SectionsMap | mov B$eax CODEFLAG
+    sub eax D$RoutingMap | add eax D$SectionsMap | Mov B$eax CODEFLAG
 
-    ToStringsMapFrom SectionsMap, eax | mov D$eax EntryPointName
+    ToStringsMapFrom SectionsMap, eax | Mov D$eax EntryPointName
 ret
 ____________________________________________________________________________________________
 
@@ -1213,12 +1212,12 @@ MarkEvocated:
  by the evocation with EVOCATED:
 ;;
 
-    mov esi D$UserPeStart | add esi D$FirstSection
+    Mov esi D$UserPeStart | add esi D$FirstSection
   ; Relative:
     .While esi < D$UserPeEnd
-        mov eax esi | add eax 4 | add eax D$esi
+        Mov eax esi | add eax 4 | add eax D$esi
 ;push eax
-;    mov eax esi | sub eax D$UserPeStart | add eax D$DisImageBase
+;    Mov eax esi | sub eax D$UserPeStart | add eax D$DisImageBase
 ;    On eax = 0440899, int3
 ;pop eax
         ;sub eax D$DisImageBase | add eax D$UserPeStart
@@ -1226,7 +1225,7 @@ MarkEvocated:
         ...If eax > D$UserPeStart
             ..If eax < D$UserPeEnd
                 sub eax D$UserPeStart | add eax D$SectionsMap
-                mov bl B$eax | and bl IMPORTFLAG+RESOURCESFLAG+EXPORTFLAG+KILLFLAG
+                Mov bl B$eax | and bl IMPORTFLAG+RESOURCESFLAG+EXPORTFLAG+KILLFLAG
                 .If bl = 0
                     sub eax D$SectionsMap | add eax D$RoutingMap
                   ; eax >>> "Pointed to" Location
@@ -1234,17 +1233,17 @@ MarkEvocated:
                         test B$eax EVOCATED | jz L1>
                       ; 1 chance on 400,000 * (2 or more) for both case:
 
-                      ; 2 or more CALL Instructions to the same location:
+                      ; 2 or more Call Instructions to the same location:
                         or B$eax PUSH_EBP+NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
-                        mov ebx eax | sub ebx D$RoutingMap | add ebx D$SectionsMap
-                        mov B$ebx CODEFLAG
+                        Mov ebx eax | sub ebx D$RoutingMap | add ebx D$SectionsMap
+                        Mov B$ebx CODEFLAG
 
                     Else_If B$esi-1 = 0E9
                         test B$eax EVOCATED | jz L1>
                       ; 2 or more JMP Instructions to the same location:
                         or B$eax PUSH_EBP+NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
-                        mov ebx eax | sub ebx D$RoutingMap | add ebx D$SectionsMap
-                        mov B$ebx CODEFLAG
+                        Mov ebx eax | sub ebx D$RoutingMap | add ebx D$SectionsMap
+                        Mov B$ebx CODEFLAG
 
 L1:                     or B$eax EVOCATED
 
@@ -1257,14 +1256,14 @@ L1:                     or B$eax EVOCATED
 L5:     inc esi
     .End_While
 
-    mov esi D$UserPeStart | add esi D$FirstSection
+    Mov esi D$UserPeStart | add esi D$FirstSection
   ; Absolute:
     While esi < D$UserPeEnd
-        mov eax D$esi | sub eax D$DisImageBase | add eax D$UserPeStart
+        Mov eax D$esi | sub eax D$DisImageBase | add eax D$UserPeStart
         ..If eax > D$UserPeStart
             .If eax < D$UserPeEnd
                 sub eax D$UserPeStart | add eax D$SectionsMap
-                mov bl B$eax | and bl IMPORTFLAG+RESOURCESFLAG+EXPORTFLAG+KILLFLAG
+                Mov bl B$eax | and bl IMPORTFLAG+RESOURCESFLAG+EXPORTFLAG+KILLFLAG
                 If bl = 0
                     sub eax D$SectionsMap | add eax D$RoutingMap
                     or B$eax EVOCATED
@@ -1282,29 +1281,29 @@ ________________________________________________________________________________
 
 MarkProcedures:
 ;;
- 'Enter' and 'push ebp | mov ebp esp', Locations in Code, are Flaged PUSH_EBP, in
+ 'Enter' and 'push ebp | Mov ebp esp', Locations in Code, are Flaged PUSH_EBP, in
  the 'RoutingMap' Table. But, if they also are found as EVOCATED, we consider them
  valid and accessed Code Nodes:
 ;;
     sub D$UserPeEnd 4
 
-    mov esi D$UserPeStart | add esi D$FirstSection
+    Mov esi D$UserPeStart | add esi D$FirstSection
 
     .While esi < D$UserPeEnd
-        mov eax esi | sub eax D$UserPeStart | add eax D$RoutingMap
+        Mov eax esi | sub eax D$UserPeStart | add eax D$RoutingMap
         Test B$eax EVOCATED | jz L5>>
 
-        mov eax esi | sub eax D$UserPeStart | add eax D$SectionsMap
+        Mov eax esi | sub eax D$UserPeStart | add eax D$SectionsMap
         Test B$eax VIRTUALFLAG+IMPORTFLAG+RESOURCESFLAG+EXPORTFLAG+DATAFLAG | jnz L5>>
 
       ; 1 miss-interpretation chance on 0FFFFFF (16,777,215)
-      ; * by number of "push ebp | mov ebp esp":
+      ; * by number of "push ebp | Mov ebp esp":
         ...If B$esi = 055               ; OpCode for "push ebp"  Op55
             ..If B$esi-1 <> 0F          ; No Escape Prefix wanted.
                 .If W$esi+1 = 0EC8B      ; 08B 0EC >  "mov ebp esp"
 L1:                 sub eax D$SectionsMap | add eax D$SectionsMap
                     If B$eax = 0
-                        mov B$eax CODEFLAG
+                        Mov B$eax CODEFLAG
                         sub eax D$SectionsMap | add eax D$RoutingMap
                         or B$eax PUSH_EBP+NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
                     Else
@@ -1323,10 +1322,10 @@ L2:                     sub eax D$SectionsMap | add eax D$RoutingMap
             ..If B$esi-1 <> 0F          ; No Escape Prefix wanted.
                 If B$esi+3 < 32         ; Nested Levels Byte is from 0 to 31.
                     sub eax D$SectionsMap | add eax D$RoutingMap
-                    lea ebx D$eax+4 | call IsItPush ebx | cmp eax &FALSE | je L5>>
-                        mov eax esi | sub eax D$UserPeStart | add eax D$SectionsMap
+                    lea ebx D$eax+4 | Call IsItPush ebx | cmp eax &FALSE | je L5>>
+                        Mov eax esi | sub eax D$UserPeStart | add eax D$SectionsMap
                         On B$eax <> 0, jmp L2>
-                            mov B$eax CODEFLAG
+                            Mov B$eax CODEFLAG
                             sub eax D$SectionsMap | add eax D$RoutingMap
                             or B$eax PUSH_EBP+NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL | jmp L5>>
 
@@ -1339,10 +1338,10 @@ L2:                     sub eax D$SectionsMap | add eax D$RoutingMap
          ...Else_If B$esi = 0EC
              .If B$esi-1 = 083         ; 083 0EC: OPcode for sub esp imm8
                 sub eax D$SectionsMap | add eax D$RoutingMap
-                lea ebx D$eax+2 | call IsItPushRegister ebx | cmp eax &FALSE | je L5>>
-                    mov eax esi | sub eax D$UserPeStart | add eax D$SectionsMap
+                lea ebx D$eax+2 | Call IsItPushRegister ebx | cmp eax &FALSE | je L5>>
+                    Mov eax esi | sub eax D$UserPeStart | add eax D$SectionsMap
                     If B$eax = 0
-                        mov B$eax CODEFLAG
+                        Mov B$eax CODEFLAG
                         sub eax D$SectionsMap | add eax D$RoutingMap
                         or B$eax PUSH_EBP+NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
                     Else
@@ -1352,10 +1351,10 @@ L2:                     sub eax D$SectionsMap | add eax D$RoutingMap
 
              .Else_If B$esi-1 = 081    ; 081 EC: OPcode for sub esp imm32
                 sub eax D$SectionsMap | add eax D$RoutingMap
-                lea ebx D$eax+5 | call IsItPushRegister ebx | cmp eax &FALSE | je L5>
-                    mov eax esi | sub eax D$UserPeStart | add eax D$SectionsMap
+                lea ebx D$eax+5 | Call IsItPushRegister ebx | cmp eax &FALSE | je L5>
+                    Mov eax esi | sub eax D$UserPeStart | add eax D$SectionsMap
                     If B$eax = 0
-                        mov B$eax CODEFLAG
+                        Mov B$eax CODEFLAG
                         sub eax D$SectionsMap | add eax D$RoutingMap
                         or B$eax PUSH_EBP+NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
                     Else
@@ -1375,43 +1374,43 @@ ________________________________________________________________________________
 
 UnEvocatedProcedures:
 ;;
- 'Enter' and 'push ebp | mov ebp esp', Locations in Code, are Flaged PUSH_EBP, in
+ 'Enter' and 'push ebp | Mov ebp esp', Locations in Code, are Flaged PUSH_EBP, in
  the 'RoutingMap' Table. But, if they also are found as EVOCATED, we consider them
  valid and accessed Code Nodes:
 ;;
     sub D$UserPeEnd 4
 
-    mov esi D$UserPeStart | add esi D$FirstSection
+    Mov esi D$UserPeStart | add esi D$FirstSection
 
     .While esi < D$UserPeEnd
-        mov eax esi | sub eax D$UserPeStart | add eax D$SectionsMap
+        Mov eax esi | sub eax D$UserPeStart | add eax D$SectionsMap
         Test B$eax VIRTUALFLAG+IMPORTFLAG+RESOURCESFLAG+EXPORTFLAG ;+DATAFLAG |
         jnz L5>>
 
       ; 1 miss-interpretation chance on 0FFFFFF (16,777,215)
-      ; * by number of "push ebp | mov ebp esp":
+      ; * by number of "push ebp | Mov ebp esp":
         ...If B$esi = 055               ; OpCode for "push ebp"  Op55
             ..If B$esi-1 <> 0F          ; No Escape Prefix wanted.
                 .If W$esi+1 = 0EC8B      ; 08B 0EC >  "mov ebp esp"
 L1:                 push esi
-                        mov eax esi | add eax 50
-                        call IsItCode esi, eax, 8 ;20
+                        Mov eax esi | add eax 50
+                        Call IsItCode esi, eax, 8 ;20
                     pop esi
 
                     cmp eax &FALSE | je L5>
 
-                    mov eax esi | sub eax D$UserPeStart | add eax D$SectionsMap
+                    Mov eax esi | sub eax D$UserPeStart | add eax D$SectionsMap
                     If B$eax = 0
                         sub eax D$SectionsMap | add eax D$RoutingMap
                         or B$eax PUSH_EBP+NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
-                        sub eax D$RoutingMap | add eax D$SectionsMap | mov B$eax CODEFLAG
+                        sub eax D$RoutingMap | add eax D$SectionsMap | Mov B$eax CODEFLAG
                     Else_If B$eax = CODEFLAG
                         sub eax D$SectionsMap | add eax D$RoutingMap
                         or B$eax PUSH_EBP+NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
                     Else
                       ; Case of Map File reuse with Flag forced to Data (to follow up):
                         sub eax D$SectionsMap | add eax D$RoutingMap
-                        mov B$eax EVOCATED+LABEL
+                        Mov B$eax EVOCATED+LABEL
                     End_If
 
                 .Else_If W$esi+1 = 0E589 ; Alternate for "mov ebp esp" op89 / op8B
@@ -1434,26 +1433,26 @@ ________________________________________________________________________________
 ; There is such a JMPs Table at Data043E188, in Teste.exe.
 
 MarkJumpsTables:
-    mov esi D$UserPeStart | add esi D$FirstSection
-    mov edx D$UserPeEnd | sub edx 4
-    mov ecx 0
+    Mov esi D$UserPeStart | add esi D$FirstSection
+    Mov edx D$UserPeEnd | sub edx 4
+    Mov ecx 0
 
     .While esi < edx
        ; OpFF, 'Dis_rm32_rm16', 'WriteEffectiveAddressFromModRm'
         ...If B$esi = 0FF  ; 1 on 256
-            mov bl B$esi+1 | DigitMask bl to al
-          ; 0FF /2 >>> CALL r/m32 // 0FF /4 >>> JMP r/m32
+            Mov bl B$esi+1 | DigitMask bl to al
+          ; 0FF /2 >>> Call r/m32 // 0FF /4 >>> JMP r/m32
             ..If al = 2    ; 2 on 8
                 jmp L1>
             ..Else_If al = 4
               ; Dis32 inside ? With SIB ?
-              ; For JMP or CALL "D$Table+eax*4" and friends, the ModRm Byte must be:
+              ; For JMP or Call "D$Table+eax*4" and friends, the ModRm Byte must be:
               ; mod = 0 and r/m = 4 (SIB + dis32)
 L1:             ModMask bl To al
                 .If al = 0 ; 1 on 4
                     RmMask bl To al
                     If al = 4 ; 1 on 4
-                        call CheckPointersTable
+                        Call CheckPointersTable
                         On eax = &TRUE, add esi 7
                     End_If
                 .End_If
@@ -1466,7 +1465,7 @@ L1:             ModMask bl To al
 ret
 
 ;;
-  A flow of Bytes that could be, for example, for 'call D$Table+eax*4' has been found.
+  A flow of Bytes that could be, for example, for 'Call D$Table+eax*4' has been found.
   Is this 'Table' really a flow of Pointers. If true, the Instruction is valid Code,
   the target is valid Data, the data contents are valid Pointers to Code and the Code
   pointed by these Pointers are valid entry-points.
@@ -1474,45 +1473,45 @@ ret
 CheckPointersTable:
     push esi, edx
 
-    sub D$UserPeEnd 4 | mov eax D$esi+3
+    sub D$UserPeEnd 4 | Mov eax D$esi+3
     sub eax D$DisImageBase | add eax D$UserPeStart
 
     ..If eax > D$UserPeStart
         .If eax < D$UserPeEnd
-            mov ebx eax
+            Mov ebx eax
             sub eax D$UserPeStart | add eax D$SectionsMap
             test B$eax IMPORTFLAG+RESOURCESFLAG+EXPORTFLAG+KILLFLAG | jnz L5>>
           ; OK: 'Label' is a valid Pointer to a supposed Jumps Table.
           ; Now, are the two first dWords valid Pointers ?
-            mov eax ebx, ebx D$eax | sub ebx D$DisImageBase | add ebx D$UserPeStart
+            Mov eax ebx, ebx D$eax | sub ebx D$DisImageBase | add ebx D$UserPeStart
             cmp ebx D$UserPeStart | jb L5>>
             cmp ebx D$UserPeEnd | ja L5>>
 
-            mov ebx D$eax+4 | sub ebx D$DisImageBase | add ebx D$UserPeStart
+            Mov ebx D$eax+4 | sub ebx D$DisImageBase | add ebx D$UserPeStart
             cmp ebx D$UserPeStart | jb L5>>
             cmp ebx D$UserPeEnd | ja L5>>
 
               ; OK, this is a Table of Code Pointers. Flag everything:
-L0:             mov ebx D$eax | sub ebx D$DisImageBase | add ebx D$UserPeStart
+L0:             Mov ebx D$eax | sub ebx D$DisImageBase | add ebx D$UserPeStart
                 cmp ebx D$UserPeStart | jb L2>
                 cmp ebx D$UserPeEnd | ja L2>
-                    mov edx eax | sub edx D$UserPeStart | add edx D$SizesMap
+                    Mov edx eax | sub edx D$UserPeStart | add edx D$SizesMap
                     or B$edx POINTER
                     sub edx D$SizesMap | add edx D$SectionsMap
-                    mov D$edx FOURDATAFLAGS
+                    Mov D$edx FOURDATAFLAGS
 
                     sub ebx D$UserPeStart | add ebx D$SectionsMap
-                    mov B$ebx CODEFLAG
+                    Mov B$ebx CODEFLAG
                     sub ebx D$SectionsMap | add ebx D$RoutingMap
-                    mov B$ebx PUSH_EBP+NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
+                    Mov B$ebx PUSH_EBP+NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
 
                 add eax 4 | jmp L0<
         .End_If
     ..End_If
 
-L2: pop edx, esi | add D$UserPeEnd 4 | mov eax &TRUE | ret
+L2: pop edx, esi | add D$UserPeEnd 4 | Mov eax &TRUE | ret
 
-L5: pop edx, esi | add D$UserPeEnd 4 | mov eax &FALSE | ret
+L5: pop edx, esi | add D$UserPeEnd 4 | Mov eax &FALSE | ret
 
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -1524,28 +1523,28 @@ ________________________________________________________________________________
 
 ConditionalJumpsAnalyzes:
   ; Create a Table, where to flag the possible Addresses pointed to, by Conditional Jumps:
-    mov eax D$EndOfSectionsMap | sub eax D$SectionsMap
-    mov D$EndOfJumpsMap eax
+    Mov eax D$EndOfSectionsMap | sub eax D$SectionsMap
+    Mov D$EndOfJumpsMap eax
     VirtualAlloc JumpsMap eax
     add D$EndOfJumpsMap eax
 
-    mov esi D$UserPeStart | add esi D$FirstSection
-    mov ebx D$SectionsMap | add ebx D$FirstSection
-    mov edx D$JumpsMap | add edx D$FirstSection
-    mov eax 0
+    Mov esi D$UserPeStart | add esi D$FirstSection
+    Mov ebx D$SectionsMap | add ebx D$FirstSection
+    Mov edx D$JumpsMap | add edx D$FirstSection
+    Mov eax 0
 
     .While esi < D$UserPeEnd
         ...If B$ebx = 0
             ..If B$esi <> 0
-                call IsConditionalShortJump esi
+                Call IsConditionalShortJump esi
 
                 .If eax = &TRUE
 L1:                 inc esi, ebx, edx | movsx eax B$esi | inc esi, ebx, edx
                     add eax edx
                     push esi, eax, ebx, edx
                         sub eax D$JumpsMap | add eax D$UserPeStart
-                        mov ebx eax | add ebx 50
-                        call IsItCode eax, ebx, 0
+                        Mov ebx eax | add ebx 50
+                        Call IsItCode eax, ebx, 0
                         If eax = &TRUE
                             pop edx, ebx, eax, esi
                             inc B$eax
@@ -1553,7 +1552,7 @@ L1:                 inc esi, ebx, edx | movsx eax B$esi | inc esi, ebx, edx
                             pop edx, ebx, eax, esi
                         End_If
                 .Else
-                     call IsLoop esi
+                     Call IsLoop esi
                      On eax = &TRUE, jmp L1<
                 .End_If
             ..End_If
@@ -1578,7 +1577,7 @@ L1:                 inc esi, ebx, edx | movsx eax B$esi | inc esi, ebx, edx
   We now cross all of this with the previously done analyzes of 'MarkEvocated',
   that flaged any Absolute or Relative Evocation of a Location.
 ;;
-    mov esi D$RoutingMap, edi D$JumpsMap, edx D$EndOfRoutingMap
+    Mov esi D$RoutingMap, edi D$JumpsMap, edx D$EndOfRoutingMap
 
     While esi < edx
         Test B$esi EVOCATED | jz L2>
@@ -1587,15 +1586,15 @@ L2:     inc esi, edi
     End_While
 
 
-    mov esi D$JumpsMap | add esi D$FirstSection
-    mov edi D$SectionsMap | add edi D$FirstSection
-    mov ebx D$RoutingMap | add ebx D$FirstSection
-    mov edx D$EndOfSectionsMap
+    Mov esi D$JumpsMap | add esi D$FirstSection
+    Mov edi D$SectionsMap | add edi D$FirstSection
+    Mov ebx D$RoutingMap | add ebx D$FirstSection
+    Mov edx D$EndOfSectionsMap
 
     While edi < edx
         If B$esi > 3
-            On B$edi = 0, mov B$edi CODEFLAG
-            On B$edi = CODEFLAG, mov B$ebx INSTRUCTION+EVOCATED+LABEL+ACCESSED+PUSH_EBP
+            On B$edi = 0, Mov B$edi CODEFLAG
+            On B$edi = CODEFLAG, Mov B$ebx INSTRUCTION+EVOCATED+LABEL+ACCESSED+PUSH_EBP
             inc ecx
         End_If
         inc esi, edi, ebx
@@ -1607,7 +1606,7 @@ ret
 
 [BadCode: ?    GoodCode: ?]
 
-;[LongJmpsOp: 0E8    ; Long call 'OpE8'
+;[LongJmpsOp: 0E8    ; Long Call 'OpE8'
 ;             0E9]   ; Long jmp    'OpE9'
 ;           ; 0EB    ; jmp short 'OpEB'
 ;;'loop' ; E0, E1, E2     OpE3 >>> jecxz
@@ -1623,7 +1622,7 @@ Proc IsConditionalShortJump:    ; 21 random chances on 256
     Argument @Pointer
     Uses esi, edi, ebx
 
-        mov esi D@Pointer, al B$esi, ebx &FALSE
+        Mov esi D@Pointer, al B$esi, ebx &FALSE
 ;;
   Op78, Op79, Op7A, Op7B, Op7C, Op7D
   
@@ -1636,12 +1635,12 @@ Proc IsConditionalShortJump:    ; 21 random chances on 256
         ...If al >= 070
             ..If al <= 07D
               ; This is can be a Conditional Short Jump
-                mov ebx &TRUE
+                Mov ebx &TRUE
               ; No Escape Prefix for some:
                 If al <= 077
-                    On B$esi-1 = 0F, mov ebx &FALSE
+                    On B$esi-1 = 0F, Mov ebx &FALSE
                 Else_If al >= 07E
-                    On B$esi-1 = 0F, mov ebx &FALSE
+                    On B$esi-1 = 0F, Mov ebx &FALSE
                 End_If
 
               ; A bit less than 16 chances on 256, randomaly.
@@ -1649,11 +1648,11 @@ Proc IsConditionalShortJump:    ; 21 random chances on 256
             ..Else_If al = 0E3
               ; OpE3 is JECXZ // DEC ecx: 049 // sub ecx 5: 083 0E9 05
                 If B$esi-1 = 049
-                    mov ebx &TRUE
+                    Mov ebx &TRUE
                 Else_If W$esi-3 = 0E983
-                    mov ebx &TRUE
+                    Mov ebx &TRUE
                 Else
-                    mov ebx &FALSE
+                    Mov ebx &FALSE
                 End_If
 
               ; Max: (1 chance on 256) * (1 chance on 256) = 1 on 65,536
@@ -1662,11 +1661,11 @@ Proc IsConditionalShortJump:    ; 21 random chances on 256
 
         If ebx = &TRUE
           ; It cannot be a jump to 0, -1, -2, -3, -4
-            mov al B$esi+1 | neg al
-            On al < 5, mov ebx &FALSE
+            Mov al B$esi+1 | neg al
+            On al < 5, Mov ebx &FALSE
         End_If
 
-        mov eax ebx
+        Mov eax ebx
 EndP
 
 
@@ -1674,21 +1673,21 @@ Proc IsLoop:     ; 18 random chances on 256 / by the 1 on 256 of the 0F Jcc pref
     Argument @Pointer
     Uses esi
 
-        mov esi D@Pointer, eax D$UserPeEnd | dec eax | On esi <= eax, jmp L2>
+        Mov esi D@Pointer, eax D$UserPeEnd | dec eax | On esi <= eax, jmp L2>
 
-        mov al B$esi
+        Mov al B$esi
 
       ; Must be negative:
         Test B$esi+1 080 | jz L2>
 
         .If al = 0E0
-            mov eax &TRUE
+            Mov eax &TRUE
         .Else_If al = 0E1
-            mov eax &TRUE
+            Mov eax &TRUE
         .Else_If al = 0E2
-            mov eax &TRUE
+            Mov eax &TRUE
         .Else
-L2:         mov eax &FALSE
+L2:         Mov eax &FALSE
         .End_If
 
   ; 3 chances on 256*2 to be a loop
@@ -1699,17 +1698,17 @@ Proc IsItPush:
     Argument @Location
     uses esi
       ; 8 chances on 256
-        mov esi D@Location
-        sub esi D$RoutingMap | add esi D$UserPeStart | mov al B$esi
+        Mov esi D@Location
+        sub esi D$RoutingMap | add esi D$UserPeStart | Mov al B$esi
 
         If al = 060
-            mov eax &TRUE       ; pushad
+            Mov eax &TRUE       ; pushad
         Else_If al < 050
-            mov eax &FALSE
+            Mov eax &FALSE
         Else_If al < 058
-            mov eax &TRUE       ; push reg (050 to 057)
+            Mov eax &TRUE       ; push reg (050 to 057)
         Else
-            mov eax &FALSE
+            Mov eax &FALSE
         End_If
 EndP
 
@@ -1717,15 +1716,15 @@ Proc IsItPushRegister:
     Argument @Location
     uses esi
       ; 7 chances on 256
-        mov esi D@Location
-        sub esi D$RoutingMap | add esi D$UserPeStart | mov al B$esi
+        Mov esi D@Location
+        sub esi D$RoutingMap | add esi D$UserPeStart | Mov al B$esi
 
         If al < 050
-            mov eax &FALSE
+            Mov eax &FALSE
         Else_If al < 058
-            mov eax &TRUE       ; push reg (050 to 057)
+            Mov eax &TRUE       ; push reg (050 to 057)
         Else
-            mov eax &FALSE
+            Mov eax &FALSE
         End_If
 EndP
 ____________________________________________________________________________________________
@@ -1734,12 +1733,12 @@ ________________________________________________________________________________
 ; to CODEFLAG/DATAFLAAG:
 
 SmallBlanksToSameFlag:
-    mov esi D$SectionsMap | add esi D$FirstSection
-    mov edx D$EndOfSectionsMap | sub edx 4
+    Mov esi D$SectionsMap | add esi D$FirstSection
+    Mov edx D$EndOfSectionsMap | sub edx 4
 
     While esi < edx
         .If B$esi = 0
-            mov edi esi, bl B$esi-1, ecx 0
+            Mov edi esi, bl B$esi-1, ecx 0
             lodsb
             lodsb | inc ecx | cmp al bl | je L1>
                               cmp al 0 | ja L1>
@@ -1765,11 +1764,11 @@ ________________________________________________________________________________
 
 ____________________________________________________________________________________________
 
-[SymCallApi: "call '", 0    SymTrue: "&TRUE", 0]
+[SymCallApi: "Call '", 0    SymTrue: "&TRUE", 0]
 
 ;;
- This the Main of the Symbolic Analyze. We search for all occurences of "call '...."
- with 'DisSearch'. If found, we call for 'ApiAnalyze', in order to seek for the called
+ This the Main of the Symbolic Analyze. We search for all occurences of "Call '...."
+ with 'DisSearch'. If found, we Call for 'ApiAnalyze', in order to seek for the called
  Function in our internal List. If found again, instead of zero, the 'DisApiSymbolsTable'
  holds Pointer(s) to the Api Parameter(s) Name(s). Example, for:
 
@@ -1792,27 +1791,27 @@ ________________________________________________________________________________
 ;;
 
 SymbolicAnalyzes:
-    mov esi SymCallApi, edi D$EndOfDisData | call FirstDisSearch
+    Mov esi SymCallApi, edi D$EndOfDisData | Call FirstDisSearch
 
     While edi < D$SourceEnd
         push edi
-            call ApiAnalyze
+            Call ApiAnalyze
         pop edi
 
-        On D$DisApiSymbolsTable <> 0, call MarkDisSymbols
+        On D$DisApiSymbolsTable <> 0, Call MarkDisSymbols
 
-        mov esi SymCallApi | call NextDisSearch
+        Mov esi SymCallApi | Call NextDisSearch
 
       ; Progress Bar:
         If edi > D$NextDisBarPos
             push edi
-                mov eax edi | add eax D$DisBarStep | mov D$NextDisBarPos eax
-                call BarProgress
+                Mov eax edi | add eax D$DisBarStep | Mov D$NextDisBarPos eax
+                Call BarProgress
             pop edi
         End_If
     End_While
 
-    call ReWriteTheSymbolicSource
+    Call ReWriteTheSymbolicSource
 ret
 
 
@@ -1822,16 +1821,16 @@ ret
 [DisSearchLength: ?]
 
 FirstDisSearch:
-    mov ecx 0
+    Mov ecx 0
     push esi
         While B$esi <> 0
             inc ecx | inc esi
         End_While
     pop esi
-    sub ecx 4 | mov D$DisSearchLength ecx
+    sub ecx 4 | Mov D$DisSearchLength ecx
 
 NextDisSearch:
-    mov eax D$esi | add esi 4
+    Mov eax D$esi | add esi 4
 
 L1: While edi < D$SourceEnd
         cmp D$edi eax | je L2>
@@ -1840,7 +1839,7 @@ L1: While edi < D$SourceEnd
     ret
 
 L2: push esi, edi
-        add edi 4 | mov ecx D$DisSearchLength | repe cmpsb | jne L3>
+        add edi 4 | Mov ecx D$DisSearchLength | repe cmpsb | jne L3>
 
     pop eax, eax               ; Found: edi at end of searhced String.
     ret
@@ -1852,27 +1851,27 @@ ret
 
 [ApiCallCopy: ? #40]
 
-; Searching for the encounted Api call inside SpÂsm 'Win32ApiList'.
+; Searching for the encounted Api Call inside SpÂsm 'Win32ApiList'.
 ; When in: edi is pointing to the First Char of DLL Name in an api:
-; call 'DLLNAME.FunctionNAME'
+; Call 'DLLNAME.FunctionNAME'
 ; ------^
 
 ApiAnalyze:
   ; First Make a zero ended copy:
-    mov esi edi, edi ApiCallCopy
+    Mov esi edi, edi ApiCallCopy
 
     While B$esi <> "'"
         movsb
     End_While
-    movsb | mov al 0 | stosb
+    movsb | Mov al 0 | stosb
 
-L0: mov D$DisApiSymbolsTable 0
+L0: Mov D$DisApiSymbolsTable 0
 
-    mov edi D$Win32ApiList
+    Mov edi D$Win32ApiList
 
-L0: mov esi ApiCallCopy, eax D$esi | cmp eax D$edi | jne L1>
+L0: Mov esi ApiCallCopy, eax D$esi | cmp eax D$edi | jne L1>
 
-        mov ecx 80 | repe cmpsb
+        Mov ecx 80 | repe cmpsb
         On B$esi-1 = 'A', inc esi
         On B$esi-1 = 'W', inc esi
         cmp B$edi-1 '(' | jne L1>
@@ -1882,9 +1881,9 @@ L0: mov esi ApiCallCopy, eax D$esi | cmp eax D$edi | jne L1>
 
           ; Writes a 'Done Byte' in the List for searching once only per Function.
           ; (We reload the 'Functions.api' File at each Api Analyze).
-            mov B$edi-1 0FF
+            Mov B$edi-1 0FF
 
-            call RegisterApiParametersPointers | ret
+            Call RegisterApiParametersPointers | ret
 
 L1: While B$edi <> ')'
         inc edi
@@ -1902,9 +1901,9 @@ ret
 ; comment:
 
 RegisterApiParametersPointers:
-    mov esi edi, edi DisApiSymbolsTable
+    Mov esi edi, edi DisApiSymbolsTable
     If D$esi = 'VOID'
-        mov D$edi 0 | ret
+        Mov D$edi 0 | ret
     End_If
     add esi 2
 
@@ -1912,22 +1911,22 @@ L0: add esi 2
     While B$esi > ' '
         inc esi
         If B$esi = ')'
-            mov D$edi 0 | ret
+            Mov D$edi 0 | ret
         End_If
     End_While
     inc esi
 
   ; This happends with unknown optional parameters (like for: wnsprintf, in 'Win32ApiList'):
     If B$esi = ';'
-        mov D$edi 0 | ret
+        Mov D$edi 0 | ret
     End_If
 
-    mov D$edi esi | add edi 4       ; <<<< Write the Pointer in 'DisApiSymbolsTable'.
+    Mov D$edi esi | add edi 4       ; <<<< Write the Pointer in 'DisApiSymbolsTable'.
 
     While B$esi > LF | inc esi | End_While
     While B$esi <= ' ' | inc esi | End_While
     cmp B$esi ')' | jne L0<
-    mov D$edi 0
+    Mov D$edi 0
 ret
 
 
@@ -1939,13 +1938,13 @@ ret
 ;;
  Here, we are at an Api call, and Valid Parameters Names have been found in 'Win32ApiList'.
  We step back line after line and search for possible, for example, "push D$Data0403024'.
- At eaxh Parameter push found, we call for 'DisMarkAll' to mark all of this Label
+ At eaxh Parameter push found, we Call for 'DisMarkAll' to mark all of this Label
  evocations with the 1 Flag and with the Symbol Name Pointer:
 ;;
 
 MarkDisSymbols:
     push edi
-        mov ebx DisApiSymbolsTable
+        Mov ebx DisApiSymbolsTable
 
 L0:     OneDisLineUp | cmp D$edi 'push' | jne L9>
 
@@ -1954,9 +1953,9 @@ L0:     OneDisLineUp | cmp D$edi 'push' | jne L9>
             move D$PointerToApiList D$ebx
 
             .If D$edi = 'Code'
-                call DisMarkAll
+                Call DisMarkAll
             .Else_If D$edi = 'Data'
-                call DisMarkAll
+                Call DisMarkAll
             .End_If
 
             sub edi 5 | add ebx 4 | cmp D$ebx 0 | ja L0<
@@ -1972,25 +1971,25 @@ ret
 DisMarkAll:
     pushad
     push D$DisSearchLength
-        mov esi edi, edi SearchString, ecx 11
-        rep movsb | mov B$edi 0
+        Mov esi edi, edi SearchString, ecx 11
+        rep movsb | Mov B$edi 0
 
-        mov edi D$CodeSource, D$DisSearchLength 7
-      ; 11-4 (as we know the length, we don't need to call for 'FirstDisSearch' at all).
+        Mov edi D$CodeSource, D$DisSearchLength 7
+      ; 11-4 (as we know the length, we don't need to Call for 'FirstDisSearch' at all).
 
-L0:     mov esi SearchString | call NextDisSearch
+L0:     Mov esi SearchString | Call NextDisSearch
         While edi < D$SourceEnd
 
-            sub edi 11 |  mov al 1 | stosb
-            mov eax D$PointerToApiList | stosd
+            sub edi 11 |  Mov al 1 | stosb
+            Mov eax D$PointerToApiList | stosd
           ; 'Data0404204' is now replaced by:
           ; 'xYYYY404204', where x is the Byte value 1, YYYY the Pointer to the Parameter
           ; found inside RosAsm 'Win32ApiList'.
 
-            mov esi SearchString | call NextDisSearch
+            Mov esi SearchString | Call NextDisSearch
         End_While
 
-L9:     mov B$OnReplaceAll &FALSE
+L9:     Mov B$OnReplaceAll &FALSE
     pop D$DisSearchLength
     popad
 ret
@@ -2002,27 +2001,27 @@ ret
 ; Pointer, instead:
 
 ReWriteTheSymbolicSource:
-    mov ecx D$EndOfSourceMemory | sub ecx D$CodeSource
+    Mov ecx D$EndOfSourceMemory | sub ecx D$CodeSource
 
     VirtualAlloc SymbolicCodeSource ecx
-    mov D$eax CRLF2, D$eax+4 CRLF2
+    Mov D$eax CRLF2, D$eax+4 CRLF2
 
     add D$SymbolicCodeSource 8
 
-    mov esi D$CodeSource, edi D$SymbolicCodeSource
+    Mov esi D$CodeSource, edi D$SymbolicCodeSource
 
-    mov D$StartOfDisLine edi, D$AlignedComment edi | add D$AlignedComment 38
+    Mov D$StartOfDisLine edi, D$AlignedComment edi | add D$AlignedComment 38
 
     .While esi < D$SourceEnd
         lodsb
         .If al = 1
             lodsd
             push esi
-                mov esi eax
+                Mov esi eax
                 While B$esi > ' ' | movsb | End_While
                 On B$edi-1 = ',', dec edi
 
-                mov W$edi '_0' | add edi 2
+                Mov W$edi '_0' | add edi 2
             pop esi
 
         .Else_If al = ':'
@@ -2031,14 +2030,14 @@ ReWriteTheSymbolicSource:
         .Else
             stosb
             If al = LF
-                mov D$StartOfDisLine edi, D$AlignedComment edi | add D$AlignedComment 38
+                Mov D$StartOfDisLine edi, D$AlignedComment edi | add D$AlignedComment 38
             Else_If al = ';'
                 dec edi | On D$edi-3 <> '   ;', jmp L2>
                 While edi > D$AlignedComment
                     On B$edi-2 <> ' ', jmp L2>
                     dec edi
                 End_While
-L2:             mov B$edi ';' | inc edi
+L2:             Mov B$edi ';' | inc edi
             End_If
 
         .End_If
@@ -2050,12 +2049,12 @@ L9:
   a hang, if i 'Exchange' the usual way, and restore all the wished Variables. So, i
   do it the very stupid way: Copying:
 ;;
-    mov ecx edi | sub ecx D$SymbolicCodeSource
-    mov esi D$SymbolicCodeSource, edi D$CodeSource
+    Mov ecx edi | sub ecx D$SymbolicCodeSource
+    Mov esi D$SymbolicCodeSource, edi D$CodeSource
 
     rep movsb
 
-    mov D$SourceEnd edi | sub edi D$CodeSource | mov D$SourceLen edi
+    Mov D$SourceEnd edi | sub edi D$CodeSource | Mov D$SourceLen edi
 
     push edi
         VirtualFree D$SymbolicCodeSource
@@ -2081,54 +2080,54 @@ ________________________________________________________________________________
 [DisPeTagPointer: ?]
 
 FixMzParagraphsNumber:
-    mov D$DisPeTagPointer 0
+    Mov D$DisPeTagPointer 0
 
   ; Standard manner: parag. size of dos header end > PE header address:
-    mov esi D$UserPeStart | movzx eax W$esi+8 | shl eax 4 | sub eax 4
+    Mov esi D$UserPeStart | movzx eax W$esi+8 | shl eax 4 | sub eax 4
     If eax < D$UserPeLen
         add esi D$esi+eax
     Else
-        mov eax 0
+        Mov eax 0
     End_If
 
     ..If eax <> 0
-        mov edx D$UserPeStart | add edx D$UserPeLen | sub edx 4
+        Mov edx D$UserPeStart | add edx D$UserPeLen | sub edx 4
         .If esi < edx
             If D$esi = 'PE'
-                mov D$DisPeTagPointer esi | ret ; (No fix needed, in that case)
+                Mov D$DisPeTagPointer esi | ret ; (No fix needed, in that case)
             End_If
         .End_If
     ..End_If
 
   ; Fix needed for these two other methods:
-    call GetPeTagMethod2
+    Call GetPeTagMethod2
     If esi < edx
         On D$esi = 'PE', jmp L1>
     End_If
 
-    call GetPeTagMethod3 | On D$esi <> 'PE', jmp DisFail
+    Call GetPeTagMethod3 | On D$esi <> 'PE', jmp DisFail
 
-L1: mov D$DisPeTagPointer esi
+L1: Mov D$DisPeTagPointer esi
 
   ; Now, esi point to the PE Tag. Fix the MZ Paragraph Number for 'SearchPEstartOfResource':
-    mov ecx esi | sub ecx D$UserPeStart
+    Mov ecx esi | sub ecx D$UserPeStart
 
   ; Overwrite the Dos header according Displacement ('2' is for a minimum Dos Header):
-    mov edi D$UserPeStart | mov W$edi+8 2, D$edi+(16+12) ecx
+    Mov edi D$UserPeStart | Mov W$edi+8 2, D$edi+(16+12) ecx
 
 ;  ; Test: Make sure it is now good for the default internal method:
-;    mov esi D$UserPeStart | movzx eax W$esi+8 | shl eax 4 | sub eax 4 | add esi D$esi+eax
+;    Mov esi D$UserPeStart | movzx eax W$esi+8 | shl eax 4 | sub eax 4 | add esi D$esi+eax
 ;    On D$esi <> 'PE', jmp DisFail
 
 ; With such an error, the Debugger fails, when compiling RosAsm with RosAsm...
-; mov esi 0 | On D$esi <> 'PE', jmp DisFail
+; Mov esi 0 | On D$esi <> 'PE', jmp DisFail
 ret
 
 
 GetPeTagMethod2:
   ; Method 2 for searching the PE Tag:
   ; If Origin >= 040 > PE header adress at 03C
-    mov eax D$UserPeStart | add eax 018
+    Mov eax D$UserPeStart | add eax 018
     If W$eax >= 040
         sub eax 018 | add eax 03C | movzx esi W$eax | add esi D$UserPeStart
     End_If
@@ -2136,7 +2135,7 @@ ret
 
 GetPeTagMethod3:
   ; Method 3. Stupid desesparated search:
-    mov esi D$UserPeStart, ecx 0200
+    Mov esi D$UserPeStart, ecx 0200
 L0: inc esi | On D$esi <> 'PE', loop L0<
 ret
 ____________________________________________________________________________________________
@@ -2156,7 +2155,7 @@ ________________________________________________________________________________
 ; Used to switch from a RosAsm Data Label (for example, 'AppBaseOfCode') to the target
 ; File corresponding location:
 
-[GetPeHeader | mov eax #1 | sub eax DosHeader | add eax D$DisPeOrigine
+[GetPeHeader | Mov eax #1 | sub eax DosHeader | add eax D$DisPeOrigine
  add eax D$UserPeStart]
 
 ;;
@@ -2167,27 +2166,27 @@ ________________________________________________________________________________
 ;;
 
 StartNewDisFile:
-    mov D$DisPeOrigine 0 | GetPeHeader PeHeaderPointer
+    Mov D$DisPeOrigine 0 | GetPeHeader PeHeaderPointer
 
-    mov eax D$eax | sub eax 080 | mov D$DisPeOrigine eax
+    Mov eax D$eax | sub eax 080 | Mov D$DisPeOrigine eax
   ; (080 is the RosAsm Data 'PeHeaderPointer')
 
-    GetPeHeader PeHeader | mov eax D$eax | On eax <> D$PeHeader, jmp DisFail
+    GetPeHeader PeHeader | Mov eax D$eax | On eax <> D$PeHeader, jmp DisFail
   ; Pe Header found.
 
   ; Like in 'ReadHeaderFormat'.
   ; Copy / SubSystem / DllCharacteristics / AppStackMax / .... :
-    GetPeHeader SubSystem | mov esi eax, edi SubSystem, ecx 5 | rep movsd
+    GetPeHeader SubSystem | Mov esi eax, edi SubSystem, ecx 5 | rep movsd
 
     GetPeHeader NumberOfSections | movzx eax W$eax | On eax = 0, jmp DisFail
-    mov D$DisNumberOfSections eax
+    Mov D$DisNumberOfSections eax
 
-    GetPeHeader ImageBase | mov ebx D$eax, D$DisImageBase ebx, D$LinkerDllDefault ebx
+    GetPeHeader ImageBase | Mov ebx D$eax, D$DisImageBase ebx, D$LinkerDllDefault ebx
 
     move D$DisRvaSectionAlignment D$eax+4, D$DisFileSectionAlignment D$eax+8
 
-    GetPeHeader AppRVAentryPoint | mov eax D$eax | add eax D$DisImageBase
-    mov D$DisEntryPoint eax
+    GetPeHeader AppRVAentryPoint | Mov eax D$eax | add eax D$DisImageBase
+    Mov D$DisEntryPoint eax
 ret
 
 ____________________________________________________________________________________________
@@ -2209,61 +2208,61 @@ ________________________________________________________________________________
 ;;
 
 ReAlignPE:
-    mov eax D$UserPeStart | sub D$UserPEStartOfResources eax ; Gona switch...
+    Mov eax D$UserPeStart | sub D$UserPEStartOfResources eax ; Gona switch...
 
-    mov ecx D$DisNumberOfSections, D$FirstSection 0-1, D$EndOfLastSection 0
+    Mov ecx D$DisNumberOfSections, D$FirstSection 0-1, D$EndOfLastSection 0
     GetPeHeader SectionsHeaders
 
   ; Search for the First Section RVA:
-L0: mov ebx D$eax+SECTION_RVA
-    On ebx < D$FirstSection, mov D$FirstSection ebx
+L0: Mov ebx D$eax+SECTION_RVA
+    On ebx < D$FirstSection, Mov D$FirstSection ebx
   ; Search for the last Section RVA and adds its RVA Size:
     push ecx
-        mov ecx D$eax+SECTION_RVASIZE
+        Mov ecx D$eax+SECTION_RVASIZE
       ; Some compiler (Watcom-C) may set the RVA to zero. So... :
         If ecx < D$eax+SECTION_FILESIZE
-            mov ecx D$eax+SECTION_FILESIZE
+            Mov ecx D$eax+SECTION_FILESIZE
             Align_On_Variable D$DisRvaSectionAlignment ecx
           ; Fix it (just in case this would be needed later...):
-            mov D$eax+SECTION_RVASIZE ecx
+            Mov D$eax+SECTION_RVASIZE ecx
         End_If
 
-        On ebx > D$EndOfLastSection, mov D$EndOfLastSection ebx, edx ecx
+        On ebx > D$EndOfLastSection, Mov D$EndOfLastSection ebx, edx ecx
     pop ecx
     add eax SECTIONHEADERSIZE | loop L0<
 
-    add edx ebx | Align_On_Variable D$DisRvaSectionAlignment edx | mov D$UserPeLen edx
+    add edx ebx | Align_On_Variable D$DisRvaSectionAlignment edx | Mov D$UserPeLen edx
 
     VirtualAlloc TempoUserPeStart edx ;D$UserPeLen
 
-    mov esi D$UserPeStart, edi D$TempoUserPeStart
+    Mov esi D$UserPeStart, edi D$TempoUserPeStart
 
   ; Copy the PE headers down to (including) 'SectionsHeaders':
     GetPeHeader SectionsHeaders
-    mov ecx eax | sub ecx D$UserPeStart | rep movsb
+    Mov ecx eax | sub ecx D$UserPeStart | rep movsb
 
-    mov ecx D$DisNumberOfSections
+    Mov ecx D$DisNumberOfSections
 
 L0: push ecx
-        mov ecx SECTIONHEADERSIZE | rep movsb
+        Mov ecx SECTIONHEADERSIZE | rep movsb
     pop ecx
     loop L0<
 
   ; Want to skip 'RelocSectionTable', if any:
     GetPeHeader RelocSectionTable | move D$DisRelocPointer D$eax
   ; Copy all Sections with Memory alignment:
-    GetPeHeader SectionsHeaders | mov edx D$DisNumberOfSections
+    GetPeHeader SectionsHeaders | Mov edx D$DisNumberOfSections
 
     While D$eax+SECTION_RVA <> 0
-        mov esi D$eax+SECTION_FILEPOINTER | add esi D$UserPeStart
-        mov edi D$eax+SECTION_RVA | On edi = D$DisRelocPointer, jmp L1>
+        Mov esi D$eax+SECTION_FILEPOINTER | add esi D$UserPeStart
+        Mov edi D$eax+SECTION_RVA | On edi = D$DisRelocPointer, jmp L1>
         add edi D$TempoUserPeStart
-        mov ecx D$eax+SECTION_FILESIZE | Align_On 4 ecx | shr ecx 2 | rep movsd
+        Mov ecx D$eax+SECTION_FILESIZE | Align_On 4 ecx | shr ecx 2 | rep movsd
 L1:     add eax SECTIONHEADERSIZE | dec edx | jz L2>
     End_While
 
 L2: Exchange D$UserPeStart D$TempoUserPeStart
-    mov eax D$UserPeStart | add eax D$UserPeLen | mov D$UserPeEnd eax
+    Mov eax D$UserPeStart | add eax D$UserPeLen | Mov D$UserPeEnd eax
     VirtualFree D$TempoUserPeStart
 ret
 
@@ -2277,12 +2276,12 @@ AllocateDisTables:
     VirtualAlloc SectionsMap D$UserPeLen,
                  RoutingMap D$UserPeLen,
                  SizesMap D$UserPeLen
-    mov eax D$SectionsMap | add eax D$UserPeLen | mov D$EndOfSectionsMap eax
-    mov eax D$RoutingMap | add eax D$UserPeLen | mov D$EndOfRoutingMap eax
-    mov eax D$SizesMap | add eax D$UserPeLen | mov D$EndOfSizesMap eax
+    Mov eax D$SectionsMap | add eax D$UserPeLen | Mov D$EndOfSectionsMap eax
+    Mov eax D$RoutingMap | add eax D$UserPeLen | Mov D$EndOfRoutingMap eax
+    Mov eax D$SizesMap | add eax D$UserPeLen | Mov D$EndOfSizesMap eax
 
     If D$StringsMap = 0
-        mov eax D$UserPeLen | shl eax 2
+        Mov eax D$UserPeLen | shl eax 2
         push eax
             VirtualAlloc StringsMap eax
             move D$EndOfStringsMap D$StringsMap
@@ -2291,19 +2290,19 @@ AllocateDisTables:
     End_If
 
   ; And widely evaluated disassembly Source:
-    mov ecx D$UserPeLen | shl ecx 4 | add ecx 10_000_000
+    Mov ecx D$UserPeLen | shl ecx 4 | add ecx 10_000_000
     push ecx
         VirtualAlloc CodeSource ecx
-        mov D$eax CRLF2, D$eax+4 CRLF2 | add D$CodeSource 8
+        Mov D$eax CRLF2, D$eax+4 CRLF2 | add D$CodeSource 8
     pop ecx
-    add ecx D$CodeSource | mov D$EndOfSourceMemory ecx
+    add ecx D$CodeSource | Mov D$EndOfSourceMemory ecx
 
   ; restore the true length (without the security tail):
     sub D$UserPeLen 01000
 
-    mov edi D$CodeSource, eax CRLF2, ecx 100 | rep stosd
+    Mov edi D$CodeSource, eax CRLF2, ecx 100 | rep stosd
 
-    mov eax D$UserPeStart | add D$UserPEStartOfResources eax  ; Switch done...
+    Mov eax D$UserPeStart | add D$UserPEStartOfResources eax  ; Switch done...
 ret
 
 HLL_Strings_Table_notes:
@@ -2348,13 +2347,13 @@ ________________________________________________________________________________
 [DisNumberOfFunctions: ?    ApiBuffer: ?    EndOfApiBuffer: ?]
 
 CheckImport:
-    GetPeHeader AppImportSize | mov eax D$eax | On eax = 0, ret ;jmp DisFail
+    GetPeHeader AppImportSize | Mov eax D$eax | On eax = 0, ret ;jmp DisFail
 
   ; !!! 'AppImportSize' is _NOT_ the size of Import, but the one of the Import
   ; Header only !!! We can't use it for defining the 'ApiBuffer' size !!!
   ; Done at the end, based on the number of found Functions.
 
-    GetPeHeader AppBaseOfImport | mov edx D$eax | On edx = 0, jmp DisFail
+    GetPeHeader AppBaseOfImport | Mov edx D$eax | On edx = 0, jmp DisFail
 
     add edx D$UserPeStart
 ;;
@@ -2374,7 +2373,7 @@ CheckImport:
   If either 'Import LookUp Table RVA' or 'Import Addresses Table RVA' are zeroed,
   we fill the one by the other, in order to save from no end Checking:
 ;;
-    mov eax edx
+    Mov eax edx
 
     While D$eax+(4*3) <> 0          ; At least 'Name RVA' should be there ;)
         If D$eax = 0
@@ -2386,41 +2385,41 @@ CheckImport:
     End_While
 
     push edx
-        mov eax IMPORTFLAG+(IMPORTFLAG shl 8)+(IMPORTFLAG shl 16)+(IMPORTFLAG shl 24)
+        Mov eax IMPORTFLAG+(IMPORTFLAG shl 8)+(IMPORTFLAG shl 16)+(IMPORTFLAG shl 24)
 
-        mov edi edx | sub edi D$UserPeStart | add edi D$SectionsMap
+        Mov edi edx | sub edi D$UserPeStart | add edi D$SectionsMap
 
         ..While D$edx <> 0
           ; Flag the Directory (dWords):
-            mov edi edx, ecx 5
+            Mov edi edx, ecx 5
             sub edi D$UserPeStart | add edi D$SectionsMap | rep stosd
           ; Flag the LookUp Table (dWords):
-            mov edi D$edx, ebx edi | add edi D$SectionsMap | add ebx D$UserPeStart
+            Mov edi D$edx, ebx edi | add edi D$SectionsMap | add ebx D$UserPeStart
             While D$ebx <> 0
-                ;call FlagImportCalls ebx
+                ;Call FlagImportCalls ebx
                 stosd | add ebx 4
             End_While | stosd
           ; Flag the DLL Name (Bytes):
-            mov edi D$edx+(3*4), ebx edi | add edi D$SectionsMap | add ebx D$UserPeStart
+            Mov edi D$edx+(3*4), ebx edi | add edi D$SectionsMap | add ebx D$UserPeStart
             While B$ebx <> 0 | stosb | inc ebx | End_While | stosb
           ; Flag the Address Table (dWords):
-            mov edi D$edx+(4*4), ebx edi | add edi D$SectionsMap | add ebx D$UserPeStart
+            Mov edi D$edx+(4*4), ebx edi | add edi D$SectionsMap | add ebx D$UserPeStart
             While D$ebx <> 0
-               ; call FlagImportCalls ebx
+               ; Call FlagImportCalls ebx
                 stosd | add ebx 4
             End_While | stosd
           ; The Import Address Table may be either empty or filled up with any value.
           ; we first recopy the LoockUp Table upon it:
             push esi, edi
-                mov esi D$edx, edi D$edx+(4*4)
+                Mov esi D$edx, edi D$edx+(4*4)
                 add esi D$UserPeStart | add edi D$UserPeStart
                 While D$esi <> 0 | movsd | End_While
             pop edi, esi
           ; Flag the Functions String (Bytes, pointed by LookUp // Address Tables):
-            mov ebx D$edx | add ebx D$UserPeStart
+            Mov ebx D$edx | add ebx D$UserPeStart
             .While D$ebx <> 0
                 push ebx
-                    mov ebx D$ebx, edi ebx, ecx ebx | and ecx 0_8000_0000
+                    Mov ebx D$ebx, edi ebx, ecx ebx | and ecx 0_8000_0000
                     If ecx = 0_8000_0000 ; By Number
 
                     Else                 ; By Name
@@ -2435,7 +2434,7 @@ CheckImport:
             add edx (5*4)
         ..End_While
       ; Flag the Directory zero ending (5 dWords, too):
-        mov edi edx, ecx 5
+        Mov edi edx, ecx 5
         sub edi D$UserPeStart | add edi D$SectionsMap | rep stosd
     pop edx
 ;;
@@ -2447,18 +2446,18 @@ CheckImport:
     push edx
       ; (edx keeps track of the .import Base)
         .While D$edx <> 0
-            mov eax D$edx+12 | add eax D$UserPeStart    ; Pointer to DLL Name
-            On D$eax = 'MSVB', mov D$CompiledBy 'MSVB'
-            mov ebx D$edx+16 | add ebx D$UserPeStart    ; Pointer to Functions Names List.
-            mov edi D$RoutingMap | add edi D$edx+16
+            Mov eax D$edx+12 | add eax D$UserPeStart    ; Pointer to DLL Name
+            On D$eax = 'MSVB', Mov D$CompiledBy 'MSVB'
+            Mov ebx D$edx+16 | add ebx D$UserPeStart    ; Pointer to Functions Names List.
+            Mov edi D$RoutingMap | add edi D$edx+16
         ; Write the Pointer to DLL Name upon all 'RoutingMap' Pointers to Functions Names:
             While D$ebx <> 0
                 stosd | add ebx 4
             End_While
 
-            mov ebx D$edx+16 | add ebx D$UserPeStart
-            mov edi D$SectionsMap | add edi D$edx+16
-            mov eax IMPORTFLAG
+            Mov ebx D$edx+16 | add ebx D$UserPeStart
+            Mov edi D$SectionsMap | add edi D$edx+16
+            Mov eax IMPORTFLAG
         ; Write again IMPORTFLAG upon all 'SectionsMap' Pointers to Functions Names:
             While D$ebx <> 0
                 stosb | inc ebx
@@ -2480,10 +2479,10 @@ CheckImport:
 ;;
     push esi, edx
 
-        mov D$DisNumberOfFunctions 0
+        Mov D$DisNumberOfFunctions 0
 
       ; Pointer to Functions Names Address Table in edx:
-L0:     mov esi D$edx+(4*4) | add esi D$UserPeStart
+L0:     Mov esi D$edx+(4*4) | add esi D$UserPeStart
         While D$esi <> 0
             add esi 4 | inc D$DisNumberOfFunctions
         End_While
@@ -2493,57 +2492,57 @@ L0:     mov esi D$edx+(4*4) | add esi D$UserPeStart
     pop edx, esi
 
   ; Large estimation: 128 Chars per Function:
-    mov eax D$DisNumberOfFunctions | shl eax 7
+    Mov eax D$DisNumberOfFunctions | shl eax 7
     pushad
         push eax
             VirtualAlloc ApiBuffer eax
         pop ecx
-        add ecx eax | mov D$EndOfApiBuffer ecx
+        add ecx eax | Mov D$EndOfApiBuffer ecx
     popad
 
   ; Now, fill the ApiBuffer:
-    mov edi D$ApiBuffer
+    Mov edi D$ApiBuffer
 
-L0: mov ebx D$edx+(3*4) | add ebx D$UserPeStart    ; Pointer to DLL Name.
-    mov esi D$edx+(4*4) | add esi D$UserPeStart    ; Pointer to Functions Names Address Table.
+L0: Mov ebx D$edx+(3*4) | add ebx D$UserPeStart    ; Pointer to DLL Name.
+    Mov esi D$edx+(4*4) | add esi D$UserPeStart    ; Pointer to Functions Names Address Table.
 
     While D$esi <> 0
-        mov ecx edi
+        Mov ecx edi
 
-        mov B$edi "'" | inc edi
+        Mov B$edi "'" | inc edi
         push ebx
-L1:         mov al B$ebx | stosb | inc ebx | cmp al 0 | jne L1<   ; 'DllName.
+L1:         Mov al B$ebx | stosb | inc ebx | cmp al 0 | jne L1<   ; 'DllName.
         pop ebx
-        mov eax D$edi-5 | or eax 020202020
+        Mov eax D$edi-5 | or eax 020202020
         If eax = '.dll'
             sub edi 4
         Else
-            mov B$edi-1 "."
+            Mov B$edi-1 "."
         End_If
 
         lodsd | test eax 08000_0000 | jz L1>
-            xor eax 08000_0000 | push ebx | call WriteEax | pop ebx | jmp L2>
+            xor eax 08000_0000 | push ebx | Call WriteEax | pop ebx | jmp L2>
 
 L1:     push ebx
-            mov ebx eax | add ebx D$UserPeStart | add ebx 2
-L1:         mov al B$ebx | stosb | inc ebx | cmp al 0 | jne L1<   ; ....FunctionName'
+            Mov ebx eax | add ebx D$UserPeStart | add ebx 2
+L1:         Mov al B$ebx | stosb | inc ebx | cmp al 0 | jne L1<   ; ....FunctionName'
             dec edi
         pop ebx
 
-L2:     mov B$edi "'" | inc edi | mov B$edi 0 | inc edi
+L2:     Mov B$edi "'" | inc edi | Mov B$edi 0 | inc edi
 
       ; Overwrite Address Table and LookUp Table dWords by Pointers to 'ApiBuffer':
-        mov D$esi-4 ecx
-        mov eax esi | sub eax D$edx+(4*4) | add eax D$edx | mov D$eax-4 ecx
+        Mov D$esi-4 ecx
+        Mov eax esi | sub eax D$edx+(4*4) | add eax D$edx | Mov D$eax-4 ecx
     End_While
 
     add edx 20 | cmp D$edx 0 | jne L0<<
 
   ; ... and clear the temporary used 'RoutingMap'
-    mov edi D$RoutingMap, ecx D$EndOfRoutingMap, eax 0
+    Mov edi D$RoutingMap, ecx D$EndOfRoutingMap, eax 0
     sub ecx edi | shr ecx 2 | rep stosd
 
-    call KillBlankBytes AppImportSize, IMPORTFLAG
+    Call KillBlankBytes AppImportSize, IMPORTFLAG
 ret
 
 ____________________________________________________________________________________________
@@ -2556,11 +2555,11 @@ ________________________________________________________________________________
 CheckResources:
     GetPeHeader AppBaseOfRsrc | On D$eax = 0, ret
 
-    mov eax D$eax | add eax D$UserPeStart | mov D$DisResourcesOrigine eax
+    Mov eax D$eax | add eax D$UserPeStart | Mov D$DisResourcesOrigine eax
 
-    call FlagResourceTree eax
+    Call FlagResourceTree eax
 
-    call KillBlankBytes AppBaseOfRsrc, RESOURCESFLAG
+    Call KillBlankBytes AppBaseOfRsrc, RESOURCESFLAG
 ret
 
 ;;
@@ -2573,14 +2572,14 @@ Proc OldFlagResourceTree: ; 'ResourcesStub' For infos. 'NewFlagResourceTree'
     Local @N
     Uses esi
 
-        mov esi D@Pointer | add esi 12
+        Mov esi D@Pointer | add esi 12
       ; By Name references:
-        lodsw | mov W@N ax
+        lodsw | Mov W@N ax
       ; By ID number references:
         lodsw | add W@N ax
 
-        mov ebx esi | sub ebx D$UserPeStart | add ebx D$SectionsMap
-        mov D$ebx-16 FOUR_RESOURCESFLAG,
+        Mov ebx esi | sub ebx D$UserPeStart | add ebx D$SectionsMap
+        Mov D$ebx-16 FOUR_RESOURCESFLAG,
             D$ebx-12 FOUR_RESOURCESFLAG,
             D$ebx-8 FOUR_RESOURCESFLAG,
             D$ebx-4 FOUR_RESOURCESFLAG,
@@ -2596,23 +2595,23 @@ L0:         add esi 4 | lodsd
 
             .If eax >= 08000_0000
                 xor eax 08000_0000 | add eax D$DisResourcesOrigine
-                call FlagResourceTree eax
+                Call FlagResourceTree eax
 
                 If W@N > 1
                   ; Flag the next coming Type/ID/Lang and Displacement dWords pair:
-                    mov ebx esi | sub ebx D$UserPeStart | add ebx D$SectionsMap
-                    mov D$ebx FOUR_RESOURCESFLAG, D$ebx+4 FOUR_RESOURCESFLAG
+                    Mov ebx esi | sub ebx D$UserPeStart | add ebx D$SectionsMap
+                    Mov D$ebx FOUR_RESOURCESFLAG, D$ebx+4 FOUR_RESOURCESFLAG
                     dec W@N | jmp L0<
                 End_If
 
             .Else
               ; Flag the leaf Pointer and size, and then the true Resources Data:
                 add eax D$DisResourcesOrigine
-                mov edi D$eax, ecx D$eax+4
+                Mov edi D$eax, ecx D$eax+4
                 add edi D$DisResourcesOrigine
                 GetPeHeader AppBaseOfRsrc | sub edi D$eax
                 sub edi D$UserPeStart | add edi D$SectionsMap
-                mov al RESOURCESFLAG | rep stosb
+                Mov al RESOURCESFLAG | rep stosb
 
             .End_If
 EndP
@@ -2842,20 +2841,20 @@ Proc FlagResourceTree: ; 'ResourcesStub' For infos.
     Local @Array
     Uses esi, ebx, eax
 
-    mov esi D@Pointer, eax 0
+    Mov esi D@Pointer, eax 0
 
     push esi
       ; add ImgResDir.NumberOfNamedEntries to ImgResDir.NumberOfIdEntries
       ; and copy the result to N:
         add esi ImgResDir.NumberOfNamedEntriesDis
-        lodsw | mov D@Array eax
+        lodsw | Mov D@Array eax
         lodsw | add D@Array eax
     pop esi
 
     ; now we flag all IMAGE_RESOURCE_DIRECTORY
-    mov ebx esi | sub ebx D$UserPeStart | add ebx D$SectionsMap
-    mov eax RESOURCESFLAG+(RESOURCESFLAG shl 8)+(RESOURCESFLAG shl 16)+(RESOURCESFLAG shl 24)
-    mov D$ebx+ImgResDir.CharacteristicsDis eax, D$ebx+ImgResDir.TimeDateStampDis eax,
+    Mov ebx esi | sub ebx D$UserPeStart | add ebx D$SectionsMap
+    Mov eax RESOURCESFLAG+(RESOURCESFLAG shl 8)+(RESOURCESFLAG shl 16)+(RESOURCESFLAG shl 24)
+    Mov D$ebx+ImgResDir.CharacteristicsDis eax, D$ebx+ImgResDir.TimeDateStampDis eax,
     W$ebx+ImgResDir.MajorVersionDis ax, W$ebx+ImgResDir.MinorVersionDis ax,
     W$ebx+ImgResDir.NumberOfNamedEntriesDis ax, W$ebx+ImgResDir.NumberOfIdEntriesDis ax
 
@@ -2866,7 +2865,7 @@ Proc FlagResourceTree: ; 'ResourcesStub' For infos.
           ; We need to see if we have a Unicode String Name or a ID
 L0:         lodsd ; load the name ID to eax
             ; flag the Name1Dis member
-            mov D$ebx+ImgResDirEntry.Name1Dis RESOURCESFLAG+(RESOURCESFLAG shl 8)+(RESOURCESFLAG shl 16)+(RESOURCESFLAG shl 24)
+            Mov D$ebx+ImgResDirEntry.Name1Dis RESOURCESFLAG+(RESOURCESFLAG shl 8)+(RESOURCESFLAG shl 16)+(RESOURCESFLAG shl 24)
             ;add ebx ImgResDirEntry.OffsetToDataDis ; update ebx to it points to the offsettodata in the sectionmap
 
             Test_If eax 08000_0000 ; If it is a named ID, flag all the IMAGE_RESOURCE_DIR_STRING_U structure
@@ -2876,22 +2875,22 @@ L0:         lodsd ; load the name ID to eax
                 sub eax D$userpestart ; let´s point it to the proper location
                 add eax D$SectionsMap ; in the section map
                 ; flag the lenght member
-                mov W$eax+ImgResDirStringU.Length1Dis RESOURCESFLAG+(RESOURCESFLAG shl 8)
+                Mov W$eax+ImgResDirStringU.Length1Dis RESOURCESFLAG+(RESOURCESFLAG shl 8)
                 add eax 2 ; points to the begginning of the unicode string
                 ; flag the unicode string
-                mov edi eax
-                mov ax RESOURCESFLAG+(RESOURCESFLAG shl 8) | rep stosw
+                Mov edi eax
+                Mov ax RESOURCESFLAG+(RESOURCESFLAG shl 8) | rep stosw
             Test_End
 
             ; Now, load the OffsetToData and save it´s value at eax
             lodsd
             ; flag the OffsetToDataDis member
-            mov D$ebx+ImgResDirEntry.OffsetToDataDis RESOURCESFLAG+(RESOURCESFLAG shl 8)+(RESOURCESFLAG shl 16)+(RESOURCESFLAG shl 24)
+            Mov D$ebx+ImgResDirEntry.OffsetToDataDis RESOURCESFLAG+(RESOURCESFLAG shl 8)+(RESOURCESFLAG shl 16)+(RESOURCESFLAG shl 24)
             add ebx Size_Of_IMAGE_RESOURCE_DIRECTORY_ENTRY ; update ebx
 
             .Test_If eax 08000_0000 ; If the high bit (0x80000000) is set this is a node
                 xor eax 08000_0000 | add eax D$DisResourcesOrigine
-                call FlagResourceTree eax
+                Call FlagResourceTree eax
 
                 If D@Array > 1
                   ; let´s flag the rest of the array IMAGE_RESOURCE_DIRECTORY_ENTRY.
@@ -2901,20 +2900,20 @@ L0:         lodsd ; load the name ID to eax
             .Test_Else ; If the high bit (0x80000000) is not set this is a leaf
                 ; Flag all the IMAGE_RESOURCE_DATA_ENTRY and their internal pointers
                 add eax D$DisResourcesOrigine
-                mov ebx eax
+                Mov ebx eax
                 sub ebx D$UserPeStart
                 add ebx D$SectionsMap
 
-                mov D$ebx+ImgResDataEntry.OffsetToDataDis RESOURCESFLAG+(RESOURCESFLAG shl 8)+(RESOURCESFLAG shl 16)+(RESOURCESFLAG shl 24)
-                mov D$ebx+ImgResDataEntry.Size1Dis RESOURCESFLAG+(RESOURCESFLAG shl 8)+(RESOURCESFLAG shl 16)+(RESOURCESFLAG shl 24)
-                mov D$ebx+ImgResDataEntry.CodePageDis RESOURCESFLAG+(RESOURCESFLAG shl 8)+(RESOURCESFLAG shl 16)+(RESOURCESFLAG shl 24)
-                mov D$ebx+ImgResDataEntry.ReservedDis RESOURCESFLAG+(RESOURCESFLAG shl 8)+(RESOURCESFLAG shl 16)+(RESOURCESFLAG shl 24)
+                Mov D$ebx+ImgResDataEntry.OffsetToDataDis RESOURCESFLAG+(RESOURCESFLAG shl 8)+(RESOURCESFLAG shl 16)+(RESOURCESFLAG shl 24)
+                Mov D$ebx+ImgResDataEntry.Size1Dis RESOURCESFLAG+(RESOURCESFLAG shl 8)+(RESOURCESFLAG shl 16)+(RESOURCESFLAG shl 24)
+                Mov D$ebx+ImgResDataEntry.CodePageDis RESOURCESFLAG+(RESOURCESFLAG shl 8)+(RESOURCESFLAG shl 16)+(RESOURCESFLAG shl 24)
+                Mov D$ebx+ImgResDataEntry.ReservedDis RESOURCESFLAG+(RESOURCESFLAG shl 8)+(RESOURCESFLAG shl 16)+(RESOURCESFLAG shl 24)
 
                 ; flag the data contents
-                mov edi D$eax+ImgResDataEntry.OffsetToDataDis
-                mov ecx D$eax+ImgResDataEntry.Size1Dis
+                Mov edi D$eax+ImgResDataEntry.OffsetToDataDis
+                Mov ecx D$eax+ImgResDataEntry.Size1Dis
                 add edi D$SectionsMap; edi points to the offset of the data in the sectinosmap
-                mov al RESOURCESFLAG | rep stosb
+                Mov al RESOURCESFLAG | rep stosb
 
             .Test_End
 EndP
@@ -2936,49 +2935,49 @@ ________________________________________________________________________________
 [VirtualIsRunable: ?]
 
 CheckVirtualData:
-    GetPeHeader SectionsHeaders | mov ecx D$DisNumberOfSections
+    GetPeHeader SectionsHeaders | Mov ecx D$DisNumberOfSections
 
 L0: test D$eax+SECTION_FLAG &IMAGE_SCN_CNT_UNINITIALIZED_DATA | jz L3>
         test D$eax+SECTION_FLAG &IMAGE_SCN_MEM_READ | jz L3>
             test D$eax+SECTION_FLAG &IMAGE_SCN_MEM_WRITE | jz L3>
 
                 test D$eax &IMAGE_SCN_MEM_EXECUTE | jz L2>
-                    mov B$VirtualIsRunable &TRUE            ; See this pb later.
+                    Mov B$VirtualIsRunable &TRUE            ; See this pb later.
 
   ; Regular Virtual Data Section found. Check the Bytes in 'SectionMap':
-L2: mov ebx D$eax+SECTION_RVA | add ebx D$SectionsMap
-    mov edi D$SectionsMap | add edi D$eax+SECTION_RVA
-    mov edx edi | add edx D$eax+SECTION_FILESIZE
+L2: Mov ebx D$eax+SECTION_RVA | add ebx D$SectionsMap
+    Mov edi D$SectionsMap | add edi D$eax+SECTION_RVA
+    Mov edx edi | add edx D$eax+SECTION_FILESIZE
     push edi
-        While edi < edx | mov B$edi VIRTUALFLAG | inc edi | End_While
+        While edi < edx | Mov B$edi VIRTUALFLAG | inc edi | End_While
     pop edi
   ; Force the First Virtual Byte EVOCATED:
-    sub edi D$SectionsMap | add edi D$RoutingMap | mov B$edi EVOCATED
+    sub edi D$SectionsMap | add edi D$RoutingMap | Mov B$edi EVOCATED
 
 L3: add eax SECTIONHEADERSIZE | loop L0<
 ret
 
 
 CheckExtendedVirtual:
-    GetPeHeader SectionsHeaders | mov ecx D$DisNumberOfSections
+    GetPeHeader SectionsHeaders | Mov ecx D$DisNumberOfSections
     push ecx ;jE! fixing incorrect loop; bcoz if header is dirty, then will bad..
-L0: mov ecx D$eax+SECTION_RVASIZE, ebx D$eax+SECTION_FILESIZE
+L0: Mov ecx D$eax+SECTION_RVASIZE, ebx D$eax+SECTION_FILESIZE
     Align_On_Variable D$DisRvaSectionAlignment ecx
     Align_On_Variable D$DisFileSectionAlignment ebx
     .If ecx > ebx
         test D$eax+SECTION_FLAG &IMAGE_SCN_MEM_EXECUTE | jz L2>
-            mov B$VirtualIsRunable &TRUE            ; See this pb later.
+            Mov B$VirtualIsRunable &TRUE            ; See this pb later.
 
-L2:     mov edi D$SectionsMap | add edi D$eax+SECTION_RVA | add edi D$eax+SECTION_FILESIZE
+L2:     Mov edi D$SectionsMap | add edi D$eax+SECTION_RVA | add edi D$eax+SECTION_FILESIZE
       ; Don't touch Reloc and DebugInfo:
         If B$edi <> KILLFLAG
           ; Force the First Virtual Byte EVOCATED:
-            mov edx edi | sub edx D$SectionsMap | add edx D$RoutingMap | mov B$edx EVOCATED
+            Mov edx edi | sub edx D$SectionsMap | add edx D$RoutingMap | Mov B$edx EVOCATED
 
             push eax
-                mov ecx D$eax+SECTION_RVASIZE
+                Mov ecx D$eax+SECTION_RVASIZE
                 Align_On_Variable D$DisRvaSectionAlignment ecx
-                sub ecx ebx | mov al VIRTUALFLAG | rep stosb
+                sub ecx ebx | Mov al VIRTUALFLAG | rep stosb
             pop eax
         End_If
     .End_If
@@ -3006,32 +3005,32 @@ ________________________________________________________________________________
 CheckExport:
     GetPeHeader SectionTable | On D$eax = 0, ret
 
-    mov D$NumberOfForwardedExport 0
+    Mov D$NumberOfForwardedExport 0
 
     push eax
-        mov edi D$eax, ecx D$eax+4, al EXPORTFLAG
+        Mov edi D$eax, ecx D$eax+4, al EXPORTFLAG
         add edi D$SectionsMap | rep stosb
     pop eax
 
-    mov edx D$eax | add edx D$UserPeStart
-    mov eax D$edx+(5*4), ebx D$edx+(6*4), ecx D$edx+(4*4)
-    ;On ebx > eax, mov eax ebx
+    Mov edx D$eax | add edx D$UserPeStart
+    Mov eax D$edx+(5*4), ebx D$edx+(6*4), ecx D$edx+(4*4)
+    ;On ebx > eax, Mov eax ebx
     add edx (6*4)
-    mov D$NumberOfDisExportedFunctions eax, D$NumberOfDisExportNames ebx, D$DisExportOrdBase ecx
+    Mov D$NumberOfDisExportedFunctions eax, D$NumberOfDisExportNames ebx, D$DisExportOrdBase ecx
 ; 0476 = 1142 in wsock32.dll !!!   04B  Forwarded Functions (forwarded to other DLLs) !!!
     On D$NumberOfDisExportedFunctions = 0, jmp L9>>
   ; 'ExportSectionComments'
-    add edx 4 | mov eax D$edx | add eax D$UserPeStart
-    mov D$DisExportFunctionsPointers eax
+    add edx 4 | Mov eax D$edx | add eax D$UserPeStart
+    Mov D$DisExportFunctionsPointers eax
 
-    add edx 4 | mov eax D$edx | add eax D$UserPeStart
-    mov D$DisExportNamesPointers eax
+    add edx 4 | Mov eax D$edx | add eax D$UserPeStart
+    Mov D$DisExportNamesPointers eax
 
-    add edx 4 | mov eax D$edx | add eax D$UserPeStart
-    mov D$DisExportOrdinal eax
+    add edx 4 | Mov eax D$edx | add eax D$UserPeStart
+    Mov D$DisExportOrdinal eax
 
   ; Mark the Exported Functions as Nodes in the Code Routing Table:
-    mov esi D$DisExportFunctionsPointers, ecx D$NumberOfDisExportedFunctions
+    Mov esi D$DisExportFunctionsPointers, ecx D$NumberOfDisExportedFunctions
 
 L0: lodsd
     .If eax = 0
@@ -3043,15 +3042,15 @@ L0: lodsd
         Else
             sub  eax D$SectionsMap | add eax D$RoutingMap
             or B$eax EXPORTNODE+ACCESSED+EVOCATED+LABEL
-            sub eax D$RoutingMap | add eax D$SectionsMap | mov B$eax 0 | loop L0<
+            sub eax D$RoutingMap | add eax D$SectionsMap | Mov B$eax 0 | loop L0<
         End_If
     .End_If
 
     If D$NumberOfForwardedExport <> 0
-        mov eax D$NumberOfForwardedExport, edi ForwardedMessage
-        call WriteEaxDecimal
-        While edi < Forwarded | mov B$edi ' ' | inc edi | End_While
-        call 'USER32.MessageBoxA', 0, ForwardedMessage,
+        Mov eax D$NumberOfForwardedExport, edi ForwardedMessage
+        Call WriteEaxDecimal
+        While edi < Forwarded | Mov B$edi ' ' | inc edi | End_While
+        Call 'USER32.MessageBoxA', 0, ForwardedMessage,
                                   {' Warning', 0}, 0
     End_If
 ret
@@ -3060,19 +3059,19 @@ ret
 
   ; Flag the SectionsMap with EXPORTFLAG (only the real Export Table. Not
   ; the whole Section, that may contain anything else -Import / Data /...-):
-L1: GetPeHeader SectionTable | mov esi D$eax | add esi D$UserPeStart
+L1: GetPeHeader SectionTable | Mov esi D$eax | add esi D$UserPeStart
 
-    mov al EXPORTFLAG
+    Mov al EXPORTFLAG
 
   ; First, the Header (10 dWords).
-    mov ecx (10*4)
-    mov edi esi | sub edi D$UserPeStart | add edi D$SectionsMap
+    Mov ecx (10*4)
+    Mov edi esi | sub edi D$UserPeStart | add edi D$SectionsMap
     rep stosb
 
   ; 'ExportSectionComments'.
   ;
   ; DllName:
-    mov edi D$esi+(3*4), ebx edi
+    Mov edi D$esi+(3*4), ebx edi
     ..If edi <> 0
         add edi D$SectionsMap | add ebx D$UserPeStart
         .If edi > D$SectionsMap
@@ -3083,44 +3082,44 @@ L1: GetPeHeader SectionTable | mov esi D$eax | add esi D$UserPeStart
     ..End_If
 
   ; ExportAdressesTable:
-    mov edi D$esi+(7*4)
+    Mov edi D$esi+(7*4)
     ..If edi <> 0
         add edi D$SectionsMap
         .If edi > D$SectionsMap
             If edi < D$EndOfSectionsMap
-                mov ecx D$NumberOfDisExportedFunctions | shl ecx 2 | rep stosb
+                Mov ecx D$NumberOfDisExportedFunctions | shl ecx 2 | rep stosb
             End_If
         .End_If
     ..End_If
 
   ; ExportNamesTable:
-    mov edi D$esi+(8*4)
+    Mov edi D$esi+(8*4)
     ..If edi <> 0
         add edi D$SectionsMap
         .If edi > D$SectionsMap
             If edi < D$EndOfSectionsMap
-                mov ecx D$NumberOfDisExportNames | shl ecx 2 | rep stosb
+                Mov ecx D$NumberOfDisExportNames | shl ecx 2 | rep stosb
             End_If
         .End_If
     ..End_If
 
   ; ExportOrdinals
-    mov edi D$esi+(9*4)
+    Mov edi D$esi+(9*4)
     ..If edi <> 0
         add edi D$SectionsMap
         .If edi > D$SectionsMap
             If edi < D$EndOfSectionsMap
-                mov ecx D$NumberOfDisExportNames | shl ecx 1 | rep stosb
+                Mov ecx D$NumberOfDisExportNames | shl ecx 1 | rep stosb
             End_If
         .End_If
     ..End_If
 
   ; Function1Name, Function2Name, ...
-    mov esi D$esi+(8*4), ecx D$NumberOfDisExportNames | On esi = 0, jmp L1>
+    Mov esi D$esi+(8*4), ecx D$NumberOfDisExportNames | On esi = 0, jmp L1>
     add esi D$UserPeStart
     ...If esi > D$UserPeStart
         ..If esi < D$UserPeEnd
-L0:         mov edi D$esi, ebx edi
+L0:         Mov edi D$esi, ebx edi
             add edi D$SectionsMap | add ebx D$UserPeStart
             .If edi > D$SectionsMap
                 If edi < D$EndOfSectionsMap
@@ -3131,9 +3130,9 @@ L0:         mov edi D$esi, ebx edi
         ..End_If
     ...End_If
 
-L1: mov B$DisExportInside &TRUE
+L1: Mov B$DisExportInside &TRUE
 
-L9: call KillBlankBytes SectionTable, EXPORTFLAG
+L9: Call KillBlankBytes SectionTable, EXPORTFLAG
 ret
 ____________________________________________________________________________________________
 
@@ -3143,7 +3142,7 @@ ________________________________________________________________________________
 ;;
 
 KillPeHeader:
-    mov edi D$SectionsMap, ecx D$FirstSection, al KILLFLAG
+    Mov edi D$SectionsMap, ecx D$FirstSection, al KILLFLAG
     rep stosb
 ret
 
@@ -3151,14 +3150,14 @@ ret
 Proc KillSection:
     Argument @OptionalHeaderTable
 
-        GetPeHeader D@OptionalHeaderTable | mov edi D$eax | On edi = 0, ExitP
+        GetPeHeader D@OptionalHeaderTable | Mov edi D$eax | On edi = 0, ExitP
 
     ; Example: Is it a clean .reloc with nothing else inside?
         test edi 0FFF | jnz L2>
 
-            mov esi edi | add esi D$UserPeStart
-            mov ecx D$eax+4 | Align_On_Variable D$DisRvaSectionAlignment ecx
-            mov edx esi | add edx ecx | add esi D$eax+4
+            Mov esi edi | add esi D$UserPeStart
+            Mov ecx D$eax+4 | Align_On_Variable D$DisRvaSectionAlignment ecx
+            Mov edx esi | add edx ecx | add esi D$eax+4
 
             While esi < edx
                 On B$esi <> 0, jmp L2>
@@ -3166,20 +3165,20 @@ Proc KillSection:
             End_While
 
             ; Example: Seems to be a clean .reloc. Fill it all:
-                add edi D$SectionsMap | mov al KILLFLAG | rep stosb | ExitP
+                add edi D$SectionsMap | Mov al KILLFLAG | rep stosb | ExitP
 
-L2:     mov ecx D$eax+4 | add edi D$SectionsMap | mov al KILLFLAG | rep stosb
+L2:     Mov ecx D$eax+4 | add edi D$SectionsMap | Mov al KILLFLAG | rep stosb
 EndP
 
 
 Proc KillBlankBytes:
     Arguments @OptionalHeaderTable, @FLAG
 
-        mov eax D@OptionalHeaderTable, esi D$eax, ecx D$eax+4
+        Mov eax D@OptionalHeaderTable, esi D$eax, ecx D$eax+4
         Align_On_Variable D$DisRvaSectionAlignment ecx
 
-        add esi D$UserPeStart | mov edx esi | add edx ecx
-        mov ebx esi | sub ebx D$UserPeStart | add ebx D$SectionsMap
+        add esi D$UserPeStart | Mov edx esi | add edx ecx
+        Mov ebx esi | sub ebx D$UserPeStart | add ebx D$SectionsMap
 
         While esi < edx
             On ebx >= D$EndOfSectionsMap, ExitP
@@ -3191,35 +3190,35 @@ Proc KillBlankBytes:
         End_While
 
       ; OK. Only blank Bytes found, other than, for example, the normal Export Data:
-        mov eax D@OptionalHeaderTable, esi D$eax, ecx D$eax+4
+        Mov eax D@OptionalHeaderTable, esi D$eax, ecx D$eax+4
         Align_On_Variable D$DisRvaSectionAlignment ecx
 
-        add esi D$UserPeStart | mov edx esi | add edx ecx
-        mov ebx esi | sub ebx D$UserPeStart | add ebx D$SectionsMap
+        add esi D$UserPeStart | Mov edx esi | add edx ecx
+        Mov ebx esi | sub ebx D$UserPeStart | add ebx D$SectionsMap
 
         While esi < edx
-            On B$ebx = 0, mov B$ebx KILLFLAG
+            On B$ebx = 0, Mov B$ebx KILLFLAG
             inc esi | inc ebx
         End_While
 EndP
 
 
 KillSectionsExtensions:
-    GetPeHeader SectionsHeaders | mov esi eax
+    GetPeHeader SectionsHeaders | Mov esi eax
 
-    mov ecx D$DisNumberOfSections
+    Mov ecx D$DisNumberOfSections
 
 L0: push ecx
-        mov edi D$esi+SECTION_RVA | add edi D$SectionsMap
-        mov ecx D$esi+SECTION_RVASIZE
-        mov eax D$esi+SECTION_FILESIZE
-        On ecx > eax, mov eax ecx
+        Mov edi D$esi+SECTION_RVA | add edi D$SectionsMap
+        Mov ecx D$esi+SECTION_RVASIZE
+        Mov eax D$esi+SECTION_FILESIZE
+        On ecx > eax, Mov eax ecx
         Align_On_Variable D$DisFileSectionAlignment eax
-        mov ecx eax
+        Mov ecx eax
         Align_On_Variable D$DisRvaSectionAlignment ecx
         sub ecx eax | jz L2>
 
-            add edi eax | mov al KILLFLAG | rep stosb
+            add edi eax | Mov al KILLFLAG | rep stosb
 L2: pop ecx
 
     add esi SECTIONHEADERSIZE | loop L0<
@@ -3230,18 +3229,18 @@ ________________________________________________________________________________
 [SilentMap: ?]
 
 DisFail:
-    call DestroyDisProgressBar
+    Call DestroyDisProgressBar
 
     VirtualFree D$UserPeStart, D$CodeSource, D$TruthAsciiTable, D$RoutingMap, D$SectionsMap,
                 D$SizesMap, D$ApiBuffer
 
-    mov B$Disassembling &FALSE
+    Mov B$Disassembling &FALSE
     If B$SilentMap = &FALSE
-        mov eax DisFailText | call MessageBox
+        Mov eax DisFailText | Call MessageBox
     End_If
-    mov B$SilentMap &FALSE
+    Mov B$SilentMap &FALSE
 
-L0: mov ebx, esp | cmp ebx, D$OldStackPointer | jnb L1>
+L0: Mov ebx, esp | cmp ebx, D$OldStackPointer | jnb L1>
         pop ebx | jmp L0<
 
 L1: jmp StartNewFile
@@ -3261,98 +3260,98 @@ ________________________________________________________________________________
 
 ;InitDisProgressBar:
   ; Tag Dialog 25
-    call 'USER32.DialogBoxParamA' D$hinstance, 25, &NULL, ProgressProc, &NULL
+    Call 'USER32.DialogBoxParamA' D$hinstance, 25, &NULL, ProgressProc, &NULL
 ret
 
 Proc ProgressProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ..If D@Message = &WM_COMMAND
+    ..If D@msg = &WM_COMMAND
         If D@wParam = &IDCANCEL
-            call 'USER32.EndDialog' D@Adressee, 0
+            Call 'USER32.EndDialog' D@hwnd, 0
         End_If
 
-    ..If D@Message = &WM_CLOSE
-        call 'USER32.EndDialog' D@Adressee, 0
+    ..If D@msg = &WM_CLOSE
+        Call 'USER32.EndDialog' D@hwnd, 0
 
-    ..Else_If D@Message = &WM_INITDIALOG
-        move D$hwndForBar D@Adressee
-        call 'USER32.GetDlgItem' D@Adressee 5 | mov D$ProgressInst eax
+    ..Else_If D@msg = &WM_INITDIALOG
+        move D$hwndForBar D@hwnd
+        Call 'USER32.GetDlgItem' D@hwnd 5 | Mov D$ProgressInst eax
 
-        call 'USER32.SetClassLongA' D@Adressee, &GCL_HICON, D$wc_hIcon
+        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
       ; Set steping and Title:
-        call 'User32.SendMessageA' D$ProgressInst, &PBM_SETRANGE, 0, (128 shl 16)
-        call 'User32.SendMessageA' D$ProgressInst, &PBM_SETSTEP, 1, 0  ; 1/100
-        call 'User32.SendMessageA' D$hwndForBar, &WM_SETTEXT, 0, DisPasses
+        Call 'User32.SendMessageA' D$ProgressInst, &PBM_SETRANGE, 0, (128 shl 16)
+        Call 'User32.SendMessageA' D$ProgressInst, &PBM_SETSTEP, 1, 0  ; 1/100
+        Call 'User32.SendMessageA' D$hwndForBar, &WM_SETTEXT, 0, DisPasses
 
     ..Else
-        popad | mov eax &FALSE | ExitP
+        popad | Mov eax &FALSE | ExitP
 
     ..End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 EndP
 ____________________________________________________________________________________________
 
 InitDisProgressBar:
   ; Center the bar:
-    call 'User32.GetSystemMetrics' &SM_CXSCREEN
-      sub eax D$PBarWindowW | shr eax 1 | mov D$PBarWindowX eax
-    call 'User32.GetSystemMetrics' &SM_CYSCREEN
-      sub eax D$PBarWindowH | shr eax 1 | mov D$PBarWindowY eax
+    Call 'User32.GetSystemMetrics' &SM_CXSCREEN
+      sub eax D$PBarWindowW | shr eax 1 | Mov D$PBarWindowX eax
+    Call 'User32.GetSystemMetrics' &SM_CYSCREEN
+      sub eax D$PBarWindowH | shr eax 1 | Mov D$PBarWindowY eax
 
   ; WindowExStyle > 084:    80 > tool  4 > no parent notify
-    call 'User32.CreateWindowExA' 084, ClassName, &NULL, &WS_OVERLAPPEDWINDOW,
+    Call 'User32.CreateWindowExA' 084, ClassName, &NULL, &WS_OVERLAPPEDWINDOW,
                                   D$PBarWindowX, D$PBarWindowY, D$PBarWindowW, D$PBarWindowH,
-                                  D$hwnd, 0, D$hInstance, 0
-    mov D$hwndForBar eax
+                                  D$H.MainWindow, 0, D$hInstance, 0
+    Mov D$hwndForBar eax
 
-    call 'User32.ShowWindow' D$hwndForBar, &SW_SHOWNORMAL
-    call 'User32.UpdateWindow' D$hwndForBar
+    Call 'User32.ShowWindow' D$hwndForBar, &SW_SHOWNORMAL
+    Call 'User32.UpdateWindow' D$hwndForBar
 _____________________________
 
-    call 'User32.CreateWindowExA' 0, ProgressClassName, 0, 050000000,
+    Call 'User32.CreateWindowExA' 0, ProgressClassName, 0, 050000000,
                                   D$PWindowX, D$PWindowY, D$PWindowW, D$PWindowH,
                                   D$hwndForBar, 1, D$hInstance, 0
-    mov D$ProgressInst eax
+    Mov D$ProgressInst eax
 
   ; Set steping and Title:
-    call 'User32.SendMessageA' D$ProgressInst, &PBM_SETRANGE, 0, (128 shl 16)
-    call 'User32.SendMessageA' D$ProgressInst, &PBM_SETSTEP, 1, 0  ; 1/100
-    call 'User32.SendMessageA' D$hwndForBar, &WM_SETTEXT, 0, DisPasses
+    Call 'User32.SendMessageA' D$ProgressInst, &PBM_SETRANGE, 0, (128 shl 16)
+    Call 'User32.SendMessageA' D$ProgressInst, &PBM_SETSTEP, 1, 0  ; 1/100
+    Call 'User32.SendMessageA' D$hwndForBar, &WM_SETTEXT, 0, DisPasses
 ret
 
 ;InitDisProgressBar:
   ; Center the bar:
-    call 'User32.GetSystemMetrics' &SM_CXSCREEN
-      sub eax D$PBarWindowW | shr eax 1 | mov D$PBarWindowX eax
-    call 'User32.GetSystemMetrics' &SM_CYSCREEN
-      sub eax D$PBarWindowH | shr eax 1 | mov D$PBarWindowY eax
+    Call 'User32.GetSystemMetrics' &SM_CXSCREEN
+      sub eax D$PBarWindowW | shr eax 1 | Mov D$PBarWindowX eax
+    Call 'User32.GetSystemMetrics' &SM_CYSCREEN
+      sub eax D$PBarWindowH | shr eax 1 | Mov D$PBarWindowY eax
 
   ; WindowExStyle > 084:    80 > tool  4 > no parent notify
-    call 'User32.CreateWindowExA' D$ProgressWindowStyle, ClassName, &NULL, &WS_OVERLAPPEDWINDOW,
+    Call 'User32.CreateWindowExA' D$ProgressWindowStyle, ClassName, &NULL, &WS_OVERLAPPEDWINDOW,
                                   D$PBarWindowX, D$PBarWindowY, D$PBarWindowW, D$PBarWindowH,
-                                  D$hwnd, 0, D$hInstance, 0
-    mov D$hwndForBar eax
+                                  D$H.MainWindow, 0, D$hInstance, 0
+    Mov D$hwndForBar eax
 
-    call 'User32.ShowWindow' D$hwndForBar, &SW_SHOWNORMAL
-    call 'User32.UpdateWindow' D$hwndForBar
+    Call 'User32.ShowWindow' D$hwndForBar, &SW_SHOWNORMAL
+    Call 'User32.UpdateWindow' D$hwndForBar
 
-    call 'User32.SetWindowLongA' D$hwndForBar, &GWL_WNDPROC, ProgressProc
-    mov D$PreviousProgressProc eax
+    Call 'User32.SetWindowLongA' D$hwndForBar, &GWL_WNDPROC, ProgressProc
+    Mov D$PreviousProgressProc eax
 _____________________________
 
-    call 'User32.CreateWindowExA' 0, ProgressClassName, 0, 050000000,
+    Call 'User32.CreateWindowExA' 0, ProgressClassName, 0, 050000000,
                                   D$PWindowX, D$PWindowY, D$PWindowW, D$PWindowH,
                                   D$hwndForBar, 1, D$hInstance, 0
-    mov D$ProgressInst eax
+    Mov D$ProgressInst eax
 
   ; Set steping and Title:
-    call 'User32.SendMessageA' D$ProgressInst, &PBM_SETRANGE, 0, (128 shl 16)
-    call 'User32.SendMessageA' D$ProgressInst, &PBM_SETSTEP, 1, 0  ; 1/100
-    call 'User32.SendMessageA' D$hwndForBar, &WM_SETTEXT, 0, DisPasses
+    Call 'User32.SendMessageA' D$ProgressInst, &PBM_SETRANGE, 0, (128 shl 16)
+    Call 'User32.SendMessageA' D$ProgressInst, &PBM_SETSTEP, 1, 0  ; 1/100
+    Call 'User32.SendMessageA' D$hwndForBar, &WM_SETTEXT, 0, DisPasses
 ret
 
 
@@ -3367,18 +3366,18 @@ ret
 
     .If D$ProgressMessage = &WM_COMMAND
         If D$mEditWparam = &IDCANCEL
-           ; mov eax &FALSE | ret
+           ; Mov eax &FALSE | ret
         End_If
     .End_If
 
-L9: call 'User32.CallWindowProcA' D$PreviousProgressProc D$ProgressAdressee,
+L9: Call 'User32.CallWindowProcA' D$PreviousProgressProc D$ProgressAdressee,
                                   D$ProgressMessage, D$ProgressWparam, D$ProgressLparam
     ret
 
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
-[SubEdi6 | On B$WithCommentedHexa = &FALSE, call SubEdi6IfNoComment]
+[SubEdi6 | On B$WithCommentedHexa = &FALSE, Call SubEdi6IfNoComment]
 
 ;;
  Try a minimal organisation of Jcc Instructions writing, under the form of:
@@ -3391,7 +3390,7 @@ ________________________________________________________________________________
 
 SubEdi6IfNoComment:
     push ebx
-        mov ebx edi | sub ebx 7
+        Mov ebx edi | sub ebx 7
         While B$ebx >= ' '
             dec ebx | On B$ebx = ';', jmp L9>
         End_While
@@ -3410,19 +3409,19 @@ ________________________________________________________________________________
 [TestLastLocation: ?  TestLastLineLocation: ?]
 
 DisassembleForCodeRouting:
-    mov edi D$CodeSource, esi D$UserPeStart
+    Mov edi D$CodeSource, esi D$UserPeStart
     add esi D$FirstSection
-    mov D$NewAccessedLocations &FALSE, D$LastCodeRef 0
+    Mov D$NewAccessedLocations &FALSE, D$LastCodeRef 0
 
     NextDisLine
 
-L0: mov B$DisFlag 0, D$SegmentOverride 0, B$AddressSizeOverride 0
-    mov B$OperandSizeOverride 0, W$DisSizeMarker 'D$'
-    mov B$DisCodeDisplacement &FALSE, B$EscapePrefix &FALSE
-    mov B$CALLInstruction &FALSE, B$LeaInstruction &FALSE
+L0: Mov B$DisFlag 0, D$SegmentOverride 0, B$AddressSizeOverride 0
+    Mov B$OperandSizeOverride 0, W$DisSizeMarker 'D$'
+    Mov B$DisCodeDisplacement &FALSE, B$EscapePrefix &FALSE
+    Mov B$CALLInstruction &FALSE, B$LeaInstruction &FALSE
 
   ; Parse onlyCODEFLAGed (in SectionsMap) and ACCESSED (in RoutingMap) Locations:
-L1: mov eax esi | sub eax D$UserPestart | add eax D$SectionsMap
+L1: Mov eax esi | sub eax D$UserPestart | add eax D$SectionsMap
     Test B$eax CODEFLAG | jnz L2>
         inc esi | On esi = D$UserPeEnd, jmp L9>>
             jmp L1<
@@ -3436,20 +3435,20 @@ L2: sub eax D$SectionsMap | add eax D$RoutingMap
 L3:     or B$eax INSTRUCTION
 L3:     movzx eax B$esi
 
-        mov D$TestLastLineLocation esi, D$TestLastLocation esi
+        Mov D$TestLastLineLocation esi, D$TestLastLocation esi
 
-        inc esi | call D$DisOp1+eax*4
+        inc esi | Call D$DisOp1+eax*4
 
       ; Loop immidiately in case of simple Prefix:
         While B$DisFlag = DISDONE
-            mov D$TestLastLocation esi
-            movzx eax B$esi | inc esi | call D$DisOp1+eax*4
+            Mov D$TestLastLocation esi
+            movzx eax B$esi | inc esi | Call D$DisOp1+eax*4
         End_While
 
-        mov eax D$TestLastLineLocation | sub eax D$UserPeStart | add eax D$DisImageBase
+        Mov eax D$TestLastLineLocation | sub eax D$UserPeStart | add eax D$DisImageBase
 
       ; Clear any LABEL from inside the valid parsed Code:
-        mov eax D$TestLastLineLocation, edx esi | inc eax
+        Mov eax D$TestLastLineLocation, edx esi | inc eax
         sub eax D$UserPeStart | add eax D$RoutingMap
         sub edx D$UserPeStart | add edx D$RoutingMap
 L3:     and B$eax (not LABEL)
@@ -3457,62 +3456,62 @@ L3:     and B$eax (not LABEL)
             and B$eax (not LABEL+INSTRUCTION+EVOCATED+NODE)
         inc eax | cmp eax edx | jb L3<
 
-      ; If a CALL or a JMP was Disassembed, the decoding Routines return this Flag set on.
+      ; If a Call or a JMP was Disassembed, the decoding Routines return this Flag set on.
       ; We mark the RoutingMap's according Byte as a new Entry Point:
         .If B$CALLInstruction = &TRUE
-            mov B$CALLInstruction &FALSE
+            Mov B$CALLInstruction &FALSE
 
             If B$EscapePrefix <> &TRUE
-                mov eax D$TestLastLocation
-                On B$eax = 0E8, call IsItNoReturnCall  ; OpE8
+                Mov eax D$TestLastLocation
+                On B$eax = 0E8, Call IsItNoReturnCall  ; OpE8
             End_If
 
-            mov eax D$LastCodeRef
+            Mov eax D$LastCodeRef
             sub eax D$DisImageBase | add eax D$SectionsMap
             On eax < D$SectionsMap, jmp L4>>
             On eax >= D$EndOfSectionsMap, jmp L4>>
             test B$eax VIRTUALFLAG+IMPORTFLAG+RESOURCESFLAG+EXPORTFLAG+DATAFLAG | jnz L4>>
             ;test B$eax VIRTUALFLAG+IMPORTFLAG+RESOURCESFLAG+EXPORTFLAG | jnz L4>>
-                mov B$eax CODEFLAG
+                Mov B$eax CODEFLAG
                 sub eax D$SectionsMap | add eax D$RoutingMap
                 test B$eax ACCESSED | jnz L3>
-                    mov B$NewAccessedLocations &TRUE
+                    Mov B$NewAccessedLocations &TRUE
 L3:             or B$eax NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
         .End_If
 
       ; CHUNKEND Flag marks the first Byte *after* a RET or a JMP:
-L4:     mov eax esi | sub eax D$UserPeStart | add eax D$RoutingMap
+L4:     Mov eax esi | sub eax D$UserPeStart | add eax D$RoutingMap
         If B$DisEndOfChunk = &TRUE
-            or B$eax CHUNKEND | dec eax | mov B$DisEndOfChunk &FALSE
+            or B$eax CHUNKEND | dec eax | Mov B$DisEndOfChunk &FALSE
         End_If
 
       ; Now Flaged *backward* 'ACCESSED' the Bytes of the new disassembled Instruction,
       ; including the very first Byte of the new coming Instruction, if this one is
       ; not a CHUNKEND (we have 'dec eax' up there in such cases):
 L4:     test B$eax ACCESSED | jnz L4>
-            mov D$NewAccessedLocations &TRUE
+            Mov D$NewAccessedLocations &TRUE
 
-L4:     mov ecx D$TestLastLineLocation | sub ecx D$UserPeStart | add ecx D$RoutingMap
+L4:     Mov ecx D$TestLastLineLocation | sub ecx D$UserPeStart | add ecx D$RoutingMap
 
 L4:     or B$eax ACCESSED
-        mov ebx eax | sub ebx D$RoutingMap | add ebx D$SectionsMap
+        Mov ebx eax | sub ebx D$RoutingMap | add ebx D$SectionsMap
         test B$ebx VIRTUALFLAG+IMPORTFLAG+RESOURCESFLAG+EXPORTFLAG+DATAFLAG | jnz L5>
        ; test B$eax VIRTUALFLAG+IMPORTFLAG+RESOURCESFLAG+EXPORTFLAG | jnz L5>
-        mov B$ebx CODEFLAG
+        Mov B$ebx CODEFLAG
 L5:     dec eax
 
         On eax >= ecx, jmp L4<
 
 L6:   ; Adjust the ProgressBar is wanted:
         If esi > D$NextDisBarPos
-            mov eax esi | add eax D$DisBarStep | mov D$NextDisBarPos eax
-            call BarProgress
+            Mov eax esi | add eax D$DisBarStep | Mov D$NextDisBarPos eax
+            Call BarProgress
         End_If
 
     On esi < D$UserPeEnd, jmp L0<<
 
   ; Loop it all until no more new accessed Code Chunks are found:
-L9: mov D$NextDisBarPos 0
+L9: Mov D$NextDisBarPos 0
    ; map
     cmp B$NewAccessedLocations &TRUE | je DisassembleForCodeRouting
 L9:ret
@@ -3521,33 +3520,33 @@ ________________________________________________________________________________
 
 IsItNoReturnCall:
   ; Escape, if the pointed Byte is already flaged valid Code, by some Code Reference:
-    mov eax esi | sub eax D$UserPeStart | add eax D$RoutingMap
+    Mov eax esi | sub eax D$UserPeStart | add eax D$RoutingMap
     test B$eax LABEL | jz L1>
         sub eax D$RoutingMap | add eax D$SectionsMap
         On B$eax = CODEFLAG, ret
-;sub eax D$SectionsMap | add eax D$DisImageBase | On eax = 040188B, mov B$TestNow 1
+;sub eax D$SectionsMap | add eax D$DisImageBase | On eax = 040188B, Mov B$TestNow 1
 L1: push esi, edi
         push D$DisEndOfChunk, D$LastCodeRef
             lea eax D$esi+50
-            mov B$StopAtCall &TRUE
-                call IsItCode esi, eax, 0
-            mov B$StopAtCall &FALSE
+            Mov B$StopAtCall &TRUE
+                Call IsItCode esi, eax, 0
+            Mov B$StopAtCall &FALSE
         pop D$LastCodeRef, D$DisEndOfChunk
     pop edi, esi
 
 ;If B$TestNow = 1
-;    mov eax D$LastUnAccessed | sub eax D$UserPeStart | add eax D$DisImageBase
+;    Mov eax D$LastUnAccessed | sub eax D$UserPeStart | add eax D$DisImageBase
 ;    hexprint eax
 ;End_If
 
     If eax = &FALSE
-        mov eax esi | sub eax D$UserPeStart | add eax D$SectionsMap | mov B$eax DATAFLAG
+        Mov eax esi | sub eax D$UserPeStart | add eax D$SectionsMap | Mov B$eax DATAFLAG
         sub eax D$SectionsMap | add eax D$RoutingMap | or B$eax EVOCATED
-        mov D$DisEndOfChunk &TRUE | ;mov B$esi-5 0E9
-        mov eax &FALSE
+        Mov D$DisEndOfChunk &TRUE | ;mov B$esi-5 0E9
+        Mov eax &FALSE
 
     Else
-        mov D$DisEndOfChunk &FALSE
+        Mov D$DisEndOfChunk &FALSE
 
     End_If
 ret
@@ -3556,18 +3555,18 @@ ________________________________________________________________________________
 [FollowedByCode: ?  No0CC: ?]
 
 CodeFromPointers:
-    call InitDisTablesCopies
+    Call InitDisTablesCopies
 
-    mov B$AttemptSuccess &FALSE, B$No0CC &TRUE, B$StopAtEndOfChunk &TRUE
+    Mov B$AttemptSuccess &FALSE, B$No0CC &TRUE, B$StopAtEndOfChunk &TRUE
 
-    mov esi D$SizesMap | add esi D$FirstSection
+    Mov esi D$SizesMap | add esi D$FirstSection
     sub edx 4
 
     .While esi < D$EndOfSizesMap
         test B$esi POINTER | jz L8>>
           ; Get the Pointer:
-            mov ebx esi | sub ebx D$SizesMap | add ebx D$UserPeStart
-            mov eax D$ebx |; On eax = 047E3D4, int3
+            Mov ebx esi | sub ebx D$SizesMap | add ebx D$UserPeStart
+            Mov eax D$ebx |; On eax = 047E3D4, int3
             sub eax D$DisImageBase | add eax D$UserPeStart
 
             ...If eax < D$UserPeStart
@@ -3590,17 +3589,17 @@ CodeFromPointers:
               ; The Section must not be flaged, yet:
                 ..If B$eax = 0
                   ; Compute the size of the zeored Chunk:
-                    mov ecx 0 | While B$eax+ecx = 0 | inc ecx | End_While
+                    Mov ecx 0 | While B$eax+ecx = 0 | inc ecx | End_While
                     If B$eax+ecx = CODEFLAG
-                        mov B$FollowedByCode &TRUE
+                        Mov B$FollowedByCode &TRUE
                     Else
-                        mov B$FollowedByCode &FALSE
+                        Mov B$FollowedByCode &FALSE
                     End_If
                     push esi, ebx
                         lea ebx D$eax+ecx
                         sub eax D$SectionsMap | add eax D$UserPeStart
                         sub ebx D$SectionsMap | add ebx D$UserPeStart
-                        call IsItCode eax, ebx, 1
+                        Call IsItCode eax, ebx, 1
                     pop ebx, esi
 
                     .If eax = &TRUE
@@ -3610,41 +3609,41 @@ CodeFromPointers:
 
                       ; Possible Code Candidate found. Give it a try:
 L4:                     push esi, ebx
-                            mov esi D$ebx ;| On eax = 047E3D4, int3
+                            Mov esi D$ebx ;| On eax = 047E3D4, int3
                             sub esi D$DisImageBase | add esi D$SectionsMap
                             If B$esi <> 0
                                 pop edx, ebx, esi | jmp L8>>
                             End_If
                           ; Save copies the Tables states for cases of failure:
-                            call SetDisTablesCopies
+                            Call SetDisTablesCopies
 
-                            mov B$esi CODEFLAG
+                            Mov B$esi CODEFLAG
                             sub esi D$SectionsMap | add esi D$RoutingMap
                             or B$esi NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
 
                             sub esi D$RoutingMap | add esi D$SectionsMap
-                            call DisassemblingAttempt
+                            Call DisassemblingAttempt
                         pop ebx, esi
 
                       ; Restore the previous Tables versions on failure cases:
                         If B$DisFailure = &TRUE
                       ; Arase the effect of the previous 'SetDisTablesCopies':
                             sub esi D$SizesMap | add esi D$RoutingMap
-                            call ExchangeDisTables
+                            Call ExchangeDisTables
                             sub esi D$RoutingMap | add esi D$SizesMap
 
                             jmp L7>
 
                         Else
-                            mov B$AttemptSuccess &TRUE
+                            Mov B$AttemptSuccess &TRUE
 
                         End_If
 
                     .Else
                        ; Kills the rebuilt of 3DFUN.exe:
 
-L7:                    ; mov eax D$ebx | sub eax D$DisImageBase | add eax D$SectionsMap
-                       ; mov B$eax DATAFLAG
+L7:                    ; Mov eax D$ebx | sub eax D$DisImageBase | add eax D$SectionsMap
+                       ; Mov B$eax DATAFLAG
 
                     .End_If
                 ..End_If
@@ -3652,32 +3651,32 @@ L7:                    ; mov eax D$ebx | sub eax D$DisImageBase | add eax D$Sect
 L8:     inc esi
     .End_While
 
-    call ReleaseDisTablesCopies
-    mov B$No0CC &FALSE, B$StopAtEndOfChunk &FALSE
+    Call ReleaseDisTablesCopies
+    Mov B$No0CC &FALSE, B$StopAtEndOfChunk &FALSE
 ret
 ____________________________________________________________________________________________
 
 [BiggerZeroedSectionsChunk: ?]
 
 GetBiggerSectionsBlank:
-    mov D$BiggerZeroedSectionsChunk 1
+    Mov D$BiggerZeroedSectionsChunk 1
 
-    mov esi D$SectionsMap, edx D$EndOfSectionsMap | add esi D$FirstSection
-    mov ebx esi | sub ebx D$SectionsMap | add ebx D$UserPeStart
+    Mov esi D$SectionsMap, edx D$EndOfSectionsMap | add esi D$FirstSection
+    Mov ebx esi | sub ebx D$SectionsMap | add ebx D$UserPeStart
 
     .While esi < edx
         .If B$esi = 0
-            mov ecx 0, eax &FALSE
+            Mov ecx 0, eax &FALSE
 
             While B$esi = 0
                 inc esi | inc ecx | On esi >= edx, jmp L2>
-                On B$ebx <> 0, mov eax &TRUE
+                On B$ebx <> 0, Mov eax &TRUE
             End_While
 
             If eax = &TRUE
               ; (Don't consider zeroed Chunks, in the PE):
-                mov eax &FALSE
-L2:             On ecx > D$BiggerZeroedSectionsChunk, mov D$BiggerZeroedSectionsChunk ecx
+                Mov eax &FALSE
+L2:             On ecx > D$BiggerZeroedSectionsChunk, Mov D$BiggerZeroedSectionsChunk ecx
             End_If
         .End_If
 
@@ -3690,7 +3689,7 @@ ________________________________________________________________________________
 ;;
   Everything EVOCATED but not yet Recognized may be either Code or Data.
   
-  We first call for 'IsItCode' that says if, 'physicaly', a Chunk could be Code or not.
+  We first Call for 'IsItCode' that says if, 'physicaly', a Chunk could be Code or not.
   
   If yes, run a Try&See Disassembly ('DisassemblingAttempt') on duplicated Dis Tables.
   
@@ -3710,24 +3709,24 @@ EndP
 Proc TryToDisassembleEvocated:
     Argument @Required
   ; This 'Required' is the Number of Instructions. Not the number of Bytes.
-        call InitDisTablesCopies
+        Call InitDisTablesCopies
 
-        mov B$AttemptSuccess &FALSE
+        Mov B$AttemptSuccess &FALSE
 
-        mov esi D$RoutingMap | add esi D$FirstSection
+        Mov esi D$RoutingMap | add esi D$FirstSection
 
 L0:     .While esi < D$EndOfRoutingMap
 L1:         test B$esi EVOCATED+LABEL | jz L5>>
 
-            mov ebx esi | sub ebx D$RoutingMap | add ebx D$SectionsMap
+            Mov ebx esi | sub ebx D$RoutingMap | add ebx D$SectionsMap
             cmp B$ebx 0 | jne L5>>
             sub ebx D$SectionsMap | add ebx D$SizesMap
             cmp B$ebx 0 | jne L5>>
 
             push esi, ebx
                 sub ebx D$SizesMap | add ebx D$UserPeStart
-                mov ecx ebx | add ecx 100
-                call IsItCode ebx, D$UserPeEnd, D@Required
+                Mov ecx ebx | add ecx 100
+                Call IsItCode ebx, D$UserPeEnd, D@Required
             pop ebx, esi
 
             move D$LastIdentifiedCandidate D$LastUnAccessed
@@ -3736,21 +3735,21 @@ L1:         test B$esi EVOCATED+LABEL | jz L5>>
               ; Possible Code Candidate found. Give it a try:
 L4:             push esi
                   ; The copies are for preserving the Tables states in cases of failure:
-                    call SetDisTablesCopies
+                    Call SetDisTablesCopies
                     or B$esi NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
                     sub esi D$RoutingMap | add esi D$SectionsMap
-                    mov B$esi CODEFLAG
+                    Mov B$esi CODEFLAG
 
-                    call DisassemblingAttempt
+                    Call DisassemblingAttempt
                 pop esi
 
               ; Restore the previous Tables versions on failure cases:
                 .If B$DisFailure = &TRUE
                   ; Arase the effect of the previous 'SetDisTablesCopies':
-                    call ExchangeDisTables
+                    Call ExchangeDisTables
 
                 .Else
-                    mov B$AttemptSuccess &TRUE
+                    Mov B$AttemptSuccess &TRUE
                     ;jmp L9> ; (Bound to "pop ecx | jmp L0<", in the main calling loop)
 
                 .End_If
@@ -3761,7 +3760,7 @@ L5:     inc esi
 
     .End_While
 
-L9:  call ReleaseDisTablesCopies
+L9:  Call ReleaseDisTablesCopies
 EndP
 
 
@@ -3770,28 +3769,28 @@ EndP
 [DisTableLength: ?]
 
 InitDisTablesCopies:
-    mov eax D$EndOfSectionsMap | sub eax D$SectionsMap
+    Mov eax D$EndOfSectionsMap | sub eax D$SectionsMap
   ; Align_On_Variable D$DisRvaSectionAlignment eax |
-    mov D$DisTableLength eax
+    Mov D$DisTableLength eax
 
     VirtualAlloc SectionsMapCopy D$DisTableLength
     VirtualAlloc RoutingMapCopy D$DisTableLength
     VirtualAlloc SizesMapCopy D$DisTableLength
 
-    mov ecx D$DisTableLength
-    mov eax D$SectionsMapCopy | add eax ecx | mov D$EndOfSectionsMapCopy eax
-    mov eax D$RoutingMapCopy | add eax ecx | mov D$EndOfRoutingMapCopy eax
-    mov eax D$SizesMapCopy | add eax ecx | mov D$EndOfSizesMapCopy eax
+    Mov ecx D$DisTableLength
+    Mov eax D$SectionsMapCopy | add eax ecx | Mov D$EndOfSectionsMapCopy eax
+    Mov eax D$RoutingMapCopy | add eax ecx | Mov D$EndOfRoutingMapCopy eax
+    Mov eax D$SizesMapCopy | add eax ecx | Mov D$EndOfSizesMapCopy eax
 ret
 
 
 SetDisTablesCopies:
     push esi, edi, ecx
-        mov esi D$SectionsMap, edi D$SectionsMapCopy, ecx D$DisTableLength
+        Mov esi D$SectionsMap, edi D$SectionsMapCopy, ecx D$DisTableLength
         shr ecx 2 | rep movsd
-        mov esi D$RoutingMap, edi D$RoutingMapCopy, ecx D$DisTableLength
+        Mov esi D$RoutingMap, edi D$RoutingMapCopy, ecx D$DisTableLength
         shr ecx 2 | rep movsd
-        mov esi D$SizesMap, edi D$SizesMapCopy, ecx D$DisTableLength
+        Mov esi D$SizesMap, edi D$SizesMapCopy, ecx D$DisTableLength
         shr ecx 2 | rep movsd
     pop ecx, edi, esi
 ret
@@ -3815,8 +3814,8 @@ ret
 ; Code Recognitions over > Everything not yet Flaged is Data:
 
 FillDataSection:
-    mov esi D$SectionsMap | add esi D$FirstSection
-    mov edx D$EndOfSectionsMap
+    Mov esi D$SectionsMap | add esi D$FirstSection
+    Mov edx D$EndOfSectionsMap
 
 ;mov eax esi | sub eax D$SectionsMap | add eax D$DisImageBase
 ;    hexprint eax
@@ -3828,11 +3827,11 @@ FillDataSection:
 
 
         .If B$esi = 0
-            mov B$esi DATAFLAG
+            Mov B$esi DATAFLAG
 
           ; Force a dummy EVOCATED, at start of any Data Chunk, for the output:
             If B$esi-1 <> DATAFLAG
-                mov ebx esi | sub ebx D$SectionsMap | add ebx D$RoutingMap
+                Mov ebx esi | sub ebx D$SectionsMap | add ebx D$RoutingMap
                 or B$ebx EVOCATED+LABEL
             End_IF
 
@@ -3842,7 +3841,7 @@ FillDataSection:
 
     End_While
 
-   ; mov eax esi | sub eax D$SectionsMap | add eax D$DisImageBase
+   ; Mov eax esi | sub eax D$SectionsMap | add eax D$DisImageBase
    ; hexprint eax
 ret
 ____________________________________________________________________________________________
@@ -3871,76 +3870,76 @@ Proc IsItCode:
     Arguments @Start, @End, @Required
     Local @OpNumber
 
-    mov B$SimpleScan &TRUE ; Prevents 'WriteDisRelative' from modifying Routing Flags.
-    mov B$DisEndOfChunkEncounted &FALSE
+    Mov B$SimpleScan &TRUE ; Prevents 'WriteDisRelative' from modifying Routing Flags.
+    Mov B$DisEndOfChunkEncounted &FALSE
 
-    mov D$LikelyCode 0, D$UnLikelyCode 0, B$DisEndOfChunk &FALSE, D@OpNumber 0
+    Mov D$LikelyCode 0, D$UnLikelyCode 0, B$DisEndOfChunk &FALSE, D@OpNumber 0
 
-    mov eax D@Start | sub eax D$UserPeStart | add eax D$RoutingMap
+    Mov eax D@Start | sub eax D$UserPeStart | add eax D$RoutingMap
 
-    mov ecx D@End | On ecx > D$UserPeEnd, move D@End D$UserPeEnd
+    Mov ecx D@End | On ecx > D$UserPeEnd, move D@End D$UserPeEnd
 
-    mov esi D@Start, edi D$CodeSource
+    Mov esi D@Start, edi D$CodeSource
 
     .If B$esi = 0
-        mov ecx esi
+        Mov ecx esi
         add ecx 2
         On ecx >= D$UserPeEnd, jmp L2>
         If W$esi+1 = 0
-L2:            mov eax &FALSE | jmp L9>>
+L2:            Mov eax &FALSE | jmp L9>>
         End_If
     .End_If
 
 
     .While esi < D@End
-        mov B$DisFlag 0
+        Mov B$DisFlag 0
 
-        mov D$SegmentOverride 0, B$AddressSizeOverride 0, B$OperandSizeOverride 0
-        mov W$DisSizeMarker 'D$', B$DisCodeDisplacement &FALSE, B$EscapePrefix &FALSE
-        mov D$LastCodeRef 0, B$LeaInstruction &FALSE
+        Mov D$SegmentOverride 0, B$AddressSizeOverride 0, B$OperandSizeOverride 0
+        Mov W$DisSizeMarker 'D$', B$DisCodeDisplacement &FALSE, B$EscapePrefix &FALSE
+        Mov D$LastCodeRef 0, B$LeaInstruction &FALSE
 
-        mov D$LastUnAccessed esi
+        Mov D$LastUnAccessed esi
 ;If B$TestNow = 1
-;    mov eax esi | sub eax D$UserPeStart | add eax D$DisImageBase
+;    Mov eax esi | sub eax D$UserPeStart | add eax D$DisImageBase
 ;    On eax = 0401899, int3
 ;End_If
 
-L0:     movzx eax B$esi | inc esi | call D$DisOp1+eax*4 | inc D@OpNumber
+L0:     movzx eax B$esi | inc esi | Call D$DisOp1+eax*4 | inc D@OpNumber
 
         ;mov ecx D@Required | On D@OpNumber >= ecx, jmp L2>
 
         .If B$StopAtCall = &TRUE
             If B$CALLInstruction = &TRUE
-                mov eax D$LastUnAccessed | On B$eax = 0E8, mov B$DisEndOfChunk &TRUE
+                Mov eax D$LastUnAccessed | On B$eax = 0E8, Mov B$DisEndOfChunk &TRUE
             End_If
         .End_If
 
         If D$UnLikelyCode > 0
-L1:         mov eax D$LastUnAccessed | sub eax D$UserPeStart | add eax D$DisImageBase
-            mov D$UnlikelyCodeFoundAt eax
-            mov eax &FALSE | jmp L9>>
+L1:         Mov eax D$LastUnAccessed | sub eax D$UserPeStart | add eax D$DisImageBase
+            Mov D$UnlikelyCodeFoundAt eax
+            Mov eax &FALSE | jmp L9>>
         Else_If B$DisFlag = DISFAILED
-            mov eax &FALSE | jmp L9>
+            Mov eax &FALSE | jmp L9>
         Else_If B$DisEndOfChunk = &TRUE
-            mov B$DisEndOfChunkEncounted &TRUE
+            Mov B$DisEndOfChunkEncounted &TRUE
             On B$StopAtEndOfChunk = &TRUE, jmp L2>
-            mov ecx D@Required | On D@OpNumber >= ecx, jmp L2>
+            Mov ecx D@Required | On D@OpNumber >= ecx, jmp L2>
         End_If
 
         If B$DisFlag = DISDONE
             jmp L0<<
         Else_If B$LockPrefix = &TRUE
           ; DISDONE+DISLINEOVER, but LOCK not taken by a valid LOCKable Instruction:
-            mov B$LockPrefix &FALSE | jmp L1<
+            Mov B$LockPrefix &FALSE | jmp L1<
         End_If
 
     .End_While
 
-L2: mov eax &TRUE
+L2: Mov eax &TRUE
 
-L9: mov B$SimpleScan &FALSE
+L9: Mov B$SimpleScan &FALSE
 
-    On eax = &TRUE, mov D$LastUnAccessed esi
+    On eax = &TRUE, Mov D$LastUnAccessed esi
 EndP
 ____________________________________________________________________________________________
 
@@ -3949,26 +3948,26 @@ ________________________________________________________________________________
 [DisFailure: ?  DisFailureType: ?   EncountedFlag: ?  AttemptSuccess: ?]
 
 DisassemblingAttempt:
-    mov B$DisFailure &FALSE, D$DisFailureType 0, B$NewAccessedLocations &FALSE
-    mov B$LockPrefix &FALSE
+    Mov B$DisFailure &FALSE, D$DisFailureType 0, B$NewAccessedLocations &FALSE
+    Mov B$LockPrefix &FALSE
 
   ; esi > 'SectionsMap' new CODEFLAG attempt when called. So:
     sub esi D$SectionsMap | add esi D$UserPeStart
 
-L0: mov edi D$CodeSource, D$LastCodeRef 0
-    mov B$DisFlag 0, D$SegmentOverride 0, B$AddressSizeOverride 0
-    mov B$OperandSizeOverride 0, W$DisSizeMarker 'D$'
-    mov B$DisCodeDisplacement &FALSE, B$EscapePrefix &FALSE
-    mov B$CALLInstruction &FALSE, B$DisEndOfChunk &FALSE
+L0: Mov edi D$CodeSource, D$LastCodeRef 0
+    Mov B$DisFlag 0, D$SegmentOverride 0, B$AddressSizeOverride 0
+    Mov B$OperandSizeOverride 0, W$DisSizeMarker 'D$'
+    Mov B$DisCodeDisplacement &FALSE, B$EscapePrefix &FALSE
+    Mov B$CALLInstruction &FALSE, B$DisEndOfChunk &FALSE
 
   ; Parse onlyCODEFLAGed (in SectionsMap) and ACCESSED (in RoutingMap) Locations:
-L1: mov eax esi | sub eax D$UserPestart | add eax D$SectionsMap
+L1: Mov eax esi | sub eax D$UserPestart | add eax D$SectionsMap
 
     Test B$eax CODEFLAG | jnz L2>
         If B$eax <> 0
             ;On B$TestNow = 1, hexprint 1
-            mov D$DisFailureType 1
-            mov B$DisFailure &TRUE | ret
+            Mov D$DisFailureType 1
+            Mov B$DisFailure &TRUE | ret
         End_If
         inc esi | On esi = D$UserPeEnd, jmp L9>>
             jmp L1<
@@ -3985,50 +3984,50 @@ L2:
       ; Call for the Disassembly Routines:
 L3:     or B$eax INSTRUCTION
 
-        movzx eax B$esi | mov D$TestLastLocation esi | inc esi
+        movzx eax B$esi | Mov D$TestLastLocation esi | inc esi
 
-        call D$DisOp1+eax*4
+        Call D$DisOp1+eax*4
 
         While B$DisFlag = DISDONE
-            movzx eax B$esi | inc esi | call D$DisOp1+eax*4
+            movzx eax B$esi | inc esi | Call D$DisOp1+eax*4
         End_While
 
         If B$LockPrefix = &TRUE
-            mov B$LockPrefix &FALSE | add B$UnlikelyCode 50
+            Mov B$LockPrefix &FALSE | add B$UnlikelyCode 50
         End_If
 
       ; The instruction must not cover a valid Label:
-        mov eax D$TestLastLocation | inc eax
-        mov ebx eax | sub ebx D$UserPeStart | add ebx D$RoutingMap
+        Mov eax D$TestLastLocation | inc eax
+        Mov ebx eax | sub ebx D$UserPeStart | add ebx D$RoutingMap
         While eax < esi
             test B$ebx INSTRUCTION+NODE+LABEL | jz L3>
-                mov D$DisFailureType 2 | mov B$DisFailure &TRUE | ret
+                Mov D$DisFailureType 2 | Mov B$DisFailure &TRUE | ret
 L3:         inc eax | inc ebx
         End_While
 
-      ; If a CALL or a JMP was Disassembed, the decoding Routines return this Flag set on.
+      ; If a Call or a JMP was Disassembed, the decoding Routines return this Flag set on.
       ; We mark the RoutingMap's according Byte as a new Entry Point:
         ...If B$CALLInstruction = &TRUE
-            mov B$CALLInstruction &FALSE
+            Mov B$CALLInstruction &FALSE
 
             If B$EscapePrefix <> &TRUE
-                mov eax D$TestLastLocation
-                On B$eax = 0E8, call IsItNoReturnCall ; OpE8
+                Mov eax D$TestLastLocation
+                On B$eax = 0E8, Call IsItNoReturnCall ; OpE8
             End_If
 
-            mov eax D$LastCodeRef | sub eax D$DisImageBase | add eax D$SectionsMap
+            Mov eax D$LastCodeRef | sub eax D$DisImageBase | add eax D$SectionsMap
             On eax < D$SectionsMap, jmp L4>>
             On eax > D$EndOfSectionsMap, jmp L4>>
             test B$eax VIRTUALFLAG+IMPORTFLAG+RESOURCESFLAG+EXPORTFLAG+DATAFLAG | jnz L4>>
             jmp L5>
 
-L4:         mov D$DisFailureType 3 | mov B$DisFailure &TRUE | ret
+L4:         Mov D$DisFailureType 3 | Mov B$DisFailure &TRUE | ret
 
 L5:         If B$eax = CODEFLAG
                 sub eax D$SectionsMap | add eax D$RoutingMap
                 cmp B$eax 0 | je L5>
                 test B$eax INSTRUCTION+CHUNKEND | jnz L3>>
-                    mov D$DisFailureType 4 | mov B$DisFailure &TRUE | ret
+                    Mov D$DisFailureType 4 | Mov B$DisFailure &TRUE | ret
 
 L5:             sub eax D$RoutingMap | add eax D$SectionsMap
 ; This is not out of logic to re-scan the Code: We are in Try&See actions.
@@ -4036,52 +4035,52 @@ L5:             sub eax D$RoutingMap | add eax D$SectionsMap
 
             push esi, eax
                 sub eax D$SectionsMap | add eax D$UserPeStart
-                mov ebx eax | add ebx 100
+                Mov ebx eax | add ebx 100
                 push D$DisEndOfChunk
-                    call IsItCode eax, ebx, 1
+                    Call IsItCode eax, ebx, 1
                 pop D$DisEndOfChunk
                 If eax = &FALSE
                     pop eax, esi
-                    mov D$DisFailureType 5 | mov B$DisFailure &TRUE | ret
+                    Mov D$DisFailureType 5 | Mov B$DisFailure &TRUE | ret
                 End_If
             pop eax, esi
 
-            mov B$eax CODEFLAG
+            Mov B$eax CODEFLAG
             sub eax D$SectionsMap | add eax D$RoutingMap | test B$eax ACCESSED | jnz L3>
-                mov B$NewAccessedLocations &TRUE
+                Mov B$NewAccessedLocations &TRUE
 L3:         or B$eax NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
         ...End_If
 
       ; CHUNKEND Flag marks the first Byte *after* a RET or a JMP:
-L4:     mov eax esi | sub eax D$UserPeStart | add eax D$RoutingMap
+L4:     Mov eax esi | sub eax D$UserPeStart | add eax D$RoutingMap
         If B$DisEndOfChunk = &TRUE
-            or B$eax CHUNKEND | dec eax | mov B$DisEndOfChunk &FALSE | ret ; <<<< new
+            or B$eax CHUNKEND | dec eax | Mov B$DisEndOfChunk &FALSE | ret ; <<<< new
         End_If
 
-        mov ebx eax | sub ebx D$RoutingMap | add ebx D$SectionsMap
+        Mov ebx eax | sub ebx D$RoutingMap | add ebx D$SectionsMap
         .If B$ebx = 0
             ; OK
         .Else_If B$ebx <> CODEFLAG
-            mov D$DisFailureType 6 | mov B$DisFailure &TRUE | ret
+            Mov D$DisFailureType 6 | Mov B$DisFailure &TRUE | ret
         .End_If
 
       ; Now Flaged *backward* 'ACCESSED' the Bytes of the new disassembled Instruction,
       ; including the very first Byte of the new coming Instruction, if this one is
       ; not a CHUNKEND (we have 'dec eax' up there in such cases):
 L4:     test B$eax ACCESSED | jnz L6>>
-            mov ecx D$TestLastLocation | sub ecx D$UserPeStart | add ecx D$RoutingMap
+            Mov ecx D$TestLastLocation | sub ecx D$UserPeStart | add ecx D$RoutingMap
 
-L4:         or B$eax ACCESSED | mov D$NewAccessedLocations &TRUE
-            mov ebx eax | sub ebx D$RoutingMap | add ebx D$SectionsMap
+L4:         or B$eax ACCESSED | Mov D$NewAccessedLocations &TRUE
+            Mov ebx eax | sub ebx D$RoutingMap | add ebx D$SectionsMap
             .If B$ebx = 0
-                mov B$ebx CODEFLAG
+                Mov B$ebx CODEFLAG
             .Else_If B$ebx <> CODEFLAG
-                mov al B$ebx, B$EncountedFlag al
-                mov D$DisFailureType 7 | mov B$DisFailure &TRUE | ret
+                Mov al B$ebx, B$EncountedFlag al
+                Mov D$DisFailureType 7 | Mov B$DisFailure &TRUE | ret
             .End_If
             sub ebx D$SectionsMap | add ebx D$SizesMap
             If B$ebx <> 0
-                mov D$DisFailureType 8 | mov B$DisFailure &TRUE | ret
+                Mov D$DisFailureType 8 | Mov B$DisFailure &TRUE | ret
             End_If
 
 L5:         dec eax
@@ -4093,24 +4092,24 @@ L5:         dec eax
 L6: If B$DisFlag = DISLINEOVER+DISDONE
         On esi < D$UserPeEnd, jmp L0<<
     Else_If B$DisFlag = DISFAILED
-        mov D$DisFailureType 9 | mov B$DisFailure &TRUE | ret
+        Mov D$DisFailureType 9 | Mov B$DisFailure &TRUE | ret
     End_If
 
   ; Adjust the ProgressBar is wanted:
     If esi > D$NextDisBarPos
-        mov eax esi | add eax D$DisBarStep | mov D$NextDisBarPos eax
-        call BarProgress
+        Mov eax esi | add eax D$DisBarStep | Mov D$NextDisBarPos eax
+        Call BarProgress
     End_If
 
   ; Cases of B$DisFlag = DISDONE only (Prefixes, ...):
     On esi < D$UserPeEnd, jmp L1<<
 
   ; Loop it all until no more new accessed Code Chunks are found:
-L9: mov D$NextDisBarPos 0
+L9: Mov D$NextDisBarPos 0
     If B$NewAccessedLocations = &TRUE
-        mov edi D$CodeSource, esi D$UserPeStart
+        Mov edi D$CodeSource, esi D$UserPeStart
         add esi D$FirstSection
-        mov D$NewAccessedLocations &FALSE, D$LastCodeRef 0 | jmp L0<<
+        Mov D$NewAccessedLocations &FALSE, D$LastCodeRef 0 | jmp L0<<
     End_If
 ret
 ____________________________________________________________________________________________
@@ -4118,34 +4117,34 @@ ________________________________________________________________________________
 [ZeroedEnd: ?    NextDisTITLE: ?   StartOfDataChunks: ?]
 
 DisassembleAndWrite:
-    mov B$NonAccessedByteWritten &FALSE, B$LabelWritten &FALSE, D$ZeroedEnd 0
-    mov esi D$UserPeStart, D$TestLastLineLocation 0
+    Mov B$NonAccessedByteWritten &FALSE, B$LabelWritten &FALSE, D$ZeroedEnd 0
+    Mov esi D$UserPeStart, D$TestLastLineLocation 0
 
     NextDisLine
 
-L0: mov B$DisFlag 0, D$SegmentOverride 0, B$AddressSizeOverride 0
-    mov B$OperandSizeOverride 0, W$DisSizeMarker 'D$'
-    mov B$DisCodeDisplacement &FALSE, B$EscapePrefix &FALSE
-    mov B$CALLInstruction &FALSE, B$LeaInstruction &FALSE, B$LabelWritten &FALSE
-    mov D$LastCodeRef 0
+L0: Mov B$DisFlag 0, D$SegmentOverride 0, B$AddressSizeOverride 0
+    Mov B$OperandSizeOverride 0, W$DisSizeMarker 'D$'
+    Mov B$DisCodeDisplacement &FALSE, B$EscapePrefix &FALSE
+    Mov B$CALLInstruction &FALSE, B$LeaInstruction &FALSE, B$LabelWritten &FALSE
+    Mov D$LastCodeRef 0
 
-    mov D$Prefixes 0
+    Mov D$Prefixes 0
 
-    On edi > D$NextDisTITLE, call WriteDisTITLE
+    On edi > D$NextDisTITLE, Call WriteDisTITLE
 
   ; Parse only CODEFLAGed Chunks:
-L1: mov eax esi | sub eax D$UserPestart | add eax D$SectionsMap
+L1: Mov eax esi | sub eax D$UserPestart | add eax D$SectionsMap
 
     If B$eax = DATAFLAG
-        call WriteOneDataChunksAsFound eax | On esi >= D$UserPeEnd, jmp L9>>
+        Call WriteOneDataChunksAsFound eax | On esi >= D$UserPeEnd, jmp L9>>
         jmp L1<
 
     Else_If B$eax = VIRTUALFLAG
-        call WriteOneDataChunksAsFound eax | On esi >= D$UserPeEnd, jmp L9>>
+        Call WriteOneDataChunksAsFound eax | On esi >= D$UserPeEnd, jmp L9>>
         jmp L1<
 
     Else
-        mov D$StartOfDataChunks 0
+        Mov D$StartOfDataChunks 0
 
     End_If
 
@@ -4153,41 +4152,41 @@ L1: mov eax esi | sub eax D$UserPestart | add eax D$SectionsMap
         inc esi | On esi = D$UserPeEnd, jmp L9>>
             jmp L1<<
 
-L2: mov ebx esi | sub ebx D$UserPeStart | add ebx D$RoutingMap
+L2: Mov ebx esi | sub ebx D$UserPeStart | add ebx D$RoutingMap
 
     Test B$ebx EVOCATED | jz L3>
         push ebx
-            call WriteDisCodeLabel
+            Call WriteDisCodeLabel
         pop ebx
-        mov B$edi CR, B$edi+1 LF, D$edi+2 '    ' | add edi 6
+        Mov B$edi CR, B$edi+1 LF, D$edi+2 '    ' | add edi 6
 
       ; Just to force non ACCESSED DB here:
-        mov B$NonAccessedByteWritten &FALSE, B$LabelWritten &TRUE
+        Mov B$NonAccessedByteWritten &FALSE, B$LabelWritten &TRUE
 
 L3: test B$ebx ACCESSED | jnz L3>
         .If B$NonAccessedByteWritten = &FALSE
             If B$LabelWritten = &FALSE
                 push ebx
-                    call WriteDisCodeLabel | NextDisLine
+                    Call WriteDisCodeLabel | NextDisLine
                 pop ebx
             End_If
             push ebx
-                call WriteDBandData
+                Call WriteDBandData
             pop ebx
             cmp B$ItWasAlignment &TRUE | je L0<<
             cmp B$NonAccessedByteWritten &FALSE | je L4>
         .End_If
-        mov B$edi-2 ';' | jmp L4>
+        Mov B$edi-2 ';' | jmp L4>
 
-L3: mov B$NonAccessedByteWritten &FALSE
+L3: Mov B$NonAccessedByteWritten &FALSE
 
-L4: mov D$StartOfDisLine esi, D$AlignedComment edi | add D$AlignedComment 32
+L4: Mov D$StartOfDisLine esi, D$AlignedComment edi | add D$AlignedComment 32
 
     movzx eax B$esi | inc esi
     push esi
-        call D$DisOp1+eax*4
+        Call D$DisOp1+eax*4
             While B$DisFlag = DISDONE
-                movzx eax B$esi | inc esi | call D$DisOp1+eax*4
+                movzx eax B$esi | inc esi | Call D$DisOp1+eax*4
             End_While
         End_If
     pop ebx
@@ -4195,11 +4194,11 @@ L4: mov D$StartOfDisLine esi, D$AlignedComment edi | add D$AlignedComment 32
   ; Was a real NODE eaten by the Decoding? If yes, go back and re-parse:
   ; Should be no more used since the implementation of upper 'DisAlignedToData':
     While ebx < esi
-        mov eax ebx | sub eax D$UserPeStart | add eax D$RoutingMap
+        Mov eax ebx | sub eax D$UserPeStart | add eax D$RoutingMap
         Test B$eax NODE | jz L4>
-            call BadDecode | mov esi ebx
+            Call BadDecode | Mov esi ebx
             push esi
-                call WriteDisCodeLabel | NextDisLine
+                Call WriteDisCodeLabel | NextDisLine
             pop esi
             jmp L0<<
 L4:     inc ebx
@@ -4207,12 +4206,12 @@ L4:     inc ebx
 
   ; Adjust the ProgressBar is wanted:
     If esi > D$NextDisBarPos
-        mov eax esi | add eax D$DisBarStep | mov D$NextDisBarPos eax
-        call BarProgress
+        Mov eax esi | add eax D$DisBarStep | Mov D$NextDisBarPos eax
+        Call BarProgress
     End_If
 
     If B$DisFlag = DISLINEOVER+DISDONE
-        On B$WithCommentedHexa = &TRUE, call CommentHexa
+        On B$WithCommentedHexa = &TRUE, Call CommentHexa
         NextDisLine
 
     Else_If B$DisFlag = DISDONE
@@ -4220,18 +4219,18 @@ L4:     inc ebx
 
     Else_If B$DisFlag = DISFAILED
         push esi, eax
-            mov esi D$StartOfDisLine
-            call WriteDisCodeLabel
+            Mov esi D$StartOfDisLine
+            Call WriteDisCodeLabel
         pop eax, esi
-        mov D$edi ' DB ' | add edi 4
-        call LoadedOpToHexa | stosw
+        Mov D$edi ' DB ' | add edi 4
+        Call LoadedOpToHexa | stosw
             NextDisLine
     End_If
 
     On esi < D$UserPeEnd, jmp L0<<
 
 L9: If D$ZeroedEnd <> 0
-        mov edi D$ZeroedEnd, D$edi 0
+        Mov edi D$ZeroedEnd, D$edi 0
     End_If
 ret
 ____________________________________________________________________________________________
@@ -4239,18 +4238,18 @@ ________________________________________________________________________________
 [RegisterClassStructure: 'Data0403060' 0, 0, 0, 0
  LastRegisterClass: 0   ClassEx: 0]
 
-; Searching downward for "call 'USER32.RegisterClassA'" (or ClassExA):
+; Searching downward for "Call 'USER32.RegisterClassA'" (or ClassExA):
 
 SearchRegisterClass:
-    mov esi D$LastRegisterClass, D$ClassEx 0
+    Mov esi D$LastRegisterClass, D$ClassEx 0
   ; 'ClassEx' is for Searching by Structure (Ex >>> one more dWord first for Size).
     While esi < D$SourceEnd
         ...If D$esi = 'Regi'
             ..If D$esi+4 = 'ster'
                 .If D$esi-13 = 'call'
                     If D$esi+8 = 'Clas'
-                        On W$esi+13 = 'Ex', mov D$ClassEx 4
-                        mov D$LastRegisterClass esi | add D$LastRegisterClass 12 | jmp L9>
+                        On W$esi+13 = 'Ex', Mov D$ClassEx 4
+                        Mov D$LastRegisterClass esi | add D$LastRegisterClass 12 | jmp L9>
                     End_If
                 .End_If
             ..End_If
@@ -4258,7 +4257,7 @@ SearchRegisterClass:
         inc esi
     End_While
 
-    mov D$LastRegisterClass 0
+    Mov D$LastRegisterClass 0
 
 L9: ret
 ____________________________________________________________________________________________
@@ -4275,11 +4274,11 @@ SearchUpperCodeToMainWindowProc: ret
   ; Upper Instruction was not "push Dataxxx".
   ; Example: push esp >>> try to find some upper 'Code0405060' (very rude...):
 
-    mov esi D$LastRegisterClass
+    Mov esi D$LastRegisterClass
 
     While B$esi <> CR | dec esi | End_While
 
-    mov ecx 0,  edx 1000 | On B$WithCommentedHexa = &TRUE, mov edx 3000
+    Mov ecx 0,  edx 1000 | On B$WithCommentedHexa = &TRUE, Mov edx 3000
 
 L0: .While esi > D$CodeSource
         ..If D$esi = 'Code'
@@ -4289,19 +4288,19 @@ L0: .While esi > D$CodeSource
             On D$esi-4 = 'jmp ', jmp L9>
 
           ; Don't confuse with a Code Label Declaration:
-            mov eax esi
+            Mov eax esi
             While B$esi <> ':'
 L1:             inc esi
                 .If B$esi <= ' '
                   ; Is the mainWindowProc candidate first Instruction "push ebp"?
-                    call IsThisPushEbp
+                    Call IsThisPushEbp
                     If B$ThisIsEbp = &TRUE
-                        mov D$CodeToMainWindowProc eax | jmp L9>>
+                        Mov D$CodeToMainWindowProc eax | jmp L9>>
                     End_If
                 .End_If
             End_While
 
-L2:         mov esi eax
+L2:         Mov esi eax
         ..End_If
 
 L3:     dec esi | inc ecx | cmp ecx edx | ja L9>
@@ -4313,14 +4312,14 @@ L9: ret
 [ThisIsEbp: ?]
 
 IsThisPushEbp:
-    mov B$ThisIsEbp &FALSE
+    Mov B$ThisIsEbp &FALSE
     pushad
       ; eax points to the 'Codexxxx' (// esi is on the Byte after).
-        add eax 4 | mov edi D$EndOfDisData
+        add eax 4 | Mov edi D$EndOfDisData
 
         .While edi < D$SourceEnd
             ...If D$edi = 'Code'
-                add edi 4 | mov esi eax, ecx 10
+                add edi 4 | Mov esi eax, ecx 10
                 repe cmpsb
                 cmp B$edi-1 ':' | jne L2>
                 cmp B$esi-1 ' ' | ja L2>
@@ -4328,7 +4327,7 @@ IsThisPushEbp:
                     While B$edi <= ' ' | inc edi | End_While
                     .If D$edi = 'push'
                         If D$edi+4 = ' ebp'
-                            mov B$ThisIsEbp &TRUE | jmp L9>
+                            Mov B$ThisIsEbp &TRUE | jmp L9>
                         End_If
                     .End_If
                     jmp L9>>
@@ -4345,23 +4344,23 @@ ret
 
 
 SearchMainWindowProc:
-    mov esi D$EndOfDisData, ebx 4, D$LastRegisterClass esi, D$CodeToMainWindowProc 0,
+    Mov esi D$EndOfDisData, ebx 4, D$LastRegisterClass esi, D$CodeToMainWindowProc 0,
             D$MainWindowProcIsThere 0
 
-L0: call SearchRegisterClass
+L0: Call SearchRegisterClass
 
     ...If D$LastRegisterClass <> 0
-      ; A "call 'USER32.RegisterClass...'" has been found.
+      ; A "Call 'USER32.RegisterClass...'" has been found.
       ; Is MainWindowProc written directely in the RegisterClass Structure?
-        call GetMainWindowProcFromStructure
+        Call GetMainWindowProcFromStructure
 
       ; If not, search for any possible 'Code0405060' in the close upper Lines:
         If D$CodeToMainWindowProc = 0
-            call SearchUpperCodeToMainWindowProc
+            Call SearchUpperCodeToMainWindowProc
         End_If
 
         If D$CodeToMainWindowProc <> 0
-            call WriteMainWindowProc
+            Call WriteMainWindowProc
         Else
             jmp L0<
         End_If
@@ -4377,20 +4376,20 @@ ________________________________________________________________________________
 [WM_COMMAND_Found: ?]
 
 MenuIdsSubstitutions:
-    mov B$WM_COMMAND_Found &FALSE
+    Mov B$WM_COMMAND_Found &FALSE
 
     On D$MainWindowProcIsThere = 0, ret
 
   ; 'PrepareDisMenuIDs' Builds the Table of Menu Ids Declaration ready to insert:
-    call PrepareDisMenuIDs | call WriteDisMenuIDs
+    Call PrepareDisMenuIDs | Call WriteDisMenuIDs
 
-    mov esi D$MainWindowProcIsThere, edx D$SourceEnd
+    Mov esi D$MainWindowProcIsThere, edx D$SourceEnd
 
     .While esi < edx
           ; Search for a &WM_COMMAND:
 ;;
 ; Example:
-  mov eax D$ebp+0C
+  Mov eax D$ebp+0C
     cmp eax 01
     
 Code040112B: N9: | jne K0>  ; Code04011A4
@@ -4415,7 +4414,7 @@ L1:             .If B$esi-1 <= ' '
                     ; Example:
                     ; Code0401230: I0:
                     ;     cmp eax 0111 | jne Code04018D1
-                        mov ebx esi | sub ebx 2
+                        Mov ebx esi | sub ebx 2
                         While B$ebx > ' ' | dec ebx | End_While
                         On D$ebx-3 = 'cmp ', jmp L5>>
                     End_If
@@ -4446,21 +4445,21 @@ L1:                 While D$esi <> eax
         inc esi
     .End_While
 
-    call 'USER32.MessageBoxA' D$hwnd, {"WM_COMMAND not found:
+    Call 'USER32.MessageBoxA' D$H.MainWindow, {"WM_COMMAND not found:
   
 You cannot edit the Resources Main Menu, if any   ", 0},
                                 {'Menu IDs substitution failure', 0}, 0
     ret
 
 L5: push esi
-        call SaveOriginalMenuIDs
+        Call SaveOriginalMenuIDs
     pop esi
 
-    call DisReplace esi, 4, {'&WM_COMMAND', 0}, 11
+    Call DisReplace esi, 4, {'&WM_COMMAND', 0}, 11
 
-    call SubstituteMainMenuIDs
+    Call SubstituteMainMenuIDs
 
-    mov B$WM_COMMAND_Found &TRUE
+    Mov B$WM_COMMAND_Found &TRUE
 L9: ret
 
 ;;
@@ -4473,7 +4472,7 @@ SubstituteMainMenuIDs:
   esi yet pointing the &WM_COMMAND Location:
   
   cmp eax &WM_COMMAND | jne Code04018D1
-      mov eax D$ebp+010
+      Mov eax D$ebp+010
       cmp ax 0M00_Calculate_
     
 Code0401242: J8: | jne Code040142B
@@ -4482,14 +4481,14 @@ Code0401242: J8: | jne Code040142B
     While W$esi <> ' j' | inc esi | End_While | inc esi
 
     If D$esi <> 'jne '
-        call 'USER32.MessageBoxA' D$hwnd, {'Unexpected MainWindowProc Main Menu Messages Cases organisation', 0},
+        Call 'USER32.MessageBoxA' D$H.MainWindow, {'Unexpected MainWindowProc Main Menu Messages Cases organisation', 0},
                                 {'Failure of Main Menu IDs substitutions', 0}, 0
         ret
     End_If
 
   ; Store the end of the Label Name closing the &WM_COMMAND Case in edx ('Text'):
     add esi 9 | While B$esi > ' ' | inc esi | End_While
-    mov edx D$esi-4
+    Mov edx D$esi-4
 
 L0: ..While D$esi <> edx
         inc esi
@@ -4509,7 +4508,7 @@ L1:             While D$esi <> 'cmp '
                 While B$esi > ' ' | inc esi | End_While
 
 A5:             .If W$esi = ' 0'
-                    add esi 2 | mov ebx 0
+                    add esi 2 | Mov ebx 0
                     push esi
 L2:                     lodsb | cmp al ' ' | jbe L2>
                         sub al '0' | On al > 9, sub al 7
@@ -4519,15 +4518,15 @@ L2:                 pop esi
 
                   ; Possible ID in eax. Is it in 'OriginalMenuIDs':
                     If ebx <> 0
-                        mov eax ebx, edi OriginalMenuIDs, ecx 100 | repne scasd
+                        Mov eax ebx, edi OriginalMenuIDs, ecx 100 | repne scasd
                     Else
-                        mov ecx 0
+                        Mov ecx 0
                     End_If
 
                     If ecx > 0
                       ; One Based Indice of Menu ID in ecx (1 is M00_Menu):
                         sub ecx 100 | neg ecx
-                        mov edi DataForClipEquates | inc edi
+                        Mov edi DataForClipEquates | inc edi
 
                         While ecx > 0
 L3:                         inc edi | cmp B$edi ' ' | ja L3<    ; An Equate Name
@@ -4538,14 +4537,14 @@ L3:                         inc edi | cmp B$edi ' ' | jna L3<   ; Spaces
                         End_While
 
                       ; Length of Equate Name in ebx
-                        mov ebx 0
+                        Mov ebx 0
                         While B$edi+ebx > ' ' | inc ebx | End_While
                         On B$edi+ebx-1 = ']', dec ebx
                       ; Length of Original Source Equate Value in ecx
-                        mov ecx 0
+                        Mov ecx 0
                         While B$esi+ecx > ' ' | inc ecx | End_While
 
-                        call DisReplace esi, ecx, edi, ebx
+                        Call DisReplace esi, ecx, edi, ebx
                     End_If
                 .End_If
 
@@ -4557,7 +4556,7 @@ L3:                         inc edi | cmp B$edi ' ' | jna L3<   ; Spaces
                 End_While
 
                 While B$esi > ' ' | inc esi | End_While
-                mov eax D$esi-4
+                Mov eax D$esi-4
 L6:             While D$esi <> eax
                     inc esi | On esi = D$SourceEnd, jmp L9>>
                 End_While
@@ -4579,29 +4578,29 @@ Proc DisReplace:
     Uses esi, edi, ecx
 
         add D$SourceLen 400 | add D$SourceEnd 400
-        mov eax D@InsertLength
+        Mov eax D@InsertLength
 
         .If eax > D@DelLength
-            mov esi D$SourceEnd, edi esi
+            Mov esi D$SourceEnd, edi esi
             add edi D@InsertLength | sub edi D@DelLength
-            mov ecx esi | sub ecx D@SourcePos | std | rep movsb | cld
+            Mov ecx esi | sub ecx D@SourcePos | std | rep movsb | cld
 
-            mov esi D@Insert, edi D@SourcePos, ecx D@InsertLength
+            Mov esi D@Insert, edi D@SourcePos, ecx D@InsertLength
             rep movsb
 
         .Else
-            mov esi D@Insert, edi D@SourcePos, ecx D@InsertLength
+            Mov esi D@Insert, edi D@SourcePos, ecx D@InsertLength
             rep movsb
 
             If eax < D@DelLength
-                mov esi D@SourcePos | add esi D@DelLength
-                mov ecx D$SourceEnd | sub ecx esi
+                Mov esi D@SourcePos | add esi D@DelLength
+                Mov ecx D$SourceEnd | sub ecx esi
                 rep movsb
             End_If
 
         .End_If
 
-        mov eax D@InsertLength | sub eax D@DelLength
+        Mov eax D@InsertLength | sub eax D@DelLength
         sub D$SourceLen 400 | add D$SourceLen eax
         sub D$SourceEnd 400 | add D$SourceEnd eax
 EndP
@@ -4612,19 +4611,19 @@ EndP
 ; We read the original Menu Items IDs yet in the new MenuEx Table:
 
 SaveOriginalMenuIDs: ; Original IDs at +8?   'PrepareDisMenuIDs'  'TurnThisMenuToExType'
-    mov D$MenulistPtr MenuList, esi MenuList        ; (ID / Ptr / Size)
+    Mov D$MenulistPtr MenuList, esi MenuList        ; (ID / Ptr / Size)
 
-    mov eax D$esi, ecx D$esi+8, esi D$esi+4
-    inc eax | mov D$FirstMenuId eax
+    Mov eax D$esi, ecx D$esi+8, esi D$esi+4
+    inc eax | Mov D$FirstMenuId eax
 
-    mov D$EndOfDisMenu esi | add D$EndOfDisMenu ecx
+    Mov D$EndOfDisMenu esi | add D$EndOfDisMenu ecx
 
   ; Header:  'uMenu'
     add esi 8
 
-    mov edi OriginalMenuIDs, eax 0, ecx 100 | rep stosd
+    Mov edi OriginalMenuIDs, eax 0, ecx 100 | rep stosd
 
-    mov edi OriginalMenuIDs, edx 0, D$SeparatorsNumber 0, D$PopUpNumber 0
+    Mov edi OriginalMenuIDs, edx 0, D$SeparatorsNumber 0, D$PopUpNumber 0
 
 L0: movzx eax W$esi+8
     .If eax = 0             ; No ID >>> Separator or PopUp
@@ -4644,7 +4643,7 @@ L1:     add esi 14
             While W$esi <> 0 | add esi 2 | End_While | add esi 2
             Align_On 4, esi
         Else
-L9:         mov D$edi 0 | ret
+L9:         Mov D$edi 0 | ret
         End_If
 
     .End_If
@@ -4660,9 +4659,9 @@ ________________________________________________________________________________
 
 MenuChars:
         push ecx, edi
-            mov ecx D$MenuCharsLen, edi MenuCharsSet, B$MenuChar &FALSE
+            Mov ecx D$MenuCharsLen, edi MenuCharsSet, B$MenuChar &FALSE
             repne scasb | jnz L9>
-                mov B$MenuChar &TRUE
+                Mov B$MenuChar &TRUE
 L9:     pop edi, ecx
 ret
 ____________________________________________________________________________________________
@@ -4671,58 +4670,58 @@ ________________________________________________________________________________
 
 PrepareDisMenuIDs:  ; 'ClipEquates', 'ForceMenusExType', 'TurnThisMenuToExType'
 
-    mov D$MenulistPtr MenuList, esi MenuList        ; (ID / Ptr / Size)
+    Mov D$MenulistPtr MenuList, esi MenuList        ; (ID / Ptr / Size)
 
   ; Temporary consider the first Menu, the Main one.
   ; Add Checking for the Main Window Menu later.
-    mov eax D$esi, ecx D$esi+8, esi D$esi+4
+    Mov eax D$esi, ecx D$esi+8, esi D$esi+4
 
   ; Kill the High Bit saying that this is a Pointer to the name of a Named ID, if any:
     and eax 0FFFF
 
-    inc eax | mov D$FirstMenuId eax
+    inc eax | Mov D$FirstMenuId eax
 
-    mov D$EndOfDisMenu esi | add D$EndOfDisMenu ecx
+    Mov D$EndOfDisMenu esi | add D$EndOfDisMenu ecx
 
-    mov D$MenuEquateIndice 'M00_'
-    mov eax D$MenulistPtr | sub eax MenuList
-    mov ebx 12, edx 0 | div ebx                 ; > indice = 0, 1, 2, ...
-    mov ebx 10, edx 0 | div ebx
+    Mov D$MenuEquateIndice 'M00_'
+    Mov eax D$MenulistPtr | sub eax MenuList
+    Mov ebx 12, edx 0 | div ebx                 ; > indice = 0, 1, 2, ...
+    Mov ebx 10, edx 0 | div ebx
     add B$MenuEquateIndice+2 dl
-    mov edx 0 | div ebx
+    Mov edx 0 | div ebx
     add B$MenuEquateIndice+1 dl
 
   ; Header:  'uMenu'
-    add esi 8 | mov D$MenuReadPointer esi
+    add esi 8 | Mov D$MenuReadPointer esi
 
-    mov edi DataForClipEquates, edx 0, D$SeparatorsNumber 0, D$PopUpNumber 0
-    mov al '[' | stosb | mov D$StartOfItemsLine edi
+    Mov edi DataForClipEquates, edx 0, D$SeparatorsNumber 0, D$PopUpNumber 0
+    Mov al '[' | stosb | Mov D$StartOfItemsLine edi
 
-    mov eax D$MenuEquateIndice | stosd | mov eax 'Menu' | stosd
+    Mov eax D$MenuEquateIndice | stosd | Mov eax 'Menu' | stosd
 
-    dec D$FirstMenuID | call WriteClipIDvalue | inc D$FirstMenuID
+    dec D$FirstMenuID | Call WriteClipIDvalue | inc D$FirstMenuID
 
 L0: push edi
-        mov edi OneItemString, esi D$MenuReadPointer
+        Mov edi OneItemString, esi D$MenuReadPointer
         add esi 14
-        movzx eax W$esi-2 | and eax (not &MF_END) | mov D$DisItemFlag eax
+        movzx eax W$esi-2 | and eax (not &MF_END) | Mov D$DisItemFlag eax
 
         .If esi < D$EndOfDisMenu
             While W$esi <> 0
 L1:             lodsw
-                    call MenuChars | On B$MenuChar = &FALSE, mov al '_'
+                    Call MenuChars | On B$MenuChar = &FALSE, Mov al '_'
                 stosb
             End_While | lodsw | stosb
             On D$DisItemFlag <> 0, add esi 4
-            Align_On 4, esi | mov D$MenuReadPointer esi
+            Align_On 4, esi | Mov D$MenuReadPointer esi
         .Else
             pop edi
             While B$edi-1 <= ' ' | dec edi | End_While
-            mov al ']' | stosb | mov al 0 | stosb | ret
+            Mov al ']' | stosb | Mov al 0 | stosb | ret
         .End_If
     pop edi
 
-    mov esi OneItemString
+    Mov esi OneItemString
 
     While B$esi = tab
         inc esi
@@ -4735,7 +4734,7 @@ L1:             lodsw
         inc D$PopUpNumber | inc edx | jmp L0<<
     End_If
 
-T0: mov esi OneItemString, eax D$MenuEquateIndice | stosd
+T0: Mov esi OneItemString, eax D$MenuEquateIndice | stosd
     While B$esi <= ' '
         lodsb                                           ; strip leading tabs and spaces
     End_While
@@ -4743,13 +4742,13 @@ T0: mov esi OneItemString, eax D$MenuEquateIndice | stosd
 L3: lodsb | cmp al 0 | je L4>
         On al = '&', jmp L3<                            ; do not write '&'
         On al = tab  , jmp L4>                          ; do not write 'hot keys'
-        On al < '0', mov al '_'
+        On al < '0', Mov al '_'
         If al = '_'
             On B$edi-1 = '_', jmp L3<                   ; only one '_' at a time
         End_If
         stosb | jmp L3<                                 ; name
 
-L4: call WriteClipIDvalue | inc edx | jmp L0<<
+L4: Call WriteClipIDvalue | inc edx | jmp L0<<
 
 ____________________________________________________________________________________________
 
@@ -4758,41 +4757,41 @@ ________________________________________________________________________________
 ; Writes the [Menus IDs] into the Source.
 
 WriteDisMenuIDs:
-    mov ecx D$SourceLen | add ecx 1_000_000
+    Mov ecx D$SourceLen | add ecx 1_000_000
     VirtualAlloc TempoSource ecx
 
   ; Make a temporary Copy:
-    mov esi D$CodeSource, edi D$TempoSource, ecx D$SourceLen
+    Mov esi D$CodeSource, edi D$TempoSource, ecx D$SourceLen
 
     Align_On 4 ecx | shr ecx 2 | rep movsd
 
   ; Now Tempo >>> Original Source (simpler than killing all associated Variables)
   ; (edx = How many added Bytes):
 
-    mov edi D$MainWindowProcIsThere, esi edi
+    Mov edi D$MainWindowProcIsThere, esi edi
     sub esi D$CodeSource | add esi D$TempoSource
 
   ; Start the Insert after a CRLF:
     While W$edi-2 <> CRLF | dec edi | dec esi | End_While
 
   ; Kep track of the original Source Last Chunk length:
-    mov ebx D$SourceEnd | sub ebx edi
+    Mov ebx D$SourceEnd | sub ebx edi
 
-    mov al '_'
-    mov ecx DRAWLINELEN | rep stosb | mov W$edi CRLF | add edi 2
-    mov ecx DRAWLINELEN | rep stosb | mov D$edi CRLF2 | add edi 4
+    Mov al '_'
+    Mov ecx DRAWLINELEN | rep stosb | Mov W$edi CRLF | add edi 2
+    Mov ecx DRAWLINELEN | rep stosb | Mov D$edi CRLF2 | add edi 4
 
-    mov edx (DRAWLINELEN+2+DRAWLINELEN+4)
+    Mov edx (DRAWLINELEN+2+DRAWLINELEN+4)
 
     push esi
-        mov esi DataForClipEquates
+        Mov esi DataForClipEquates
 
         While B$esi <> 0 | movsb | inc edx | End_While
     pop esi
 
-    mov D$edi CRLF2 | add edi 4 | add edx 4
+    Mov D$edi CRLF2 | add edi 4 | add edx 4
 
-    mov ecx ebx | add ecx 400       ; Security CRLFs Tail
+    Mov ecx ebx | add ecx 400       ; Security CRLFs Tail
     rep movsb
 
     add D$SourceLen edx | add D$SourceEnd edx
@@ -4802,25 +4801,25 @@ ret
 
 ____________________________________________________________________________________________
 ;;
-  See if the Line before "call 'USER32.RegisterClassA'" is some "push Dataxxxx", 
+  See if the Line before "Call 'USER32.RegisterClassA'" is some "push Dataxxxx", 
   wich would provide the Structure Pointer:
 ;;
 GetMainWindowProcFromStructure:
-    mov esi D$LastRegisterClass
+    Mov esi D$LastRegisterClass
     While B$esi <> CR | dec esi | End_While
     While B$esi <> LF | dec esi | End_While
     While B$esi <= ' ' | inc esi | End_While
     On D$esi <> 'push', jmp L9>>
 
-    add esi 5 | mov edi RegisterClassStructure
-    While B$esi > ' ' | movsb | End_While | mov B$edi 0
+    add esi 5 | Mov edi RegisterClassStructure
+    While B$esi > ' ' | movsb | End_While | Mov B$edi 0
 ;;
   At this point we know the Structure is declared in Data or ?Data. It may either be
   filled at write time or at run time. See first if the second (or third) Member of
   the Structure provides directely the 'MainWindowProc' label:
 ;;
-    mov esi RegisterClassStructure, edi D$CodeSource
-    call FirstDisSearch | On edi >= D$SourceEnd, jmp L9>>
+    Mov esi RegisterClassStructure, edi D$CodeSource
+    Call FirstDisSearch | On edi >= D$SourceEnd, jmp L9>>
     inc edi
     If D$ClassEx = 4
         While B$edi <> ':' | inc edi | End_While | inc edi
@@ -4828,7 +4827,7 @@ GetMainWindowProcFromStructure:
     While B$edi <> ':' | inc edi | End_While
     add edi 2
     If D$edi = 'Code'
-        mov D$CodeToMainWindowProc edi | jmp L9>>
+        Mov D$CodeToMainWindowProc edi | jmp L9>>
     End_If
 ;;
   The MainWindowProc Label was not written directely in the Structure. It is filled
@@ -4838,28 +4837,28 @@ GetMainWindowProcFromStructure:
   of this Label evocation in Code:
 ;;
     .If B$ClassEx = 4
-        mov esi RegisterClassStructure | While B$esi+1 <> 0 | inc esi | End_While
-L0:     mov al B$esi | sub al '0' | On al > 9, sub al 7 | add al B$ClassEx
+        Mov esi RegisterClassStructure | While B$esi+1 <> 0 | inc esi | End_While
+L0:     Mov al B$esi | sub al '0' | On al > 9, sub al 7 | add al B$ClassEx
         If al > 0F
-            mov bl al | sub al 010 | mov bl 1
+            Mov bl al | sub al 010 | Mov bl 1
         Else
-            mov bl 0
+            Mov bl 0
         End_If
-        add al '0' | On al > '9', add al 7 | mov B$esi al
+        add al '0' | On al > '9', add al 7 | Mov B$esi al
         If bl > 0
             dec esi | jmp L0<
         End_If
     .End_If
 
-    mov esi RegisterClassStructure, edi D$EndOfDisData | call FirstDisSearch
+    Mov esi RegisterClassStructure, edi D$EndOfDisData | Call FirstDisSearch
 
     .While edi < D$SourceEnd
         While B$edi <> ' ' | inc edi | End_While | inc edi
 
         If D$edi = 'Code'
-            mov D$CodeToMainWindowProc edi | ret
+            Mov D$CodeToMainWindowProc edi | ret
         Else
-            mov esi RegisterClassStructure | call NextDisSearch
+            Mov esi RegisterClassStructure | Call NextDisSearch
         End_If
     .End_While
 L9: ret
@@ -4868,26 +4867,26 @@ L9: ret
 [MainWindowProcIsThere: ?]
 
 WriteMainWindowProc:
-L1: mov esi D$CodeToMainWindowProc, edi RegisterClassStructure
+L1: Mov esi D$CodeToMainWindowProc, edi RegisterClassStructure
     While B$esi > ' ' | movsb | End_While
     On B$edi-1 = ']', dec edi
-    mov B$edi ':', B$edi+1 0
+    Mov B$edi ':', B$edi+1 0
 
-    mov esi RegisterClassStructure, edi D$EndOfDisData | call FirstDisSearch
+    Mov esi RegisterClassStructure, edi D$EndOfDisData | Call FirstDisSearch
 
-    mov D$MainWindowProcIsThere edi
+    Mov D$MainWindowProcIsThere edi
 
   ; Make room for CRLF 'MainWindowProc: ':
     push edi
-        mov esi D$SourceEnd | add esi 400
-        mov ecx esi | sub ecx edi | inc ecx
-        mov edi esi | add edi 18
+        Mov esi D$SourceEnd | add esi 400
+        Mov ecx esi | sub ecx edi | inc ecx
+        Mov edi esi | add edi 18
         std | rep movsb | cld
         add D$SourceEnd 18 | add D$SourceLen 18
     pop edi
 
-    mov W$edi CRLF | add edi 2
-    mov D$edi 'Main', D$edi+4 'Wind', D$edi+8 'owPr', D$edi+12  'oc: '
+    Mov W$edi CRLF | add edi 2
+    Mov D$edi 'Main', D$edi+4 'Wind', D$edi+8 'owPr', D$edi+12  'oc: '
 
 L9: ret
 ____________________________________________________________________________________________
@@ -4896,21 +4895,21 @@ ________________________________________________________________________________
 
 WriteDisTITLE:  ; 'DisTitle'
     push esi
-        mov esi DisTitle
+        Mov esi DisTitle
         .If B$DisTitle+13 = '9'
-            mov B$DisTitle+13 'A'
+            Mov B$DisTitle+13 'A'
         .Else
             inc B$DisTitle+13
             If B$DisTitle+13 = '['
-                mov B$DisTitle+13 '0' | inc B$DisTitle+12
+                Mov B$DisTitle+13 '0' | inc B$DisTitle+12
             End_If
         .End_If
         While B$esi <> 0 | movsb | End_While
     pop esi
 
-    mov eax edi | add eax (TITLE_MAX/2) | mov D$NextDisTITLE eax
+    Mov eax edi | add eax (TITLE_MAX/2) | Mov D$NextDisTITLE eax
 
-    mov D$edi '    ' | add edi 4
+    Mov D$edi '    ' | add edi 4
 ret
 
 ____________________________________________________________________________________________
@@ -4950,28 +4949,28 @@ ________________________________________________________________________________
 ;;
 
 CheckPointersInData:
-    mov esi D$SectionsMap, edx D$EndOfSectionsMap | sub edx 4
+    Mov esi D$SectionsMap, edx D$EndOfSectionsMap | sub edx 4
     add esi D$FirstSection
 
     .While esi < edx
-    mov eax esi | sub eax D$SectionsMap | add eax D$DisImageBase
+    Mov eax esi | sub eax D$SectionsMap | add eax D$DisImageBase
 
         ...If B$esi =  DATAFLAG
           ; We read the dWord Values of each Data in the PE:
-L1:         mov eax esi | sub eax D$SectionsMap | add eax D$UserPeStart
-            mov eax D$eax | sub eax D$DisImageBase | add eax D$UserPeStart
+L1:         Mov eax esi | sub eax D$SectionsMap | add eax D$UserPeStart
+            Mov eax D$eax | sub eax D$DisImageBase | add eax D$UserPeStart
           ; Is it pointing somewhere inside the PE?
             ..If eax > D$UserPeStart
                 .If eax < D$UserPeEnd
-                    call IsItTruePointer | cmp eax 0 | je L5>>
+                    Call IsItTruePointer | cmp eax 0 | je L5>>
 
                   ; Yes, say it in SizesMap:
-                    mov ebx esi | sub ebx D$SectionsMap | add ebx D$SizesMap
+                    Mov ebx esi | sub ebx D$SectionsMap | add ebx D$SizesMap
                     or B$ebx POINTER
 
                   ; Yes > read the Pointer Section Flag:
                     sub eax D$UserPeStart | add eax D$SectionsMap
-                    mov bl B$eax | and bl CODEFLAG+DATAFLAG+VIRTUALFLAG | jz L5>>
+                    Mov bl B$eax | and bl CODEFLAG+DATAFLAG+VIRTUALFLAG | jz L5>>
                         sub eax D$SectionsMap | add eax D$RoutingMap
                         or B$eax EVOCATED
                         If bl = CODEFLAG
@@ -4979,12 +4978,12 @@ L1:         mov eax esi | sub eax D$SectionsMap | add eax D$UserPeStart
                               ; Write the Code Routing Map:
                                 or B$eax NODE+ACCESSED+LABEL
                               ; Write the Data Routing Map:
-L2:                             mov eax esi |  sub eax D$SectionsMap | add eax D$RoutingMap
+L2:                             Mov eax esi |  sub eax D$SectionsMap | add eax D$RoutingMap
                                 or B$eax INDIRECT
                                 add esi 3       ; +1 down here > next dWord.
                         Else_If bl = DATAFLAG
                           ; Do not destroy a valid Data Type: ???
-                            mov eax esi |  sub eax D$SectionsMap | add eax D$SizesMap
+                            Mov eax esi |  sub eax D$SectionsMap | add eax D$SizesMap
                           ;  cmp D$eax 0 | jne L5>
                             sub eax D$SizesMap | add eax D$RoutingMap
 ;;
@@ -5004,18 +5003,18 @@ L5:     inc esi
   ; Now, force a dummy Label to be outputed at the first and after last INDIRECT
   ; references (first and last of a flow of pointers, in order to ease the Data
   ; interpretations output, and group in one single set, flows of Pointers).
-    mov esi D$SectionsMap | add esi D$FirstSection
+    Mov esi D$SectionsMap | add esi D$FirstSection
 
     .While esi < edx
         If B$esi = DATAFLAG
-            mov eax esi | sub eax D$SectionsMap | add eax D$RoutingMap
+            Mov eax esi | sub eax D$SectionsMap | add eax D$RoutingMap
 
             test B$eax INDIRECT | jz L5>
-                mov D$eax LABEL+EVOCATED+INDIRECT  ; 04A
+                Mov D$eax LABEL+EVOCATED+INDIRECT  ; 04A
 L1:             add eax 4 | add esi 4
                 test B$eax INDIRECT | jz L3>
                 test B$eax LABEL+EVOCATED | jnz L3>
-                    mov D$eax 0 | jmp L1<
+                    Mov D$eax 0 | jmp L1<
 L2:
 L3:             or B$eax LABEL+EVOCATED
 
@@ -5036,40 +5035,40 @@ ________________________________________________________________________________
 ;;
 
 SplitBigData:
-    mov esi D$SectionsMap, edx D$EndOfSectionsMap | add esi D$FirstSection
-    mov ebx esi | sub ebx D$SectionsMap | add ebx D$RoutingMap
+    Mov esi D$SectionsMap, edx D$EndOfSectionsMap | add esi D$FirstSection
+    Mov ebx esi | sub ebx D$SectionsMap | add ebx D$RoutingMap
 
     .While esi < edx
-        mov al B$esi
+        Mov al B$esi
 
         .If al = DATAFLAG
-            mov ecx 4
+            Mov ecx 4
             While B$esi = al
                 inc esi | inc ecx | inc ebx | On esi >= edx, ret
                 test B$ebx EVOCATED+LABEL | jz L1>
-                    mov ecx 4
+                    Mov ecx 4
 
 L1:             If ecx >= LOOPDATAMAX
-                    mov ebx esi | sub ebx D$SectionsMap | add ebx D$RoutingMap
+                    Mov ebx esi | sub ebx D$SectionsMap | add ebx D$RoutingMap
                     or B$ebx LABEL+EVOCATED
                     ;sub ebx D$RoutingMap | add ebx D$DisImageBase | hexprint ebx
-                    mov ecx 4
+                    Mov ecx 4
                 End_If
             End_While
 
         .Else_If al = VIRTUALFLAG
-            mov ecx 4
+            Mov ecx 4
             While B$esi = al
 
                 inc esi | inc ecx | inc ebx | On esi >= edx, ret
                 test B$ebx LABEL | jz L1>
-                    mov ecx 4
+                    Mov ecx 4
 
 L1:             If ecx >= LOOPVDATAMAX
-                    mov ebx esi | sub ebx D$SectionsMap | add ebx D$RoutingMap
+                    Mov ebx esi | sub ebx D$SectionsMap | add ebx D$RoutingMap
                     or B$ebx LABEL+EVOCATED
                     ;sub ebx D$RoutingMap | add ebx D$DisImageBase | hexprint ebx
-                    mov ecx 4
+                    Mov ecx 4
                 End_If
             End_While
 
@@ -5082,44 +5081,44 @@ ret
 ____________________________________________________________________________________________
 
 FlagsCoherency:
-    mov esi D$SizesMap, edx D$EndOfSizesMap | add esi D$FirstSection
-    mov ebx esi | sub ebx D$SizesMap | add ebx D$RoutingMap
+    Mov esi D$SizesMap, edx D$EndOfSizesMap | add esi D$FirstSection
+    Mov ebx esi | sub ebx D$SizesMap | add ebx D$RoutingMap
 
     .While esi < edx
-        mov eax ebx | sub eax D$RoutingMap | add eax D$SectionsMap
+        Mov eax ebx | sub eax D$RoutingMap | add eax D$SectionsMap
         On B$eax <> DATAFLAG, jmp L2>>
 
         test B$esi FP4 | jz L1>
-            ;call IsLabelInsideFp 4
+            ;Call IsLabelInsideFp 4
             and D$ebx 0FF
-            mov D$esi 0, B$esi FP4 | jmp L2>>
+            Mov D$esi 0, B$esi FP4 | jmp L2>>
             ;mov B$esi FP4 | jmp L2>>
 
 L1:     test B$esi FP8 | jz L1>
-            ;call IsLabelInsideFp 8
-            and D$ebx 0FF | mov D$ebx+4 0
-            mov D$esi 0, D$esi+4 0, B$esi FP8 | jmp L2>>
+            ;Call IsLabelInsideFp 8
+            and D$ebx 0FF | Mov D$ebx+4 0
+            Mov D$esi 0, D$esi+4 0, B$esi FP8 | jmp L2>>
 
             ;mov B$esi FP8 | jmp L2>>
 
 L1:     test B$esi FP10 | jz L1>
-            ;call IsLabelInsideFp 10
-            and D$ebx 0FF | mov D$ebx+4 0, W$ebx+8 0
-            mov D$esi 0, D$esi+4 0, W$esi+8 0, B$esi FP10 | jmp L2>
+            ;Call IsLabelInsideFp 10
+            and D$ebx 0FF | Mov D$ebx+4 0, W$ebx+8 0
+            Mov D$esi 0, D$esi+4 0, W$esi+8 0, B$esi FP10 | jmp L2>
            ;mov B$esi FP10 | jmp L2>>
 
 L1:     test B$esi DWORD | jz L1>
-            ;call IsDwordString | On eax = &TRUE, jmp L2>
+            ;Call IsDwordString | On eax = &TRUE, jmp L2>
             ;and D$ebx 0FF
-            mov B$esi DWORD | jmp L2>
+            Mov B$esi DWORD | jmp L2>
 
 L1:     Test B$esi STRINGS | jz L1>
-            mov al POINTER+DWORD | not al | and B$esi al
+            Mov al POINTER+DWORD | not al | and B$esi al
 
 L1:     Test B$esi POINTER | jz L2>
 ;;
             push ebx
-                sub ebx D$RoutingMap | add ebx D$UserPeStart | mov eax D$ebx
+                sub ebx D$RoutingMap | add ebx D$UserPeStart | Mov eax D$ebx
                 sub eax D$DisImageBase | add eax D$SectionsMap
                 On eax < D$SectionsMap, jmp L4>
                 On eax > D$EndOfSectionsMap, jmp L4>
@@ -5153,13 +5152,13 @@ ret
 Proc IsLabelInsideFp:
     Argument @N
 
-        mov B$LabelInsideFP &FALSE
+        Mov B$LabelInsideFP &FALSE
 
       ; ebx >>> RoutingMap, first FP Byte.
-        mov eax 1, ecx D@N | dec ecx
+        Mov eax 1, ecx D@N | dec ecx
 
 L0:     test B$ebx+eax LABEL | jz L1>
-            mov B$LabelInsideFP &TRUE
+            Mov B$LabelInsideFP &TRUE
 L1:     inc eax | loop L0<
 
         On B$LabelInsideFP = &TRUE, or B$ebx+eax LABEL
@@ -5168,8 +5167,8 @@ ________________________________________________________________________________
 
 Proc FlagsCleaner:
     pushad
-        mov ecx D$SectionsMap, edx D$EndOfSectionsMap, esi D$RoutingMap, ebx D$SizesMap
-        mov eax (not (INSTRUCTION+NODE+EXPORTNODE+PUSH_EBP))
+        Mov ecx D$SectionsMap, edx D$EndOfSectionsMap, esi D$RoutingMap, ebx D$SizesMap
+        Mov eax (not (INSTRUCTION+NODE+EXPORTNODE+PUSH_EBP))
 
         .While ecx < edx
           ; Data cannot assume any of these Routing Flags:
@@ -5184,7 +5183,7 @@ Proc FlagsCleaner:
 
           ; Code cannot assume any Size Flag:
             Else_If B$ecx = CODEFLAG
-                mov B$ebx 0
+                Mov B$ebx 0
 
             End_If
 
@@ -5203,45 +5202,45 @@ ________________________________________________________________________________
 IsItTruePointer:
     pushad
       ; esi points to 'SectionsMap'. Read the real PE Value:
-        sub esi D$SectionsMap | add esi D$UserPeStart | mov eax D$esi
+        sub esi D$SectionsMap | add esi D$UserPeStart | Mov eax D$esi
 
       ; Do not break any Label:
-        mov ebx esi | sub ebx D$UserPeStart | add ebx D$RoutingMap
+        Mov ebx esi | sub ebx D$UserPeStart | add ebx D$RoutingMap
         test D$ebx ((LABEL shl 24)+(LABEL shl 16)+(LABEL shl 8)) | jz L1>
             and B$ebx (not INDIRECT)
-            popad | mov eax 0 | ret
+            popad | Mov eax 0 | ret
 
       ; First, do not break any identifed Data Type:
-L1:     mov ebx esi | sub ebx D$UserPeStart | add ebx D$SizesMap
+L1:     Mov ebx esi | sub ebx D$UserPeStart | add ebx D$SizesMap
         If D$ebx <> 0
-            popad | mov eax 0 | ret
+            popad | Mov eax 0 | ret
         End_If
 
 
 
       ; Do not break an Evocated Ascii String:
-        mov edx D$TruthAsciiTable
-        mov eax 0 | add esi 3 | add ebx 3 | mov al B$esi
+        Mov edx D$TruthAsciiTable
+        Mov eax 0 | add esi 3 | add ebx 3 | Mov al B$esi
 
         push esi, ebx
             While B$edx+eax = GOODASCII
                 If B$ebx <> 0
                     test B$ebx BYTE | jz L2>
                         or B$ebx STRINGS
-                        pop ebx, esi | popad | mov eax 0 | ret
+                        pop ebx, esi | popad | Mov eax 0 | ret
                 End_If
 
                 dec esi | dec ebx
-                mov al B$esi
+                Mov al B$esi
             End_While
 
 L2:     pop ebx, esi
 
       ; Do not break an Evocated Unicode String:
-        mov al B$esi
+        Mov al B$esi
         If al = 0
             dec esi | dec ebx
-            mov al B$esi
+            Mov al B$esi
         End_If
 
         While B$edx+eax = GOODASCII
@@ -5250,14 +5249,14 @@ L2:     pop ebx, esi
             If B$ebx <> 0
                 test B$ebx WORD | jz L2>
                     or B$ebx STRINGS
-                    popad | mov eax 0 | ret
+                    popad | Mov eax 0 | ret
             End_If
 
             sub esi 2
             dec ebx | cmp B$ebx 0 | jne L2>
             dec ebx
 
-            mov al B$esi
+            Mov al B$esi
         End_While
 
 L2:
@@ -5268,11 +5267,11 @@ ________________________________________________________________________________
 
 CheckZeroEndedString:
     push edx
-        mov ebx eax | sub ebx D$SectionsMap | add ebx D$UserPeStart
-        mov edx D$TruthAsciiTable, eax 0
+        Mov ebx eax | sub ebx D$SectionsMap | add ebx D$UserPeStart
+        Mov edx D$TruthAsciiTable, eax 0
 
         push ebx
-L0:         mov al B$ebx | inc ebx
+L0:         Mov al B$ebx | inc ebx
             cmp B$edx+eax GOODASCII | je L0<
         pop eax
 
@@ -5282,7 +5281,7 @@ L0:         mov al B$ebx | inc ebx
           ; Valid String found: Flag the String:
             sub eax D$UserPeStart | add eax D$RoutingMap | or B$eax STRINGS+BYTE
           ; FLAG the Pointer:
-            mov eax esi | sub eax D$SectionsMap | add eax D$RoutingMap | or B$eax POINTER
+            Mov eax esi | sub eax D$SectionsMap | add eax D$RoutingMap | or B$eax POINTER
 
             add esi 3
 L9: pop edx
@@ -5291,21 +5290,21 @@ ________________________________________________________________________________
 
 WriteLabelFromEsi:
     On esi = D$LastWrittenLabel, ret
-    mov ebx esi | sub ebx D$UserPeStart | add ebx D$DisImageBase
+    Mov ebx esi | sub ebx D$UserPeStart | add ebx D$DisImageBase
             push ebx
-            mov ax 0A0D | stosw
-            mov D$edi 'Code' | add edi 4
+            Mov ax 0A0D | stosw
+            Mov D$edi 'Code' | add edi 4
             push 0-1
-L0:         mov eax ebx | shr ebx 4 | and eax 0F
+L0:         Mov eax ebx | shr ebx 4 | and eax 0F
             add eax '0' | On eax > '9', add eax 7
             push eax
             cmp ebx 0 | ja L0<
-            mov B$edi '0' | inc edi
+            Mov B$edi '0' | inc edi
 L0:         pop eax | cmp eax 0-1 | je L9>
-            mov B$edi al | inc edi | jmp L0<
-L9:         mov W$edi ': ' | add edi 2
+            Mov B$edi al | inc edi | jmp L0<
+L9:         Mov W$edi ': ' | add edi 2
         pop eax
-        call WriteLocalLabelFromEax
+        Call WriteLocalLabelFromEax
 ret
 
 
@@ -5313,45 +5312,45 @@ ret
 
 ; In: ebx (> eax) > RoutingMap // esi > CodeTest // edi > CodeSource
 WriteDBandData:
-    mov B$ItWasAlignment &FALSE
+    Mov B$ItWasAlignment &FALSE
   ; May be Valid Code, but not ACCESSED:
 ; (This first part should no more be of any use).
     test B$ebx PUSH_EBP | jz L1>
         push ebx
 L0:         inc ebx | cmp ebx D$EndOfRoutingMap | je L0>
             test B$ebx ACCESSED | jnz L0>
-                mov eax ebx | sub eax D$RoutingMap | add eax D$UserPestart
+                Mov eax ebx | sub eax D$RoutingMap | add eax D$UserPestart
                 .If B$eax = 05D                 ; pop ebp
                     If B$eax+1 = 0C3            ; ret
                         inc ebx
-                        mov ecx ebx | pop ebx | call ReFlagNonaccessed ; | jmp L9>>
-                        mov B$NonAccessedByteWritten &FALSE, B$LabelWritten &FALSE | ret
+                        Mov ecx ebx | pop ebx | Call ReFlagNonaccessed ; | jmp L9>>
+                        Mov B$NonAccessedByteWritten &FALSE, B$LabelWritten &FALSE | ret
                     Else_If B$eax+1 = 0C2   ; ret n (n dWord aligned)
                         Test B$eax+2 00_11 | jnz L0>
                             add ebx 3
-                            mov ecx ebx | pop ebx | call ReFlagNonaccessed ; | jmp L9>>
-                            mov B$NonAccessedByteWritten &FALSE, B$LabelWritten &FALSE | ret
+                            Mov ecx ebx | pop ebx | Call ReFlagNonaccessed ; | jmp L9>>
+                            Mov B$NonAccessedByteWritten &FALSE, B$LabelWritten &FALSE | ret
                     End_If
                 .End_If
             jmp L0<
 L0:     pop ebx
 
   ; May be a 'NOP' or 'Int 3', or... , Alignment:
-L1: call AlignRecognition
+L1: Call AlignRecognition
 
     If B$ItWasAlignment = &TRUE
-        mov D$edi 'Alig', W$edi+4 'n ' | add edi 6
+        Mov D$edi 'Alig', W$edi+4 'n ' | add edi 6
         move D$edi D$Alignement | add edi 4
-        mov D$StartOfDisLine esi | add esi D$Alignementlenght
-        On B$WithCommentedHexa = &TRUE, call CommentHexa
+        Mov D$StartOfDisLine esi | add esi D$Alignementlenght
+        On B$WithCommentedHexa = &TRUE, Call CommentHexa
         NextDisLine | jmp L9>>
     End_If
 
-L2: mov eax ebx
+L2: Mov eax ebx
     push esi
        ; If B$LabelWritten = &FALSE
             push eax
-                call WriteLabelFromEsi | NextDisLine
+                Call WriteLabelFromEsi | NextDisLine
             pop eax
        ; End_If
 ;;
@@ -5360,32 +5359,32 @@ mov eax esi | sub eax D$UserPeStart | add eax D$DisImageBase
 On eax = 0401354, int3
 popad
 ;;
-        call WriteDisCodeLabel
+        Call WriteDisCodeLabel
       ; Durty: Need a version without the CRLFs:
         While B$edi <> ':' | dec edi | End_While | inc edi
-        mov B$edi ' ' | inc edi
+        Mov B$edi ' ' | inc edi
 
-        mov edx eax, ecx 0
-        mov D$edi 'DB  ' | add edi 3
+        Mov edx eax, ecx 0
+        Mov D$edi 'DB  ' | add edi 3
 
 L0:     test B$edx ACCESSED | jnz L5>  ; 01F
         test B$edx EVOCATED | jz L3>
             pushad
-                call WriteDisCodeLabel
+                Call WriteDisCodeLabel
             popad
-           ; mov B$edi CR, B$edi+1 LF, D$edi+2 '    ' | add edi 6
+           ; Mov B$edi CR, B$edi+1 LF, D$edi+2 '    ' | add edi 6
 
 L3:         movzx eax B$esi | inc esi
             If eax < 010
-                mov D$edi '    ' | inc edi
+                Mov D$edi '    ' | inc edi
                 On eax = 0, inc edi
             End_If
-            call WriteEax
-            mov B$edi ' ' | inc edi | inc ecx
+            Call WriteEax
+            Mov B$edi ' ' | inc edi | inc ecx
             If ecx = 20
-                mov B$edi-1 ','
-                NextDisLine | mov D$edi '    ' | add edi 3
-                mov ecx 0
+                Mov B$edi-1 ','
+                NextDisLine | Mov D$edi '    ' | add edi 3
+                Mov ecx 0
             End_If
             inc edx
             If edx < D$EndOfRoutingMap
@@ -5395,18 +5394,18 @@ L3:         movzx eax B$esi | inc esi
 
 L5:     On D$edi-3 = '    ', sub edi 3 ; <--- Probably stupid.
         NextDisLine
-        mov ecx esi
+        Mov ecx esi
     pop esi
 
     sub ecx esi | jecxz L9>
-    mov ebx esi | call WriteCommentedAsciiData | NextDisLine
+    Mov ebx esi | Call WriteCommentedAsciiData | NextDisLine
     .If B$ItWasReallyAscii = &FALSE
         If ecx > 3
-            call WritedCommentedWordsData | NextDisLine
+            Call WritedCommentedWordsData | NextDisLine
         End_If
     .End_If
 
-L9: mov B$NonAccessedByteWritten &TRUE, B$LabelWritten &FALSE
+L9: Mov B$NonAccessedByteWritten &TRUE, B$LabelWritten &FALSE
 ret
 
 ;;
@@ -5419,8 +5418,8 @@ ret
  LeaEcx: 08D 049 0                  ; lea ecx D$ecx+00 >>> 8D 49 00 
  LeaEbx: 08D 09B 0 0 0 0            ; lea ebx D$ebx+00 >>> 8D 9B 00 00 00 00
  AddEax0: 05 0 0 0 0                ; add eax 0 >>> 05 00 00 00 00 
- MovEdiEdi: 08B 0FF                 ; mov edi edi >>> 8B FF 
- MovEsiEsi: 089 0F6                 ; mov esi esi >>> 89 F6 
+ MovEdiEdi: 08B 0FF                 ; Mov edi edi >>> 8B FF 
+ MovEsiEsi: 089 0F6                 ; Mov esi esi >>> 89 F6 
  ]
 
 [AlignTable: AlignNop 1, AlignInt3 1, AddB_eaxAl 2, LeaEspLong 7, LeaEsp 4, LeaEcx 3,
@@ -5431,45 +5430,45 @@ ret
 [AlignTablePointer: ?    Alignement: ?   Alignementlenght: ?]
 
 AlignRecognition:
-    mov B$ItWasAlignment &FALSE
+    Mov B$ItWasAlignment &FALSE
     pushad
       ; esi > UserPe
       ; ebx > RoutingMap . How many Bytes?
-        mov ecx 0
+        Mov ecx 0
 L0:     test B$ebx ACCESSED | jnz L1>
             inc ecx | inc ebx | cmp ebx D$EndOfRoutingMap | jb L0<
 
 L1:   ; ecx = How many Bytes unaccessed.
         On ecx = 0, jmp L9>>
 
-        mov D$Alignementlenght ecx
+        Mov D$Alignementlenght ecx
 
         .If ecx > 0100
             jmp L9>>
         .Else_If ecx > 080
             test ebx 00_1111_1111 | jnz L9>>
-                mov D$Alignement '0100'
+                Mov D$Alignement '0100'
         .Else_If ecx > 040
             test ebx 00_0111_1111 | jnz L9>>
-                mov D$Alignement '080 '
+                Mov D$Alignement '080 '
         .Else_If ecx > 020
             test ebx 00_0011_1111 | jnz L9>>
-                mov D$Alignement '040 '
+                Mov D$Alignement '040 '
         .Else_If ecx > 010
             test ebx 00_0001_1111 | jnz L9>>
-                mov D$Alignement '020 '
+                Mov D$Alignement '020 '
         .Else_If ecx > 08
             test ebx 00_1111 | jnz L9>>
-                mov D$Alignement '010 '
+                Mov D$Alignement '010 '
         .Else_If ecx > 04
             test ebx 00_0111 | jnz L9>>
-                mov D$Alignement '08  '
+                Mov D$Alignement '08  '
         .Else  ; _If ecx > 0
             test ebx 00_0011 | jnz L9>>
-                mov D$Alignement '04  '
+                Mov D$Alignement '04  '
         .End_If
 
-        mov B$ItWasAlignment &TRUE
+        Mov B$ItWasAlignment &TRUE
 L9: popad
 ret
 
@@ -5538,23 +5537,23 @@ L0:     lodsb
                 cmp ecx 0 | ja L0<<
             End_If
 
-        ..Else_If al = 089              ; mov esi esi >>> 89 F6
+        ..Else_If al = 089              ; Mov esi esi >>> 89 F6
             If B$esi = 0F6
                 inc esi | sub ecx 2 | jc L9>>
                 cmp ecx 0 | ja L0<<
             End_If
 
-        ..Else_If al = 08B              ; mov edi edi >>> 8B FF
+        ..Else_If al = 08B              ; Mov edi edi >>> 8B FF
             If B$esi = 0FF
                 inc esi | sub ecx 2 | jc L9>>
                 cmp ecx 0 | ja L0<<
-            Else_If B$esi = 0C0         ; mov eax eax >>> 8B C0
+            Else_If B$esi = 0C0         ; Mov eax eax >>> 8B C0
                 inc esi | sub ecx 2 | jc L9>>
                 cmp ecx 0 | ja L0<<
             End_If
         ..End_If
 
-L5:     On ecx = 0, mov B$ItWasAlignment &TRUE
+L5:     On ecx = 0, Mov B$ItWasAlignment &TRUE
 
 L9: popad
 ret
@@ -5570,18 +5569,18 @@ ________________________________________________________________________________
 ;;
 
 OldFlagTrueDataSection:
-    mov ecx D$DisNumberOfSections
+    Mov ecx D$DisNumberOfSections
 
     GetPeHeader SectionsHeaders
 
-L0: mov ebx D$eax+SECTION_FLAG
+L0: Mov ebx D$eax+SECTION_FLAG
     test ebx &IMAGE_SCN_MEM_EXECUTE | jnz L1>>
 
     ...If ebx = &IMAGE_SCN_CNT_INITIALIZED_DATA__&IMAGE_SCN_MEM_READ__&IMAGE_SCN_MEM_WRITE
         push eax, ecx
-            mov esi D$eax+SECTION_RVA | add esi D$SectionsMap
-            mov edx D$eax+SECTION_RVASIZE
-            mov ebx D$eax+SECTION_FILESIZE
+            Mov esi D$eax+SECTION_RVA | add esi D$SectionsMap
+            Mov edx D$eax+SECTION_RVASIZE
+            Mov ebx D$eax+SECTION_FILESIZE
             On edx < ebx, xchg edx ebx
             add edx esi | add ebx esi
 
@@ -5590,7 +5589,7 @@ L0: mov ebx D$eax+SECTION_FLAG
                     .If B$esi <> 0
                         If B$esi <> DATAFLAG
                         ;sub esi D$SectionsMap | add esi D$DisImageBase |
-                       ; mov D$MapingBase esi | map
+                       ; Mov D$MapingBase esi | map
                            ; sub esi D$SectionsMap | add esi D$DisImageBase
                            ; hexprint esi
 
@@ -5612,10 +5611,10 @@ L5:         pop edx, ebx, esi
 
           ; If here, this Section holds nothing but data. Flag it all:
             While esi < ebx
-                mov B$esi DATAFLAG | inc esi
+                Mov B$esi DATAFLAG | inc esi
             End_While
             While esi < edx
-                mov B$esi VIRTUALFLAG | inc esi
+                Mov B$esi VIRTUALFLAG | inc esi
             End_While
 
         pop ecx, eax
@@ -5627,17 +5626,17 @@ ret
 
 
 FlagTrueDataSection:
-    mov ecx D$DisNumberOfSections
+    Mov ecx D$DisNumberOfSections
 
     GetPeHeader SectionsHeaders
 
-L0: mov ebx D$eax+SECTION_FLAG | test ebx &IMAGE_SCN_MEM_EXECUTE | jnz L8>>
+L0: Mov ebx D$eax+SECTION_FLAG | test ebx &IMAGE_SCN_MEM_EXECUTE | jnz L8>>
 
     ...If ebx = &IMAGE_SCN_CNT_INITIALIZED_DATA__&IMAGE_SCN_MEM_READ__&IMAGE_SCN_MEM_WRITE
         push eax, ecx
-            mov esi D$eax+SECTION_RVA | add esi D$SectionsMap
-            mov edx D$eax+SECTION_RVASIZE
-            mov ebx D$eax+SECTION_FILESIZE
+            Mov esi D$eax+SECTION_RVA | add esi D$SectionsMap
+            Mov edx D$eax+SECTION_RVASIZE
+            Mov ebx D$eax+SECTION_FILESIZE
             On edx < ebx, xchg edx ebx
             add edx esi | add ebx esi
 
@@ -5661,10 +5660,10 @@ L5:         pop edx, ebx, esi
 
           ; If here, this Section holds nothing but data. Flag it all:
             While esi < ebx
-                mov B$esi DATAFLAG | inc esi
+                Mov B$esi DATAFLAG | inc esi
             End_While
             While esi < edx
-                mov B$esi VIRTUALFLAG | inc esi
+                Mov B$esi VIRTUALFLAG | inc esi
             End_While
 
         pop ecx, eax
@@ -5677,7 +5676,7 @@ ret
 ____________________________________________________________________________________________
 
 DisAlign:
-    mov esi D$SectionsMap | add esi D$FirstSection
+    Mov esi D$SectionsMap | add esi D$FirstSection
 
     .While esi < D$EndOfSectionsMap
         ...If B$esi = CODEFLAG
@@ -5686,24 +5685,24 @@ DisAlign:
             End_While
 
             ..If B$esi = 0
-                mov ebx esi | inc esi
+                Mov ebx esi | inc esi
                 While B$esi = 0
-                    mov eax esi | sub eax D$SectionsMap | add eax D$RoutingMap
+                    Mov eax esi | sub eax D$SectionsMap | add eax D$RoutingMap
                     test B$eax LABEL | jnz L9>
                     inc esi | On esi >= D$EndOfSectionsMap, ret
                 End_While
 
                 .If B$esi = CODEFLAG
-                    mov edx esi, ecx edx | sub ecx ebx
+                    Mov edx esi, ecx edx | sub ecx ebx
 
                     push esi, ebx
                         sub ebx D$SectionsMap | add ebx D$RoutingMap
-                        mov esi ebx | sub esi D$RoutingMap | add esi D$UserPeStart
-                        call AlignRecognition
+                        Mov esi ebx | sub esi D$RoutingMap | add esi D$UserPeStart
+                        Call AlignRecognition
                     pop ebx, esi
 
                     If B$ItWasAlignment = &TRUE
-                        mov edi ebx, al CODEFLAG | rep stosb
+                        Mov edi ebx, al CODEFLAG | rep stosb
                     End_If
 
                 .End_If
@@ -5721,14 +5720,14 @@ ________________________________________________________________________________
 
 ReFlagNonaccessed:
     push esi, ecx
-        mov esi NoDirectString, ecx D$NoDirectStringLength
+        Mov esi NoDirectString, ecx D$NoDirectStringLength
         sub edi 2 | rep movsb
     pop ecx, esi
 
   ; ebx > Start // ecx > End of Chunk that may be forced to ACCESSED, once the
   ; 'NoDirectString' Comment has been written:
     push edi
-        sub ecx ebx | inc ecx | mov edi ebx, al ACCESSED | rep stosb
+        sub ecx ebx | inc ecx | Mov edi ebx, al ACCESSED | rep stosb
     pop edi
 ret
 
@@ -5738,22 +5737,22 @@ ________________________________________________________________________________
 [Prefixes: ?]
 
 CommentHexa:
-   ; mov al CR | stosb | mov al LF | stosb ;;; for Ret and ret n:
+   ; Mov al CR | stosb | Mov al LF | stosb ;;; for Ret and ret n:
     If W$edi-2 = 0A0D
         sub edi 2
     End_If
-    mov al ' ' | While edi < D$AlignedComment | stosb | End_While
+    Mov al ' ' | While edi < D$AlignedComment | stosb | End_While
 
-    mov D$edi '  ; ' | add edi 4
+    Mov D$edi '  ; ' | add edi 4
 
-    mov ebx D$StartOfDisLine ;| sub ebx D$Prefixes |
-    mov D$Prefixes 0
+    Mov ebx D$StartOfDisLine ;| sub ebx D$Prefixes |
+    Mov D$Prefixes 0
 
     While ebx < esi
         movzx eax B$ebx | inc ebx
-        mov ecx eax | shr ecx 4
+        Mov ecx eax | shr ecx 4
         and eax 0F | and ecx 0F
-        mov al B$HexaTable+eax, cl B$HexaTable+ecx
+        Mov al B$HexaTable+eax, cl B$HexaTable+ecx
         shl eax 8 | or eax ecx | or eax 020200000 | stosd | dec edi
     End_While
 ret
@@ -5762,16 +5761,16 @@ ________________________________________________________________________________
 
 ; StringsMap jobs
 
-; Example: call GetStringsMap RoutingMap, esi
+; Example: Call GetStringsMap RoutingMap, esi
 
 Proc GetStringsMapSymbol:
     Argument @Map, @Pointer
     Uses esi
 
-        mov eax D@Pointer | sub eax D@Map | shl eax 2 | mov esi D$eax ; Wrong!!!
+        Mov eax D@Pointer | sub eax D@Map | shl eax 2 | Mov esi D$eax ; Wrong!!!
 
         If esi <> 0
-            mov B$edi '_' | inc edi
+            Mov B$edi '_' | inc edi
             While B$esi > ' ' | movsb | End_While
         End_If
 EndP

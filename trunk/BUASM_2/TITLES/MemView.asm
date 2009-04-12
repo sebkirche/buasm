@@ -19,7 +19,7 @@ ________________________________________________________________________________
 [IDC_DISPLAYMEMINFO 40]
 
 ViewRosAsmMems:
-    call 'USER32.DialogBoxParamA' D$hinstance, IDD_VIEWMEMWARNINGMSG, &NULL,
+    Call 'USER32.DialogBoxParamA' D$hinstance, IDD_VIEWMEMWARNINGMSG, &NULL,
                                   MemViewWarning, &NULL
 ret
 
@@ -31,56 +31,56 @@ _______________________________________________________
 ; Tag Dialog 10000
 
 Proc MemViewWarning:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
      pushad
 
 
-    ..If D@Message = &WM_INITDIALOG
+    ..If D@msg = &WM_INITDIALOG
        ; Get the handle of the Static Image:
-        call 'USER32.GetDlgItem' D@Adressee IDC_LIBWARNING_SHOWICON
-        mov D$LibWarningStaticImage eax
-        call 'USER32.LoadBitmapA' D$hInstance, IDB_LIBWARNING_BITMAP
-        mov D$LibScanhIcon eax
+        Call 'USER32.GetDlgItem' D@hwnd IDC_LIBWARNING_SHOWICON
+        Mov D$LibWarningStaticImage eax
+        Call 'USER32.LoadBitmapA' D$hInstance, IDB_LIBWARNING_BITMAP
+        Mov D$LibScanhIcon eax
 
-        call 'USER32.SendMessageA' D$LibWarningStaticImage, &STM_SETIMAGE,
+        Call 'USER32.SendMessageA' D$LibWarningStaticImage, &STM_SETIMAGE,
                                    &IMAGE_BITMAP, D$LibScanhIcon
-        call 'USER32.SendDlgItemMessageA' D@Adressee, IDC_DISPLAYMEMWARNING,
+        Call 'USER32.SendDlgItemMessageA' D@hwnd, IDC_DISPLAYMEMWARNING,
                                           &WM_SETTEXT, 0, DumpMemWarnMsg
-        call 'USER32.SendDlgItemMessageA' D@Adressee IDC_DISPLAYMEMWARNING,
+        Call 'USER32.SendDlgItemMessageA' D@hwnd IDC_DISPLAYMEMWARNING,
                                           &WM_GETTEXT, 0, DumpMemWarnMsg
 
-        call DisplayMemData D@Adressee
-        call DisplayMemInfo D@Adressee
+        Call DisplayMemData D@hwnd
+        Call DisplayMemInfo D@hwnd
 
-    ..Else_If D@Message = &WM_CLOSE
-        call ClearBuffer MemTableView (MEMTABLESIZE*5*4)
-       ; call ClearBuffer MemTable (MEMTABLESIZE*4)
-        call ClearBuffer DumpMemWarnMsg 256
-        call 'User32.EndDialog' D@Adressee &NULL
+    ..Else_If D@msg = &WM_CLOSE
+        Call ClearBuffer MemTableView (MEMTABLESIZE*5*4)
+       ; Call ClearBuffer MemTable (MEMTABLESIZE*4)
+        Call ClearBuffer DumpMemWarnMsg 256
+        Call 'User32.EndDialog' D@hwnd &NULL
 
-    ..Else_If D@Message = &WM_COMMAND
+    ..Else_If D@msg = &WM_COMMAND
         .If D@wParam = &IDOK
-            call ClearBuffer MemTableView (MEMTABLESIZE*5*4)
-          ;  call ClearBuffer MemTable (MEMTABLESIZE*4)
-            call ClearBuffer DumpMemWarnMsg 256
-            call 'User32.EndDialog' D@Adressee &NULL
+            Call ClearBuffer MemTableView (MEMTABLESIZE*5*4)
+          ;  Call ClearBuffer MemTable (MEMTABLESIZE*4)
+            Call ClearBuffer DumpMemWarnMsg 256
+            Call 'User32.EndDialog' D@hwnd &NULL
         .Else_If D@wParam = IDC_DUMPMEM
-            mov eax MemTableEnd
+            Mov eax MemTableEnd
             sub eax MemTable
-            call DumpMemory D@Adressee, MemTable, eax
+            Call DumpMemory D@hwnd, MemTable, eax
         .Else_If D@wParam = IDC_SAVEMEMREPORT
-            call SaveMemoryReport D@Adressee, MemTableView, D$MemReportInfoSize
+            Call SaveMemoryReport D@hwnd, MemTableView, D$MemReportInfoSize
         .End_If
 
     ..Else
 
-       popad | mov eax &FALSE | ExitP
+       popad | Mov eax &FALSE | ExitP
 
     ..End_If
 
     popad
-    mov eax &TRUE
+    Mov eax &TRUE
 EndP
 
 _______________________________________________________
@@ -112,21 +112,21 @@ _______________________________________________________
  DumpMem.lpTemplateName: D$ 0]
 
 Proc DumpMemory:
-    Arguments @Adressee, @File, @FileSize
+    Arguments @hwnd, @File, @FileSize
     pushad
 
-    mov D$ChoosenLibFile 0
+    Mov D$ChoosenLibFile 0
     move D$DumpMem.lpstrFile MemSaveFilter
-    move D$DumpMem.hwndOwner D@Adressee
+    move D$DumpMem.hwndOwner D@hwnd
     move D$DumpMem.hInstance D$hInstance
     move D$DumpMem.lpstrFilter MemSaveFileFilter
     move D$DumpMem.lpstrTitle DumpMemFileTitle
-    call 'Comdlg32.GetSaveFileNameA' DumpMem
+    Call 'Comdlg32.GetSaveFileNameA' DumpMem
 
     ..If eax <> 0
         .If D$ChoosenLibFile <> 0
-            call ForceExtension MemSaveFilter, '.mem'
-            call SaveLibFile, D@File, D@FileSize, MemSaveFilter
+            Call ForceExtension MemSaveFilter, '.mem'
+            Call SaveLibFile, D@File, D@FileSize, MemSaveFilter
         .End_If
     ..End_If
     popad
@@ -138,21 +138,21 @@ _______________________________________________________
 [SaveReportMemFileTitle: B$ 'Save Report memory as...', 0]
 
 Proc SaveMemoryReport:
-    Arguments @Adressee, @File, @FileSize
+    Arguments @hwnd, @File, @FileSize
     pushad
 
-    mov D$ChoosenLibFile 0
+    Mov D$ChoosenLibFile 0
     move D$DumpMem.lpstrFile MemSaveFilter
-    move D$DumpMem.hwndOwner D@Adressee
+    move D$DumpMem.hwndOwner D@hwnd
     move D$DumpMem.hInstance D$hInstance
     move D$DumpMem.lpstrFilter MemSaveReportFilter
     move D$DumpMem.lpstrTitle SaveReportMemFileTitle
-    call 'Comdlg32.GetSaveFileNameA' DumpMem
+    Call 'Comdlg32.GetSaveFileNameA' DumpMem
 
     ..If eax <> 0
         .If D$ChoosenLibFile <> 0
-            call ForceExtension MemSaveFilter, '.txt'
-            call SaveLibFile, D@File, D@FileSize, MemSaveFilter
+            Call ForceExtension MemSaveFilter, '.txt'
+            Call SaveLibFile, D@File, D@FileSize, MemSaveFilter
         .End_If
     ..End_If
     popad
@@ -161,41 +161,41 @@ EndP
 _______________________________________________________
 
 Proc DisplayMemData:
-    Arguments @Adressee
+    Arguments @hwnd
 
     pushad
 
-    mov esi MemTable, edi MemTableView, edx 0
+    Mov esi MemTable, edi MemTableView, edx 0
 
     While esi < MemTableEnd
-        mov eax D$esi
+        Mov eax D$esi
         .If eax > 0
             If eax = D$esi+8
-                mov B$edi 'X' ; Main committed with Reserved Blocks.
+                Mov B$edi 'X' ; Main committed with Reserved Blocks.
             Else
-                mov B$edi 'x' ; Child (small and nested) committed Blocks.
+                Mov B$edi 'x' ; Child (small and nested) committed Blocks.
             End_If
         .Else
-            mov B$edi '_'
+            Mov B$edi '_'
         .End_If
         add esi MEMRECORD | inc edi | inc edx
 
         ; Spaces and CR/LF each 4 / 8 / 32 Chunk.
-        mov eax edx | and eax 00_11
+        Mov eax edx | and eax 00_11
         If eax = 0
-            mov al ' ' | stosb
+            Mov al ' ' | stosb
         End_If
-            mov eax edx | and eax 00_111
+            Mov eax edx | and eax 00_111
         If eax = 0
-            mov eax '    ' | stosd
+            Mov eax '    ' | stosd
         End_If
-            mov eax edx | and eax 00_11111
+            Mov eax edx | and eax 00_11111
         If eax = 0
-            mov al CR | stosb | mov al LF | stosb
+            Mov al CR | stosb | Mov al LF | stosb
         End_If
     End_While
-    mov B$edi 0
-    call 'USER32.SetDlgItemTextA' D@Adressee, IDC_DISPLAYMEMDATA, MemTableView
+    Mov B$edi 0
+    Call 'USER32.SetDlgItemTextA' D@hwnd, IDC_DISPLAYMEMDATA, MemTableView
 
     popad
 EndP
@@ -239,21 +239,21 @@ _______________________________________________________________________________
 [MemReportInfoSize: D$ 0]
 
 Proc DisplayMemInfo:
-    Arguments @Adressee
+    Arguments @hwnd
 
     pushad
 
-    mov esi MemTable, edi MemTableView, edx 0
+    Mov esi MemTable, edi MemTableView, edx 0
 
     push esi | zCopy MemTitleDisplay1 | pop esi
-    mov eax esi
-    call Writeeax
+    Mov eax esi
+    Call Writeeax
     push esi | zCopy MemTitleDisplay2 | pop esi
 
     .While esi < MemTableEnd
-        mov eax D$esi
-        call WriteMemTableOffset esi
-        call WriteMemDwordChunck eax
+        Mov eax D$esi
+        Call WriteMemTableOffset esi
+        Call WriteMemDwordChunck eax
         .If eax > 0
             If eax = D$esi+8
                 push esi | zCopy {" - Commited - Ascii: ", 0} | pop esi
@@ -263,16 +263,16 @@ Proc DisplayMemInfo:
         .Else
             push esi | zCopy {" - Not used - Ascii: ", 0} | pop esi
         .End_If
-        call WriteMemAsciiChunck eax
+        Call WriteMemAsciiChunck eax
         add esi MEMRECORD
-        mov W$edi 0A0D | add edi 2
+        Mov W$edi 0A0D | add edi 2
 
     .End_While
-    mov B$edi 0
-    mov eax edi
+    Mov B$edi 0
+    Mov eax edi
     sub eax MemTableView
-    mov D$MemReportInfoSize eax
-    call 'USER32.SetDlgItemTextA' D@Adressee, IDC_DISPLAYMEMINFO, MemTableView
+    Mov D$MemReportInfoSize eax
+    Call 'USER32.SetDlgItemTextA' D@hwnd, IDC_DISPLAYMEMINFO, MemTableView
 
     popad
 EndP
@@ -282,9 +282,9 @@ Proc WriteMemTableOffset:
     Arguments @Value
     Uses eax, ebx
 
-    mov eax D@Value
-    call Writeeax
-    mov W$edi ': ' | add edi 2
+    Mov eax D@Value
+    Call Writeeax
+    Mov W$edi ': ' | add edi 2
 
 EndP
 
@@ -295,24 +295,24 @@ Proc WriteMemDwordChunck:
     Uses eax, esi, edx, ecx, ebx
 
     lea esi D@Value
-    mov ecx 4
+    Mov ecx 4
     xor eax eax
-    mov edx 0
+    Mov edx 0
     Do
         ; Arrange the Strings to the chars be displayed on the same row one below each other.
         ; Ex.:  09 055   0 014
         ;      055  01 0FF 075
 
         If B$esi = 0
-            mov W$edi '  ' | add edi 2
+            Mov W$edi '  ' | add edi 2
         Else_If B$esi <= 0F
-            mov B$edi ' ' | inc edi
+            Mov B$edi ' ' | inc edi
         End_If
 
         lodsb
-        call writeeax
+        Call writeeax
         xor eax eax
-        mov B$edi ' ' | inc edi
+        Mov B$edi ' ' | inc edi
         dec ecx
     Loop_Until ecx = 0
 
@@ -324,22 +324,22 @@ Proc WriteMemAsciiChunck:
     Uses eax, esi, edx, ecx, ebx
 
     lea esi D@Value
-    mov ecx 4
+    Mov ecx 4
     xor eax eax
-    mov edx 0
+    Mov edx 0
 
     .Do
         lodsb
         If eax < ' '
-            mov B$edi '.' | inc edi
+            Mov B$edi '.' | inc edi
         Else_If eax >= 127
-            mov B$edi '.' | inc edi
+            Mov B$edi '.' | inc edi
         Else
             stosb
         End_If
 
         xor eax eax
-        mov B$edi ' ' | inc edi
+        Mov B$edi ' ' | inc edi
         dec ecx
     .Loop_Until ecx = 0
 

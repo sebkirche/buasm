@@ -6,7 +6,7 @@ ________________________________________________________________________________
   Special case of VB compiled PEs. The first Instructions of a VB PE are:
   
   > push Vb6Header
-  > call 'MSVBVM50.064'
+  > Call 'MSVBVM50.064'
   
   The VB Header is a Structure that is saved in Code, and that discribes the
   organisation of the File:
@@ -145,47 +145,47 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 MarkVbPe:
-    mov eax D$DisEntryPoint | sub eax D$DisImageBase | add eax D$UserPeStart
-    mov esi D$eax+1 | sub esi D$DisImageBase | add esi D$UserPeStart
+    Mov eax D$DisEntryPoint | sub eax D$DisImageBase | add eax D$UserPeStart
+    Mov esi D$eax+1 | sub esi D$DisImageBase | add esi D$UserPeStart
     On D$esi <> 'VB5!', ret
 
   ; Mark the VB Header Flags in the Tables. First, the 'SectionsMap' to Data:
-    mov edi esi | sub edi D$UserPeStart | add edi D$SectionsMap
-    mov ecx VB_HEADER_LEN, al DATAFLAG | rep stosb
+    Mov edi esi | sub edi D$UserPeStart | add edi D$SectionsMap
+    Mov ecx VB_HEADER_LEN, al DATAFLAG | rep stosb
 
   ; Routing Map according 'VB6HeaderRouting':
-    mov eax esi | sub eax D$UserPeStart | add eax D$RoutingMap
-    mov B$eax ACCESSED+LABEL
+    Mov eax esi | sub eax D$UserPeStart | add eax D$RoutingMap
+    Mov B$eax ACCESSED+LABEL
     push esi
-        mov edi eax,  esi VBrouting, ecx VB_HEADER_LEN | rep movsb
+        Mov edi eax,  esi VBrouting, ecx VB_HEADER_LEN | rep movsb
     pop esi
 
   ; Sizes Map according 'VB6HeaderSizes':
     sub eax D$RoutingMap | add eax D$SizesMap
     push esi
-        mov edi eax,  esi VBSizes, ecx VB_HEADER_LEN | rep movsb
+        Mov edi eax,  esi VBSizes, ecx VB_HEADER_LEN | rep movsb
     pop esi
 
     add esi VBdis.SubMainDis
 
-    mov eax D$esi | sub eax D$DisImageBase | add eax D$SectionsMap
+    Mov eax D$esi | sub eax D$DisImageBase | add eax D$SectionsMap
     If eax < D$SectionsMap
         ; nop (There are VB PEs without any direct Code inside).
     Else_If eax < D$EndOfSectionsMap
-        mov B$eax CODEFLAG
+        Mov B$eax CODEFLAG
         sub eax D$SectionsMap | add eax D$RoutingMap
-        mov B$eax INSTRUCTION+EVOCATED+LABEL+ACCESSED+PUSH_EBP
+        Mov B$eax INSTRUCTION+EVOCATED+LABEL+ACCESSED+PUSH_EBP
     End_If
 
     add esi VBdis.ProjectInfoDis ; >>> ProjectInfo Data
 
-    mov eax D$esi | sub eax D$DisImageBase | add eax D$SectionsMap
+    Mov eax D$esi | sub eax D$DisImageBase | add eax D$SectionsMap
     If eax < D$SectionsMap
         ; nop (There are VB PEs without any direct Code inside).
     Else_If eax < D$EndOfSectionsMap
-        mov B$eax DATAFLAG
+        Mov B$eax DATAFLAG
         sub eax D$SectionsMap | add eax D$RoutingMap
-        mov B$eax LABEL+ACCESSED
+        Mov B$eax LABEL+ACCESSED
     End_If
 ret
 

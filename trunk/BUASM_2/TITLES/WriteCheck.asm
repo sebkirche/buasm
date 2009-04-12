@@ -19,23 +19,23 @@ Proc WriteChecker:
       ; BackSpace:
         On eax = 8, ExitP
 
-        mov B$WriteCheckerRuning &TRUE
+        Mov B$WriteCheckerRuning &TRUE
 
         pushad
 
-            mov eax D@Pointer, D$WriteChar 0
+            Mov eax D@Pointer, D$WriteChar 0
 
             If B$eax-1 <= ' '
-                mov B$WriteCheckerRuning &FALSE
+                Mov B$WriteCheckerRuning &FALSE
 
             Else_If B$eax-1 <> ':'
-                mov D$WriteCheckPointer eax | move D$WriteChar D@Char
+                Mov D$WriteCheckPointer eax | move D$WriteChar D@Char
 
-                call 'KERNEL32.CreateThread' &NULL, 0, WriteCheckerThread, 0,
+                Call 'KERNEL32.CreateThread' &NULL, 0, WriteCheckerThread, 0,
                                              &THREAD_PRIORITY_IDLE, ;THREAD_PRIORITY_NORMAL,
                                              WriteCheckerThreadID
             Else
-                mov B$WriteCheckerRuning &FALSE
+                Mov B$WriteCheckerRuning &FALSE
 
             End_If
 
@@ -50,8 +50,8 @@ Proc WriteCheckerThread: ; 'CharMessage'
     pushad
 
       ; The Pointer is given when user hits CRLF, Space or Comma:
-        mov esi D$WriteCheckPointer | dec esi
-        mov D$BlockEndTextPtr esi
+        Mov esi D$WriteCheckPointer | dec esi
+        Mov D$BlockEndTextPtr esi
 
       ; We go to start of the word:
 L0:     dec esi | cmp B$esi ',' | je L1>
@@ -60,41 +60,41 @@ L0:     dec esi | cmp B$esi ',' | je L1>
                   cmp B$esi ' ' | ja L0<
 
       ; Keep track of component case, in eax (Either Instruction or Parameter):
-L1:     mov ebx esi | While B$ebx = ' ' | dec ebx | End_While
+L1:     Mov ebx esi | While B$ebx = ' ' | dec ebx | End_While
         If B$ebx = '|'
-            mov eax 1
+            Mov eax 1
         Else_If B$ebx < ' '
           ; "1" >>> First Component (Mnemonic or Macro)
-            mov eax 1
+            Mov eax 1
         Else
           ; "2" >>> Parameter
-            mov eax 2
+            Mov eax 2
         End_If
 
-        inc esi | mov D$BlockStartTextPtr esi
+        inc esi | Mov D$BlockStartTextPtr esi
 
       ; Must be a Statement > Color = Statememts Color (1) ?
-        mov ebx esi | sub ebx D$CodeSource | add ebx D$ColorsMap
+        Mov ebx esi | sub ebx D$CodeSource | add ebx D$ColorsMap
 
       ; If Code Color Statement:
         ...If B$ebx = 1
             ..If D$WriteChar = ':'
-                call CheckUniqueSymbol
+                Call CheckUniqueSymbol
 
           ; If Instruction:
             ..Else_If eax = 1
-                mov ecx D$BlockEndTextPtr | sub ecx D$BlockStartTextPtr
-                mov eax &FALSE
+                Mov ecx D$BlockEndTextPtr | sub ecx D$BlockStartTextPtr
+                Mov eax &FALSE
                 If ecx < 15
-                    call CheckMnemonic
+                    Call CheckMnemonic
                 End_If
 
                 If eax = &FALSE
-                    call CheckForMacro
+                    Call CheckForMacro
                 End_IF
 
                 .If eax = &FALSE
-                    mov B$BlockInside &TRUE | call AskForRedrawNow | Beep
+                    Mov B$BlockInside &TRUE | Call AskForRedrawNow | Beep
                 .End_If
 
             ..End_If
@@ -102,7 +102,7 @@ L1:     mov ebx esi | While B$ebx = ' ' | dec ebx | End_While
       ; If Data Color Statement:
         ...Else_If B$ebx = 2
             ..If D$WriteChar = ':'
-                call CheckUniqueSymbol
+                Call CheckUniqueSymbol
 
             ..Else
 
@@ -112,35 +112,35 @@ L1:     mov ebx esi | While B$ebx = ' ' | dec ebx | End_While
 
     popad
 
-    mov B$WriteCheckerRuning &FALSE
+    Mov B$WriteCheckerRuning &FALSE
 
-    call 'Kernel32.ExitThread' 0
+    Call 'Kernel32.ExitThread' 0
 EndP
 ____________________________________________________________________________________________
 
 [TrashCode: ? #8]
 CheckMnemonic:
-    mov B$WeAreChecking &TRUE
+    Mov B$WeAreChecking &TRUE
 
-    mov edi MnemonicCopy, esi D$BlockStartTextPtr, D$LineStart esi
-    mov ecx D$BlockEndTextPtr | sub ecx esi | inc ecx
+    Mov edi MnemonicCopy, esi D$BlockStartTextPtr, D$LineStart esi
+    Mov ecx D$BlockEndTextPtr | sub ecx esi | inc ecx
 L0: lodsb | and eax (not 32) | stosb | loop L0<
-    mov B$edi 0
+    Mov B$edi 0
 
-    mov edi TrashCode | call Encode
+    Mov edi TrashCode | Call Encode
 
-    mov B$WeAreChecking &FALSE
+    Mov B$WeAreChecking &FALSE
 
 
     .If B$CompileErrorHappend = &TRUE
         If eax = NotAnOpcode
-            mov eax &FALSE
+            Mov eax &FALSE
         Else
-            mov eax &TRUE
+            Mov eax &TRUE
         End_If
 
     .Else
-        mov eax &TRUE
+        Mov eax &TRUE
 
     .End_If
 ret
@@ -150,7 +150,7 @@ ________________________________________________________________________________
 
 CheckUniqueSymbol:
   ; Compute the lenght of the actualy edited Label into ebx:
-    mov esi D$CurrentWritingPos, ebx 0 | dec esi
+    Mov esi D$CurrentWritingPos, ebx 0 | dec esi
 
   ; Do not check again Exported Labels:
     cmp B$esi-1 ':' | je L9>>
@@ -163,13 +163,13 @@ L0: dec esi | inc ebx
     cmp ebx 3 | jb L9>>
 
 L1: std
-        mov esi D$CodeSource, edx D$SourceEnd
+        Mov esi D$CodeSource, edx D$SourceEnd
 
         While esi < edx
             inc esi
             If B$esi = ':'
                 push esi
-                    mov edi D$CurrentWritingPos, ecx ebx
+                    Mov edi D$CurrentWritingPos, ecx ebx
                     dec edi | cmp esi edi | je L1>
 
                     repe cmpsb | jne L1>
@@ -178,8 +178,8 @@ L1: std
 
 L0:                     cld
                         pop esi
-                        inc edi | mov D$BlockStartTextPtr edi
-                        mov eax D$CurrentWritingPos | dec eax | mov D$BlockEndTextPtr eax
+                        inc edi | Mov D$BlockStartTextPtr edi
+                        Mov eax D$CurrentWritingPos | dec eax | Mov D$BlockEndTextPtr eax
 
                         Beep | ret
 
@@ -193,7 +193,7 @@ L9: ret
 ____________________________________________________________________________________________
 
 CheckForMacro:
-    call IsItaMacro
+    Call IsItaMacro
 
     .If eax = 0
         If D$TitleTable +4 > 0
@@ -201,7 +201,7 @@ CheckForMacro:
                 move D$CodeSource D$RealCodeSource
                 move D$SourceEnd D$RealSourceEnd
                 move D$SourceLen D$RealSourceLen
-                call IsItaMacro
+                Call IsItaMacro
             pop D$SourceLen, D$SourceEnd, D$CodeSource
         End_If
     .End_If

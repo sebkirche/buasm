@@ -11,7 +11,7 @@ ________________________________________________________________________________
 
 ShowTypes:
     If D$ShowTypesDialogHandle = 0
-        call 'USER32.DialogBoxParamA' D$hInstance, 1000, &NULL, ShowTypesInfo, &NULL
+        Call 'USER32.DialogBoxParamA' D$hInstance, 1000, &NULL, ShowTypesInfo, &NULL
     Else
         Beep
     End_If
@@ -19,9 +19,9 @@ ret
 
 
 ShowEquates:
-    call SetEquatesEquFileName
+    Call SetEquatesEquFileName
 
-    call 'SHELL32.ShellExecuteA' D$hwnd, Open, {'WordPad', 0},
+    Call 'SHELL32.ShellExecuteA' D$H.MainWindow, Open, {'WordPad', 0},
                                  IncludeFileName, &NULL, &SW_SHOWNORMAL
 ret
 
@@ -29,37 +29,37 @@ ret
 [ShowTypesDialogHandle: ?    FirstCTLCOLOREDIT: ?]
 
 Proc ShowTypesInfo:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    .If D@Message = &WM_COMMAND
+    .If D@msg = &WM_COMMAND
          If D@wParam = &IDCANCEL
-            mov D$ShowTypesDialogHandle 0
-            call 'User32.EndDialog' D@Adressee 0
+            Mov D$ShowTypesDialogHandle 0
+            Call 'User32.EndDialog' D@hwnd 0
          End_If
 
-    .Else_If D@Message = &WM_INITDIALOG
-        move D$ShowTypesDialogHandle D@Adressee
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
-        call 'USER32.SetDlgItemTextA' D@Adressee 100 Win32Types
-        call 'USER32.SendMessageA' D@Adressee &WM_SETTEXT &NULL TypesTitle
-        mov B$FirstCTLCOLOREDIT &TRUE
+    .Else_If D@msg = &WM_INITDIALOG
+        move D$ShowTypesDialogHandle D@hwnd
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call 'USER32.SetDlgItemTextA' D@hwnd 100 Win32Types
+        Call 'USER32.SendMessageA' D@hwnd &WM_SETTEXT &NULL TypesTitle
+        Mov B$FirstCTLCOLOREDIT &TRUE
 
-    .Else_If D@Message = &WM_CTLCOLOREDIT
+    .Else_If D@msg = &WM_CTLCOLOREDIT
         If B$FirstCTLCOLOREDIT = &TRUE
-            call 'USER32.SendMessageA' D@lParam &EM_SETSEL 0 0
-            mov B$FirstCTLCOLOREDIT &FALSE
+            Call 'USER32.SendMessageA' D@lParam &EM_SETSEL 0 0
+            Mov B$FirstCTLCOLOREDIT &FALSE
         End_If
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
 
     .Else
-        popad | mov eax &FALSE | jmp L9>
+        popad | Mov eax &FALSE | jmp L9>
 
     .End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
@@ -96,7 +96,7 @@ L9: EndP
  HSTR          D$ ; string handle
  HTASK         D$ ; task handle
  HTREEITEM     D$ ; tree view item handle
- HWND          D$ ; window handle
+ H.MainWindow          D$ ; window handle
  INTEGER       D$ ; standard integer
  LOCALHANDLE   D$ ; local handle
  LONG          D$ ; long integer
@@ -136,21 +136,21 @@ ________________________________________________________________________________
 
 OldSearchMneMonic:
     pushad
-        mov D$MnemonicIndex 7
+        Mov D$MnemonicIndex 7
         or ah 32 | xor ah 32         ;  > upper case (all Upper case in the list
-        mov esi OpcodesList
+        Mov esi OpcodesList
         .While B$esi > 0
             lodsb
             .If al = ah
-                pushad | mov ecx ebx, edi edx
-L0:             lodsb | mov ah B$edi | inc edi | or ah 020 | xor ah 020 ; Source upper case.
+                pushad | Mov ecx ebx, edi edx
+L0:             lodsb | Mov ah B$edi | inc edi | or ah 020 | xor ah 020 ; Source upper case.
                 cmp ah al | jne L1>
                 loop L0<
 L1:             popad | jne L3>
                 If B$esi+ebx = ' '
-                    On D$ShowMnemonicHandle > 0, call 'USER32.EndDialog' D$ShowMnemonicHandle 0
-                    call 'USER32.DialogBoxParamA' D$hInstance 1000  &NULL ShowMnemonicInfo  &NULL
-                    mov B$MnemonicHelpFound &TRUE | jmp L9>
+                    On D$ShowMnemonicHandle > 0, Call 'USER32.EndDialog' D$ShowMnemonicHandle 0
+                    Call 'USER32.DialogBoxParamA' D$hInstance 1000  &NULL ShowMnemonicInfo  &NULL
+                    Mov B$MnemonicHelpFound &TRUE | jmp L9>
                 End_If
 L3:
             .End_If
@@ -172,21 +172,21 @@ ret
 
 SearchMneMonic: On ebx > 14, ret
     pushad
-        mov D$MnemonicCopy '    ', D$MnemonicCopy+4 '    ',
+        Mov D$MnemonicCopy '    ', D$MnemonicCopy+4 '    ',
             D$MnemonicCopy+8 '    ', D$MnemonicCopy+12 '    '
 
       ; 1) Make an upper Case copy of the possible Mnemonic (spaces ended):
-        dec edx | mov esi edx, edi MnemonicCopy, ecx ebx | inc ecx
+        dec edx | Mov esi edx, edi MnemonicCopy, ecx ebx | inc ecx
 L0:     lodsb | On al > 'Z', and eax (not 020) | stosb | loop L0<
 
       ; Search identical record in 'OpCodeList':
-        mov edi MnemonicCopy, esi OpCodeList, ebx D$edi
+        Mov edi MnemonicCopy, esi OpCodeList, ebx D$edi
 L0:     lodsd | cmp eax 0 | je L9>>
                 cmp eax ebx | je L5>
 
 L4:                 Align_On 16 esi | jmp L0<
 
-L5:                     mov edx edi | add edx 4
+L5:                     Mov edx edi | add edx 4
                         While B$edx <> ' '
                             lodsd | cmp eax D$edx | jne L4<
 L6:                         add edx 4
@@ -202,16 +202,16 @@ L6:                         add edx 4
                         End_If
 
                       ; Zero end Case sensitive recopy of the MnemonicCopy for ShellExecute:
-                        mov edi MnemonicCopy
+                        Mov edi MnemonicCopy
                         While B$esi <> ' '
                             movsb
                         End_While
-                        mov B$edi 0
-                        call Help B_U_AsmName, MnemonicCopy, FileNotFound
+                        Mov B$edi 0
+                        Call Help B_U_AsmName, MnemonicCopy, FileNotFound
                         If eax <= 32
                             jmp L9>
                         Else
-                            mov B$MnemonicHelpFound &TRUE
+                            Mov B$MnemonicHelpFound &TRUE
                         End_If
     popad
 ret
@@ -225,38 +225,38 @@ jmp OldSearchMneMonic
 [ShowMnemonicHandle: 0    MnemonicsTitle: 'Mnemonics list (More Infos with OpHelp.exe...)', 0]
 
 Proc ShowMnemonicInfo:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    .If D@Message = &WM_COMMAND
+    .If D@msg = &WM_COMMAND
          If D@wParam = &IDCANCEL
-            call 'User32.EndDialog' D@Adressee 0
+            Call 'User32.EndDialog' D@hwnd 0
          End_If
 
-    .Else_If D@Message = &WM_INITDIALOG
-        move D$ShowMnemonicHandle D@Adressee
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
-        call 'USER32.SetDlgItemTextA' D@Adressee 100 OpcodesListTitle
-        call 'USER32.GetDlgItem' D@Adressee 100
-        call 'USER32.SendMessageA' eax &EM_LINESCROLL 0  D$MnemonicIndex
-        call 'USER32.SendMessageA' D@Adressee &WM_SETTEXT 0 MnemonicsTitle
-        mov B$FirstCTLCOLOREDIT &TRUE
+    .Else_If D@msg = &WM_INITDIALOG
+        move D$ShowMnemonicHandle D@hwnd
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call 'USER32.SetDlgItemTextA' D@hwnd 100 OpcodesListTitle
+        Call 'USER32.GetDlgItem' D@hwnd 100
+        Call 'USER32.SendMessageA' eax &EM_LINESCROLL 0  D$MnemonicIndex
+        Call 'USER32.SendMessageA' D@hwnd &WM_SETTEXT 0 MnemonicsTitle
+        Mov B$FirstCTLCOLOREDIT &TRUE
 
-    .Else_If D@Message = &WM_CTLCOLOREDIT
+    .Else_If D@msg = &WM_CTLCOLOREDIT
         If B$FirstCTLCOLOREDIT = &TRUE
-            call 'USER32.SendMessageA' D@lParam &EM_SETSEL 0 0
-            mov B$FirstCTLCOLOREDIT &FALSE
+            Call 'USER32.SendMessageA' D@lParam &EM_SETSEL 0 0
+            Mov B$FirstCTLCOLOREDIT &FALSE
         End_If
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
 
     .Else
-        popad | mov eax &FALSE | jmp L9>
+        popad | Mov eax &FALSE | jmp L9>
 
     .End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
@@ -264,40 +264,40 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 
-[ApiTitle: 'Api call infos' 0]
+[ApiTitle: 'Api Call infos' 0]
 
 ; Tag Dialog 1000
 
 Proc ShowApiInfo:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    .If D@Message = &WM_COMMAND
+    .If D@msg = &WM_COMMAND
          If D@wParam = &IDCANCEL
-            call 'User32.EndDialog' D@Adressee 0
+            Call 'User32.EndDialog' D@hwnd 0
          End_If
 
-    .Else_If D@Message = &WM_INITDIALOG
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
-        call 'USER32.SetDlgItemTextA' D@Adressee 100  OneApiInfo
-        call 'USER32.SendMessageA' D@Adressee &WM_SETTEXT 0 ApiTitle
-        mov B$FirstCTLCOLOREDIT &TRUE
+    .Else_If D@msg = &WM_INITDIALOG
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call 'USER32.SetDlgItemTextA' D@hwnd 100  OneApiInfo
+        Call 'USER32.SendMessageA' D@hwnd &WM_SETTEXT 0 ApiTitle
+        Mov B$FirstCTLCOLOREDIT &TRUE
 
-    .Else_If D@Message = &WM_CTLCOLOREDIT
+    .Else_If D@msg = &WM_CTLCOLOREDIT
         If B$FirstCTLCOLOREDIT = &TRUE
-            call 'USER32.SendMessageA' D@lParam &EM_SETSEL 0 0
-            mov B$FirstCTLCOLOREDIT &FALSE
+            Call 'USER32.SendMessageA' D@lParam &EM_SETSEL 0 0
+            Mov B$FirstCTLCOLOREDIT &FALSE
         End_If
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
 
     .Else
-        popad | mov eax &FALSE | jmp L9>
+        popad | Mov eax &FALSE | jmp L9>
 
     .End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 ____________________________________________________________________________________________
@@ -316,13 +316,13 @@ ________________________________________________________________________________
 
 OpcodesList: B$ "
 AAA                  37           ASCII adjust AL after addition       
-    > mov al 09, bl 02 | add al bl | AAA ; ax = BCD(0101)
+    > Mov al 09, bl 02 | add al bl | AAA ; ax = BCD(0101)
 
 AAD                  D5 0A        ASCII adjust AX before division      
-    > mov ax 0102 | AAD ; ax = 12
+    > Mov ax 0102 | AAD ; ax = 12
 
 AAM                  D4 0A        ASCII adjust AX after multiplication 
-    > mov al 7 | mov cx 8 | mul cx | aam ; ax = 0506
+    > Mov al 7 | Mov cx 8 | mul cx | aam ; ax = 0506
 
 AAS                  3F           ASCII adjust AL after subtraction    
     > sub al bl | aas | jc CarryFlagSet
@@ -379,10 +379,10 @@ BTR r/m32,r32        0F B3 /r     Bit Test and Clear
 BTR r/m32,imm8       0F BA /6 ib  Bit Test and Clear
 BTS r/m32,r32        0F AB /r     Bit Test and Set
 BTS r/m32,imm8       0F BA /5 ib  Bit Test and Set
-CALL rel32           E8       cd  Call near, rel to n.inst
-CALL r/m32           FF    /2     Call near, abs.ind.add. given in r/m32
-CALL ptr16:32        9A       cp  Call far, abs.add. given in operand
-CALL m16:32          FF    /3     Call far, abs.ind.add. given in m16:32
+Call rel32           E8       cd  Call near, rel to n.inst
+Call r/m32           FF    /2     Call near, abs.ind.add. given in r/m32
+Call ptr16:32        9A       cp  Call far, abs.add. given in operand
+Call m16:32          FF    /3     Call far, abs.ind.add. given in m16:32
 CBW                  98           Convert Byte to Word
 CWD                  99           Convert Word to Doubleword
 CDQ                  99           Convert Doubleword to Quadword 
@@ -996,7 +996,7 @@ XOR r32,r/m32        33    /r     Logical Exclusive OR" 0]
 'ADDSUBP         ADDSUBS         AND             ANDNPS          ANDPD           '
 'ANDPS           ARPL            BOUND           BSF            <BSR             '
 'BSWAP           BT             <BTC            <BTR            <BTS             '
-'CALL            CBW            <CDQ            <CWD            <CWDE            '
+'Call            CBW            <CDQ            <CWD            <CWDE            '
 'CLC            <CLD            <CLI            <CLTS            CMC             '
 'CLFLUSH         '
 'CMOVcc         <CMOVA          <CMOVAE         <CVMOVB         <CMOVBE         <'
@@ -1088,7 +1088,7 @@ XOR r32,r/m32        33    /r     Logical Exclusive OR" 0]
 'LOOPNE         <LOOPNZ         <LOOPZ           LSL             '
 'LTR             MASKMOVQ        MAXPD           MAXPS           MAXSS           '
 'MINPS           '
-'MINSS           MOV             MOVAPD          MOVAPS          MOVD            '
+'MINSS           Mov             MOVAPD          MOVAPS          MOVD            '
 'MOVDQ2Q         MOVDQA          MOVDQU          '
 'MOVHLPS         MOVHPD          '
 'MOVHPS          MOVLHPS         MOVLPD          MOVLPS          MOVMSKPS        '
@@ -1161,7 +1161,7 @@ XOR r32,r/m32        33    /r     Logical Exclusive OR" 0]
 'SQRTPS          SQRTSS          STC             STD             STI             '
 'STMXCSR         STOSB          <STOSD          <STOSW           STR             '
 'SUB             SUBPS           SUBSS           '
-'SYSCALL         SYSENTER        SYSEXIT         SYSRET          '
+'SYSCall         SYSENTER        SYSEXIT         SYSRET          '
 'TEST            UCOMISS         UD1             UD2             '
 'UNPCKHPS        UNPCKLPS        VERR            VERW            WAIT            '
 'WBINVD          WRMSR           XADD            '
@@ -1179,7 +1179,7 @@ XOR r32,r/m32        33    /r     Logical Exclusive OR" 0]
 'BOUND           BSF             BSR             BSWAP           BT              '
 'BTC             BTR             BTS             '
 
-'CALL            CBW             CWD             CWDE            CDQ             '
+'Call            CBW             CWD             CWDE            CDQ             '
 'CLC             CLD             CLI             CLTS            CLFLUSH         '
 'CMC             CMP             '
 'CMPccPD        <CMPEQPD        <CMPLEPD        <CMPLTPD        <CMPNEQPD       <'
@@ -1256,7 +1256,7 @@ XOR r32,r/m32        33    /r     Logical Exclusive OR" 0]
 
 'MASKMOVDQU      MASKMOVQ        MAXPD           MAXPS           MAXSD           '
 'MAXSS           MFENCE          MINPD           MINPS           MINSD           '
-'MINSS           MONITOR         MOV             MOVAPD          MOVAPS          '
+'MINSS           MONITOR         Mov             MOVAPD          MOVAPS          '
 'MOVD            MOVDDUP         MOVDQ2Q         MOVDQA          MOVDQU          '
 'MOVHLPS         MOVHPD          MOVHPS          MOVLHPS         MOVLPD          '
 'MOVLPS          MOVMSKPD        MOVMSKPS        MOVNTDQ         MOVNTI          '
@@ -1314,7 +1314,7 @@ XOR r32,r/m32        33    /r     Logical Exclusive OR" 0]
 'SMSW            SQRTPD          SQRTPS          SQRTSD          SQRTSS          '
 'STC             STD             STI             STMXCSR         STOSB           '
 'STOSW           STOSD           STR             SUB             SUBPD           '
-'SUBPS           SUBSD           SUBSS           SYSCALL         SYSENTER        '
+'SUBPS           SUBSD           SUBSS           SYSCall         SYSENTER        '
 'SYSEXIT         SYSRET          '
 
 'TEST            '
@@ -1341,7 +1341,7 @@ DataToStructure:
     If D$DataToStructureHandle > 0
         Beep
     Else
-        call 'USER32.DialogBoxParamA' D$hInstance, 32500, &NULL, DataToStructureProc, &NULL
+        Call 'USER32.DialogBoxParamA' D$hInstance, 32500, &NULL, DataToStructureProc, &NULL
     End_If
 ret
 
@@ -1351,38 +1351,38 @@ ________________________________________________________________________________
 [DataTextTable: ?    StructureTextTable: ?    DataToStructureDialogHandle: ?]
 
 Proc DataToStructureProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_COMMAND
-        mov eax D@wParam | and eax 0FFFF
+    ...If D@msg = &WM_COMMAND
+        Mov eax D@wParam | and eax 0FFFF
         If eax = &IDCANCEL
 L5:         VirtualFree D$DataTextTable, D$StructureTextTable
-            call 'User32.EndDialog' D@Adressee 0
+            Call 'User32.EndDialog' D@hwnd 0
         Else_If eax = &IDOK
-            call SaveStructureToClipBoard | jmp L5<
+            Call SaveStructureToClipBoard | jmp L5<
         Else_If eax = &IDHELP
-            call Help, B_U_AsmName, StructuresHelp, ContextHlpMessage
+            Call Help, B_U_AsmName, StructuresHelp, ContextHlpMessage
         Else_If eax = 5     ; [ >>>>>>>> ]
-            call FromDataToStructure
+            Call FromDataToStructure
       ;  Else_If eax = 6     ; [ <<<<<<<< ]
-      ;      call FromStructureToData
+      ;      Call FromStructureToData
         End_If
 
-    ...Else_If D@Message e &WM_INITDIALOG
+    ...Else_If D@msg e &WM_INITDIALOG
         VirtualAlloc DataTextTable 01000, StructureTextTable 01000
-        move D$DataToStructureDialogHandle D@Adressee
+        move D$DataToStructureDialogHandle D@hwnd
 
-    ...Else_If D@Message e &WM_CTLCOLOREDIT
+    ...Else_If D@msg e &WM_CTLCOLOREDIT
         ; Control of output
 
     ...Else
-        popad | mov eax &FALSE | ExitP
+        popad | Mov eax &FALSE | ExitP
 
     ...End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 EndP
 
 
@@ -1407,29 +1407,29 @@ ret
 ;;
 
 SaveStructureToClipBoard:
-    mov eax D$StructureTextTable
+    Mov eax D$StructureTextTable
     While B$eax > 0 | inc eax | end_While
     sub eax D$StructureTextTable | On eax = 0, ret
-    mov D$TheClipLenght eax
+    Mov D$TheClipLenght eax
 
-    call 'USER32.OpenClipboard' D$hwnd | cmp eax 0 | je L9>>
-    call 'USER32.EmptyClipboard' | cmp eax 0 | je L8>>
+    Call 'USER32.OpenClipboard' D$H.MainWindow | cmp eax 0 | je L9>>
+    Call 'USER32.EmptyClipboard' | cmp eax 0 | je L8>>
 
-    mov ecx D$TheClipLenght | shl ecx 2               ; *4 > room for Generic Names
+    Mov ecx D$TheClipLenght | shl ecx 2               ; *4 > room for Generic Names
     push ecx
-        call 'KERNEL32.GlobalAlloc' &GMEM_DDESHARE ecx | cmp eax 0 | jne L1>  ; > eax = handle
+        Call 'KERNEL32.GlobalAlloc' &GMEM_DDESHARE ecx | cmp eax 0 | jne L1>  ; > eax = handle
         pop eax | jmp L8>>
-L1:     mov D$hBlock eax
-        call 'KERNEL32.GlobalLock' eax                                       ; > eax = adress
+L1:     Mov D$hBlock eax
+        Call 'KERNEL32.GlobalLock' eax                                       ; > eax = adress
     pop ecx
     shr ecx 2                                                   ; restore true data size
-    mov edi eax, esi D$StructureTextTable
+    Mov edi eax, esi D$StructureTextTable
 
-    While B$esi > 0 | movsb | End_While | mov eax 0 | stosd
+    While B$esi > 0 | movsb | End_While | Mov eax 0 | stosd
 
-    call 'KERNEL32.GlobalUnlock' D$hBlock
-    call 'USER32.SetClipboardData' &CF_TEXT  D$hBlock
-L8: call 'USER32.CloseClipboard'
+    Call 'KERNEL32.GlobalUnlock' D$hBlock
+    Call 'USER32.SetClipboardData' &CF_TEXT  D$hBlock
+L8: Call 'USER32.CloseClipboard'
 L9: ret
 
 ____________________________________________________________________________________________

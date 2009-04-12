@@ -14,7 +14,7 @@ TITLE DCBP
     'SetBreakpoint', ('SortBpOnTable', 'DoStoreBP'),
     'DeleteBreakpoint', 'DeleteAllBreakpoints'
   
-  * Routines call by the Sources Editor (factual Edition):
+  * Routines Call by the Sources Editor (factual Edition):
   
     'AdjustBpTable' ('AdjustDownwardPointers' // 'DeleteBpInBlock') are called by:
     'DoStoreInsert', 'DoStoreCharDelete', 'DoStoreBlockPaste',
@@ -33,7 +33,7 @@ TITLE DCBP
   needed with one 01000 Bytes page).
   Each dword is a Pointer to the user Source: Not to the Code 'CodeListPtr'.
   
-  The call to 'WriteBpOffTable' is actualy commented out for this Static version. 
+  The Call to 'WriteBpOffTable' is actualy commented out for this Static version. 
   I suppose you will need it, for BP deleted by the user during the Debug session.
 ;;
 ____________________________________________________________________________________________
@@ -43,25 +43,25 @@ ________________________________________________________________________________
 [BreakPointLocation: ?]
 
 MarginAction:
-    mov B$ReadyToRun &FALSE
+    Mov B$ReadyToRun &FALSE
 
-    On D$BreakPointsTables = 0, call InitBreakPointsTables
+    On D$BreakPointsTables = 0, Call InitBreakPointsTables
 ;;
-  eax and ebx have been set to 'MousePosX' and 'MousePosY' by a previous call to
+  eax and ebx have been set to 'MousePosX' and 'MousePosY' by a previous Call to
   'MouseTextPos' in 'DoubleClick. 'SearchTxtPtr' is going to return the Source
   Pointer from these Screen Coordinates.
 ;;
-    call SearchTxtPtr | mov D$BreakPointLocation eax | dec D$CaretRow
+    Call SearchTxtPtr | Mov D$BreakPointLocation eax | dec D$CaretRow
   ; ('Dec' because 'SearchTxtPtr' forces Row 0 to 1, for usual actions)
   ; eax now the Pointer to Row 1 (Source Pointer form). Is it already recorded or not?
 
     .If B$Keys+&VK_SHIFT = &TRUE
-        call DeleteAllBreakpoints
+        Call DeleteAllBreakpoints
 
     .Else_If B$Keys+&VK_CONTROL = &TRUE
-        call IsEaxInBpOnTable
+        Call IsEaxInBpOnTable
 
-        call BpMenu
+        Call BpMenu
 
 ;;
   The BreakPoints Float Menu may generate call's to:
@@ -70,28 +70,28 @@ MarginAction:
         inc D$CaretRow
 
     .Else
-        call IsEaxInBpOnTable
+        Call IsEaxInBpOnTable
 
         If B$InsideBpTable = &TRUE
-            call DeleteBreakPoint | call DoStoreRemoveBP
+            Call DeleteBreakPoint | Call DoStoreRemoveBP
         Else
-            call SetBreakPoint | call DoStoreBP
+            Call SetBreakPoint | Call DoStoreBP
         End_If
 
      .End_If
 
-     mov B$Keys+&VK_SHIFT &FALSE, B$Keys+&VK_CONTROL &FALSE
+     Mov B$Keys+&VK_SHIFT &FALSE, B$Keys+&VK_CONTROL &FALSE
 ret
 
 
 DoubleClickMarginAction:
-    On D$BreakPointsTables = 0, call InitBreakPointsTables
+    On D$BreakPointsTables = 0, Call InitBreakPointsTables
 ;;
-  eax and ebx have been set to 'MousePosX' and 'MousePosY' by a previous call to
+  eax and ebx have been set to 'MousePosX' and 'MousePosY' by a previous Call to
   'MouseTextPos' in 'DoubleClick. 'SearchTxtPtr' is going to return the Source
   Pointer from these Screen Coordinates.
 ;;
-    call SearchTxtPtr | mov D$BreakPointLocation eax | dec D$CaretRow
+    Call SearchTxtPtr | Mov D$BreakPointLocation eax | dec D$CaretRow
   ; ('Dec' because 'SearchTxtPtr' forces Row 0 to 1, for usual actions)
   ; eax now the Pointer to Row 1 (Source Pointer form). Is it already recorded or not?
 
@@ -100,19 +100,19 @@ DoubleClickMarginAction:
   and WM_LBUTTONUP. So forth, the 'LeftButton' stuff has already (wrongly) been
   executed and we have to reverse its effect:
 ;;
-    call IsEaxInBpOnTable
+    Call IsEaxInBpOnTable
 
     If B$InsideBpTable = &TRUE
-        call DeleteBreakPoint | call DoStoreRemoveBP
+        Call DeleteBreakPoint | Call DoStoreRemoveBP
     Else
-        call SetBreakPoint | call DoStoreBP
+        Call SetBreakPoint | Call DoStoreBP
     End_If
 
     xor B$InsideBpTable &TRUE
 
-    mov D$CaretRow 1
+    Mov D$CaretRow 1
 
-    call BpMenu
+    Call BpMenu
 ;;
   The BreakPoints Float Menu may generate call's to:
   'SetBreakpoint', 'DeleteBreakpoint', 'DeleteAllBreakpoints'
@@ -121,12 +121,12 @@ ret
 
 
 IsBreakPointHere:
-    call RestoreRealSource
-        call SearchTxtPtr
+    Call RestoreRealSource
+        Call SearchTxtPtr
         While B$eax-1 <> LF | dec eax | End_While
-        mov D$BreakPointLocation eax
-        call IsEaxInBpOnTable
-    call SetPartialEditionFromPos
+        Mov D$BreakPointLocation eax
+        Call IsEaxInBpOnTable
+    Call SetPartialEditionFromPos
   ; Returns 'InsideBpTable' &TRUE or &FALSE.
 ret
 
@@ -147,25 +147,25 @@ Proc KeyBoardProc:
         pushad
             ..If D@nCode = &HC_NOREMOVE
                 .If D@wParam = &VK_F4
-L1:                 call KillBpMenu
+L1:                 Call KillBpMenu
 
                     If B$InsideBpTable = &FALSE
-                        call SetBreakPoint | call DoStoreBP
+                        Call SetBreakPoint | Call DoStoreBP
                     Else
-                        call DeleteBreakPoint | call DoStoreRemoveBP
+                        Call DeleteBreakPoint | Call DoStoreRemoveBP
                     End_If
 
-                    popad | mov eax &TRUE | ExitP ; Not forwarding
+                    popad | Mov eax &TRUE | ExitP ; Not forwarding
 
                 .Else_If D@wParam = &VK_RETURN
-                    call 'USER32.GetMenuState' D$FloatHandle, 0, &MF_BYPOSITION
+                    Call 'USER32.GetMenuState' D$FloatHandle, 0, &MF_BYPOSITION
                     test eax &MF_HILITE | jnz L1<
 
                 .End_If
             ..End_If
         popad
 
-L9:     mov eax &FALSE ; Forwarding
+L9:     Mov eax &FALSE ; Forwarding
 EndP
 
 
@@ -174,15 +174,15 @@ KillBpMenu:
 
   ; Simulate a Left-Click in the middle of the Window:
     push D$CaretRow, D$CaretLine
-        call 'USER32.GetClientRect' D$EditWindowHandle, BpMousePos
+        Call 'USER32.GetClientRect' D$EditWindowHandle, BpMousePos
         shr D$BpMouseX 1 | shr D$BpMouseY 1
-        call 'USER32.ClientToScreen' D$EditWindowHandle, BpMouseX
-        call BpClick
+        Call 'USER32.ClientToScreen' D$EditWindowHandle, BpMouseX
+        Call BpClick
     pop D$CaretLine, D$CaretRow
 
   ; Restore the Caret initial Position:
-    call FromCaretPosToScreen | mov D$BpMouseX eax, D$BpMouseY ebx
-    call BpClick
+    Call FromCaretPosToScreen | Mov D$BpMouseX eax, D$BpMouseY ebx
+    Call BpClick
 ret
 
 
@@ -190,19 +190,19 @@ ret
 
 FromCaretPosToScreen:
     push D$EditWindowX, D$EditWindowY
-        call 'USER32.GetClientRect' D$EditWindowHandle, EditWindowX
-        call 'USER32.ClientToScreen' D$EditWindowHandle, EditWindowX
-        mov eax D$CaretLine, ecx D$FontHeight | mul ecx | mov ebx eax
-        mov eax D$CaretRow | mov ecx D$FontWidth | mul ecx
+        Call 'USER32.GetClientRect' D$EditWindowHandle, EditWindowX
+        Call 'USER32.ClientToScreen' D$EditWindowHandle, EditWindowX
+        Mov eax D$CaretLine, ecx D$FontHeight | mul ecx | Mov ebx eax
+        Mov eax D$CaretRow | Mov ecx D$FontWidth | mul ecx
         add eax D$EditWindowX | add ebx D$EditWindowY
     pop D$EditWindowY, D$EditWindowX
 ret
 
 
 BpClick:
-    call 'USER32.SetCursorPos' D$BpMouseX, D$BpMouseY
-    call 'USER32.mouse_event' &MOUSEEVENTF_LEFTDOWN, D$BpMouseX, D$BpMouseY, 0, 0
-    call 'USER32.mouse_event' &MOUSEEVENTF_LEFTUP, D$BpMouseX, D$BpMouseY, 0, 0
+    Call 'USER32.SetCursorPos' D$BpMouseX, D$BpMouseY
+    Call 'USER32.mouse_event' &MOUSEEVENTF_LEFTDOWN, D$BpMouseX, D$BpMouseY, 0, 0
+    Call 'USER32.mouse_event' &MOUSEEVENTF_LEFTUP, D$BpMouseX, D$BpMouseY, 0, 0
 ret
 
 
@@ -210,61 +210,61 @@ ret
 
 BpMenu:
   ; Build the Foating Menu:
-    call 'USER32.CreatePopupMenu' | mov D$FloatHandle eax
+    Call 'USER32.CreatePopupMenu' | Mov D$FloatHandle eax
 
     .If B$InsideBpTable = &FALSE
-        call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING, FloatSetBp, FloatSetBpString
-        mov eax D$BpOnTable
+        Call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING, FloatSetBp, FloatSetBpString
+        Mov eax D$BpOnTable
         If D$eax <> 0
-            call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, FloatDelAllBp,
+            Call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, FloatDelAllBp,
                                       FloatDelAllBpString
         End_If
 
     .Else
-        call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING, FloatDelBp, FloatDelBpString
-        mov eax D$BpOnTable
+        Call 'USER32.AppendMenuA' D$FloatHandle &MF_STRING, FloatDelBp, FloatDelBpString
+        Mov eax D$BpOnTable
         If D$eax+4 <> 0
-            call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, FloatDelAllBp,
+            Call 'USER32.AppendMenuA' D$FloatHandle, &MF_STRING, FloatDelAllBp,
                                       FloatDelAllBpString
         End_If
 
     .End_If
 
-    call 'USER32.HiliteMenuItem' D$EditWindowHandle, D$FloatHandle, 0,
+    Call 'USER32.HiliteMenuItem' D$EditWindowHandle, D$FloatHandle, 0,
                                  &MF_BYPOSITION__&MF_HILITE
 
   ; Create the KeyBoard Hook:
-    mov D$FirstStrike 0
-    call 'KERNEL32.GetCurrentThreadId'
-    call 'USER32.SetWindowsHookExA' &WH_KEYBOARD, KeyBoardProc, &NULL, eax ; <<<<<<<<<<<
-    mov D$hHook eax
+    Mov D$FirstStrike 0
+    Call 'KERNEL32.GetCurrentThreadId'
+    Call 'USER32.SetWindowsHookExA' &WH_KEYBOARD, KeyBoardProc, &NULL, eax ; <<<<<<<<<<<
+    Mov D$hHook eax
 
   ; Menu Position:
     push D$CaretRow
-        mov D$CaretRow 1 | call FromCaretPosToScreen
+        Mov D$CaretRow 1 | Call FromCaretPosToScreen
     pop D$CaretRow
-    call 'USER32.TrackPopupMenu' D$FloatHandle, &TPM_LEFTALIGN , eax, ebx, 0,
+    Call 'USER32.TrackPopupMenu' D$FloatHandle, &TPM_LEFTALIGN , eax, ebx, 0,
                                 D$EditWindowHandle, &NULL
 
-    call 'USER32.UnhookWindowsHookEx' D$hHook
+    Call 'USER32.UnhookWindowsHookEx' D$hHook
 
-    call 'USER32.DestroyMenu' D$FloatHandle
+    Call 'USER32.DestroyMenu' D$FloatHandle
 ret
 ____________________________________________________________________________________________
 
 [InsideBpTable: ?]
 
 IsEaxInBpOnTable:
-    mov ebx D$BpOnTable
+    Mov ebx D$BpOnTable
 
     While D$ebx <> 0
         If D$ebx = eax
-            mov B$InsideBpTable &TRUE | ret
+            Mov B$InsideBpTable &TRUE | ret
         End_If
         add ebx 4
     End_While
 
-    mov B$InsideBpTable &FALSE
+    Mov B$InsideBpTable &FALSE
 ret
 ____________________________________________________________________________________________
 
@@ -278,7 +278,7 @@ ________________________________________________________________________________
 InitBreakPointsTables:
     pushad
         VirtualAlloc BreakPointsTables 01000
-        add eax 0800 | mov D$BpOffTable eax
+        add eax 0800 | Mov D$BpOffTable eax
     popad
 ret
 
@@ -291,17 +291,17 @@ ________________________________________________________________________________
 ;;
 
 SetBreakpoint:
-    call RestoreRealSource
+    Call RestoreRealSource
 
 ; >>> UPDATED
     If D$BPAnteroom <> 0
-        call AddBPToAnteroom D$BreakPointLocation &TRUE
+        Call AddBPToAnteroom D$BreakPointLocation &TRUE
     EndIf
 ; <<< UPDATED
 
-    ;call DoStoreBP
+    ;Call DoStoreBP
 
-    mov eax D$BreakPointLocation, edi D$BpOnTable
+    Mov eax D$BreakPointLocation, edi D$BpOnTable
 
     While D$edi <> 0
         add edi 4
@@ -311,60 +311,60 @@ SetBreakpoint:
 
     stosd
 
-    mov B$ReadyToRun &FALSE
+    Mov B$ReadyToRun &FALSE
 
-    call SortBpOnTable
+    Call SortBpOnTable
 
-    call SetPartialEditionFromPos
+    Call SetPartialEditionFromPos
 ret
 
 
 DeleteBreakpoint:
-    call RestoreRealSource
+    Call RestoreRealSource
 
 ; >>> UPDATED
     If D$BPAnteroom <> 0
-        call AddBPToAnteroom D$BreakPointLocation &FALSE
+        Call AddBPToAnteroom D$BreakPointLocation &FALSE
     EndIf
 ; <<< UPDATED
 
-    mov eax D$BreakPointLocation
-    mov esi D$BpOnTable
+    Mov eax D$BreakPointLocation
+    Mov esi D$BpOnTable
 
     While D$esi <> eax
         add esi 4 | On D$esi = 0, ret
     End_While
 
-    mov edi esi | add esi 4
+    Mov edi esi | add esi 4
     While D$esi <> 0 | movsd | End_While
-    mov D$edi 0
-    mov B$ReadyToRun &FALSE
+    Mov D$edi 0
+    Mov B$ReadyToRun &FALSE
 
-    call SetPartialEditionFromPos
+    Call SetPartialEditionFromPos
 ret
 
 
 DeleteAllBreakpoints:
-    mov edi D$BpOnTable
+    Mov edi D$BpOnTable
 
     While D$edi <> 0
-        mov eax D$edi
-        call StoreUserAction ACTION_DELDCBP, eax, &NULL
-        mov D$edi 0 | add edi 4
+        Mov eax D$edi
+        Call StoreUserAction ACTION_DELDCBP, eax, &NULL
+        Mov D$edi 0 | add edi 4
     End_While
 
-    mov B$ReadyToRun &FALSE
+    Mov B$ReadyToRun &FALSE
 ret
 
 
 ; For the Undo Feature:
 
 DoStoreBP:
-    call StoreUserAction ACTION_DCBP, D$BreakPointLocation, &NULL
+    Call StoreUserAction ACTION_DCBP, D$BreakPointLocation, &NULL
 ret
 
 DoStoreRemoveBP:
-    call StoreUserAction ACTION_DELDCBP, D$BreakPointLocation, &NULL
+    Call StoreUserAction ACTION_DELDCBP, D$BreakPointLocation, &NULL
 ret
 
 ;;
@@ -377,9 +377,9 @@ ret
 
 SortBpOnTable:
   ; Sort BpOnTable:
-    mov esi D$BpOnTable, ecx 0
+    Mov esi D$BpOnTable, ecx 0
     While D$esi <> 0 | add esi 4 | add ecx 4 | End_While
-    call BubbleSort D$BpOnTable, ecx
+    Call BubbleSort D$BpOnTable, ecx
 
   ; Init the Pointer to 'BpOnTable' for insertions:
   ;  move D$BpOnTablePtr D$BpOnTable
@@ -407,10 +407,10 @@ Proc AdjustBpTable:
     Argument @Type
 
     pushad
-        mov esi D$UndoPtr, eax D@Type
+        Mov esi D$UndoPtr, eax D@Type
 
         If eax = ACTION_INSERT
-            mov eax D$esi+RECORD_CURRENTWRITINGPOS
+            Mov eax D$esi+RECORD_CURRENTWRITINGPOS
 ;;
   The calls to 'DoStoreInsert' are dones after the Insertion. So, we have to
   substract the Number of inserted Chars:
@@ -418,19 +418,19 @@ Proc AdjustBpTable:
             sub eax D$esi+RECORD_PARAM1
 
         Else_If eax = ACTION_BLOCKCOPY
-            mov eax D$esi+RECORD_CURRENTWRITINGPOS
+            Mov eax D$esi+RECORD_CURRENTWRITINGPOS
 
         Else_If eax = ACTION_BLOCKDELETE
-            mov eax D$esi+RECORD_CURRENTWRITINGPOS
+            Mov eax D$esi+RECORD_CURRENTWRITINGPOS
 
         Else_If eax = ACTION_DEL
-            mov eax D$esi+RECORD_CURRENTWRITINGPOS
+            Mov eax D$esi+RECORD_CURRENTWRITINGPOS
 
         Else_If eax = ControlZ
-            mov eax D$esi+RECORD_CURRENTWRITINGPOS
+            Mov eax D$esi+RECORD_CURRENTWRITINGPOS
 
         Else_If eax = ControlShiftZ
-            mov eax D$esi+RECORD_CURRENTWRITINGPOS
+            Mov eax D$esi+RECORD_CURRENTWRITINGPOS
 
         Else ; ACTION_OVERWRITE, ACTION_DCBP, ACTION_DELDCBP
             popad | ExitP
@@ -443,11 +443,11 @@ Proc AdjustBpTable:
             add eax D$CodeSource
         End_If
 
-        mov edi D$BpOnTable
+        Mov edi D$BpOnTable
 
         While D$edi <> 0
             If eax < D$edi
-                call AdjustDownwardPointers, D@Type | popad | ExitP
+                Call AdjustDownwardPointers, D@Type | popad | ExitP
             End_If
             add edi 4
         End_While
@@ -462,36 +462,36 @@ Proc AdjustDownwardPointers:
       ;
       ; Displacement Table are the ones from 'UndoPtr'
 
-        mov eax D$esi+RECORD_FLAG, ecx 0
+        Mov eax D$esi+RECORD_FLAG, ecx 0
 
         .If eax = ACTION_INSERT
           ;' n Chars':
-            mov ecx D$esi+RECORD_PARAM1
+            Mov ecx D$esi+RECORD_PARAM1
 
         .Else_If eax = ACTION_DEL
-            call DeleteBpOnDelCRLF
-            mov ecx 0-1
+            Call DeleteBpOnDelCRLF
+            Mov ecx 0-1
 
         .Else_If eax = ACTION_BLOCKDELETE
-            call DeleteBpInBlock
+            Call DeleteBpInBlock
            ; Selected Block length:
-            mov ecx D$esi+RECORD_PARAM2 | sub ecx D$esi+RECORD_PARAM1 | inc ecx
+            Mov ecx D$esi+RECORD_PARAM2 | sub ecx D$esi+RECORD_PARAM1 | inc ecx
             neg ecx
 
         .Else_If eax = ACTION_BLOCKCOPY
           ; 'ClipBoardLen' used in ControlV
-            mov ecx D$esi+RECORD_PARAM2 | sub ecx D$esi+RECORD_PARAM1 | inc ecx
+            Mov ecx D$esi+RECORD_PARAM2 | sub ecx D$esi+RECORD_PARAM1 | inc ecx
 ;;
         .Else_If eax = ACTION_DCBP
           ;; CurrentWritingPos:
-          ;  mov eax D$esi+8
+          ;  Mov eax D$esi+8
           ;  If D$TitleTable = 0
           ;      add eax D$CodeSource
           ;  Else
           ;      add eax D$ActualTitle
           ;  End_If
-          ;  mov D$BreakPointLocation eax
-          ;  call DeleteBreakpoint | ExitP
+          ;  Mov D$BreakPointLocation eax
+          ;  Call DeleteBreakpoint | ExitP
           
           ExitP
           
@@ -506,7 +506,7 @@ Proc AdjustDownwardPointers:
       ; ControlZ cases:
         If D@Type = ControlZ
             neg ecx
-            mov eax D$CurrentWritingPos | On B$eax-1 = LF, dec ecx
+            Mov eax D$CurrentWritingPos | On B$eax-1 = LF, dec ecx
         End_If
 
         While D$edi <> 0
@@ -517,7 +517,7 @@ EndP
 
 DeleteBpInBlock:
     pushad
-        mov ebx D$BlockStartTextPtr, edx D$BlockEndTextPtr | inc edx
+        Mov ebx D$BlockStartTextPtr, edx D$BlockEndTextPtr | inc edx
 ;;
   The user is deleting a Selected Block with BreakPoints inside. Remove these BPs.
   
@@ -532,7 +532,7 @@ DeleteBpInBlock:
             sub edx D$CodeSource | add edx D$ActualTitle
         End_If
 
-        mov esi D$BpOnTable
+        Mov esi D$BpOnTable
 
         .While D$esi <> 0
             lodsd
@@ -540,9 +540,9 @@ DeleteBpInBlock:
                 If eax <= edx
                     push esi
                       ; Direct Delete of concerned BP:
-                        mov edi esi | sub edi 4
+                        Mov edi esi | sub edi 4
                         While D$esi <> 0 | movsd | End_While
-                        mov D$edi 0
+                        Mov D$edi 0
                     pop esi
                 End_If
             .End_If
@@ -555,7 +555,7 @@ ________________________________________________________________________________
 
 DeleteBpOnDelCRLF:
     pushad
-        mov ebx D$esi+RECORD_CURRENTWRITINGPOS
+        Mov ebx D$esi+RECORD_CURRENTWRITINGPOS
 
         If D$TitleTable <> 0
             add ebx D$ActualTitle
@@ -565,15 +565,15 @@ DeleteBpOnDelCRLF:
 
         inc ebx
 
-        mov esi D$BpOnTable
+        Mov esi D$BpOnTable
 
         .While D$esi <> 0
             lodsd
             If eax = ebx
               ; Direct Delete of concerned BP:
-                mov edi esi | sub edi 4
+                Mov edi esi | sub edi 4
                 While D$esi <> 0 | movsd | End_While
-                mov D$edi 0 | jmp L9>
+                Mov D$edi 0 | jmp L9>
             End_If
         .End_While
 L9: popad
@@ -586,65 +586,65 @@ ________________________________________________________________________________
 [RedPlotSize: ?   RedPlotX: ?]
 
 DrawTheRedPlots:
-    mov eax D$FontHeight | shl eax 1 | add eax D$FontWidth | shr eax 2
-    mov D$RedPlotSize eax
-    mov eax D$BpMarginWidth | sub eax D$RedPlotSize | shr eax 1
-    mov D$RedPlotX eax
+    Mov eax D$FontHeight | shl eax 1 | add eax D$FontWidth | shr eax 2
+    Mov D$RedPlotSize eax
+    Mov eax D$BpMarginWidth | sub eax D$RedPlotSize | shr eax 1
+    Mov D$RedPlotX eax
 
-    call 'User32.BeginPaint' D$BpWindowHandle, PAINTSTRUCT | mov D$hdc eax
+    Call 'User32.BeginPaint' D$BpWindowHandle, PAINTSTRUCT | Mov D$hdc eax
 
-    call 'GDI32.SelectObject' D$hdc D$RedBrushHandle
-    call 'GDI32.SelectObject'  D$hdc D$Font1Handle | mov D$hfont eax
-    call 'GDI32.SetBkColor' D$hdc D$NormalBackColor
+    Call 'GDI32.SelectObject' D$hdc D$RedBrushHandle
+    Call 'GDI32.SelectObject'  D$hdc D$Font1Handle | Mov D$hfont eax
+    Call 'GDI32.SetBkColor' D$hdc D$NormalBackColor
 
-    mov ecx D$LineNumber, D$Line 0 | inc ecx | inc ecx
+    Mov ecx D$LineNumber, D$Line 0 | inc ecx | inc ecx
 
 L0: push ecx
-        call 'GDI32.TextOutA' D$hdc, 0, D$Line, BlankLine, 2
+        Call 'GDI32.TextOutA' D$hdc, 0, D$Line, BlankLine, 2
     pop ecx
-    mov eax D$FontHeight | add D$Line eax | dec ecx | cmp ecx 0 | jne L0<
+    Mov eax D$FontHeight | add D$Line eax | dec ecx | cmp ecx 0 | jne L0<
 
-    mov esi D$UpperLine, D$Line 0
+    Mov esi D$UpperLine, D$Line 0
 
     While esi < D$LastCharPosOnScreen
         If B$esi-1 = LF
             push esi
-                call DrawIfEsiInBreakPointsTable
+                Call DrawIfEsiInBreakPointsTable
             pop esi
         End_If
         inc esi
         If B$esi = LF
-            mov eax D$FontHeight | add D$line eax
+            Mov eax D$FontHeight | add D$line eax
         End_If
     End_While
 
-    call DrawTheBpLine
+    Call DrawTheBpLine
 
-    call 'USER32.EndPaint' D$BpWindowHandle, PAINTSTRUCT
+    Call 'USER32.EndPaint' D$BpWindowHandle, PAINTSTRUCT
 ret
 
 
 BlankMargin:
-    call 'User32.BeginPaint' D$BpWindowHandle, PAINTSTRUCT | mov D$hdc eax
+    Call 'User32.BeginPaint' D$BpWindowHandle, PAINTSTRUCT | Mov D$hdc eax
 
-    call 'GDI32.SetBkColor' D$hdc D$NormalBackColor
-    call 'GDI32.SelectObject' D$hdc D$Font1Handle
+    Call 'GDI32.SetBkColor' D$hdc D$NormalBackColor
+    Call 'GDI32.SelectObject' D$hdc D$Font1Handle
 
-    mov ecx D$LineNumber, D$Line 0 | inc ecx | inc ecx
+    Mov ecx D$LineNumber, D$Line 0 | inc ecx | inc ecx
 
 L0: push ecx
-        call 'GDI32.TextOutA' D$hdc, 0, D$Line, BlankLine, 2
+        Call 'GDI32.TextOutA' D$hdc, 0, D$Line, BlankLine, 2
     pop ecx
-    mov eax D$FontHeight | add D$Line eax | dec ecx | cmp ecx 0 | jne L0<
+    Mov eax D$FontHeight | add D$Line eax | dec ecx | cmp ecx 0 | jne L0<
 
-    call DrawTheBpLine
+    Call DrawTheBpLine
 
-    call 'USER32.EndPaint' D$BpWindowHandle, PAINTSTRUCT
+    Call 'USER32.EndPaint' D$BpWindowHandle, PAINTSTRUCT
 ret
 
 
 DrawIfEsiInBreakPointsTable:
-    mov ebx D$BpOnTable
+    Mov ebx D$BpOnTable
 
     .If B$RealSourceRestored = &FALSE
         If D$ActualTitle <> 0
@@ -656,11 +656,11 @@ DrawIfEsiInBreakPointsTable:
         If D$ebx = esi
             push esi, ebx
               ; Draw one Break-Point:
-                mov eax D$RedPlotX
-                mov ebx D$Line
-                mov ecx eax | add ecx D$RedPlotSize
-                mov edx ebx | add edx D$RedPlotSize
-                call 'GDI32.Ellipse' D$hdc, eax, ebx, ecx, edx
+                Mov eax D$RedPlotX
+                Mov ebx D$Line
+                Mov ecx eax | add ecx D$RedPlotSize
+                Mov edx ebx | add edx D$RedPlotSize
+                Call 'GDI32.Ellipse' D$hdc, eax, ebx, ecx, edx
             pop ebx, esi
         End_If
 
@@ -682,8 +682,8 @@ ________________________________________________________________________________
 Proc GetcodeBreakPointPosFromSourcePointer:
     Argument @SourcePtr
 
-        mov eax D@SourcePtr, esi D$StatementsTable, edx D$StatementsPtr
-        mov ebx D@SourcePtr
+        Mov eax D@SourcePtr, esi D$StatementsTable, edx D$StatementsPtr
+        Mov ebx D@SourcePtr
 
       ; 'edx' (D$StatementsPtr) should still point to the last record of 'StatementsTable'
       ; it doesn't :?

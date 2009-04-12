@@ -69,23 +69,23 @@ ResolveEquates:
      @UnknownSymbols:   B$ ? ; number of unresolved symbols (regs, macro emitted equates)
      @ErrorText:        D$ ?]; points at the appropriate error text in case of resolving problems
 
-    ;call 'Kernel32.OutputDebugStringA' {'ResolveEquates' 0}
+    ;Call 'Kernel32.OutputDebugStringA' {'ResolveEquates' 0}
 
   ; Set exception handler
     push @AbortCompilation
     push @AVHandler
     push D$fs:0
-    mov D$fs:0 esp
+    Mov D$fs:0 esp
 
       ; If table was relocated through memory extension the pointers must be altered
-        mov eax D$LastEquateList, edx D$EquateList
+        Mov eax D$LastEquateList, edx D$EquateList
         If eax <> edx
             sub D$LastEquateListPtr eax
             add D$LastEquateListPtr edx
-            mov D$LastEquateList edx
+            Mov D$LastEquateList edx
         EndIf
 
-        mov esi D$LastEquateListPtr, edi D$EquateSubstitutesPtr
+        Mov esi D$LastEquateListPtr, edi D$EquateSubstitutesPtr
 
       ; Empty list marker
         push 0
@@ -98,20 +98,20 @@ ________________________________________________________________________________
 
       ; Already dealt with? > Skip
         While B$esi-1 = 04
-            mov B$esi-1 EOI
+            Mov B$esi-1 EOI
 L0:         inc esi
             cmp B$esi LowSigns | ja L0<
             add esi 11
         EndWhile
 
-        mov D@ProcessedLimit esi
+        Mov D@ProcessedLimit esi
 
       ; Check for end of list (when we finish the todo-stack has to be empty)
         If D$esi = 02020202
             add esp 4 ; clear list marker
             pop D$fs:0 | add esp 8; Clear exception handler
 
-            mov D$EquateSubstitutesPtr edi
+            Mov D$EquateSubstitutesPtr edi
             move D$LastEquateListPtr D$EquateListPtr
             ret
         EndIf
@@ -120,7 +120,7 @@ ________________________________________________________________________________
 @EvaluateEquate: ; We start here when a not-yet-processed equate was found
 
       ; Skip name.
-        mov ebx esi
+        Mov ebx esi
         SkipName ebx
 
       ; ebx, esi > Address (D), Size (D), Flag (B)
@@ -128,24 +128,24 @@ ________________________________________________________________________________
       ; when there were really nested equates.
         push esi
 
-            mov D@IsNested 0
+            Mov D@IsNested 0
 
           ; esi > equate content,  ecx = size,  edx > substitute
-            mov esi D$ebx
-            mov ecx D$ebx+4
-            mov edx edi
+            Mov esi D$ebx
+            Mov ecx D$ebx+4
+            Mov edx edi
 
           ; We MUST copy the expression or GetFromQwordCheckSum might fail
           ; when there's no separator between the equate strings.
           ; (e.g. "...SummerWinter...") The expression buffer is abused for this.
             If B$esi+ecx >= ' '
                 push ecx
-                    mov edi D$ExpressionA
+                    Mov edi D$ExpressionA
                     rep movsb
-                    mov B$edi 0
-                    mov esi D$ExpressionA
+                    Mov B$edi 0
+                    Mov esi D$ExpressionA
                 pop ecx
-                mov edi edx
+                Mov edi edx
             EndIf
 
           ; Copy contents and replace nested equates
@@ -157,13 +157,13 @@ L7:             While B$esi <= LowSigns
                     cmp B$esi-1 TextSign | je L4>
                 EndWhile
 
-                mov al B$esi
+                Mov al B$esi
 
                 cmp al '0' | jb L3> ; ?
                 cmp al '9' | jbe L4>
 
 L3:           ; The equate string contains a text token. Check if it is an equate
-                call GetFromQwordCheckSum esi, D$EquateList, D$EquateListLimit
+                Call GetFromQwordCheckSum esi, D$EquateList, D$EquateListLimit
                 .If eax <> 0
 
                   ; Was equate already processed? Either it is among the equates resolved
@@ -171,20 +171,20 @@ L3:           ; The equate string contains a text token. Check if it is an equat
                   ; as being (forward-)resolved with 04.
                     ..If eax >= D@ProcessedLimit
                         If B$eax-1 <> 04
-                            mov esi eax
-                            mov edi edx
-                            call @CheckCyclicDependency
+                            Mov esi eax
+                            Mov edi edx
+                            Call @CheckCyclicDependency
                             jmp @EvaluateEquate ; leave esi on stack so we can later continue with this
                         EndIf
                     ..EndIf
 
-                    mov B@IsNested 1
+                    Mov B@IsNested 1
 
                   ; Resolved equates contents can be copied.
                     SkipName eax
                     push esi ecx
-                        mov esi D$eax
-                        mov ecx D$eax+4
+                        Mov esi D$eax
+                        Mov ecx D$eax+4
                         rep movsb
                     pop ecx esi
 
@@ -208,11 +208,11 @@ L4:             While B$esi > LowSigns
 
 L5:       ; Rescan equate contents, count brackets and unresolved symbols.
           ; This is done here to keep the unfold loop simple.
-            mov eax edx
+            Mov eax edx
             push edx
-                mov eax 0
+                Mov eax 0
                 While edx < edi
-                    mov al B$edx
+                    Mov al B$edx
                     If al = openSign
                         inc B@NumBrackets
                         inc B@UnpairedBrackets
@@ -222,7 +222,7 @@ L5:       ; Rescan equate contents, count brackets and unresolved symbols.
                         On ah < LowSigns,
                             inc B@UnknownSymbols
                     EndIf
-                    mov ah al
+                    Mov ah al
                     inc edx
                 EndWhile
             pop edx
@@ -234,32 +234,32 @@ L5:       ; Rescan equate contents, count brackets and unresolved symbols.
 
             push ebx
                 movzx ebx B@NumBrackets ; nr of bracket pairs
-                ;call OutputExp
-                    call @MergeEquate
-                ;call OutputExp
+                ;Call OutputExp
+                    Call @MergeEquate
+                ;Call OutputExp
             pop ebx
-            mov B@IsNested 1
+            Mov B@IsNested 1
 
 L6:     pop esi
 
       ; Mark list entry as forward-resolved so it can be skipped later in the linear
       ; processing of the equatelist (the temporary 04 tag is removed then).
         If D$esp <> 0
-            mov B$esi-1 04
+            Mov B$esi-1 04
         EndIf
 
       ; If the equate contents have been altered (nested substituted, expression merged)
       ; redirect the content pointer, otherwise ignore the copied contents.
         If B@IsNested = 1
-            mov D$ebx edx ; redirect
-            mov ecx edi
+            Mov D$ebx edx ; redirect
+            Mov ecx edi
             sub ecx edx
-            mov D$ebx+4 ecx
+            Mov D$ebx+4 ecx
         Else
-            mov edi edx ; throw away copied substitute
+            Mov edi edx ; throw away copied substitute
         EndIf
 
-        mov esi ebx
+        Mov esi ebx
         add esi 10
 
     jmp @GetNextEquate
@@ -267,12 +267,12 @@ ________________________________________________________________________________
 
 @AbortCompilation: ; Declaration error, reset old SEH & abort
   ; Reset exception handler
-    mov eax D$fs:0
-    mov eax D$eax
-    mov D$fs:0 eax
+    Mov eax D$fs:0
+    Mov eax D$eax
+    Mov D$fs:0 eax
   ; Abort
-    mov eax D@ErrorText
-    mov B$ErrorLevel 13 ; TODO assign meaningful error level
+    Mov eax D@ErrorText
+    Mov B$ErrorLevel 13 ; TODO assign meaningful error level
     jmp OutOnError
 ____________________________________________________________________________________________
 
@@ -284,39 +284,39 @@ ________________________________________________________________________________
 Proc @AVHandler:
     Arguments @ExceptionRecord, @Error, @ThreadContext
 
-        mov ecx D@ExceptionRecord     ; exception record
+        Mov ecx D@ExceptionRecord     ; exception record
         test D$ecx+4 1 | jnz L8>      ; non-continueable exception
 
       ; Check which type of exception occurred:
       ; We catch access violations that tried to read/write beyond the limit of the
       ; equate substitutes buffer. All other AVs are not dealt with.
         If D$ecx = &EXCEPTION_ACCESS_VIOLATION
-            mov eax D$ecx+24
-            mov edx D$EquateSubstitutesLimit
+            Mov eax D$ecx+24
+            Mov edx D$EquateSubstitutesLimit
             sub eax edx
             cmp eax 01000 | ja L8>
-            mov D@ErrorText EquateInflation
-            ;call 'User32.MessageBoxA' D$hwnd, EquateInflation, CompilationStopped, &MB_ICONEXCLAMATION
+            Mov D@ErrorText EquateInflation
+            ;Call 'User32.MessageBoxA' D$H.MainWindow, EquateInflation, CompilationStopped, &MB_ICONEXCLAMATION
 
       ; Deal with stack overflows (I've never seen this happening here)
         ElseIf D$ecx = &EXCEPTION_STACK_OVERFLOW
-            mov D@ErrorText BackwardNesting
-            ;call 'User32.MessageBoxA' D$hwnd, BackwardNesting, CompilationStopped, &MB_ICONEXCLAMATION
+            Mov D@ErrorText BackwardNesting
+            ;Call 'User32.MessageBoxA' D$H.MainWindow, BackwardNesting, CompilationStopped, &MB_ICONEXCLAMATION
 
       ; Unhandled exceptions are forwarded to the OS
         Else
-L8:         mov eax 1 | jmp L9>
+L8:         Mov eax 1 | jmp L9>
         EndIf
 
       ; Set the instruction pointer to continue with the cleanup routine
-        mov ecx D@ThreadContext ; get context record in ecx
-        mov edx D@Error         ; get pointer to ERR structure
-        mov eax D$edx+8         ; get safe place given in ERR structure
-        mov D$ecx+0B8 eax       ; replace instruction pointer
+        Mov ecx D@ThreadContext ; get context record in ecx
+        Mov edx D@Error         ; get pointer to ERR structure
+        Mov eax D$edx+8         ; get safe place given in ERR structure
+        Mov D$ecx+0B8 eax       ; replace instruction pointer
 
-        mov eax 0
+        Mov eax 0
 
-L9: mov esp ebp
+L9: Mov esp ebp
     pop ebp
 ret
 ____________________________________________________________________________________________
@@ -326,19 +326,19 @@ ________________________________________________________________________________
 ; Return address is at [esp], therefore we scan from [esp+4] -> [esp+x]=0
 
 @CheckCyclicDependency:
-    mov eax 1
+    Mov eax 1
     While D$esp+eax*4 <> 0
         cmp esi D$esp+eax*4 | je L0>
         inc eax
     EndWhile
 ret
   ; highlight first equate in the cycle
-L0: mov edx D$esp+eax*4, edi edx
-    mov ecx 0-1, al EOI
+L0: Mov edx D$esp+eax*4, edi edx
+    Mov ecx 0-1, al EOI
     repne scasb
-    mov ebx 0-2 | sub ebx ecx
-    call InternSearch
-    mov D@ErrorText CyclicDependancy
+    Mov ebx 0-2 | sub ebx ecx
+    Call InternSearch
+    Mov D@ErrorText CyclicDependancy
 
 jmp @AbortCompilation
 ____________________________________________________________________________________________
@@ -356,17 +356,17 @@ ________________________________________________________________________________
     push eax ecx esi
         push edx
             inc edx
-            mov D$StartOfSourceExpression edx
-            mov D$StartOfDestinationExpression edi
-            mov esi edi
-            call ComputeExpression
-            mov esi D$ExpressionA
-            mov ecx edi
+            Mov D$StartOfSourceExpression edx
+            Mov D$StartOfDestinationExpression edi
+            Mov esi edi
+            Call ComputeExpression
+            Mov esi D$ExpressionA
+            Mov ecx edi
             sub ecx esi
             dec ecx
         pop edx
 
-        mov edi edx
+        Mov edi edx
         rep movsb
 
     pop esi ecx eax
@@ -383,32 +383,32 @@ ________________________________________________________________________________
 
 OutputExp:
     pushad
-        mov ecx edi
+        Mov ecx edi
         sub ecx edx
-        mov esi edx
-        mov edi DebugStr
+        Mov esi edx
+        Mov edi DebugStr
         While ecx > 0
             lodsb
             If al = openSign
-                mov al '('
+                Mov al '('
             ElseIf al = closeSign
-                mov al ')'
+                Mov al ')'
             ElseIf al = addSign
-                mov al '+'
+                Mov al '+'
             ElseIf al = subSign
-                mov al '-'
+                Mov al '-'
             ElseIf al = divSign
-                mov al '/'
+                Mov al '/'
             ElseIf al = mulSign
-                mov al '*'
+                Mov al '*'
             ElseIf al = Space
-                mov al ' '
+                Mov al ' '
             EndIf
             stosb
             dec ecx
         EndWhile
-        mov B$edi 0
-        call 'Kernel32.OutputDebugStringA' DebugStr
+        Mov B$edi 0
+        Call 'Kernel32.OutputDebugStringA' DebugStr
     popad
 ret
 

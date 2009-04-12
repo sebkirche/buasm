@@ -36,13 +36,13 @@ ________________________________________________________________________________
 StructDialog:
     .If B$StructuresFileOK = &TRUE
         If D$StructHandle = 0
-            call 'USER32.DialogBoxParamA' D$hinstance, 18000, &NULL, StrucProc, &NULL
+            Call 'USER32.DialogBoxParamA' D$hinstance, 18000, &NULL, StrucProc, &NULL
         Else
             Beep
         End_If
 
     .Else
-        call Help B_U_AsmName, IncludeFilesHelp, RosAsmHlpMessage
+        Call Help B_U_AsmName, IncludeFilesHelp, RosAsmHlpMessage
 
     .End_If
 ret
@@ -53,89 +53,89 @@ ret
 ; Tag Dialog 18000
 
 Proc StrucProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_INITDIALOG
-        move D$StructHandle D@Adressee
+    ...If D@msg = &WM_INITDIALOG
+        move D$StructHandle D@hwnd
 
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
 
-       ; call 'USER32.SetWindowLongA' D@Adressee &GWL_EXSTYLE &WS_EX_TOOLWINDOW
+       ; Call 'USER32.SetWindowLongA' D@hwnd &GWL_EXSTYLE &WS_EX_TOOLWINDOW
 
-        call 'USER32.GetDlgItem' D@Adressee 10 | mov D$StructComboHandle eax
-        call 'USER32.GetDlgItem' D@Adressee 11 | mov D$StructEditHandle eax
-        call 'USER32.GetDlgItem' D@Adressee 30 | mov D$StructTitleEditHandle eax
-        call InitStructListBox
-        call InitSerFormFlag
-        call 'USER32.GetDlgItem' D@Adressee 10
-        call 'USER32.SetFocus' eax
+        Call 'USER32.GetDlgItem' D@hwnd 10 | Mov D$StructComboHandle eax
+        Call 'USER32.GetDlgItem' D@hwnd 11 | Mov D$StructEditHandle eax
+        Call 'USER32.GetDlgItem' D@hwnd 30 | Mov D$StructTitleEditHandle eax
+        Call InitStructListBox
+        Call InitSerFormFlag
+        Call 'USER32.GetDlgItem' D@hwnd 10
+        Call 'USER32.SetFocus' eax
         jmp L8>>
 
-    ...Else_If D@Message = &WM_COMMAND
+    ...Else_If D@msg = &WM_COMMAND
         .If W@wParam = 21
-            mov D$StructHeadFlag NACKEDSTRUCT | call ReBuildStructForm
+            Mov D$StructHeadFlag NACKEDSTRUCT | Call ReBuildStructForm
         .Else_If W@wParam = 22
-            mov D$StructHeadFlag LOCALSTRUCT | call ReBuildStructForm
+            Mov D$StructHeadFlag LOCALSTRUCT | Call ReBuildStructForm
         .Else_If W@wParam = 23
-            mov D$StructHeadFlag SEMISTRUCT | call ReBuildStructForm
+            Mov D$StructHeadFlag SEMISTRUCT | Call ReBuildStructForm
         .Else_If W@wParam = 24
-            mov D$StructHeadFlag DASHSTRUCT | call ReBuildStructForm
+            Mov D$StructHeadFlag DASHSTRUCT | Call ReBuildStructForm
         .Else_If W@wParam = 40
-            movzx eax W@wParam | call SetFormFlags | call ReBuildStructForm
+            movzx eax W@wParam | Call SetFormFlags | Call ReBuildStructForm
         .Else_If W@wParam = 41
-            movzx eax W@wParam | call SetFormFlags | call ReBuildStructForm
+            movzx eax W@wParam | Call SetFormFlags | Call ReBuildStructForm
         .Else_If W@wParam = 42
-            movzx eax W@wParam | call SetFormFlags | call ReBuildStructForm
+            movzx eax W@wParam | Call SetFormFlags | Call ReBuildStructForm
         .Else_If W@wParam = 50
             If B$ZeroOrQuestionMark = '?'
-                mov B$ZeroOrQuestionMark '0'
+                Mov B$ZeroOrQuestionMark '0'
             Else
-                mov B$ZeroOrQuestionMark '?'
+                Mov B$ZeroOrQuestionMark '?'
             End_If
-           call ReBuildStructForm
+           Call ReBuildStructForm
         .End_If
 
-        mov eax D@wParam | and D@wParam 0FFFF | shr eax 16
+        Mov eax D@wParam | and D@wParam 0FFFF | shr eax 16
         .If eax = &CBN_SELCHANGE
-            call InitStructureName | call BuildStructForm
+            Call InitStructureName | Call BuildStructForm
 
         .Else_If eax = &EN_CHANGE
             If W@wParam = 30
-                call GetStructureUserName | call ReBuildStructForm
+                Call GetStructureUserName | Call ReBuildStructForm
             End_If
 
         .Else_If D@wParam = &IDCANCEL
             jmp L1>
 
         .Else_If D@wParam = &IDOK
-            call ClipStructure
-L1:         mov D$StructHandle 0
+            Call ClipStructure
+L1:         Mov D$StructHandle 0
             VirtualFree D$WinStructures
-            call 'USER32.EndDialog' D@Adressee 0
+            Call 'USER32.EndDialog' D@hwnd 0
 
         .Else_If D@wParam = &IDHELP
-            call Help, B_U_AsmName, StructHelp, ContextHlpMessage
+            Call Help, B_U_AsmName, StructHelp, ContextHlpMessage
 
         .Else_If eax = &BN_CLICKED
-            mov eax D@wParam
+            Mov eax D@wParam
 
        .End_If
 
-    ...Else_If D@Message = &WM_CTLCOLOREDIT
+    ...Else_If D@msg = &WM_CTLCOLOREDIT
         jmp L1>
 
-    ...Else_If D@Message = &WM_CTLCOLORLISTBOX
-L1:     call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+    ...Else_If D@msg = &WM_CTLCOLORLISTBOX
+L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
 
     ...Else
-L8:     popad | mov eax &FALSE | jmp L9>
+L8:     popad | Mov eax &FALSE | jmp L9>
 
     ...End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
@@ -148,20 +148,20 @@ ________________________________________________________________________________
 ; Fill the ComboBox with all 'WinStructures' Data:
 
 InitStructListBox:
-    call OpenStructureFile
+    Call OpenStructureFile
 
-    mov esi D$WinStructures
+    Mov esi D$WinStructures
     While B$esi <> 0
         lodsb
         If al = '['
-            mov edi StructTitle
+            Mov edi StructTitle
 L1:             lodsb | cmp al ':' | je L2>
                 stosb | jmp L1<
-L2:         mov B$edi 0
-            call 'USER32.SendMessageA' D$StructComboHandle &CB_ADDSTRING 0 StructTitle
+L2:         Mov B$edi 0
+            Call 'USER32.SendMessageA' D$StructComboHandle &CB_ADDSTRING 0 StructTitle
         End_If
     End_While
-    mov D$StructTitle 0
+    Mov D$StructTitle 0
 ret
 
 
@@ -170,10 +170,10 @@ ret
 
 OpenStructureFile:
     .If B$StructuresFileOK = &FALSE
-        call Help, B_U_AsmName, IncludeFilesHelp, ContextHlpMessage | ret
+        Call Help, B_U_AsmName, IncludeFilesHelp, ContextHlpMessage | ret
 
     .Else_If B$SeveralStructuresFiles = &TRUE
-        mov esi EquatesName, edi MenuItemString
+        Mov esi EquatesName, edi MenuItemString
         While B$esi <> 0 | movsb | End_While
         dec edi
         While B$edi <> '.' | dec edi | End_While
@@ -183,42 +183,42 @@ L0:     dec edi | cmp B$edi '\' | je L1>
                   cmp edi MenuItemString | ja L0<
                     jmp L2>
 L1:     inc edi
-L2:     mov ecx &MAX_PATH | add ecx MenuItemString | sub ecx edi
-      ; Case when call from the ToolBar
-        On D$MenuID = 0, mov D$MenuID 4001
-        call 'USER32.GetMenuStringA' D$MenuHandle, D$MenuID, edi, ecx, &MF_BYCOMMAND
+L2:     Mov ecx &MAX_PATH | add ecx MenuItemString | sub ecx edi
+      ; Case when Call from the ToolBar
+        On D$MenuID = 0, Mov D$MenuID 4001
+        Call 'USER32.GetMenuStringA' D$MenuHandle, D$MenuID, edi, ecx, &MF_BYCOMMAND
 
-        mov esi MenuItemString
-        While B$esi <> 0 | inc esi | End_While | mov D$esi '.str', B$esi+4 0
+        Mov esi MenuItemString
+        While B$esi <> 0 | inc esi | End_While | Mov D$esi '.str', B$esi+4 0
 
     .End_If
 
-    call 'KERNEL32.CreateFileA' MenuItemString &GENERIC_READ,
+    Call 'KERNEL32.CreateFileA' MenuItemString &GENERIC_READ,
                                 &FILE_SHARE_READ, 0, &OPEN_EXISTING,
                                 &FILE_ATTRIBUTE_NORMAL, 0
-    mov D$StructuresFileHandle eax
+    Mov D$StructuresFileHandle eax
 
-    call 'KERNEL32.GetFileSize' eax 0 | mov D$StructuresFileSize eax
+    Call 'KERNEL32.GetFileSize' eax 0 | Mov D$StructuresFileSize eax
 
     VirtualAlloc WinStructures eax
 
-    mov D$NumberOfReadBytes 0
-    call 'KERNEL32.ReadFile' D$StructuresFileHandle, D$WinStructures,
+    Mov D$NumberOfReadBytes 0
+    Call 'KERNEL32.ReadFile' D$StructuresFileHandle, D$WinStructures,
                              D$StructuresFileSize, NumberOfReadBytes, 0
 
-    call 'KERNEL32.CloseHandle' D$StructuresFileHandle
+    Call 'KERNEL32.CloseHandle' D$StructuresFileHandle
 ret
 
 ____________________________________________________________________________________________
 
 InitStructureName:
-    call 'User32.SendMessageA' D$StructComboHandle &CB_GETCURSEL 0 0
+    Call 'User32.SendMessageA' D$StructComboHandle &CB_GETCURSEL 0 0
     push eax
-        call 'User32.SendMessageA' D$StructComboHandle &CB_GETLBTEXT eax StructTitle
-        mov D$StructTitleLen eax
+        Call 'User32.SendMessageA' D$StructComboHandle &CB_GETLBTEXT eax StructTitle
+        Mov D$StructTitleLen eax
     pop eax
-    call 'User32.SendMessageA' D$StructComboHandle &CB_GETLBTEXT eax UserStructTitle
-    call 'User32.SendMessageA' D$StructTitleEditHandle &WM_SETTEXT 0 UserStructTitle
+    Call 'User32.SendMessageA' D$StructComboHandle &CB_GETLBTEXT eax UserStructTitle
+    Call 'User32.SendMessageA' D$StructTitleEditHandle &WM_SETTEXT 0 UserStructTitle
 ret
 
 ____________________________________________________________________________________________
@@ -227,28 +227,28 @@ ________________________________________________________________________________
 
 
 InitSerFormFlag:
-    mov eax D$StructHeadFlag | add eax 21
-    call 'User32.SendDlgItemMessageA' D$StructHandle eax &BM_SETCHECK 1 0
+    Mov eax D$StructHeadFlag | add eax 21
+    Call 'User32.SendDlgItemMessageA' D$StructHandle eax &BM_SETCHECK 1 0
 
-    mov eax D$StructMode | add eax 40
-    call 'User32.SendDlgItemMessageA' D$StructHandle eax &BM_SETCHECK 1 0
+    Mov eax D$StructMode | add eax 40
+    Call 'User32.SendDlgItemMessageA' D$StructHandle eax &BM_SETCHECK 1 0
 ret
 
 
 
 SetFormFlags:
-    mov D$StructMode eax | sub D$StructMode 40
+    Mov D$StructMode eax | sub D$StructMode 40
 
-    call 'User32.GetDlgItem' D$StructHandle eax | mov D$OnModeHandle eax
+    Call 'User32.GetDlgItem' D$StructHandle eax | Mov D$OnModeHandle eax
 
-    call 'User32.GetDlgItem' D$StructHandle 40
-    call 'User32.SendMessageA' eax &BM_SETCHECK 0 0
-    call 'User32.GetDlgItem' D$StructHandle 41
-    call 'User32.SendMessageA' eax &BM_SETCHECK 0 0
-    call 'User32.GetDlgItem' D$StructHandle 42
-    call 'User32.SendMessageA' eax &BM_SETCHECK 0 0
+    Call 'User32.GetDlgItem' D$StructHandle 40
+    Call 'User32.SendMessageA' eax &BM_SETCHECK 0 0
+    Call 'User32.GetDlgItem' D$StructHandle 41
+    Call 'User32.SendMessageA' eax &BM_SETCHECK 0 0
+    Call 'User32.GetDlgItem' D$StructHandle 42
+    Call 'User32.SendMessageA' eax &BM_SETCHECK 0 0
 
-    call 'User32.SendMessageA' D$OnModeHandle &BM_SETCHECK 1 0
+    Call 'User32.SendMessageA' D$OnModeHandle &BM_SETCHECK 1 0
 ret
 
 ____________________________________________________________________________________________
@@ -256,15 +256,15 @@ ________________________________________________________________________________
 
 ReBuildStructForm:
     cmp B$StructTitle 0 | je L9>
-        call SetStructHeadText | call BuildStructForm
+        Call SetStructHeadText | Call BuildStructForm
 L9: ret
 
 
 BuildStructForm:
-    mov edi StructEditText, eax 0, ecx 1000 | rep stosd
+    Mov edi StructEditText, eax 0, ecx 1000 | rep stosd
 
   ; First, search the structure inside 'WinStructures' list same for all forms):
-    mov esi D$WinStructures, bl B$StructTitle, eax D$StructTitleLen
+    Mov esi D$WinStructures, bl B$StructTitle, eax D$StructTitleLen
 
 L1: inc esi
     While B$esi <> bl
@@ -272,36 +272,36 @@ L1: inc esi
     End_While
     cmp B$esi-1 '[' | jne L1<
     push esi
-        mov ecx eax
-        mov edi StructTitle | repe cmpsb
-        mov dl B$esi
+        Mov ecx eax
+        Mov edi StructTitle | repe cmpsb
+        Mov dl B$esi
     pop esi | jne L1<
     cmp dl ':' | jne L1<
     add esi eax | inc esi
 
     If D$StructMode = 0
-        call BuildStructDataForm
-        sub edi 3 | mov al ']' | stosb |  mov B$edi 0
+        Call BuildStructDataForm
+        sub edi 3 | Mov al ']' | stosb |  Mov B$edi 0
     Else_If D$StructMode = 1
-       call BuildStructEquForm
-       sub edi 3 | mov al ']' | stosb |  mov B$edi 0
+       Call BuildStructEquForm
+       sub edi 3 | Mov al ']' | stosb |  Mov B$edi 0
     Else_If D$StructMode = 2
-       call BuildStructStackForm
-       sub edi 3 |  mov B$edi 0
+       Call BuildStructStackForm
+       sub edi 3 |  Mov B$edi 0
     End_If
 
-    call StripDoubleColon
+    Call StripDoubleColon
 
-    call 'User32.SendMessageA' D$StructEditHandle &WM_SETTEXT 0 StructEditText
+    Call 'User32.SendMessageA' D$StructEditHandle &WM_SETTEXT 0 StructEditText
 ret
 
 
 StripDoubleColon:
-    mov esi StructEditText
+    Mov esi StructEditText
     While B$esi > 0
         lodsb
         If al = ':'
-            On B$esi = ':', mov B$esi ' '
+            On B$esi = ':', Mov B$esi ' '
         End_If
     End_While
 ret
@@ -310,25 +310,25 @@ ret
 
 BuildStructDataForm:
   ; Write the Structure main name in the EditBox:
-    mov edi StructEditText
+    Mov edi StructEditText
 
     push esi
-        mov esi UserStructTitle
-        mov al '[' | stosb
+        Mov esi UserStructTitle
+        Mov al '[' | stosb
         While B$esi <> 0
             movsb
         End_While
-        mov al ':' | stosb
+        Mov al ':' | stosb
     pop esi
-    mov al 13 | stosb | mov al 10 | stosb | mov al ' ' | stosb
+    Mov al 13 | stosb | Mov al 10 | stosb | Mov al ' ' | stosb
 
 ; Write the items:
 ;
 ; [REBARBANDINFO:|cbSize D|fMask D|fStyle D|clrFore D|cl...
 ;                ^
-    call SetStructHeadText
+    Call SetStructHeadText
 
-L0: call WriteStructHead
+L0: Call WriteStructHead
     inc esi                                           ; jmp over first '|'
     If B$esi+1 = '|'
         ; case of missing names: "[DDEUP:|D|D'
@@ -338,7 +338,7 @@ L0: call WriteStructHead
         While B$esi <> ' '
         movsb
         End_While
-        mov al ':' | stosb
+        Mov al ':' | stosb
         inc esi
     End_If
 
@@ -346,21 +346,21 @@ L0: call WriteStructHead
 ;                        ^
     ..If B$esi+1 = '|'
 L3:     If B$esi = 'B'
-            mov eax ' B$ '
+            Mov eax ' B$ '
         Else_If B$esi = 'W'
-            mov eax ' W$ '
+            Mov eax ' W$ '
         Else_If B$esi = 'D'
-            mov eax ' D$ '
+            Mov eax ' D$ '
         Else_If B$esi = 'Q'
-            mov eax ' Q$ '
+            Mov eax ' Q$ '
         Else_If B$esi = 'F'
-            mov eax ' F$ '
+            Mov eax ' F$ '
         Else_If B$esi = 'U'
-            mov eax ' U$ '
+            Mov eax ' U$ '
         Else_If B$esi = 'T'
-            mov eax ' T$ '
+            Mov eax ' T$ '
         End_If
-        stosd | mov eax 0200A0D30 | mov al B$ZeroOrQuestionMark | stosd
+        stosd | Mov eax 0200A0D30 | Mov al B$ZeroOrQuestionMark | stosd
       ; 0200A0D30 =  '0' 13 10 ' '
         inc esi
 
@@ -374,49 +374,49 @@ L4:         dec edi | cmp B$edi 13 | jne L4<
 L4:         dec esi | cmp B$esi-1 '|' | jne L4<
             On B$edi-1 = ']', dec edi
           ; No more need of Square Brackets for Multiple Data:
-           ; mov eax 05B0A0D5D | stosd              ;  05B0A0D5D = ']' 13 10 '['
-           mov W$edi CRLF, B$edi+2 ' ' | add edi 3
-                call WriteStructHead
+           ; Mov eax 05B0A0D5D | stosd              ;  05B0A0D5D = ']' 13 10 '['
+           Mov W$edi CRLF, B$edi+2 ' ' | add edi 3
+                Call WriteStructHead
                 While B$esi <> ' '
                     movsb
                 End_While
-            mov al ':' | stosb | inc esi
+            Mov al ':' | stosb | inc esi
 
         If B$esi = 'B'
-            mov eax ' B$ '
+            Mov eax ' B$ '
         Else_If B$esi = 'W'
-            mov eax ' W$ '
+            Mov eax ' W$ '
         Else_If B$esi = 'D'
-            mov eax ' D$ '
+            Mov eax ' D$ '
         Else_If B$esi = 'U'
-            mov eax ' U$ '
+            Mov eax ' U$ '
         Else_If B$esi = 'Q'
-            mov eax ' Q$ '
+            Mov eax ' Q$ '
         Else_If B$esi = 'F'
-            mov eax ' F$ '
+            Mov eax ' F$ '
         Else_If B$esi = 'T'
-            mov eax ' T$ '
+            Mov eax ' T$ '
         End_If
 
-        stosd | dec edi | mov eax ' 0 #' | stosd | mov al B$ZeroOrQuestionMark, B$edi-3 al
+        stosd | dec edi | Mov eax ' 0 #' | stosd | Mov al B$ZeroOrQuestionMark, B$edi-3 al
         add esi 2
         If B$esi >= 'A'
-            mov al '&' | stosb  ; If it is a Win Equate instead of a value.
+            Mov al '&' | stosb  ; If it is a Win Equate instead of a value.
         End_If
         While B$esi <> '|'
             On B$esi = 13, jmp L5>
             movsb
         End_While
      ; No more need of Square Brackets for Multiple Data:
-L5:   ;  mov eax 05B0A0D5D | stosd   ; 05B0A0D5D =  ']' 13 10 '['
-      mov W$edi CRLF, B$edi+2 ' ' | add edi 3
+L5:   ;  Mov eax 05B0A0D5D | stosd   ; 05B0A0D5D =  ']' 13 10 '['
+      Mov W$edi CRLF, B$edi+2 ' ' | add edi 3
         If B$esi <> '|'
           ; dec edi
         End_If
     ..Else
 L6:     movsb | cmp B$esi '|' | je L7>
                 cmp B$esi 13 | jne L6<
-L7:     mov al 13 | stosb | mov al 10 | stosb | mov al ' ' | stosb
+L7:     Mov al 13 | stosb | Mov al 10 | stosb | Mov al ' ' | stosb
     ..End_If
 
 L9: cmp B$esi '|' | je L0<<
@@ -428,9 +428,9 @@ ret
 BuildStructEquForm:
   ; Write the Structure main name in the EditBox:
   ; esi is on 'WinStructures'
-    mov edi StructEditText, D$StructDisplacement 0
+    Mov edi StructEditText, D$StructDisplacement 0
 
-        mov al '[' | stosb
+        Mov al '[' | stosb
 
 BuildFromEquRoutine:           ; reused (called by 'BuildStructStackForm')
 
@@ -438,9 +438,9 @@ BuildFromEquRoutine:           ; reused (called by 'BuildStructStackForm')
 ;
 ; [REBARBANDINFO:|cbSize D|fMask D|fStyle D|clrFore D|cl...
 ;                ^
-    call SetStructHeadText
+    Call SetStructHeadText
 
-L0: call WriteStructHead
+L0: Call WriteStructHead
 
     inc esi                                           ; jmp over first '|'
 
@@ -455,19 +455,19 @@ L0: call WriteStructHead
                 inc esi | jmp L1>
             End_If
         End_While
-L1:     mov eax 'Dis ' | stosd
+L1:     Mov eax 'Dis ' | stosd
     .End_If
 
-    mov eax D$StructDisplacement
+    Mov eax D$StructDisplacement
   ; Destination String pointed by edi. eax holds the value to translate in Ascii Decimal.
-    mov dl 0FF | push edx                       ; Push stack end mark
-    mov ecx 10
-L1: mov edx 0
+    Mov dl 0FF | push edx                       ; Push stack end mark
+    Mov ecx 10
+L1: Mov edx 0
     div ecx | push edx | cmp eax 0 | ja L1<     ; Push remainders
 L2: pop eax                                     ; Retrieve Backward
     cmp al 0FF | je L3>                         ; Over?
        add al '0' | stosb | jmp L2<             ; Write
-L3: mov al 13 | stosb | mov al 10 | stosb | mov al ' ' | stosb
+L3: Mov al 13 | stosb | Mov al 10 | stosb | Mov al ' ' | stosb
 
   ; Cases of '::', as found above:
     If B$esi = ':'
@@ -494,7 +494,7 @@ L3: mov al 13 | stosb | mov al 10 | stosb | mov al ' ' | stosb
 
     ..Else_If B$esi+1 = ' '
       ; Cases of multiple Values (#n)
-        mov bl B$esi | add esi 2 | mov ecx 0, eax 0
+        Mov bl B$esi | add esi 2 | Mov ecx 0, eax 0
 L4:     lodsb
         cmp al '|' | je L6>>
         cmp al '9' | ja L4>
@@ -505,28 +505,28 @@ L4:     lodsb
                 lea ecx D$eax+ecx*2         ;     ecx = eax + old ecx * 10
         jmp L4<
 L4:
-            mov D$imm32 0
+            Mov D$imm32 0
             pushad
-                mov edi DataLoopWinEquate
+                Mov edi DataLoopWinEquate
                 ;mov al '&' | stosb |
                 dec esi
                 While B$esi > ' '
                     movsb | On B$esi = '|', jmp L4>
                 End_While
-L4:             mov al 0 | stosb
-                mov esi DataLoopWinEquate
-                mov B$ShowWinEquateError &FALSE
+L4:             Mov al 0 | stosb
+                Mov esi DataLoopWinEquate
+                Mov B$ShowWinEquateError &FALSE
 
-                call ReadWin32Equate | on B$EquateFound = &TRUE, mov D$imm32 eax
+                Call ReadWin32Equate | on B$EquateFound = &TRUE, Mov D$imm32 eax
             popad
 
             If B$EquateFound = &TRUE
-                mov ecx D$imm32
+                Mov ecx D$imm32
             Else
-                mov ecx 1
+                Mov ecx 1
             End_If
 
-            mov B$ShowWinEquateError &TRUE, D$imm32 0
+            Mov B$ShowWinEquateError &TRUE, D$imm32 0
             While B$esi >= 'A'
                 inc esi | On B$esi = '|', jmp L5>
             End_While
@@ -537,11 +537,11 @@ L4:             mov al 0 | stosb
 L5:   ; Error case
 
 L6:     If bl = 'B'
-            mov eax 1
+            Mov eax 1
         Else_If bl = 'W'
-            mov eax 2
+            Mov eax 2
         Else
-            mov eax 4
+            Mov eax 4
         End_If
         mul ecx | add D$StructDisplacement eax | dec esi
 
@@ -558,9 +558,9 @@ ret
 
 BuildStructStackForm:
 
-    mov edi StructEditText | add edi 100 | mov D$StructDisplacement 0
+    Mov edi StructEditText | add edi 100 | Mov D$StructDisplacement 0
 
-    call BuildFromEquRoutine
+    Call BuildFromEquRoutine
 
     While B$esi <> '|'        ; Back one item to count the last one size
         dec esi
@@ -588,7 +588,7 @@ BuildStructStackForm:
     .Else    ;_If B$esi+1 = ' '
   ; In fact(, it apears that, when the Structure is ended by a Table, this Table Length
   ; is already counted inside the D$StructDisplacement provided by 'BuildFromEquRoutine'.
-        mov bl B$esi | add esi 2 | mov ecx 0
+        Mov bl B$esi | add esi 2 | Mov ecx 0
 L4:     lodsb
         cmp al '9' | ja L5>
         cmp al '0' | jb L5>
@@ -599,46 +599,46 @@ L4:     lodsb
         jmp L4<
 L5:     ; Error case
 L6:     If bl = 'B'
-            mov eax 1
+            Mov eax 1
         Else_If bl = 'W'
-            mov eax 2
+            Mov eax 2
         Else
-            mov eax 4
+            Mov eax 4
         End_If
         mul ecx | add D$StructDisplacement eax | dec esi
 ;;
 
     .End_If
 
-    mov edi StructEditText, esi UserStructTitle  ; Write "Structure @NAME"
-    mov eax 'Stru' | stosd | mov eax 'ctur' | stosd | mov ax 'e ' | stosw | mov al '@' | stosb
+    Mov edi StructEditText, esi UserStructTitle  ; Write "Structure @NAME"
+    Mov eax 'Stru' | stosd | Mov eax 'ctur' | stosd | Mov ax 'e ' | stosw | Mov al '@' | stosb
         While B$esi <> 0
             movsb
         End_While
-        mov al ' ' | stosb
+        Mov al ' ' | stosb
 
-    mov eax D$StructDisplacement
+    Mov eax D$StructDisplacement
     Align_On 4 eax                              ; Stack must remain aligned, whatever.
 
   ; Destination String pointed by edi. eax holds the value to translate in Ascii Decimal.
-    mov dl 0FF | push edx                       ; Push stack end mark
-    mov ecx 10
-L0: mov edx 0
+    Mov dl 0FF | push edx                       ; Push stack end mark
+    Mov ecx 10
+L0: Mov edx 0
     div ecx | push edx | cmp eax 0 | ja L0<     ; Push remainders
 L2: pop eax                                     ; Retrieve Backward
     cmp al 0FF | je L9>                         ; Over?
        add al '0' | stosb | jmp L2<             ; Write
 L9:
-    mov ax ', ' | stosw
+    Mov ax ', ' | stosw
 
-    mov esi StructEditText | add esi 100
+    Mov esi StructEditText | add esi 100
 
     While B$esi <> 0
         lodsb
         If al = 13
-            mov al ','
+            Mov al ','
         Else_If al = 10
-            mov al ' '
+            Mov al ' '
         End_If
         stosb
     End_While
@@ -651,7 +651,7 @@ ________________________________________________________________________________
 
 WriteStructHead:
     push esi
-        mov esi StructHeadText
+        Mov esi StructHeadText
         While B$esi > 0
             movsb
         End_While
@@ -666,33 +666,33 @@ ret
 
 SetStructHeadText:
     pushad
-        mov edi StructHeadText
+        Mov edi StructHeadText
 
         If B$StructMode = 2
-            mov al '@' | stosb | jmp L1>
+            Mov al '@' | stosb | jmp L1>
         End_If
 
         .If D$StructHeadFlag = NACKEDSTRUCT
             ; 0
 
         .Else_If D$StructHeadFlag = LOCALSTRUCT
-            mov al '@' | stosb
+            Mov al '@' | stosb
 
         .Else
-L1:         call GetStructureUserName
-            mov esi UserStructTitle
+L1:         Call GetStructureUserName
+            Mov esi UserStructTitle
             While B$esi <> 0
                 movsb
             End_While
             If D$StructHeadFlag = SEMISTRUCT
-                mov al '.' | stosb
+                Mov al '.' | stosb
             Else
-                mov al '_' | stosb
+                Mov al '_' | stosb
             End_If
 
         .End_If
 
-        mov al 0 | stosb
+        Mov al 0 | stosb
     popad
 ret
 ____________________________________________________________________________________________
@@ -700,7 +700,7 @@ ________________________________________________________________________________
 [UserStructName: ? #50]
 
 GetStructureUserName:
-    call 'USER32.SendMessageA' D$StructTitleEditHandle &WM_GETTEXT 150 UserStructTitle
+    Call 'USER32.SendMessageA' D$StructTitleEditHandle &WM_GETTEXT 150 UserStructTitle
 ret
 
 ____________________________________________________________________________________________
@@ -713,12 +713,12 @@ ClipStructure:
         VirtualAlloc ClipStructureMemory 4000
         move D$BlockStartTextPtr D$ClipStructureMemory
 
-        call 'USER32.SendMessageA' D$StructEditHandle, &WM_GETTEXT, 4000, D$ClipStructureMemory
+        Call 'USER32.SendMessageA' D$StructEditHandle, &WM_GETTEXT, 4000, D$ClipStructureMemory
 
         If eax > 0
             add eax D$BlockStartTextPtr
-            mov B$BlockInside &TRUE, D$BlockEndTextPtr eax
-            call ControlC
+            Mov B$BlockInside &TRUE, D$BlockEndTextPtr eax
+            Call ControlC
 
             VirtualFree D$ClipStructureMemory
         End_If

@@ -20,13 +20,13 @@ ________________________________________________________________________________
 RemoveLocalLabels:
     VirtualFree D$PlainLabelList
 
-    mov eax D$LabelList, eax D$eax | inc eax
+    Mov eax D$LabelList, eax D$eax | inc eax
 
     VirtualAlloc PlainLabelList eax
 
-    mov edx D$LabelList | add edx D$edx
-    mov edi D$PlainLabelList | add edi 5
-    mov esi D$LabelList | add esi 5
+    Mov edx D$LabelList | add edx D$edx
+    Mov edi D$PlainLabelList | add edi 5
+    Mov esi D$LabelList | add esi 5
 
     .While esi < edx
         cmp B$esi+2 EOI | jne L1>
@@ -46,8 +46,8 @@ L1:     While B$esi <> EOI
         movsb   ; |
 L2: .End_While
 
-    mov eax edi | mov D$EndOfPlainLabelList eax | sub eax D$PlainLabelList
-    mov edi D$PlainLabelList | stosd | mov al EOI | stosb
+    Mov eax edi | Mov D$EndOfPlainLabelList eax | sub eax D$PlainLabelList
+    Mov edi D$PlainLabelList | stosd | Mov al EOI | stosb
 ret
 ____________________________________________________________________________________________
 
@@ -65,21 +65,21 @@ ________________________________________________________________________________
 
 ;Task : Seperate CodeLabels from DataLabel, (Put into a list of their own)
 Proc DisplayUnusedSymbolsDialog:
-    Argument @Adressee
-        call RemoveLocalLabels
-        mov eax D$PlainLabelList | mov eax D$eax
+    Argument @hwnd
+        Call RemoveLocalLabels
+        Mov eax D$PlainLabelList | Mov eax D$eax
         push eax
             VirtualAlloc CodeLabelNameList eax
         pop eax
             VirtualAlloc DataLabelNameList eax
 
-        mov edi D$CodeLabelNameList, D$CodeLabelNameList.Current edi
-        mov edi D$DataLabelNameList, D$DataLabelNameList.Current edi
+        Mov edi D$CodeLabelNameList, D$CodeLabelNameList.Current edi
+        Mov edi D$DataLabelNameList, D$DataLabelNameList.Current edi
 
-        mov ecx D$PlainLabelList | add ecx D$ecx
-        mov esi D$PlainLabelList | add esi 5
-        mov edi WorkBuffer
-        mov D$NumberOfUnusedCodeLabels 0, D$NumberOfUnusedDataLabels 0
+        Mov ecx D$PlainLabelList | add ecx D$ecx
+        Mov esi D$PlainLabelList | add esi 5
+        Mov edi WorkBuffer
+        Mov D$NumberOfUnusedCodeLabels 0, D$NumberOfUnusedDataLabels 0
 
         .While esi < ecx
 L1:         While B$esi <> EOI
@@ -88,34 +88,34 @@ L1:         While B$esi <> EOI
 
             Test B$esi+5 DoneFlag | jnz L1>>
 
-            mov B$edi 0 | inc edi
+            Mov B$edi 0 | inc edi
 
             Test B$esi+5 CodeLabelFlag | jz L2>
                 push esi
-                    mov edi D$CodeLabelNameList.Current
-                    mov esi WorkBuffer
+                    Mov edi D$CodeLabelNameList.Current
+                    Mov esi WorkBuffer
                     While B$esi <> 0 | movsb | End_While
-                    mov B$edi 0 | inc edi
-                    mov D$CodeLabelNameList.Current edi
+                    Mov B$edi 0 | inc edi
+                    Mov D$CodeLabelNameList.Current edi
                     inc D$NumberOfUnusedCodeLabels
                 pop esi
             jmp L1>
 
             L2: Test B$esi+5 DataLabelFlag | jz L1>
                 push esi
-                    mov edi D$DataLabelNameList.Current esi WorkBuffer
+                    Mov edi D$DataLabelNameList.Current esi WorkBuffer
                     While B$esi <> 0 | movsb | End_While
-                    mov B$edi 0 | inc edi
-                    mov D$DataLabelNameList.Current edi
+                    Mov B$edi 0 | inc edi
+                    Mov D$DataLabelNameList.Current edi
                     inc D$NumberOfUnusedDataLabels
                 pop esi
             Jmp L1>
 L1:         add esi 7
-            mov edi WorkBuffer
+            Mov edi WorkBuffer
 L2:     .End_While
 ; Tag Dialog 4
-        call 'USER32.EndDialog' D@Adressee, 0
-        call 'USER32.DialogBoxParamA' D$hInstance, 4, 0, UnusedCodeAndDataDialogCallBack, 0
+        Call 'USER32.EndDialog' D@hwnd, 0
+        Call 'USER32.DialogBoxParamA' D$hInstance, 4, 0, UnusedCodeAndDataDialogCallBack, 0
 
         VirtualFree D$CodeLabelNameList
         VirtualFree D$DataLabelNameList
@@ -140,16 +140,16 @@ FindDeclaration.Handle: ?
 FreeSearchCheckBox.Handle: ?
 UnusedSymbolHelpbutton.Handle: ?]
 DataAndCodeLabelListBoxNotification:
-   movzx ebx ax | mov D$CurrentListBox ebx
+   movzx ebx ax | Mov D$CurrentListBox ebx
    shr eax 16
    If ax = &LBN_DBLCLK
-      call 'user32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, D$CurrentListBox,
+      Call 'user32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, D$CurrentListBox,
                                         &LB_GETCARETINDEX 0 0
-      call 'user32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, D$CurrentListBox,
+      Call 'user32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, D$CurrentListBox,
                                         &LB_GETTEXT eax TextToRetrive
-      call 'user32.SetDlgItemTextA' D$UnusedCodeAndDataDialogHandle, UnUsedSymbolsEditBox,
+      Call 'user32.SetDlgItemTextA' D$UnusedCodeAndDataDialogHandle, UnUsedSymbolsEditBox,
                                     TextToRetrive
-      call SearchForUnusedSymbol
+      Call SearchForUnusedSymbol
    Else_If ax = &LBN_SETFOCUS
         move D$FocusedChild D$CurrentListBox
    End_If
@@ -159,24 +159,24 @@ ret
 UnUsedSymbolsEditBoxNotification:
    shr eax 16
    If ax = EM_SETFOCUS
-        mov D$FocusedChild UnUsedSymbolsEditBox
+        Mov D$FocusedChild UnUsedSymbolsEditBox
    End_If
 ret
 
 [CharDistance 020]
 SearchForTheSymbolInUnUsedSymbolsEditBox:
-   call 'user32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, UnUsedSymbolsEditBox,
+   Call 'user32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, UnUsedSymbolsEditBox,
                                         &WM_GETTEXTLENGTH 0 0
    inc eax
-   mov D$LenOfSearchedString eax
+   Mov D$LenOfSearchedString eax
 
 
 
-   call 'user32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, UnUsedSymbolsEditBox,
+   Call 'user32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, UnUsedSymbolsEditBox,
                                         &WM_GETTEXT eax TextToRetrive
 
 
-   mov eax TextToRetrive
+   Mov eax TextToRetrive
 
    While B$eax <> 0
       cmp B$eax 'Z' | jbe L0>
@@ -186,27 +186,27 @@ SearchForTheSymbolInUnUsedSymbolsEditBox:
      inc eax
    End_While
 
-    mov eax TextToRetrive
-    mov ecx D$LenOfSearchedString
+    Mov eax TextToRetrive
+    Mov ecx D$LenOfSearchedString
 
 
-    mov esi TextToRetrive, edi ControlString | rep movsb
-    mov esi TextToRetrive, edi SearchString ecx D$LenOfSearchedString | rep movsb
+    Mov esi TextToRetrive, edi ControlString | rep movsb
+    Mov esi TextToRetrive, edi SearchString ecx D$LenOfSearchedString | rep movsb
 
     dec D$LenOfSearchedString
     push D$DownSearch, D$WholeWordSearch, D$SkipDashLines
-        mov B$DownSearch &TRUE, B$WholeWordSearch &FALSE, B$SkipDashLines &TRUE
-        mov D$NextSearchPos 0
-        On B$RealSourceRestored = &FALSE, call RestoreRealSource
+        Mov B$DownSearch &TRUE, B$WholeWordSearch &FALSE, B$SkipDashLines &TRUE
+        Mov D$NextSearchPos 0
+        On B$RealSourceRestored = &FALSE, Call RestoreRealSource
             move D$CurrentWritingPos D$CodeSource
-            call StringSearch
+            Call StringSearch
             push D$CodeSourceA D$CodeSourceB
-                mov esi D$CurrentWritingPos | sub esi 2 | call InternalRightClick
+                Mov esi D$CurrentWritingPos | sub esi 2 | Call InternalRightClick
             pop D$CodeSourceB D$CodeSourceA
-            mov B$FinfOrReplace &FALSE
-        call SetPartialEditionFromPos
+            Mov B$FinfOrReplace &FALSE
+        Call SetPartialEditionFromPos
     pop D$SkipDashLines, D$WholeWordSearch, D$DownSearch
-    On B$StringFound = &FALSE, call 'USER32.SetForegroundWindow' D$UnusedCodeAndDataDialogHandle
+    On B$StringFound = &FALSE, Call 'USER32.SetForegroundWindow' D$UnusedCodeAndDataDialogHandle
 
 
 ret
@@ -217,7 +217,7 @@ ________________________________________________________________________________
 
 [FreeSearchActive: &FALSE]
 SearchForUnusedSymbol:
-    mov eax TextToRetrive, ecx 0
+    Mov eax TextToRetrive, ecx 0
 
     While b$eax <> 0
         inc ecx | inc eax
@@ -225,18 +225,18 @@ SearchForUnusedSymbol:
     inc ecx
 
     push eax ecx
-        call 'USER32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, FreeSearchCheckBox,
+        Call 'USER32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, FreeSearchCheckBox,
                                      &BM_GETCHECK, 0, 0
 
-        mov D$FreeSearchActive eax
+        Mov D$FreeSearchActive eax
         cmp eax &TRUE
     pop ecx eax | je L0>
 
-            mov B$eax ':', B$eax + 1 0 | inc ecx
+            Mov B$eax ':', B$eax + 1 0 | inc ecx
     L0:
-    mov D$LenOfSearchedString ecx
+    Mov D$LenOfSearchedString ecx
 
-    mov eax TextToRetrive
+    Mov eax TextToRetrive
     While B$eax <> 0
         cmp B$eax 'Z' | jbe L0>
         cmp B$eax 'A' | ja L0>
@@ -248,37 +248,37 @@ SearchForUnusedSymbol:
 
 PerformSearch:
 
-    mov esi TextToRetrive, edi ControlString | rep movsb
-    mov esi TextToRetrive, edi SearchString ecx D$LenOfSearchedString | rep movsb
+    Mov esi TextToRetrive, edi ControlString | rep movsb
+    Mov esi TextToRetrive, edi SearchString ecx D$LenOfSearchedString | rep movsb
 
     dec D$LenOfSearchedString
     push D$DownSearch, D$WholeWordSearch, D$SkipDashLines
-        mov eax D$FreeSearchActive | sub eax 1 | neg eax
-        mov B$DownSearch &TRUE, B$WholeWordSearch al, B$SkipDashLines &TRUE
-        mov D$NextSearchPos 0
-        On B$RealSourceRestored = &FALSE, call RestoreRealSource
+        Mov eax D$FreeSearchActive | sub eax 1 | neg eax
+        Mov B$DownSearch &TRUE, B$WholeWordSearch al, B$SkipDashLines &TRUE
+        Mov D$NextSearchPos 0
+        On B$RealSourceRestored = &FALSE, Call RestoreRealSource
             move D$CurrentWritingPos D$CodeSource
-            call StringSearch
+            Call StringSearch
             push D$CodeSourceA D$CodeSourceB
-                mov esi D$CurrentWritingPos | sub esi 2 | call InternalRightClick
+                Mov esi D$CurrentWritingPos | sub esi 2 | Call InternalRightClick
             pop D$CodeSourceB D$CodeSourceA
-            mov B$FinfOrReplace &FALSE
-        call SetPartialEditionFromPos
+            Mov B$FinfOrReplace &FALSE
+        Call SetPartialEditionFromPos
 
     pop D$SkipDashLines, D$WholeWordSearch, D$DownSearch
 
-    On B$StringFound = &FALSE, call 'USER32.SetForegroundWindow' D$UnusedCodeAndDataDialogHandle
+    On B$StringFound = &FALSE, Call 'USER32.SetForegroundWindow' D$UnusedCodeAndDataDialogHandle
 ret
 
 
 DesideSearchForUnusedSymbols:
   If D$FocusedChild = UnUsedSymbolsEditBox
-      call SearchForTheSymbolInUnUsedSymbolsEditBox
+      Call SearchForTheSymbolInUnUsedSymbolsEditBox
   Else
-     mov ax &LBN_DBLCLK | shl eax 16 | mov ax w$FocusedChild | call DataAndCodeLabelListBoxNotification
+     Mov ax &LBN_DBLCLK | shl eax 16 | Mov ax w$FocusedChild | Call DataAndCodeLabelListBoxNotification
   End_If
 
-  On B$StringFound = &FALSE, call 'USER32.SetForegroundWindow' D$UnusedCodeAndDataDialogHandle
+  On B$StringFound = &FALSE, Call 'USER32.SetForegroundWindow' D$UnusedCodeAndDataDialogHandle
 ret
 ____________________________________________________________________________________________
 
@@ -296,140 +296,140 @@ ________________________________________________________________________________
  OldUnusedSymbolDialogSubClassProc6: ?]
 
 Proc UnusedSymbolDialogSubClassProc:
-Arguments @Adressee, @Message, @wParam, @lParam
+Arguments @hwnd, @msg, @wParam, @lParam
 
-    .if D@Message = &WM_KEYDOWN
+    .if D@msg = &WM_KEYDOWN
         if D@Wparam = &VK_F5
-            mov B$RecompileWanted &TRUE
-            mov B$ShowStats &FALSE
-            call SaveUnusedIndex
+            Mov B$RecompileWanted &TRUE
+            Mov B$ShowStats &FALSE
+            Call SaveUnusedIndex
             push D$UnusedCodeAndDataDialogHandle
-                mov D$UnusedCodeAndDataDialogHandle 0
-                mov B$UnusedSymbolsWanted &TRUE
+                Mov D$UnusedCodeAndDataDialogHandle 0
+                Mov B$UnusedSymbolsWanted &TRUE
             pop eax
-            call 'USER32.EndDialog' eax, 0
+            Call 'USER32.EndDialog' eax, 0
             ExitP
         end_if
     .end_if
 
 
    @DefaultProcessing:
-   mov eax D@Adressee
+   Mov eax D@hwnd
    .if eax = D$CodeListBox.Handle
-       call D$OldUnusedSymbolDialogSubClassProc1 D@Adressee, D@Message, D@wParam, D@lParam
+       Call D$OldUnusedSymbolDialogSubClassProc1 D@hwnd, D@msg, D@wParam, D@lParam
    .else_if eax = D$DataListBox.Handle
-       call D$OldUnusedSymbolDialogSubClassProc2 D@Adressee, D@Message, D@wParam, D@lParam
+       Call D$OldUnusedSymbolDialogSubClassProc2 D@hwnd, D@msg, D@wParam, D@lParam
    .else_if eax = D$UnUsedSymbolsEditBox.Handle
-       call D$OldUnusedSymbolDialogSubClassProc3 D@Adressee, D@Message, D@wParam, D@lParam
+       Call D$OldUnusedSymbolDialogSubClassProc3 D@hwnd, D@msg, D@wParam, D@lParam
    .else_if eax = D$FindDeclaration.Handle
-       call D$OldUnusedSymbolDialogSubClassProc4 D@Adressee, D@Message, D@wParam, D@lParam
+       Call D$OldUnusedSymbolDialogSubClassProc4 D@hwnd, D@msg, D@wParam, D@lParam
    .else_if eax = D$UnusedSymbolHelpbutton.Handle
-       call D$OldUnusedSymbolDialogSubClassProc5 D@Adressee, D@Message, D@wParam, D@lParam
+       Call D$OldUnusedSymbolDialogSubClassProc5 D@hwnd, D@msg, D@wParam, D@lParam
    .else
-       call D$OldUnusedSymbolDialogSubClassProc6 D@Adressee, D@Message, D@wParam, D@lParam
+       Call D$OldUnusedSymbolDialogSubClassProc6 D@hwnd, D@msg, D@wParam, D@lParam
    .end_if
 EndP
 
 Proc InstallSubClassCallbacks:
-Argument @Adressee
-            call 'USER32.GetDlgItem' D@Adressee CodeListBox
+Argument @hwnd
+            Call 'USER32.GetDlgItem' D@hwnd CodeListBox
             if eax <> 0
-                mov D$CodeListBox.Handle eax
-                call 'USER32.SetWindowLongA' eax &GWL_WNDPROC UnusedSymbolDialogSubClassProc
-                mov D$OldUnusedSymbolDialogSubClassProc1 eax
+                Mov D$CodeListBox.Handle eax
+                Call 'USER32.SetWindowLongA' eax &GWL_WNDPROC UnusedSymbolDialogSubClassProc
+                Mov D$OldUnusedSymbolDialogSubClassProc1 eax
             end_if
 
-            call 'USER32.GetDlgItem' D@Adressee DataListbox
+            Call 'USER32.GetDlgItem' D@hwnd DataListbox
             if eax <> 0
-                mov D$DataListBox.Handle eax
-                call 'USER32.SetWindowLongA' eax &GWL_WNDPROC UnusedSymbolDialogSubClassProc
-                mov D$OldUnusedSymbolDialogSubClassProc2 eax
+                Mov D$DataListBox.Handle eax
+                Call 'USER32.SetWindowLongA' eax &GWL_WNDPROC UnusedSymbolDialogSubClassProc
+                Mov D$OldUnusedSymbolDialogSubClassProc2 eax
             end_if
 
-            call 'USER32.GetDlgItem' D@Adressee UnUsedSymbolsEditBox
+            Call 'USER32.GetDlgItem' D@hwnd UnUsedSymbolsEditBox
             if eax <> 0
-                mov D$UnUsedSymbolsEditBox.Handle eax
-                call 'USER32.SetWindowLongA' eax &GWL_WNDPROC UnusedSymbolDialogSubClassProc
-                mov D$OldUnusedSymbolDialogSubClassProc3 eax
+                Mov D$UnUsedSymbolsEditBox.Handle eax
+                Call 'USER32.SetWindowLongA' eax &GWL_WNDPROC UnusedSymbolDialogSubClassProc
+                Mov D$OldUnusedSymbolDialogSubClassProc3 eax
             end_if
 
-            call 'USER32.GetDlgItem' D@Adressee FindDeclaration
+            Call 'USER32.GetDlgItem' D@hwnd FindDeclaration
             if eax <> 0
-                mov D$FindDeclaration.Handle eax
-                call 'USER32.SetWindowLongA' eax &GWL_WNDPROC UnusedSymbolDialogSubClassProc
-                mov D$OldUnusedSymbolDialogSubClassProc4 eax
+                Mov D$FindDeclaration.Handle eax
+                Call 'USER32.SetWindowLongA' eax &GWL_WNDPROC UnusedSymbolDialogSubClassProc
+                Mov D$OldUnusedSymbolDialogSubClassProc4 eax
             end_if
-            mov D$FindDeclaration.Handle eax
+            Mov D$FindDeclaration.Handle eax
 
-            call 'USER32.GetDlgItem' D@Adressee UnusedSymbolHelpbutton
+            Call 'USER32.GetDlgItem' D@hwnd UnusedSymbolHelpbutton
             if eax <> 0
-                mov D$UnusedSymbolHelpbutton.Handle eax
-                call 'USER32.SetWindowLongA' eax &GWL_WNDPROC UnusedSymbolDialogSubClassProc
-                mov D$OldUnusedSymbolDialogSubClassProc5 eax
+                Mov D$UnusedSymbolHelpbutton.Handle eax
+                Call 'USER32.SetWindowLongA' eax &GWL_WNDPROC UnusedSymbolDialogSubClassProc
+                Mov D$OldUnusedSymbolDialogSubClassProc5 eax
             end_if
 
-            call 'USER32.GetDlgItem' D@Adressee FreeSearchCheckBox
+            Call 'USER32.GetDlgItem' D@hwnd FreeSearchCheckBox
             if eax <> 0
-                call 'USER32.SetWindowLongA' eax &GWL_WNDPROC UnusedSymbolDialogSubClassProc
-                mov D$OldUnusedSymbolDialogSubClassProc6 eax
+                Call 'USER32.SetWindowLongA' eax &GWL_WNDPROC UnusedSymbolDialogSubClassProc
+                Mov D$OldUnusedSymbolDialogSubClassProc6 eax
             end_if
 EndP
 
 Proc UnusedCodeAndDataDialogCallBack:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
        pushad
 
-        mov eax &FALSE
-        ..If D@Message = &WM_COMMAND
+        Mov eax &FALSE
+        ..If D@msg = &WM_COMMAND
             If D@wParam = &IDHELP
-                call Help, B_U_AsmName, UnusedSymbolsHelp, ContextHlpMessage
+                Call Help, B_U_AsmName, UnusedSymbolsHelp, ContextHlpMessage
             End_if
 
-            mov B$StringFound &TRUE
-            mov eax D@wParam
+            Mov B$StringFound &TRUE
+            Mov eax D@wParam
 
             If ax = CodeListBox
-                call DataAndCodeLabelListBoxNotification
+                Call DataAndCodeLabelListBoxNotification
 
             Else_If ax = DataListBox
-                call DataAndCodeLabelListBoxNotification
+                Call DataAndCodeLabelListBoxNotification
 
             Else_If ax = FindDeclaration
                 shr eax 16
                 cmp ax &BN_CLICKED | jne L0>
-                    call DesideSearchForUnusedSymbols
+                    Call DesideSearchForUnusedSymbols
                 L0:
             Else_If ax = &IDOK
-                  call DesideSearchForUnusedSymbols
+                  Call DesideSearchForUnusedSymbols
 
             Else_If ax = &IDCANCEL
-                    mov B$UnusedSymbolsWanted &FALSE
-                    mov D$UnusedSymbolsDialogWanted &FALSE
-                    mov D$UnusedCodeAndDataDialogHandle 0
-                    call 'USER32.EndDialog' D@Adressee, 0
+                    Mov B$UnusedSymbolsWanted &FALSE
+                    Mov D$UnusedSymbolsDialogWanted &FALSE
+                    Mov D$UnusedCodeAndDataDialogHandle 0
+                    Call 'USER32.EndDialog' D@hwnd, 0
 
             Else_If ax = UnUsedSymbolsEditBox
 
-                call UnUsedSymbolsEditBoxNotification
+                Call UnUsedSymbolsEditBoxNotification
             End_If
 
-        ..Else_If D@Message = &WM_MOUSEMOVE
+        ..Else_If D@msg = &WM_MOUSEMOVE
 
-        ..Else_If D@Message = &WM_HELP
-             call Help B_U_AsmName, UnusedSymbolsHelp, ContextHlpMessage
+        ..Else_If D@msg = &WM_HELP
+             Call Help B_U_AsmName, UnusedSymbolsHelp, ContextHlpMessage
 
-        ..Else_If D@Message = &WM_KEYDOWN
-             call Help, B_U_AsmName, UnusedSymbolsHelp, ContextHlpMessage
+        ..Else_If D@msg = &WM_KEYDOWN
+             Call Help, B_U_AsmName, UnusedSymbolsHelp, ContextHlpMessage
 
-        ..Else_If D@Message = &WM_INITDIALOG
-            Call InstallSubClassCallbacks D@Adressee
+        ..Else_If D@msg = &WM_INITDIALOG
+            Call InstallSubClassCallbacks D@hwnd
 
-            mov eax D@Adressee
-            mov D$UnusedCodeAndDataDialogHandle eax
-            call SetUnusedDialogPos D@Adressee
-            mov ecx D$NumberOfUnusedCodeLabels | jecxz L9>
-            mov eax D$CodeLabelNameList
+            Mov eax D@hwnd
+            Mov D$UnusedCodeAndDataDialogHandle eax
+            Call SetUnusedDialogPos D@hwnd
+            Mov ecx D$NumberOfUnusedCodeLabels | jecxz L9>
+            Mov eax D$CodeLabelNameList
 
 L0:         push eax ecx
                 push eax
@@ -439,15 +439,15 @@ L0:         push eax ecx
                     End_While
                 pop eax
                 push eax
-                    call 'user32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle,
+                    Call 'user32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle,
                                                       CodeListBox, &LB_ADDSTRING, 0, eax
 L1:             pop eax
             pop ecx eax
             While B$eax <> 0 | inc eax | End_While
             inc eax | dec ecx | jnz L0<
 
-L9:         mov ecx D$NumberOfUnusedDataLabels | jecxz L9>
-            mov eax D$DataLabelNameList
+L9:         Mov ecx D$NumberOfUnusedDataLabels | jecxz L9>
+            Mov eax D$DataLabelNameList
 
 L0:         push eax ecx
                 push eax
@@ -457,51 +457,51 @@ L0:         push eax ecx
                     End_While
                 pop eax
                 push eax
-                    call 'user32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle,
+                    Call 'user32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle,
                                                       DataListbox, &LB_ADDSTRING, 0, eax
 L1:             pop eax
             pop ecx eax
             While B$eax <> 0 | inc eax | End_While
             inc eax | dec ecx | jnz L0<
 
-L9:         call 'user32.SetDlgItemTextA' D$UnusedCodeAndDataDialogHandle,
+L9:         Call 'user32.SetDlgItemTextA' D$UnusedCodeAndDataDialogHandle,
                                           UnUsedSymbolsEditBox, NoteForWorkerBee
 
-            mov eax D$UnusedCodeIndex | or eax D$UnusedDataIndex
-            On eax <> 0 call RestoreUnusedIndex
+            Mov eax D$UnusedCodeIndex | or eax D$UnusedDataIndex
+            On eax <> 0 Call RestoreUnusedIndex
 
         ..Else
-            popad | mov eax &FALSE | ExitP
+            popad | Mov eax &FALSE | ExitP
 
         ..End_If
 
-        popad | mov eax &TRUE
+        popad | Mov eax &TRUE
 EndP
 ____________________________________________________________________________________________
 
 [UnusedCodeIndex: ?   UnusedDataIndex: ?]
 
 SaveUnusedIndex:
-    call 'USER32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, CODELISTBOX,
+    Call 'USER32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, CODELISTBOX,
                                       &LB_GETTOPINDEX, 0, 0
-    mov D$UnusedCodeIndex eax
+    Mov D$UnusedCodeIndex eax
 
-    call 'USER32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, DATALISTBOX,
+    Call 'USER32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, DATALISTBOX,
                                       &LB_GETTOPINDEX, 0, 0
-    mov D$UnusedDataIndex eax
+    Mov D$UnusedDataIndex eax
 ret
 
 RestoreUnusedIndex:
-    call 'USER32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, CODELISTBOX,
+    Call 'USER32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, CODELISTBOX,
                                       &LB_SETTOPINDEX, D$UnusedCodeIndex, 0
 
-    call 'USER32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, DATALISTBOX,
+    Call 'USER32.SendDlgItemMessageA' D$UnusedCodeAndDataDialogHandle, DATALISTBOX,
                                       &LB_SETTOPINDEX, D$UnusedDataIndex, 0
 ret
 ____________________________________________________________________________________________
 
 Proc SetUnusedDialogPos:
-    Argument @Handle
+    Argument @hwnd
     Structure @WINDOWPLACEMENT 44,
               WINDOWPLACEMENT.iLengthDis 0,
               WINDOWPLACEMENT.flagsDis 4,
@@ -515,34 +515,34 @@ Proc SetUnusedDialogPos:
               WINDOWPLACEMENT.rcNormalPosition.rightDis 36,
               WINDOWPLACEMENT.rcNormalPosition.bottomDis 40
 
-        mov D$WINDOWPLACEMENT.iLengthDis 44
+        Mov D$WINDOWPLACEMENT.iLengthDis 44
 
-        call 'USER32.GetWindowPlacement' D$UnusedCodeAndDataDialogHandle, D@WINDOWPLACEMENT
+        Call 'USER32.GetWindowPlacement' D$UnusedCodeAndDataDialogHandle, D@WINDOWPLACEMENT
 
-        call 'USER32.GetSystemMetrics' &SM_CXSCREEN | sub eax 5
-        mov ecx D$WINDOWPLACEMENT.rcNormalPosition.rightDis
+        Call 'USER32.GetSystemMetrics' &SM_CXSCREEN | sub eax 5
+        Mov ecx D$WINDOWPLACEMENT.rcNormalPosition.rightDis
         sub ecx D$WINDOWPLACEMENT.rcNormalPosition.leftDis
-        mov D$WINDOWPLACEMENT.rcNormalPosition.rightDis eax
-        sub eax ecx | mov D$WINDOWPLACEMENT.rcNormalPosition.leftDis eax
+        Mov D$WINDOWPLACEMENT.rcNormalPosition.rightDis eax
+        sub eax ecx | Mov D$WINDOWPLACEMENT.rcNormalPosition.leftDis eax
 
-        call 'USER32.GetSystemMetrics' &SM_CYSCREEN | sub eax 30
-        mov ecx D$WINDOWPLACEMENT.rcNormalPosition.bottomDis
+        Call 'USER32.GetSystemMetrics' &SM_CYSCREEN | sub eax 30
+        Mov ecx D$WINDOWPLACEMENT.rcNormalPosition.bottomDis
         sub ecx D$WINDOWPLACEMENT.rcNormalPosition.topDis
-        mov D$WINDOWPLACEMENT.rcNormalPosition.bottomDis eax
-        sub eax ecx | mov D$WINDOWPLACEMENT.rcNormalPosition.topDis eax
+        Mov D$WINDOWPLACEMENT.rcNormalPosition.bottomDis eax
+        sub eax ecx | Mov D$WINDOWPLACEMENT.rcNormalPosition.topDis eax
 
-        call 'USER32.SetWindowPlacement' D$UnusedCodeAndDataDialogHandle, D@WINDOWPLACEMENT
+        Call 'USER32.SetWindowPlacement' D$UnusedCodeAndDataDialogHandle, D@WINDOWPLACEMENT
 EndP
 
 ____________________________________________________________________________________________
 
 ReInitUnusedDialog:
-    call SaveUnusedIndex
-    call 'USER32.EndDialog' D$UnusedCodeAndDataDialogHandle, 0
-    mov D$UnusedCodeAndDataDialogHandle 0
-    mov B$UnusedSymbolsWanted &TRUE
-    mov B$RecompileWanted &TRUE
-    mov B$ShowStats &FALSE
+    Call SaveUnusedIndex
+    Call 'USER32.EndDialog' D$UnusedCodeAndDataDialogHandle, 0
+    Mov D$UnusedCodeAndDataDialogHandle 0
+    Mov B$UnusedSymbolsWanted &TRUE
+    Mov B$RecompileWanted &TRUE
+    Mov B$ShowStats &FALSE
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________

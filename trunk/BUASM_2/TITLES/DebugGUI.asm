@@ -61,44 +61,44 @@ ________________________________________________________________________________
 [WINDOW_MOVE    &SWP_NOSIZE+&SWP_NOZORDER+&SWP_NOACTIVATE]
 
 Proc AdjustControlSize:
-    Arguments @Handle, @ID, @dX, @dY
+    Arguments @hwnd, @ID, @dX, @dY
     Structure @RECT 16, @left 0, @top 4, @right 8, @bottom 12
     Uses ebx, esi, edi
 
-        mov edi D@RECT
-        call 'USER32.GetDlgItem' D@Handle D@ID | mov ebx eax
+        Mov edi D@RECT
+        Call 'USER32.GetDlgItem' D@hwnd D@ID | Mov ebx eax
         ; Compute current width (eax) & height (esi) and add delta's
-        call 'USER32.GetWindowRect' ebx edi
-        mov eax D@right
+        Call 'USER32.GetWindowRect' ebx edi
+        Mov eax D@right
         sub eax D@left
         add eax D@dX
-        mov esi D@bottom
+        Mov esi D@bottom
         sub esi D@top
         add esi D@dY
-        call 'USER32.SetWindowPos' ebx, 0, 0, 0, eax, esi, WINDOW_RESIZE
+        Call 'USER32.SetWindowPos' ebx, 0, 0, 0, eax, esi, WINDOW_RESIZE
         ; Return height error for listboxes.
-        call 'USER32.GetWindowRect' ebx edi
-        mov eax D@bottom
+        Call 'USER32.GetWindowRect' ebx edi
+        Mov eax D@bottom
         sub eax D@top
         sub eax esi
 EndP
 ____________________________________________________________________________________________
 
 Proc AdjustControlPos:
-    Arguments @Handle, @ID, @dX, @dY
+    Arguments @hwnd, @ID, @dX, @dY
     Structure @RECT 16, @left 0, @top 4, @right 8, @bottom 12
     Uses ebx, edi
 
-        mov edi D@RECT
-        call 'USER32.GetDlgItem' D@Handle D@ID | mov ebx eax
+        Mov edi D@RECT
+        Call 'USER32.GetDlgItem' D@hwnd D@ID | Mov ebx eax
         ; Compute current xpos (eax) & ypos (ecx) and add delta's
-        call 'USER32.GetWindowRect' ebx, edi
-        call 'USER32.ScreenToClient' D@Handle, edi
-        mov eax D@left
+        Call 'USER32.GetWindowRect' ebx, edi
+        Call 'USER32.ScreenToClient' D@hwnd, edi
+        Mov eax D@left
         add eax D@dX
-        mov ecx D@top
+        Mov ecx D@top
         add ecx D@dY
-        call 'USER32.SetWindowPos' ebx, 0, eax, ecx, 0, 0, WINDOW_MOVE
+        Call 'USER32.SetWindowPos' ebx, 0, eax, ecx, 0, 0, WINDOW_MOVE
 EndP
 ____________________________________________________________________________________________
 
@@ -106,30 +106,30 @@ Proc ReportWinError:
     Arguments @Caption
     Local @String
 
-        call 'Kernel32.GetLastError'
-        mov edx (&SUBLANG_DEFAULT shl 16 or &LANG_NEUTRAL)
+        Call 'Kernel32.GetLastError'
+        Mov edx (&SUBLANG_DEFAULT shl 16 or &LANG_NEUTRAL)
         lea ecx D@String
-        call 'Kernel32.FormatMessageA' &FORMAT_MESSAGE_ALLOCATE_BUFFER+&FORMAT_MESSAGE_FROM_SYSTEM,
+        Call 'Kernel32.FormatMessageA' &FORMAT_MESSAGE_ALLOCATE_BUFFER+&FORMAT_MESSAGE_FROM_SYSTEM,
             &NULL, eax, edx, ecx, 256, &NULL
-        call 'User32.MessageBoxA' D$hwnd, D@String, D@Caption, &MB_ICONERROR
-        call 'Kernel32.LocalFree' D@String
+        Call 'User32.MessageBoxA' D$H.MainWindow, D@String, D@Caption, &MB_ICONERROR
+        Call 'Kernel32.LocalFree' D@String
 EndP
 ____________________________________________________________________________________________
 
 Proc SelectTab:
     Arguments @DlgHandle, @TabCtrlID, @Index
-    Structure @NotifyMsg 12, @Handle 0, @ID 4, @Code 8
+    Structure @NotifyMsg 12, @hwnd 0, @ID 4, @Code 8
     Uses ebx
 
-        call 'User32.GetDlgItem' D@DlgHandle, D@TabCtrlID
-        mov ebx eax
+        Call 'User32.GetDlgItem' D@DlgHandle, D@TabCtrlID
+        Mov ebx eax
 
         SendMessage ebx, &TCM_SETCURSEL, D@Index, 0
-        mov D@Handle ebx
+        Mov D@hwnd ebx
         move D@ID D@TabCtrlID
-        mov D@Code &TCN_SELCHANGE
+        Mov D@Code &TCN_SELCHANGE
         SendMessage D@DlgHandle, &WM_NOTIFY, D@TabCtrlID, D@NotifyMsg ; for Win9x!
-        call 'User32.PostMessageA' D@DlgHandle, &WM_NOTIFY, D@TabCtrlID, D@NotifyMsg
+        Call 'User32.PostMessageA' D@DlgHandle, &WM_NOTIFY, D@TabCtrlID, D@NotifyMsg
 EndP
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -141,8 +141,8 @@ ________________________________________________________________________________
 Proc CreateNewForm_AddressSpaceForm:
     Arguments @Parent
 
-    call 'User32.RegisterClassExA' ASFormClass
-    call 'User32.CreateWindowExA',
+    Call 'User32.RegisterClassExA' ASFormClass
+    Call 'User32.CreateWindowExA',
         &WS_EX_LEFT+&WS_EX_LTRREADING+&WS_EX_RIGHTSCROLLBAR,
         ASFormClassName,
         {"Main Window",0},
@@ -152,10 +152,10 @@ Proc CreateNewForm_AddressSpaceForm:
         0,
         D$hInstance,
         0
-    mov D$ASForm_handle eax
+    Mov D$ASForm_handle eax
     [ASForm_handle: ?]
 
-    call 'User32.CreateWindowExA',
+    Call 'User32.CreateWindowExA',
         &WS_EX_CLIENTEDGE+&WS_EX_LEFT+&WS_EX_LTRREADING+&WS_EX_RIGHTSCROLLBAR,
         {"SysTreeView32",0},
         {"New Control",0},
@@ -166,7 +166,7 @@ Proc CreateNewForm_AddressSpaceForm:
         D$hInstance,
         0
 
-    mov D$ASForm.Tree_handle eax
+    Mov D$ASForm.Tree_handle eax
     [ASForm.Tree_handle: ?]
 
 EndP
@@ -187,45 +187,45 @@ EndP
 [ASFormClassName: B$ "AddressSpaceForm" 0]
 
 Proc AddressSpaceFormProc:
-    Arguments @handle @Message @wParam @lParam
+    Arguments @hwnd @msg @wParam @lParam
     Uses esi edi ebx
 
-    .If D@Message = &WM_CREATE
-        mov D$AddressSpace.TVProc 0
-        mov eax 0
+    .If D@msg = &WM_CREATE
+        Mov D$AddressSpace.TVProc 0
+        Mov eax 0
 
-    .Else_If D@Message = &WM_CLOSE
-        call 'USER32.DestroyWindow' D@handle
+    .Else_If D@msg = &WM_CLOSE
+        Call 'USER32.DestroyWindow' D@hwnd
 
-    .Else_if D@Message = &WM_SIZE
+    .Else_if D@msg = &WM_SIZE
         movzx ecx W@lParam
         movzx edx W@lParam+2
 
-        call 'USER32.SetWindowPos' D$ASForm.TreeHandle, 0, 0, 0, ecx, edx, WINDOW_RESIZE
+        Call 'USER32.SetWindowPos' D$ASForm.TreeHandle, 0, 0, 0, ecx, edx, WINDOW_RESIZE
 
-    .Else_if D@Message = &WM_SETFONT
+    .Else_if D@msg = &WM_SETFONT
         SendMessage D$ASForm.TreeHandle, &WM_SETFONT, D@wParam, D@lParam
 
-    .Else_if D@Message = WM_REFRESH_CONTENT
-        call AddressSpaceTree_Build
+    .Else_if D@msg = WM_REFRESH_CONTENT
+        Call AddressSpaceTree_Build
 
-    .Else_if D@Message = &WM_SHOWWINDOW
+    .Else_if D@msg = &WM_SHOWWINDOW
         If D$AddressSpace.TVProc = 0
-            call AddressSpaceForm_OverrideTreeProc
+            Call AddressSpaceForm_OverrideTreeProc
         EndIf
         If D@wParam = &TRUE
-            call AddressSpaceTree_Build
+            Call AddressSpaceTree_Build
         EndIf
 
-    .Else_if D@Message = &WM_NOTIFY
-        mov eax D@lParam, edx D$ASForm.TreeHandle
+    .Else_if D@msg = &WM_NOTIFY
+        Mov eax D@lParam, edx D$ASForm.TreeHandle
         If D$eax = edx
-            call AddressSpaceForm_OnTreeNavigate eax
+            Call AddressSpaceForm_OnTreeNavigate eax
         EndIf
-        mov eax 0
+        Mov eax 0
 
     .Else
-        call 'User32.DefWindowProcA' D@handle D@Message D@wParam D@lParam
+        Call 'User32.DefWindowProcA' D@hwnd D@msg D@wParam D@lParam
     .End_If
 EndP
 ____________________________________________________________________________________________
@@ -236,15 +236,15 @@ Proc AddressSpaceForm_OnTreeNavigate:
     Arguments @NotifyInfo
     Uses esi ebx
 
-    mov esi D@NotifyInfo
+    Mov esi D@NotifyInfo
     On D$esi+8 <> &TVN_SELCHANGED, ExitP
     add esi 12 ; skip notify header
     add esi 4 ; skip action flag
     add esi 40 ; skip old item
-    mov eax D$esi+4 ; hItem
-    mov D$ASForm.CurrentItem eax
-    mov ebx D$esi+36 ; lParam of new item
-    mov D$ASForm.CurrentAddress ebx
+    Mov eax D$esi+4 ; hItem
+    Mov D$ASForm.CurrentItem eax
+    Mov ebx D$esi+36 ; lParam of new item
+    Mov D$ASForm.CurrentAddress ebx
 
 EndP
 
@@ -253,26 +253,26 @@ ________________________________________________________________________________
 ; To allow rightclick inside the treeview we override the window proc.
 
 AddressSpaceForm_OverrideTreeProc:
-    mov D$AddressSpace.TVProc 0
-    call 'User32.SetWindowLongA' D$ASForm.Tree_handle, &GWL_WNDPROC, AddressSpace_HandleMouseProc
-    mov D$AddressSpace.TVProc eax
+    Mov D$AddressSpace.TVProc 0
+    Call 'User32.SetWindowLongA' D$ASForm.Tree_handle, &GWL_WNDPROC, AddressSpace_HandleMouseProc
+    Mov D$AddressSpace.TVProc eax
 ret
 
 [AddressSpace.TVProc: ?]
 
 Proc AddressSpace_HandleMouseProc:
-    Arguments @Handle, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
     Uses ebx esi edi
 
-    .If D@Message = &WM_LBUTTONDBLCLK
+    .If D@msg = &WM_LBUTTONDBLCLK
       ; Simulate left click (select item) before showing the popup menu
-        SendMessage D@Handle, &WM_LBUTTONDOWN, D@wParam, D@lParam
-        SendMessage D@Handle, &WM_LBUTTONUP, D@wParam, D@lParam
+        SendMessage D@hwnd, &WM_LBUTTONDOWN, D@wParam, D@lParam
+        SendMessage D@hwnd, &WM_LBUTTONUP, D@wParam, D@lParam
       ; Is this a page item?
         cmp D$ASForm.CurrentAddress 0 | je L0>
       ; Check if the user clicked onto the item
         move D$DebugRect D$ASForm.CurrentItem
-        SendMessage D@Handle, &TVM_GETITEMRECT, 1, DebugRect
+        SendMessage D@hwnd, &TVM_GETITEMRECT, 1, DebugRect
         movzx eax W@lParam
         cmp eax D$DebugRect@left  | jl L0>
         cmp eax D$DebugRect@right | ja L0>
@@ -282,7 +282,7 @@ Proc AddressSpace_HandleMouseProc:
       ; Show the popup menu at the position of the mouse-click
         SendMessage D$MemoryInspectorHandle, WM_SET_PAGE, D$ASForm.CurrentAddress, 0
     .EndIf
-L0: call 'User32.CallWindowProcA' D$AddressSpace.TVProc, D@Handle, D@Message, D@wParam, D@lParam
+L0: Call 'User32.CallWindowProcA' D$AddressSpace.TVProc, D@hwnd, D@msg, D@wParam, D@lParam
 EndP
 ____________________________________________________________________________________________
 
@@ -293,36 +293,36 @@ Proc AddressSpaceTree_WritePageDescription:
     Uses esi, edi
 
       ; Write address
-        mov eax D@Address, edi PageDesc, ecx 4
+        Mov eax D@Address, edi PageDesc, ecx 4
         DwordToHex eax
 
       ; Write protection "XRWC GN"
-        mov al ' ' | stosb
-        mov ecx D@Protect
+        Mov al ' ' | stosb
+        Mov ecx D@Protect
 
-        mov D$edi '----', D$edi+4 ' -- '
+        Mov D$edi '----', D$edi+4 ' -- '
         If ecx = &PAGE_READONLY
-            mov B$edi+1 'R'
+            Mov B$edi+1 'R'
         Else_if ecx = &PAGE_READWRITE
-            mov W$edi+1 'RW'
+            Mov W$edi+1 'RW'
         Else_if ecx = &PAGE_EXECUTE
-            mov B$edi 'X'
+            Mov B$edi 'X'
         Else_if ecx = &PAGE_EXECUTE_READ
-            mov W$edi 'XR'
+            Mov W$edi 'XR'
         Else_if ecx = &PAGE_EXECUTE_READWRITE
-            mov D$edi 'XRW-'
+            Mov D$edi 'XRW-'
         Else_if ecx = &PAGE_EXECUTE_WRITECOPY
-            mov D$edi 'XRWC'
+            Mov D$edi 'XRWC'
         Else_if ecx = &PAGE_WRITECOPY
-            mov D$edi '-RWC'
+            Mov D$edi '-RWC'
         EndIf
         test ecx &PAGE_GUARD | jz L0>
-        mov B$edi+5 'G'
+        Mov B$edi+5 'G'
 L0:     test ecx &PAGE_NOCACHE | jz L0>
-        mov B$edi+6 'N'
+        Mov B$edi+6 'N'
 
 L0:     add edi 8
-        mov D$edi 0
+        Mov D$edi 0
 EndP
 ____________________________________________________________________________________________
 
@@ -331,13 +331,13 @@ Proc AddressSpaceTree_AddPages:
     Uses esi, edi
 
       ; Add item for each commited page in region
-        mov esi D@Base, edi esi
+        Mov esi D@Base, edi esi
         add edi D@Size
 
         While esi < edi
-            call AddressSpaceTree_WritePageDescription esi, D@Protect
-            mov D$TVI.Item.lParam esi
-            mov D$TVI.Item.pszText PageDesc
+            Call AddressSpaceTree_WritePageDescription esi, D@Protect
+            Mov D$TVI.Item.lParam esi
+            Mov D$TVI.Item.pszText PageDesc
             SendMessage D$ASForm.Tree_handle, &TVM_INSERTITEM, 0, TVI
             add esi 01000
         EndWhile
@@ -349,34 +349,34 @@ Proc AddressSpaceTree_AddModule:
     Local @LowerBound, @UpperBound, @hModItem
     Uses esi, ebx
 
-        mov esi D@ModEntry
+        Mov esi D@ModEntry
 
-        mov D$TVI.hParent &TVI_ROOT
-        mov eax D$esi+ME_Name
-        mov D$TVI.Item.pszText eax
+        Mov D$TVI.hParent &TVI_ROOT
+        Mov eax D$esi+ME_Name
+        Mov D$TVI.Item.pszText eax
         move D$TVI.Item.lParam 0
 
         SendMessage D$ASForm.Tree_handle, &TVM_INSERTITEM, 0, TVI
-        mov D@hModItem eax
+        Mov D@hModItem eax
 
-        mov eax D$esi+ME_Base
-        mov D@LowerBound eax
+        Mov eax D$esi+ME_Base
+        Mov D@LowerBound eax
         add eax D$esi+ME_Size
-        mov D@UpperBound eax
+        Mov D@UpperBound eax
 
-        mov ebx D@LowerBound
+        Mov ebx D@LowerBound
         .While ebx < D@UpperBound
-            call VirtualQuery ebx
+            Call VirtualQuery ebx
             .If eax = &TRUE
                 If ebx = D$esi+ME_CodeBase
-                    mov D$TVI.Item.pszText {'Code Section' 0}
-                    mov D$TVI.Item.lParam 0
+                    Mov D$TVI.Item.pszText {'Code Section' 0}
+                    Mov D$TVI.Item.lParam 0
                     SendMessage D$ASForm.Tree_handle, &TVM_INSERTITEM, 0, TVI
-                    mov D$TVI.hParent eax
+                    Mov D$TVI.hParent eax
                 Else
                     move D$TVI.hParent D@hModItem
                 EndIf
-                call AddressSpaceTree_AddPages ebx, D$MemoryInformation@RegionSize, D$MemoryInformation@Protect, D$MemoryInformation@Type
+                Call AddressSpaceTree_AddPages ebx, D$MemoryInformation@RegionSize, D$MemoryInformation@Protect, D$MemoryInformation@Type
             .ElseIf eax = 0-1
                 ExitP
             .EndIf
@@ -384,14 +384,14 @@ Proc AddressSpaceTree_AddModule:
         .EndWhile
 
 ;;
-        mov D$TVI.Item.pszText {'Code Section' 0}
+        Mov D$TVI.Item.pszText {'Code Section' 0}
         move D$TVI.Item.lParam D$esi+ME_CodeBase
         
 
-        mov D$TVI.Item.pszText {'Export Section' 0}
-        mov eax D$esi+ME_ExportBase
+        Mov D$TVI.Item.pszText {'Export Section' 0}
+        Mov eax D$esi+ME_ExportBase
         add eax D$esi+ME_Base
-        mov D$TVI.Item.lParam eax
+        Mov D$TVI.Item.lParam eax
         SendMessage D$ASForm.Tree_handle, &TVM_INSERTITEM, 0, TVI
 ;;
 
@@ -407,19 +407,19 @@ Proc AddressSpaceTree_AddGeneralRegion:
 
       ; Check if the region belongs to the last added allocation block, otherwise
       ; add a new top-level item.
-        mov eax D$MemoryInformation@AllocationBase
+        Mov eax D$MemoryInformation@AllocationBase
         If D@LastAllocBase <> eax
-            mov D@LastAllocBase eax
-            call IntToHexString
-            mov D$TVI.hParent &TVI_ROOT
-            mov D$TVI.Item.pszText HexString
-            mov D$TVI.Item.lParam 0
+            Mov D@LastAllocBase eax
+            Call IntToHexString
+            Mov D$TVI.hParent &TVI_ROOT
+            Mov D$TVI.Item.pszText HexString
+            Mov D$TVI.Item.lParam 0
             SendMessage D$ASForm.Tree_handle, &TVM_INSERTITEM, 0, TVI
-            mov D$TVI.hParent eax
+            Mov D$TVI.hParent eax
         EndIf
 
       ; Add item for each commited page in region
-        call AddressSpaceTree_AddPages D@Base, D@Size, D@Protect, D@Type
+        Call AddressSpaceTree_AddPages D@Base, D@Size, D@Protect, D@Type
 EndP
 ____________________________________________________________________________________________
 
@@ -428,15 +428,15 @@ ________________________________________________________________________________
 Proc AddressSpaceTree_AddRegion:
     Arguments @Base, @Size, @Protect, @Type
 
-        mov eax D$MemoryInformation@BaseAddress
-        mov D$TVI.Item.lParam eax
+        Mov eax D$MemoryInformation@BaseAddress
+        Mov D$TVI.Item.lParam eax
 
       ; Check if this region is a mapped module
-        call GetModuleName eax
+        Call GetModuleName eax
         If eax <> 0
-            call AddressSpaceTree_AddModule edx
+            Call AddressSpaceTree_AddModule edx
         Else
-            call AddressSpaceTree_AddGeneralRegion D@Base, D@Size, D@Protect, D@Type
+            Call AddressSpaceTree_AddGeneralRegion D@Base, D@Size, D@Protect, D@Type
         EndIf
 EndP
 ____________________________________________________________________________________________
@@ -446,15 +446,15 @@ Proc AddressSpaceTree_Build:
     SendMessage D$ASForm.TreeHandle, &TVM_DELETEITEM, 0, &TVI_ROOT
     SendMessage D$ASForm.Tree_handle, &WM_SETREDRAW, 0, 0
 
-    mov D$TVI.hParent &TVI_ROOT
-    mov D$TVI.hInsertAfter &TVI_LAST
-    mov D$TVI.Item.imask &TVIF_TEXT+&TVIF_PARAM
+    Mov D$TVI.hParent &TVI_ROOT
+    Mov D$TVI.hInsertAfter &TVI_LAST
+    Mov D$TVI.Item.imask &TVIF_TEXT+&TVIF_PARAM
 
-    mov esi D$AddressLowerBound
+    Mov esi D$AddressLowerBound
     While esi < D$AddressUpperBound
-        call VirtualQuery esi
+        Call VirtualQuery esi
         If eax = 1
-            call AddressSpaceTree_AddRegion esi, ecx,
+            Call AddressSpaceTree_AddRegion esi, ecx,
                 D$MemoryInformation@Protect, D$MemoryInformation@Type
         ElseIf eax = 0-1
             ExitP
@@ -475,8 +475,8 @@ ________________________________________________________________________________
 Proc CreateNewForm_LogForm:
     Arguments @Parent
 
-    call 'User32.RegisterClassExA' LogFormClass
-    call 'User32.CreateWindowExA',
+    Call 'User32.RegisterClassExA' LogFormClass
+    Call 'User32.CreateWindowExA',
         &WS_EX_LEFT+&WS_EX_LTRREADING+&WS_EX_RIGHTSCROLLBAR,
         LogFormClassName,
         {"Main Window",0},
@@ -486,10 +486,10 @@ Proc CreateNewForm_LogForm:
         0,
         D$hInstance,
         0
-    mov D$LogForm_handle eax
+    Mov D$LogForm_handle eax
     [LogForm_handle: ?]
 
-    call 'User32.CreateWindowExA',
+    Call 'User32.CreateWindowExA',
         &WS_EX_CLIENTEDGE+&WS_EX_LEFT+&WS_EX_LTRREADING+&WS_EX_RIGHTSCROLLBAR,
         {"LISTBOX",0},
         {"New Control",0},
@@ -499,7 +499,7 @@ Proc CreateNewForm_LogForm:
         2,
         D$hInstance,
         0
-    mov D$LogForm.List_handle eax
+    Mov D$LogForm.List_handle eax
     [LogForm.List_handle: ?]
 
 EndP
@@ -521,29 +521,29 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 Proc LogFormProc:
-    Arguments @handle @Message @wParam @lParam
+    Arguments @hwnd @msg @wParam @lParam
     Uses esi edi ebx
 
-    .If D@Message = &WM_CREATE
-        mov eax 0
+    .If D@msg = &WM_CREATE
+        Mov eax 0
 
-    .Else_If D@Message = &WM_CLOSE
-        call 'USER32.DestroyWindow' D@handle
+    .Else_If D@msg = &WM_CLOSE
+        Call 'USER32.DestroyWindow' D@hwnd
 
-    .Else_if D@Message = &WM_SIZE
+    .Else_if D@msg = &WM_SIZE
         movzx ecx W@lParam
         movzx edx W@lParam+2
 
-        call 'USER32.SetWindowPos' D$LogForm.ListHandle, 0, 0, 0, ecx, edx, WINDOW_RESIZE
+        Call 'USER32.SetWindowPos' D$LogForm.ListHandle, 0, 0, 0, ecx, edx, WINDOW_RESIZE
 
-    .Else_If D@Message = WM_LOG
+    .Else_If D@msg = WM_LOG
 
-        mov edi LogString
-        call TimeToStr
-        mov al ' ' | stosb
+        Mov edi LogString
+        Call TimeToStr
+        Mov al ' ' | stosb
 
-        mov esi D@wParam, ecx D@lParam
-        On ecx > 255, mov ecx 255
+        Mov esi D@wParam, ecx D@lParam
+        On ecx > 255, Mov ecx 255
         If ecx = 0
             While B$esi+ecx <> 0 | inc ecx | EndWhile
         EndIf
@@ -553,17 +553,17 @@ Proc LogFormProc:
             dec ecx
         EndWhile
         ;rep movsb
-        mov B$edi 0
+        Mov B$edi 0
         SendMessage D$LogForm.ListHandle, &LB_ADDSTRING, 0, LogString
         SendMessage D$LogForm.ListHandle, &LB_SETCURSEL, eax, 0
 
-    .Else_If D@Message = &WM_DESTROY
+    .Else_If D@msg = &WM_DESTROY
 
-    .Else_if D@Message = &WM_SETFONT
+    .Else_if D@msg = &WM_SETFONT
         SendMessage D$LogForm.ListHandle, &WM_SETFONT, D@wParam, D@lParam
 
     .Else
-        call 'User32.DefWindowProcA' D@handle D@Message D@wParam D@lParam
+        Call 'User32.DefWindowProcA' D@hwnd D@msg D@wParam D@lParam
     .End_If
 EndP
 
@@ -577,9 +577,9 @@ ________________________________________________________________________________
 
 ; Tag Wizard Form "J:\Projects\RosAsm\WizardFiles\WZRDForm0000.wwf"
 CreateNewForm_CodeAddressForm:
-    call 'ComCtl32.InitCommonControlsEx' CodeAddressFormClassName@Init_All_Common_Controls
-    call 'User32.RegisterClassExA' CodeAddressFormClass
-    call 'User32.CreateWindowExA',
+    Call 'ComCtl32.InitCommonControlsEx' CodeAddressFormClassName@Init_All_Common_Controls
+    Call 'User32.RegisterClassExA' CodeAddressFormClass
+    Call 'User32.CreateWindowExA',
         &WS_EX_LEFT+&WS_EX_LTRREADING+&WS_EX_RIGHTSCROLLBAR,
         CodeAddressFormClassName,
         {"Show code at address ...",0},
@@ -589,15 +589,15 @@ CreateNewForm_CodeAddressForm:
         0,
         D$hInstance,
         0
-    mov D$CodeAddressForm_handle eax
+    Mov D$CodeAddressForm_handle eax
     [CodeAddressForm_handle: ?]
-    call 'GDI32.CreateFontIndirectA' CodeAddressForm_LOGFONTSTRUCT | mov D$CodeAddressFormFont_handle eax
-    call 'User32.SendMessageA' D$CodeAddressForm_handle  &WM_SETFONT eax &TRUE
+    Call 'GDI32.CreateFontIndirectA' CodeAddressForm_LOGFONTSTRUCT | Mov D$CodeAddressFormFont_handle eax
+    Call 'User32.SendMessageA' D$CodeAddressForm_handle  &WM_SETFONT eax &TRUE
     [CodeAddressFormFont_handle: ?]
     [CodeAddressForm_LOGFONTSTRUCT:  0  0  0  0  0  0  536870912 'MS Sans Serif' 0 0 0 0 0 0 ]
     CodeAddressForm:
 
-    call 'User32.CreateWindowExA',
+    Call 'User32.CreateWindowExA',
         &WS_EX_CLIENTEDGE+&WS_EX_LEFT+&WS_EX_LTRREADING+&WS_EX_RIGHTSCROLLBAR,
         {"BUTTON",0},
         {"Show statement",0},
@@ -607,14 +607,14 @@ CreateNewForm_CodeAddressForm:
         2,
         D$hInstance,
         0
-    mov D$CodeAddressForm.GotoButton_handle eax
+    Mov D$CodeAddressForm.GotoButton_handle eax
     [CodeAddressForm.GotoButton_handle: ?]
-    call 'GDI32.CreateFontIndirectA' CodeAddressForm.GotoButton_LOGFONTSTRUCT | mov D$CodeAddressForm.GotoButtonFont_handle eax
-    call 'User32.SendMessageA' D$CodeAddressForm.GotoButton_handle  &WM_SETFONT eax &TRUE
+    Call 'GDI32.CreateFontIndirectA' CodeAddressForm.GotoButton_LOGFONTSTRUCT | Mov D$CodeAddressForm.GotoButtonFont_handle eax
+    Call 'User32.SendMessageA' D$CodeAddressForm.GotoButton_handle  &WM_SETFONT eax &TRUE
     [CodeAddressForm.GotoButtonFont_handle: ?]
     [CodeAddressForm.GotoButton_LOGFONTSTRUCT:  -11  0  0  0  400  0  570491393 'MS Sans Serif' 0 0 0 0 0 0 ]
 
-    call 'User32.CreateWindowExA',
+    Call 'User32.CreateWindowExA',
         &WS_EX_CLIENTEDGE+&WS_EX_LEFT+&WS_EX_LTRREADING+&WS_EX_RIGHTSCROLLBAR,
         {"EDIT",0},
         {"",0},
@@ -624,10 +624,10 @@ CreateNewForm_CodeAddressForm:
         3,
         D$hInstance,
         0
-    mov D$CodeAddressForm.AddressEdit_handle eax
+    Mov D$CodeAddressForm.AddressEdit_handle eax
     [CodeAddressForm.AddressEdit_handle: ?]
-    call 'GDI32.CreateFontIndirectA' CodeAddressForm.AddressEdit_LOGFONTSTRUCT | mov D$CodeAddressForm.AddressEditFont_handle eax
-    call 'User32.SendMessageA' D$CodeAddressForm.AddressEdit_handle  &WM_SETFONT eax &TRUE
+    Call 'GDI32.CreateFontIndirectA' CodeAddressForm.AddressEdit_LOGFONTSTRUCT | Mov D$CodeAddressForm.AddressEditFont_handle eax
+    Call 'User32.SendMessageA' D$CodeAddressForm.AddressEdit_handle  &WM_SETFONT eax &TRUE
     [CodeAddressForm.AddressEditFont_handle: ?]
     [CodeAddressForm.AddressEdit_LOGFONTSTRUCT:  -13  0  0  0  400  0  822149635 'Courier New' 0 0 0 0 0 0 ]
 
@@ -654,56 +654,56 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 Proc CodeAddressFormProc:
-    Arguments @handle @Message @wParam @lParam
+    Arguments @hwnd @msg @wParam @lParam
 
     pushad
 
-    ...If D@Message = &WM_CREATE
+    ...If D@msg = &WM_CREATE
 
-    ...Else_If D@Message = &WM_CLOSE
-        call 'GDI32.DeleteObject' D$CodeAddressFormFont_handle
-        call 'GDI32.DeleteObject' D$CodeAddressForm.GotoButtonFont_handle
-        call 'GDI32.DeleteObject' D$CodeAddressForm.AddressEditFont_handle
-        call 'USER32.DestroyWindow' D@handle
+    ...Else_If D@msg = &WM_CLOSE
+        Call 'GDI32.DeleteObject' D$CodeAddressFormFont_handle
+        Call 'GDI32.DeleteObject' D$CodeAddressForm.GotoButtonFont_handle
+        Call 'GDI32.DeleteObject' D$CodeAddressForm.AddressEditFont_handle
+        Call 'USER32.DestroyWindow' D@hwnd
 
-    ...Else_if D@Message = &WM_COMMAND
-        mov eax D@lParam
+    ...Else_if D@msg = &WM_COMMAND
+        Mov eax D@lParam
         If eax = D$CodeAddressForm.GotoButton_handle
-            call CodeAddressForm_Goto
+            Call CodeAddressForm_Goto
         EndIf
 
     ...Else
         popad
-        call 'User32.DefWindowProcA' D@handle D@Message D@wParam D@lParam
+        Call 'User32.DefWindowProcA' D@hwnd D@msg D@wParam D@lParam
         ExitP
 
     ...End_If
 
     popad
-    mov eax &FALSE
+    Mov eax &FALSE
 
 EndP
 ; Tag End
 ;;
-    ...Else_if D@Message = &WM_COMMAND
-        mov eax D@lParam
+    ...Else_if D@msg = &WM_COMMAND
+        Mov eax D@lParam
         If eax = D$CodeAddressForm.GotoButton_handle
-            call CodeAddressForm_Goto
+            Call CodeAddressForm_Goto
         EndIf
 ;;
 
 
 CodeAddressForm_Goto:
-    call 'User32.GetWindowTextA' D$CodeAddressForm.AddressEdit_handle, HexString, 10
-    mov esi HexString
-    call HexStringToInt
-    mov ebx eax
+    Call 'User32.GetWindowTextA' D$CodeAddressForm.AddressEdit_handle, HexString, 10
+    Mov esi HexString
+    Call HexStringToInt
+    Mov ebx eax
 
-    call IsProcessCode ebx
+    Call IsProcessCode ebx
     If eax = &TRUE
-        call SourceDebugPos ebx
+        Call SourceDebugPos ebx
     Else
-        call 'User32.MessageBoxA' D$CodeAddressForm_Handle, {'This is not a valid code address!' 0},
+        Call 'User32.MessageBoxA' D$CodeAddressForm_Handle, {'This is not a valid code address!' 0},
             {'Invalid address' 0}, &MB_ICONWARNING
     EndIf
     SendMessage D$CodeAddressForm_Handle, &WM_CLOSE, 0, 0
@@ -712,15 +712,15 @@ ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
-; CALL STACK
+; Call STACK
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
 Proc CreateNewForm_CallStackForm:
     Arguments @Parent
 
-    call 'User32.RegisterClassExA' CSFormClass
-    call 'User32.CreateWindowExA',
+    Call 'User32.RegisterClassExA' CSFormClass
+    Call 'User32.CreateWindowExA',
         &WS_EX_LEFT+&WS_EX_LTRREADING+&WS_EX_RIGHTSCROLLBAR,
         CSFormClassName,
         {"Callstack",0},
@@ -731,9 +731,9 @@ Proc CreateNewForm_CallStackForm:
         D$hInstance,
         0
 
-    mov D$CallStackFormHandle eax
+    Mov D$CallStackFormHandle eax
 
-    call 'User32.CreateWindowExA',
+    Call 'User32.CreateWindowExA',
         &WS_EX_CLIENTEDGE+&WS_EX_LEFT+&WS_EX_LTRREADING+&WS_EX_RIGHTSCROLLBAR,
         {"SysTreeView32",0},
         {"New Control",0},
@@ -744,9 +744,9 @@ Proc CreateNewForm_CallStackForm:
         D$hInstance,
         0
 
-    mov D$CallStackTreeHandle eax
+    Mov D$CallStackTreeHandle eax
 
-    call CallStack_OverrideTreeProc
+    Call CallStack_OverrideTreeProc
 EndP
 
 [CSFormClass:
@@ -768,24 +768,24 @@ ________________________________________________________________________________
 ; Process WM_CREATE message.
 
 Proc CallStackDialog_OnCreate:
-    Arguments @Handle
+    Arguments @hwnd
 
-        move D$CallStackFormHandle D@Handle
+        move D$CallStackFormHandle D@hwnd
 
-        call 'USER32.GetClientRect' D@Handle, DebugRect
+        Call 'USER32.GetClientRect' D@hwnd, DebugRect
         move W$CallStackForm.Width W$DebugRect@width
         move W$CallStackForm.Height W$DebugRect@height
 
-        call CallStack_CreatePopupMenu
+        Call CallStack_CreatePopupMenu
 
-        mov eax &TRUE
+        Mov eax &TRUE
 EndP
 ____________________________________________________________________________________________
 
 ; Process WM_SIZE message.
 
 Proc CallStackDialog_OnSize:
-    Arguments @Handle, @WidthHeight
+    Arguments @hwnd, @WidthHeight
 
         movzx eax W$CallStackForm.Width
         movzx esi W@WidthHeight
@@ -793,72 +793,72 @@ Proc CallStackDialog_OnSize:
         movzx eax W$CallStackForm.Height
         movzx edi W@WidthHeight+2
         sub edi eax
-        call AdjustControlSize D@Handle, CALLSTACK_TREE, esi, edi
-        ;call AdjustControlPos D@Handle, CALLSTACK_SHOWDECLARATION, 0, edi
-        ;call AdjustControlPos D@Handle, CALLSTACK_SHOWEVOKE, 0, edi
-        call 'USER32.InvalidateRect' D@Handle, &NULL, &TRUE
+        Call AdjustControlSize D@hwnd, CALLSTACK_TREE, esi, edi
+        ;Call AdjustControlPos D@hwnd, CALLSTACK_SHOWDECLARATION, 0, edi
+        ;Call AdjustControlPos D@hwnd, CALLSTACK_SHOWEVOKE, 0, edi
+        Call 'USER32.InvalidateRect' D@hwnd, &NULL, &TRUE
 
         move D$CallStackFormSize D@WidthHeight
-        mov eax 0
+        Mov eax 0
 EndP
 ____________________________________________________________________________________________
 
 ; Process WM_COMMAND message.
 
 Proc CallStackDialog_OnCommand:
-    Arguments @Handle, @wParam, @lParam
+    Arguments @hwnd, @wParam, @lParam
 
         movzx ecx W@wParam
         movzx eax W@wParam+2
-        mov ebx D$CallStack.PopupMenu
+        Mov ebx D$CallStack.PopupMenu
 
         .If ecx = MCS_SHOW_INVOKE
-            call CallStackForm_ShowEvoke
+            Call CallStackForm_ShowEvoke
 
         .Else_if ecx = MCS_SHOW_DECL
-            call CallStackForm_ShowDeclaration
+            Call CallStackForm_ShowDeclaration
 
         .ElseIf ecx = MCS_SHOW_ALL
-            mov D$CallStackFilter ecx
-            call 'USER32.CheckMenuRadioItem' ebx, MCS_SHOWALL, MCS_HIDE_INTRA,
+            Mov D$CallStackFilter ecx
+            Call 'USER32.CheckMenuRadioItem' ebx, MCS_SHOWALL, MCS_HIDE_INTRA,
                ecx, &MF_BYCOMMAND
-            call CallStackForm_Refresh
+            Call CallStackForm_Refresh
 
         .ElseIf ecx = MCS_HIDE_EXTERNAL
-            mov D$CallStackFilter ecx
-            call 'USER32.CheckMenuRadioItem' ebx, MCS_SHOWALL, MCS_HIDE_INTRA,
+            Mov D$CallStackFilter ecx
+            Call 'USER32.CheckMenuRadioItem' ebx, MCS_SHOWALL, MCS_HIDE_INTRA,
                ecx, &MF_BYCOMMAND
-            call CallStackForm_Refresh
+            Call CallStackForm_Refresh
 
         .ElseIf ecx = MCS_HIDE_INTRA
-            mov D$CallStackFilter ecx
-            call 'USER32.CheckMenuRadioItem' ebx, MCS_SHOWALL, MCS_HIDE_INTRA,
+            Mov D$CallStackFilter ecx
+            Call 'USER32.CheckMenuRadioItem' ebx, MCS_SHOWALL, MCS_HIDE_INTRA,
                ecx, &MF_BYCOMMAND
-            call CallStackForm_Refresh
+            Call CallStackForm_Refresh
 
         .ElseIf ecx = MCS_SHOWLOCALS
             xor B$CallStackShowLocal 1
-            mov eax D$CallStackShowLocal | shl eax 3
-            call 'USER32.CheckMenuItem' ebx, MCS_SHOWLOCALS, eax
-            call CallStackForm_Refresh
+            Mov eax D$CallStackShowLocal | shl eax 3
+            Call 'USER32.CheckMenuItem' ebx, MCS_SHOWLOCALS, eax
+            Call CallStackForm_Refresh
 
         .EndIf
-        mov eax 0
+        Mov eax 0
 EndP
 ____________________________________________________________________________________________
 
 ; Process CDDS_ITEMPREPAINT notification. ebx > NMTVCUSTOMDRAW
 
 CallStackDialog_OnPaintItem:
-    mov eax D$ebx+44 ; item param
+    Mov eax D$ebx+44 ; item param
     If eax <> 0
 
-        mov al B$eax+CSE_Flags
+        Mov al B$eax+CSE_Flags
         test al CSEF_EXTERNAL | jz L0>
 
-        mov D$ebx+48 0_66_66_66 ; set text color to gray
+        Mov D$ebx+48 0_66_66_66 ; set text color to gray
     EndIf
-L0: mov eax &CDRF_NEWFONT
+L0: Mov eax &CDRF_NEWFONT
 ret
 ____________________________________________________________________________________________
 
@@ -867,25 +867,25 @@ ________________________________________________________________________________
 Proc CallStackDialog_OnNotify:
     Arguments @NotifyMsg
 
-        mov ebx D@NotifyMsg
+        Mov ebx D@NotifyMsg
 
         .If D$ebx+8 = &NM_CUSTOMDRAW
 
-            mov eax D$ebx+12 ; draw stage
+            Mov eax D$ebx+12 ; draw stage
             If eax = &CDDS_PREPAINT
-                mov eax &CDRF_NOTIFYITEMDRAW
+                Mov eax &CDRF_NOTIFYITEMDRAW
             Else eax = &CDDS_ITEMPREPAINT
-                call CallStackDialog_OnPaintItem
+                Call CallStackDialog_OnPaintItem
             Else
-                mov eax 0
+                Mov eax 0
             EndIf
 
         .ElseIf D$ebx+8 = &TVN_SELCHANGED
-            call CallStackForm_OnTreeNavigate ebx
-            mov eax 0
+            Call CallStackForm_OnTreeNavigate ebx
+            Mov eax 0
 
         .Else
-            mov eax 0
+            Mov eax 0
         .EndIf
 EndP
 ____________________________________________________________________________________________
@@ -902,56 +902,56 @@ ________________________________________________________________________________
 [CALLSTACK_TREE 20]
 
 Proc CallStackProc:
-    Arguments @handle @Message @wParam @lParam
+    Arguments @hwnd @msg @wParam @lParam
     Uses ebx, esi, edi
 
-    .If D@Message = &WM_CREATE
-        call CallStackDialog_OnCreate D@Handle
-        mov eax 0
+    .If D@msg = &WM_CREATE
+        Call CallStackDialog_OnCreate D@hwnd
+        Mov eax 0
 
-    .Else_if D@Message = &WM_SHOWWINDOW
+    .Else_if D@msg = &WM_SHOWWINDOW
         If D@wParam = &TRUE
-            call CallStackForm_Refresh
+            Call CallStackForm_Refresh
         EndIf
 
-    .Else_if D@Message = &WM_CLOSE
-        call 'USER32.DestroyWindow' D@Handle
+    .Else_if D@msg = &WM_CLOSE
+        Call 'USER32.DestroyWindow' D@hwnd
 
-    .Else_If D@Message = &WM_DESTROY
-        call DestroyCallStack
-        mov D$CallStackFormHandle 0
+    .Else_If D@msg = &WM_DESTROY
+        Call DestroyCallStack
+        Mov D$CallStackFormHandle 0
 
-    .Else_If D@Message = &WM_SIZE
-        call CallStackDialog_OnSize D@Handle, D@lParam
+    .Else_If D@msg = &WM_SIZE
+        Call CallStackDialog_OnSize D@hwnd, D@lParam
 
-    .Else_if D@Message = &WM_COMMAND
-        call CallStackDialog_OnCommand D@Handle, D@wParam, D@lParam
+    .Else_if D@msg = &WM_COMMAND
+        Call CallStackDialog_OnCommand D@hwnd, D@wParam, D@lParam
 
-    .Else_if D@Message = &WM_NOTIFY
-        call CallStackDialog_OnNotify D@lParam
+    .Else_if D@msg = &WM_NOTIFY
+        Call CallStackDialog_OnNotify D@lParam
 
-    .Else_if D@Message = WM_REFRESH_CONTENT
-        call CallStackForm_Refresh
+    .Else_if D@msg = WM_REFRESH_CONTENT
+        Call CallStackForm_Refresh
 
-    .Else_if D@Message = &WM_SETFONT
+    .Else_if D@msg = &WM_SETFONT
         SendMessage D$CallStackTreeHandle, &WM_SETFONT, D@wParam, D@lParam
 
-    .Else_if D@Message = &WM_DRAWITEM
+    .Else_if D@msg = &WM_DRAWITEM
         If D@wParam = 0
-            call DebugDialog_OnDrawMenuItem D@lParam
+            Call DebugDialog_OnDrawMenuItem D@lParam
         EndIf
-        mov eax 1
+        Mov eax 1
 
-    .Else_if D@Message = &WM_MEASUREITEM
-        mov eax D@lParam
+    .Else_if D@msg = &WM_MEASUREITEM
+        Mov eax D@lParam
         If D@wParam = 0
           ; menu
-            call DebugDialog_OnMeasureMenuItem D@lParam
+            Call DebugDialog_OnMeasureMenuItem D@lParam
         EndIf
-        mov eax 1
+        Mov eax 1
 
     .Else
-        call 'User32.DefWindowProcA' D@handle D@Message D@wParam D@lParam
+        Call 'User32.DefWindowProcA' D@hwnd D@msg D@wParam D@lParam
     .EndIf
 EndP
 ____________________________________________________________________________________________
@@ -959,26 +959,26 @@ ________________________________________________________________________________
 ; To allow rightclick inside the treeview we override the window proc.
 
 CallStack_OverrideTreeProc:
-    mov D$CallStack.TVProc 0
-    call 'User32.SetWindowLongA' D$CallStackTreeHandle, &GWL_WNDPROC, CallStack_InterceptRightClick
-    mov D$CallStack.TVProc eax
+    Mov D$CallStack.TVProc 0
+    Call 'User32.SetWindowLongA' D$CallStackTreeHandle, &GWL_WNDPROC, CallStack_InterceptRightClick
+    Mov D$CallStack.TVProc eax
 ret
 
 [CallStack.TVProc: ?]
 
 Proc CallStack_InterceptRightClick:
-    Arguments @Handle, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
     Uses ebx esi edi
 
-    .If D@Message = &WM_RBUTTONDOWN
+    .If D@msg = &WM_RBUTTONDOWN
       ; Simulate left click (select item) before showing the popup menu
-        SendMessage D@Handle, &WM_LBUTTONDOWN, D@wParam, D@lParam
-        SendMessage D@Handle, &WM_LBUTTONUP, D@wParam, D@lParam
+        SendMessage D@hwnd, &WM_LBUTTONDOWN, D@wParam, D@lParam
+        SendMessage D@hwnd, &WM_LBUTTONUP, D@wParam, D@lParam
       ; Is this a proc name item? (don't show menu for sub items)
         cmp D$CallStackForm.CurrentEntry 0 | jz L0>>
       ; Check if the user right-clicked onto the item
         move D$DebugRect D$CallStackForm.CurrentItem
-        SendMessage D@Handle, &TVM_GETITEMRECT, 1, DebugRect
+        SendMessage D@hwnd, &TVM_GETITEMRECT, 1, DebugRect
         movzx eax W@lParam
         cmp eax D$DebugRect@left  | jl L0>
         cmp eax D$DebugRect@right | ja L0>
@@ -988,13 +988,13 @@ Proc CallStack_InterceptRightClick:
       ; Show the popup menu at the position of the mouse-click
         movzx eax W@lParam
         movzx ecx W@lParam+2
-        mov D$PointX eax, D$PointY ecx
-        call 'USER32.ClientToScreen' D@Handle, Point
-        call 'USER32.TrackPopupMenu' D$CallStack.PopupMenu, &TPM_LEFTALIGN, D$PointX, D$PointY, 0, D$CallStackFormHandle, 0 ; << TODO
-    .ElseIf D@Message = &WM_LBUTTONDBLCLK
-        call CallStackForm_ShowDeclaration ; *TODO* strange effect in source editor
+        Mov D$PointX eax, D$PointY ecx
+        Call 'USER32.ClientToScreen' D@hwnd, Point
+        Call 'USER32.TrackPopupMenu' D$CallStack.PopupMenu, &TPM_LEFTALIGN, D$PointX, D$PointY, 0, D$CallStackFormHandle, 0 ; << TODO
+    .ElseIf D@msg = &WM_LBUTTONDBLCLK
+        Call CallStackForm_ShowDeclaration ; *TODO* strange effect in source editor
     .EndIf
-L0: call 'User32.CallWindowProcA' D$CallStack.TVProc, D@Handle, D@Message, D@wParam, D@lParam
+L0: Call 'User32.CallWindowProcA' D$CallStack.TVProc, D@hwnd, D@msg, D@wParam, D@lParam
 EndP
 ____________________________________________________________________________________________
 
@@ -1011,17 +1011,17 @@ ________________________________________________________________________________
 ; CALLSTACK_SHOWLOCALS 35]
 
 CallStack_CreatePopupMenu:
-    call 'USER32.CreatePopupMenu' | mov ebx eax, D$CallStack.PopupMenu eax
-    call AppendMenu ebx, &MF_OWNERDRAW, MCS_SHOW_INVOKE, D$StrShowInvokePtr
-    call AppendMenu ebx, &MF_OWNERDRAW, MCS_SHOW_DECL, D$StrShowDeclPtr
-    call 'User32.AppendMenuA' ebx, &MF_SEPARATOR, 0, 0
-    call AppendMenu ebx, &MF_OWNERDRAW, MCS_SHOW_ALL, D$StrShowAllCallsPtr
-    call AppendMenu ebx, &MF_OWNERDRAW, MCS_HIDE_EXTERNAL, D$StrHideModCallsPtr
-    call AppendMenu ebx, &MF_OWNERDRAW, MCS_HIDE_INTRA, D$StrHideIMCallsPtr
-    call 'User32.AppendMenuA' ebx, &MF_SEPARATOR, 0, 0
-    call AppendMenu ebx, &MF_OWNERDRAW+&MF_CHECKED, MCS_SHOWLOCALS, D$StrShowLocalsPtr
+    Call 'USER32.CreatePopupMenu' | Mov ebx eax, D$CallStack.PopupMenu eax
+    Call AppendMenu ebx, &MF_OWNERDRAW, MCS_SHOW_INVOKE, D$StrShowInvokePtr
+    Call AppendMenu ebx, &MF_OWNERDRAW, MCS_SHOW_DECL, D$StrShowDeclPtr
+    Call 'User32.AppendMenuA' ebx, &MF_SEPARATOR, 0, 0
+    Call AppendMenu ebx, &MF_OWNERDRAW, MCS_SHOW_ALL, D$StrShowAllCallsPtr
+    Call AppendMenu ebx, &MF_OWNERDRAW, MCS_HIDE_EXTERNAL, D$StrHideModCallsPtr
+    Call AppendMenu ebx, &MF_OWNERDRAW, MCS_HIDE_INTRA, D$StrHideIMCallsPtr
+    Call 'User32.AppendMenuA' ebx, &MF_SEPARATOR, 0, 0
+    Call AppendMenu ebx, &MF_OWNERDRAW+&MF_CHECKED, MCS_SHOWLOCALS, D$StrShowLocalsPtr
 
-    call 'USER32.CheckMenuRadioItem' ebx, MCS_SHOWALL, MCS_HIDE_INTRA,
+    Call 'USER32.CheckMenuRadioItem' ebx, MCS_SHOWALL, MCS_HIDE_INTRA,
         MCS_SHOWALL, &MF_BYCOMMAND
 ret
 
@@ -1055,10 +1055,10 @@ SearchLocalName:
     If eax <> 0
         neg eax | jmp SearchStackFrameSymbol
     Else
-        mov eax ' [Ca' | stosd
-        mov eax 'ller' | stosd
-        mov eax ' EBP' | stosd
-        mov eax ']'    | stosd
+        Mov eax ' [Ca' | stosd
+        Mov eax 'ller' | stosd
+        Mov eax ' EBP' | stosd
+        Mov eax ']'    | stosd
     EndIf
 ret
 
@@ -1067,7 +1067,7 @@ SearchParameterName:
     lea eax D$ebx*4+8
 
 SearchStackFrameSymbol:
-    mov edx StackFrameSymbols, ecx D$NumStackFrameSymbols
+    Mov edx StackFrameSymbols, ecx D$NumStackFrameSymbols
     jecxz L9>
 
   ; Search correspondance table - cmp the offset
@@ -1077,17 +1077,17 @@ L0: cmp D$edx+4 eax | je L1>
     jmp L9>
 
   ; Copy the name to the buffer at EDI > " [name]"
-L1: mov edx D$edx
-    mov ecx 97
-    mov al ' ' | stosb
-    mov al '['
+L1: Mov edx D$edx
+    Mov ecx 97
+    Mov al ' ' | stosb
+    Mov al '['
     Do
         stosb
-        mov al B$edx
+        Mov al B$edx
         inc edx
         dec ecx | jz L8>
     Loop_Until al < LowSigns
-L8: mov al ']' | stosb
+L8: Mov al ']' | stosb
 L9: ret
 ____________________________________________________________________________________________
 
@@ -1098,12 +1098,12 @@ Proc CallStackForm_InsertParameters:
   ; Parameter string reserved on stack
     sub esp 128
 
-    mov D$TVI.Item.pszText {'Parameter' 0}, D$TVI.Item.lParam 0
+    Mov D$TVI.Item.pszText {'Parameter' 0}, D$TVI.Item.lParam 0
     SendMessage D$CallStackTreeHandle, &TVM_INSERTITEM, 0, TVI
-    mov D$TVI.hParent eax
+    Mov D$TVI.hParent eax
 
-    mov ebx 0
-    mov esi D$edi+CSE_Address
+    Mov ebx 0
+    Mov esi D$edi+CSE_Address
 
   ; esi > first parameter
     While ebx < D$edi+CSE_NumParams
@@ -1111,10 +1111,10 @@ Proc CallStackForm_InsertParameters:
         push edi
             lea edi D$esp+4
             DwordToHex eax
-            call SearchParameterName
-            mov al 0 | stosb
+            Call SearchParameterName
+            Mov al 0 | stosb
         pop edi
-        mov D$TVI.Item.pszText esp
+        Mov D$TVI.Item.pszText esp
         SendMessage D$CallStackTreeHandle, &TVM_INSERTITEM, 0, TVI
         inc ebx
     EndWhile
@@ -1130,23 +1130,23 @@ Proc CallStackForm_InsertLocals:
   ; Local string reserved on stack
     sub esp 128
 
-    mov D$TVI.Item.pszText {'Local data' 0}, D$TVI.Item.lParam 0
+    Mov D$TVI.Item.pszText {'Local data' 0}, D$TVI.Item.lParam 0
     SendMessage D$CallStackTreeHandle, &TVM_INSERTITEM, 0, TVI
-    mov D$TVI.hParent eax
+    Mov D$TVI.hParent eax
 
-    mov ebx 0
-    mov esi D$edi+CSE_Address | sub esi 8
+    Mov ebx 0
+    Mov esi D$edi+CSE_Address | sub esi 8
 
   ; esi > caller ebp
     While ebx < D$edi+CSE_NumLocals
-        mov eax D$esi | sub esi 4
+        Mov eax D$esi | sub esi 4
         push edi
             lea edi D$esp+4
             DwordToHex eax
-            call SearchLocalName
-            mov al 0 | stosb
+            Call SearchLocalName
+            Mov al 0 | stosb
         pop edi
-        mov D$TVI.Item.pszText esp
+        Mov D$TVI.Item.pszText esp
         SendMessage D$CallStackTreeHandle, &TVM_INSERTITEM, 0, TVI
         inc ebx
     EndWhile
@@ -1162,7 +1162,7 @@ ________________________________________________________________________________
 ; Note: Only simple expressions with one offset and one op (+/-) are supported (not "EBP+8-4")
 
 ParseFrameOffset:
-    mov eax 0
+    Mov eax 0
     cmp ecx 5 | jb L9>
 
     lodsd | sub ecx 4
@@ -1175,14 +1175,14 @@ L0: shr eax 24 ; move operator (+/-) in AL
 
     push edi ebx edx
       ; Save the byte behind the string in AH and replace with 0
-        mov ah B$esi+ecx, B$esi+ecx 0
+        Mov ah B$esi+ecx, B$esi+ecx 0
         push eax
             push esi ecx
-                call TranslateAny
+                Call TranslateAny
             pop ecx esi
         pop edx
       ; DL = operator, DH = saved byte
-        mov B$esi+ecx dh
+        Mov B$esi+ecx dh
         On dl = subSign, neg eax
     pop edx ebx edi
 ret
@@ -1199,55 +1199,55 @@ Proc FindStackFrameSymbols:
     Local @PlainLabel, @LabelLen
     Uses edi
 
-    mov D$NumStackFrameSymbols 0
+    Mov D$NumStackFrameSymbols 0
 
-    mov al B$edi+CSE_FLAGS
+    Mov al B$edi+CSE_FLAGS
 
     test al CSEF_HAS_STACKFRAME | jz  P9>>
     ;test al CSEF_FUZZY_ADDRESS  | jnz P9>>
     test al CSEF_EXTERNAL       | jnz P9>>
 
   ; Get symbol name / len
-    mov edi D$edi+CSE_ProcName, D@PlainLabel edi
-    mov ecx 0-1, al 0
+    Mov edi D$edi+CSE_ProcName, D@PlainLabel edi
+    Mov ecx 0-1, al 0
     repne scasb
-    mov eax 0-2 | sub eax ecx
-    mov D@LabelLen eax
+    Mov eax 0-2 | sub eax ecx
+    Mov D@LabelLen eax
 
   ; search the label list for symbols "THISLABEL@..."
-    mov edi D$EquateList, edx D$EquateListLimit
+    Mov edi D$EquateList, edx D$EquateListLimit
     add edi 5
     While edi < edx
-        mov esi D@PlainLabel, ecx D@LabelLen
+        Mov esi D@PlainLabel, ecx D@LabelLen
         repe cmpsb | jne L0>
 
             cmp B$edi '@' | jne L0>
             inc edi
 
           ; Save address of local name without preceding '@'
-            mov ebx D$NumStackFrameSymbols
-            mov D$StackFrameSymbols+ebx*8 edi
+            Mov ebx D$NumStackFrameSymbols
+            Mov D$StackFrameSymbols+ebx*8 edi
 
           ; Scan to the end of the label name
-            mov al EOI
-            mov ecx edx | sub ecx edi
+            Mov al EOI
+            Mov ecx edx | sub ecx edi
             repne scasb
 
           ; Parse equate contents
-            mov esi D$edi, ecx D$edi+4
-            call ParseFrameOffset
+            Mov esi D$edi, ecx D$edi+4
+            Call ParseFrameOffset
             cmp eax 0 | je L1>
 
           ; Save entry in correspondance table
-            mov D$StackFrameSymbols+ebx*8+4 eax
+            Mov D$StackFrameSymbols+ebx*8+4 eax
             inc D$NumStackFrameSymbols
 
             On D$NumStackFrameSymbols = MAX_STACK_FRAME_SYMBOLS, ExitP
 
             jmp L1>
 
-L0:     mov al EOI
-        mov ecx edx | sub ecx edi
+L0:     Mov al EOI
+        Mov ecx edx | sub ecx edi
         repne scasb
 L1:     add edi 10
     EndWhile
@@ -1258,16 +1258,16 @@ Proc CallStackForm_BuildTree:
     Local @hProcItem
     Uses edi, ebx, esi
 
-    call GenerateCallStack
+    Call GenerateCallStack
 
     SendMessage D$CallStackTreeHandle, &WM_SETREDRAW, &FALSE, 0
     SendMessage D$CallStackTreeHandle, &TVM_DELETEITEM, 0, &TVI_ROOT
 
-    mov D$TVI.hParent &TVI_ROOT
-    mov D$TVI.hInsertAfter &TVI_LAST
-    mov D$TVI.Item.imask &TVIF_TEXT+&TVIF_PARAM
+    Mov D$TVI.hParent &TVI_ROOT
+    Mov D$TVI.hInsertAfter &TVI_LAST
+    Mov D$TVI.Item.imask &TVIF_TEXT+&TVIF_PARAM
 
-    mov edi D$FirstCallStackEntry
+    Mov edi D$FirstCallStackEntry
     .While edi <> 0
 
         If D$CallStackFilter = MCS_HIDE_EXTERNAL
@@ -1276,39 +1276,39 @@ Proc CallStackForm_BuildTree:
           ; filter module internal calls, this is when the current CSE was called
           ; by a function in the same (external) module
             test B$edi+CSE_Flags CSEF_EXTERNAL | jz L1>
-            mov eax D$edi+CSE_Next
+            Mov eax D$edi+CSE_Next
             test B$eax+CSE_Flags CSEF_EXTERNAL | jz L1>
-            call IsModuleCode D$eax+CSE_ProcAddress
-            mov ebx eax
-            call IsModuleCode D$edi+CSE_ProcAddress
+            Call IsModuleCode D$eax+CSE_ProcAddress
+            Mov ebx eax
+            Call IsModuleCode D$edi+CSE_ProcAddress
             cmp eax ebx | je L0>>
         EndIf
 
-L1:     mov D$TVI.hParent &TVI_ROOT
-        mov D$TVI.Item.lParam edi
-        mov eax D$edi+CSE_ProcName
-        mov D$TVI.Item.pszText eax
+L1:     Mov D$TVI.hParent &TVI_ROOT
+        Mov D$TVI.Item.lParam edi
+        Mov eax D$edi+CSE_ProcName
+        Mov D$TVI.Item.pszText eax
         SendMessage D$CallStackTreeHandle, &TVM_INSERTITEM, 0, TVI
-        mov D$TVI.hParent eax, D@hProcItem eax
+        Mov D$TVI.hParent eax, D@hProcItem eax
 
-        call FindStackFrameSymbols
+        Call FindStackFrameSymbols
         On D$edi+CSE_NumParams > 0,
-            call CallStackForm_InsertParameters
+            Call CallStackForm_InsertParameters
 
         move D$TVI.hParent D@hProcItem
 
         If D$CallStackShowLocal = 1
             On D$edi+CSE_NumLocals > 0,
-                call CallStackForm_InsertLocals
+                Call CallStackForm_InsertLocals
         EndIf
 
         test B$edi+CSE_Flags CSEF_EXTERNAL | jnz L0>
             SendMessage D$CallStackTreeHandle, &TVM_EXPAND, &TVE_EXPAND, D@hProcItem
-L0:     mov edi D$edi+CSE_Next
+L0:     Mov edi D$edi+CSE_Next
     .EndWhile
 
     SendMessage D$CallStackTreeHandle, &WM_SETREDRAW, &TRUE, 0
-    call 'USER32.InvalidateRect' D$CallStackTreeHandle, &NULL, &TRUE
+    Call 'USER32.InvalidateRect' D$CallStackTreeHandle, &NULL, &TRUE
 
 EndP
 
@@ -1316,28 +1316,28 @@ Proc CallStackForm_OnTreeNavigate:
     Arguments @NotifyInfo
     Uses esi ebx
 
-    mov esi D@NotifyInfo
+    Mov esi D@NotifyInfo
     On D$esi+8 <> &TVN_SELCHANGED, ExitP
     add esi 12 ; skip notify header
     add esi 4 ; skip action flag
     add esi 40 ; skip old item
-    mov eax D$esi+4 ; hItem
-    mov D$CallStackForm.CurrentItem eax
-    mov ebx D$esi+36 ; lParam of new item
-    mov D$CallStackForm.CurrentEntry ebx
+    Mov eax D$esi+4 ; hItem
+    Mov D$CallStackForm.CurrentItem eax
+    Mov ebx D$esi+36 ; lParam of new item
+    Mov D$CallStackForm.CurrentEntry ebx
 
-    mov eax 0
-    On ebx <> 0, mov eax D$ebx+CSE_ProcAddress
-    call IsProcessCode eax
+    Mov eax 0
+    On ebx <> 0, Mov eax D$ebx+CSE_ProcAddress
+    Call IsProcessCode eax
     xor eax 1
-    call 'USER32.EnableMenuItem' D$CallStack.PopupMenu, MCS_SHOW_DECL, eax
+    Call 'USER32.EnableMenuItem' D$CallStack.PopupMenu, MCS_SHOW_DECL, eax
     If ebx <> 0
-        mov ebx D$ebx+CSE_Address
-        On ebx <> 0, mov ebx D$ebx-4
+        Mov ebx D$ebx+CSE_Address
+        On ebx <> 0, Mov ebx D$ebx-4
     EndIf
-    call IsProcessCode ebx
+    Call IsProcessCode ebx
     xor eax 1
-    call 'USER32.EnableMenuItem' D$CallStack.PopupMenu, MCS_SHOW_INVOKE, eax
+    Call 'USER32.EnableMenuItem' D$CallStack.PopupMenu, MCS_SHOW_INVOKE, eax
 
 EndP
 
@@ -1346,26 +1346,26 @@ EndP
 
 Proc CallStackForm_Refresh:
 
-    call CallStackForm_BuildTree
+    Call CallStackForm_BuildTree
 EndP
 
 [CallStackForm.CurrentEntry: ? CallStackForm.CurrentItem: ?]
 
 Proc CallStackForm_ShowEvoke:
 
-    mov eax D$CallStackForm.CurrentEntry
+    Mov eax D$CallStackForm.CurrentEntry
     On eax = 0, ExitP
-    mov edx D$eax
-    mov ecx D$edx-4 ; get return address from the stack-copy
+    Mov edx D$eax
+    Mov ecx D$edx-4 ; get return address from the stack-copy
     dec ecx
-    call SourceDebugPos ecx
+    Call SourceDebugPos ecx
 EndP
 
 Proc CallStackForm_ShowDeclaration:
 
-    mov eax D$CallStackForm.CurrentEntry
+    Mov eax D$CallStackForm.CurrentEntry
     On eax = 0, ExitP
-    call SourceDebugPos D$eax+4
+    Call SourceDebugPos D$eax+4
 EndP
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -1375,8 +1375,8 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 
-[SendMessage | #=4 | call 'User32.SendMessageA' #1 #2 #3 #4]
-[CopyString | #=1 | mov esi #1 | R9: | cmp B$esi 0 | je R9> | movsb | jmp R9< | R9: ]
+[SendMessage | #=4 | Call 'User32.SendMessageA' #1 #2 #3 #4]
+[CopyString | #=1 | Mov esi #1 | R9: | cmp B$esi 0 | je R9> | movsb | jmp R9< | R9: ]
 ____________________________________________________________________________________________
 
 [GPRRegMap: C.regEax C.regEbx C.regEcx C.regEdx C.regEsi C.regEdi C.regEbp C.regEsp]
@@ -1412,21 +1412,21 @@ ________________________________________________________________________________
 [RegValues: ValueReg0 ValueReg1 ValueReg2 ValueReg3 ValueReg4 ValueReg5 ValueReg6 ValueReg7]
 
 Proc DebugDialog_OnFormatChange:
-    Arguments @Handle @Index
+    Arguments @hwnd @Index
 
-        mov B$HexSeparator 1
-        mov ebx 0
+        Mov B$HexSeparator 1
+        Mov ebx 0
         .While ebx < 8
-            mov eax D$TabID, edx D@Index
+            Mov eax D$TabID, edx D@Index
             .If eax = 0 ; GPR
-                mov esi D$GPRRegMap+ebx*4
-                mov ecx 4
-                call D$GPRConvert+edx*4
+                Mov esi D$GPRRegMap+ebx*4
+                Mov ecx 4
+                Call D$GPRConvert+edx*4
             .ElseIf eax = 1 ; FPU
                 ; test for empty register slots
-                mov eax D$C.FloatSave.TagWord
+                Mov eax D$C.FloatSave.TagWord
                 ; get top of stack (ecx = TOS * 2)
-                mov ecx D$C.FloatSave.StatusWord
+                Mov ecx D$C.FloatSave.StatusWord
                 shr ecx 10 | and ecx 00_1110
                 lea ecx D$ebx*2+ecx
                 and ecx 0F
@@ -1434,57 +1434,57 @@ Proc DebugDialog_OnFormatChange:
                 ;shl eax 2 | lea ecx D$ebx*2 | shl eax cl
                 ;shr eax 16 | and eax 3 ; eax = TagBits for register (11: empty)
                 If eax = 0011
-                    mov edi StringBuf
-                    mov D$edi 'EMPT', W$edi+4 'Y'
+                    Mov edi StringBuf
+                    Mov D$edi 'EMPT', W$edi+4 'Y'
                 Else
-                    mov esi C.FloatSave.RegisterArea
+                    Mov esi C.FloatSave.RegisterArea
                     imul eax ebx 10
                     add esi eax
-                    mov ecx 10
-                    call D$FPUConvert+edx*4
+                    Mov ecx 10
+                    Call D$FPUConvert+edx*4
                 EndIf
             .ElseIf eax = 2 ; MMX [V2.1b]
                 imul esi ebx 10
                 add esi C.FloatSave.RegisterArea
                 ;mov esi ebx | shl esi 4
                 ;add esi C.regMM
-                mov ecx 8
-                call D$MMXConvert+edx*4
+                Mov ecx 8
+                Call D$MMXConvert+edx*4
             .ElseIf eax = 3 ; SSE
-                mov esi ebx | shl esi 4
+                Mov esi ebx | shl esi 4
                 add esi C.regXMM
-                mov ecx 16
-                call D$SSEConvert+edx*4
+                Mov ecx 16
+                Call D$SSEConvert+edx*4
             .ElseIf eax = 4 ; Segment
                 If ebx < 6
-                    mov esi D$SegRegMap+ebx*4
+                    Mov esi D$SegRegMap+ebx*4
                     lea edi D$LinearSegmentAddresses+ebx*8
-                    call toSegHex
-                    ;call D$SegConvert+edx*4
+                    Call toSegHex
+                    ;Call D$SegConvert+edx*4
                 Else
-                    mov edi StringBuf
-                    mov B$edi 0
+                    Mov edi StringBuf
+                    Mov B$edi 0
                 EndIf
             .Else_if eax = 5 ; Debug & EIP
                 If ebx < 7
-                    mov esi D$DbgRegMap+ebx*4
-                    mov ecx 4
-                    call D$DbgConvert+edx*4
+                    Mov esi D$DbgRegMap+ebx*4
+                    Mov ecx 4
+                    Call D$DbgConvert+edx*4
                 Else
-                    mov edi StringBuf
-                    mov B$edi 0
+                    Mov edi StringBuf
+                    Mov B$edi 0
                 EndIf
             .EndIf
 
-            mov esi edi, edi D$RegValues+ebx*4
+            Mov esi edi, edi D$RegValues+ebx*4
             Do | movsb | Loop_Until B$esi-1 = 0
 
             inc ebx
         .End_While
 
-        mov ecx D$TabID, eax D@Index, D$TabFormats+ecx*4 eax
-        call 'USER32.InvalidateRect' D$RegListHandle, &NULL, &TRUE
-        call DebugDialog_RedrawRegisterButtons D@Handle
+        Mov ecx D$TabID, eax D@Index, D$TabFormats+ecx*4 eax
+        Call 'USER32.InvalidateRect' D$RegListHandle, &NULL, &TRUE
+        Call DebugDialog_RedrawRegisterButtons D@hwnd
 EndP
 ____________________________________________________________________________________________
 
@@ -1525,52 +1525,52 @@ Proc DebugDialog_OnDrawRegisterItem:
     Local @Brush
     Uses ebx edi
 
-    mov ebx D@DrawItemStruc
+    Mov ebx D@DrawItemStruc
 
-    call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0
+    Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0
 
   ; Print Register name
-    mov eax D$ebx+DRAWITEM_RCITEM_LEFT | mov D$ItemRect@x1 eax
-    add eax 35 | mov D$ItemRect@x2 eax
+    Mov eax D$ebx+DRAWITEM_RCITEM_LEFT | Mov D$ItemRect@x1 eax
+    add eax 35 | Mov D$ItemRect@x2 eax
     move D$ItemRect@y1 D$ebx+DRAWITEM_RCITEM_TOP
     move D$ItemRect@y2 D$ebx+DRAWITEM_RCITEM_BOTTOM
 
-    mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
-    call 'GDI32.CreateSolidBrush' D$BackgroundCol@Name+edi*4 | mov D@Brush eax
-    call 'USER32.FillRect' D$ebx+DRAWITEM_HDC, ItemRect, D@Brush
-    call 'GDI32.DeleteObject' D@Brush
-    call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, D$BackgroundCol@Name+edi*4
+    Mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
+    Call 'GDI32.CreateSolidBrush' D$BackgroundCol@Name+edi*4 | Mov D@Brush eax
+    Call 'USER32.FillRect' D$ebx+DRAWITEM_HDC, ItemRect, D@Brush
+    Call 'GDI32.DeleteObject' D@Brush
+    Call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, D$BackgroundCol@Name+edi*4
 
-    mov ecx D$TabID, edi D$RegSets+ecx*4
-    mov edx 0, al 0
+    Mov ecx D$TabID, edi D$RegSets+ecx*4
+    Mov edx 0, al 0
     While edx < D$ebx+DRAWITEM_ITEMID ; item index
-        mov ecx 0-1
+        Mov ecx 0-1
         repne scasb
         inc edx
     EndWhile
 
-    call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, edi, 0-1, ItemRect,
+    Call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, edi, 0-1, ItemRect,
          (&DT_SINGLELINE+&DT_CENTER+&DT_VCENTER)
 
   ; Hilite changed regs
     If D$TabId = 0 ; GPR
-        mov ecx D$ebx+DRAWITEM_ITEMID
+        Mov ecx D$ebx+DRAWITEM_ITEMID
         bt D$GPR_Modified_Mask ecx | jnc L0>
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0C0
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0C0
 L0: EndIf
 
   ; Print value
     move D$ItemRect@x1 D$ItemRect@x2
     move D$ItemRect@x2 D$ebx+DRAWITEM_RCITEM_RIGHT
 
-    mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
-    call 'GDI32.CreateSolidBrush' D$BackgroundCol@Value+edi*4 | mov D@Brush eax
-    call 'USER32.FillRect' D$ebx+DRAWITEM_HDC, ItemRect, D@Brush
-    call 'GDI32.DeleteObject' D@Brush
-    call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, D$BackgroundCol@Value+edi*4
+    Mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
+    Call 'GDI32.CreateSolidBrush' D$BackgroundCol@Value+edi*4 | Mov D@Brush eax
+    Call 'USER32.FillRect' D$ebx+DRAWITEM_HDC, ItemRect, D@Brush
+    Call 'GDI32.DeleteObject' D@Brush
+    Call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, D$BackgroundCol@Value+edi*4
 
-    mov ecx D$ebx+DRAWITEM_ITEMID | mov edi D$RegValues+ecx*4
-    call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, edi, 0-1, ItemRect,
+    Mov ecx D$ebx+DRAWITEM_ITEMID | Mov edi D$RegValues+ecx*4
+    Call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, edi, 0-1, ItemRect,
          (&DT_SINGLELINE+&DT_CENTER+&DT_VCENTER)
 
 EndP
@@ -1585,15 +1585,15 @@ ________________________________________________________________________________
 [DebugFormatComboHandle: ?]
 
 Proc DebugDialog_CreateRegisterTabs:
-    Arguments @Handle
+    Arguments @hwnd
     Local @Index
     ; Tag Dialog 1010
 
       ; Create register listbox
         movzx ecx W$DebugDialog.Width | sub ecx 6
-        mov edx 53 ;mov edx D$DebugDialog.RebarHeight | add edx 50
+        Mov edx 53 ;mov edx D$DebugDialog.RebarHeight | add edx 50
 
-        call 'User32.CreateWindowExA',
+        Call 'User32.CreateWindowExA',
             &WS_EX_CLIENTEDGE,
             {'LISTBOX' 0},
             {'Register' 0},
@@ -1604,13 +1604,13 @@ Proc DebugDialog_CreateRegisterTabs:
             D$hInstance,
             0
 
-        mov D$RegListHandle eax
+        Mov D$RegListHandle eax
 
       ; Create format combo
         movzx ecx W$DebugDialog.Width | sub ecx 122
-        mov edx 29 ;mov edx D$DebugDialog.RebarHeight | add edx 26
+        Mov edx 29 ;mov edx D$DebugDialog.RebarHeight | add edx 26
 
-        call 'User32.CreateWindowExA',
+        Call 'User32.CreateWindowExA',
             0,
             {'COMBOBOX' 0},
             {'Representation' 0},
@@ -1621,13 +1621,13 @@ Proc DebugDialog_CreateRegisterTabs:
             D$hInstance,
             0
 
-        mov D$DebugFormatComboHandle eax
+        Mov D$DebugFormatComboHandle eax
         SendMessage eax, &WM_SETFONT, D$DialogFontHandle, &TRUE
 
       ; Create static control
-        mov edx 32 ;mov edx D$DebugDialog.RebarHeight | add edx 29
+        Mov edx 32 ;mov edx D$DebugDialog.RebarHeight | add edx 29
 
-        call 'User32.CreateWindowExA',
+        Call 'User32.CreateWindowExA',
             0,
             {'STATIC' 0},
             D$StrDataFmtPtr,
@@ -1642,9 +1642,9 @@ Proc DebugDialog_CreateRegisterTabs:
 
       ; Create tab control
         movzx ecx W$DebugDialog.Width
-        mov edx 6 ;mov edx D$DebugDialog.RebarHeight | add edx 4
+        Mov edx 6 ;mov edx D$DebugDialog.RebarHeight | add edx 4
 
-        call 'User32.CreateWindowExA',
+        Call 'User32.CreateWindowExA',
             0,
             {"SysTabControl32",0},
             {"RegisterTab",0},
@@ -1655,81 +1655,81 @@ Proc DebugDialog_CreateRegisterTabs:
             D$hInstance,
             0
 
-        mov D$DebugRegTab_handle eax
-        mov ebx eax
+        Mov D$DebugRegTab_handle eax
+        Mov ebx eax
         SendMessage eax, &WM_SETFONT, D$DialogFontHandle, &TRUE
 
       ; Add tabs
-        mov D@Index 0
-        mov D$TabItem@imask &TCIF_TEXT+&TCIF_PARAM
+        Mov D@Index 0
+        Mov D$TabItem@imask &TCIF_TEXT+&TCIF_PARAM
 
-        mov D$TabItem@pszText RegGeneral
-        mov D$TabItem@lParam 0
+        Mov D$TabItem@pszText RegGeneral
+        Mov D$TabItem@lParam 0
         SendMessage ebx, &TCM_INSERTITEM, D@Index, TabItem
-        On eax = 0-1, call ReportWinError {'TCM_INSERTITEM' 0}
+        On eax = 0-1, Call ReportWinError {'TCM_INSERTITEM' 0}
         inc D@Index
 
         test D$CPUFlags FLAG_FPU | jz L0>
 
-        mov D$TabItem@pszText RegFPU
-        mov D$TabItem@lParam 1
+        Mov D$TabItem@pszText RegFPU
+        Mov D$TabItem@lParam 1
         SendMessage ebx, &TCM_INSERTITEM, D@Index, TabItem
         inc D@Index
 
 L0:     test D$CPUFlags FLAG_MMX | jz L0>
 
-        mov D$TabItem@pszText RegMMX
-        mov D$TabItem@lParam 2
+        Mov D$TabItem@pszText RegMMX
+        Mov D$TabItem@lParam 2
         SendMessage ebx, &TCM_INSERTITEM, D@Index, TabItem
         inc D@Index
 
 L0:     test D$CPUFlags FLAG_SSE | jz L0>
 
-        mov D$TabItem@pszText RegSSE
-        mov D$TabItem@lParam 3
+        Mov D$TabItem@pszText RegSSE
+        Mov D$TabItem@lParam 3
         SendMessage ebx, &TCM_INSERTITEM, D@Index, TabItem
         inc D@Index
 
-L0:     call SelectTab ebx, DEBUGDLG_REGISTER_TAB, 0
+L0:     Call SelectTab ebx, DEBUGDLG_REGISTER_TAB, 0
 
-        call DebugDialog_InitRegisterListBox D@Handle
-        call DebugDialog_CreateRegisterButtons D@Handle
+        Call DebugDialog_InitRegisterListBox D@hwnd
+        Call DebugDialog_CreateRegisterButtons D@hwnd
 EndP
 ____________________________________________________________________________________________
 
 ; Show/Hide tabs for advanced registers (segments, debug).
 
 Proc DebugDialog_ShowAdvancedTabs:
-    Arguments @Handle @Show
+    Arguments @hwnd @Show
     Local @TabHandle @Index
 
-        call 'USER32.GetDlgItem' D@Handle, DEBUGDLG_REGISTER_TAB
-        mov D@TabHandle eax
+        Call 'USER32.GetDlgItem' D@hwnd, DEBUGDLG_REGISTER_TAB
+        Mov D@TabHandle eax
 
         SendMessage D@TabHandle, &TCM_GETITEMCOUNT, 0, 0
-        mov D@Index eax
+        Mov D@Index eax
 
         .If D@Show = &TRUE
-            mov D$TabItem@imask &TCIF_TEXT+&TCIF_PARAM
+            Mov D$TabItem@imask &TCIF_TEXT+&TCIF_PARAM
 
-            mov D$TabItem@pszText RegSegment
-            mov D$TabItem@lParam 4
+            Mov D$TabItem@pszText RegSegment
+            Mov D$TabItem@lParam 4
             SendMessage D@TabHandle, &TCM_INSERTITEM, D@Index, TabItem
             inc D@Index
 
-            mov D$TabItem@pszText RegDebug
-            mov D$TabItem@lParam 5
+            Mov D$TabItem@pszText RegDebug
+            Mov D$TabItem@lParam 5
             SendMessage D@TabHandle, &TCM_INSERTITEM, D@Index, TabItem
         .Else
-            SendMessage D@TabHandle, &TCM_GETCURSEL, 0, 0 | mov ebx eax
+            SendMessage D@TabHandle, &TCM_GETCURSEL, 0, 0 | Mov ebx eax
             dec D@Index
             SendMessage D@TabHandle, &TCM_DELETEITEM, D@Index, 0
             dec D@Index
             SendMessage D@TabHandle, &TCM_DELETEITEM, D@Index, 0
-            On ebx >= D@Index, mov ebx 0
-            call SelectTab D@Handle, DEBUGDLG_REGISTER_TAB, ebx
+            On ebx >= D@Index, Mov ebx 0
+            Call SelectTab D@hwnd, DEBUGDLG_REGISTER_TAB, ebx
         .EndIf
-        call 'USER32.InvalidateRect' D@Handle &NULL &TRUE
+        Call 'USER32.InvalidateRect' D@hwnd &NULL &TRUE
 EndP
 ____________________________________________________________________________________________
 
@@ -1739,14 +1739,14 @@ ________________________________________________________________________________
 ; disabled.
 
 Proc DebugDialog_InitRegisterListBox:
-    Arguments @Handle
+    Arguments @hwnd
 
-        mov eax D$RegListHandle
-        call 'User32.EnableWindow' eax, &FALSE
-        mov esi RegValues, ebx 0
+        Mov eax D$RegListHandle
+        Call 'User32.EnableWindow' eax, &FALSE
+        Mov esi RegValues, ebx 0
         While ebx < 8
             lodsd
-            mov B$eax 0
+            Mov B$eax 0
             SendMessage D$RegListHandle, &LB_ADDSTRING, 0, eax
             inc ebx
         EndWhile
@@ -1756,24 +1756,24 @@ ________________________________________________________________________________
 ; Create the buttons for the general purpose registers.
 
 Proc DebugDialog_CreateRegisterButtons:
-    Arguments @Handle
+    Arguments @hwnd
 
-        mov ebx 0, esi GPRegs
+        Mov ebx 0, esi GPRegs
         .While ebx < 8
             ; Get position of item and transform in debug dialogs client coordinates
             SendMessage D$RegListHandle, &LB_GETITEMRECT, ebx, DebugRect
-            mov ecx D$DebugRect@bottom
+            Mov ecx D$DebugRect@bottom
             sub ecx D$DebugRect@top
-            mov D$DebugRect@height ecx
-            call 'USER32.ClientToScreen' D$RegListHandle, DebugRect
-            call 'USER32.ScreenToClient' D@Handle, DebugRect
+            Mov D$DebugRect@height ecx
+            Call 'USER32.ClientToScreen' D$RegListHandle, DebugRect
+            Call 'USER32.ScreenToClient' D@hwnd, DebugRect
             ; Create a button
-            mov eax DEBUGDLG_FIRSTREG_BUTTON
+            Mov eax DEBUGDLG_FIRSTREG_BUTTON
             add eax ebx
-            call 'User32.CreateWindowExA' 0, ButtonClassName, esi,
+            Call 'User32.CreateWindowExA' 0, ButtonClassName, esi,
                                         &WS_CHILD,
                                         D$DebugRect@left, D$DebugRect@top, 35, D$DebugRect@height,
-                                        D@Handle, eax,
+                                        D@hwnd, eax,
                                         D$hinstance, &NULL
             add esi 4
             inc ebx
@@ -1784,7 +1784,7 @@ ________________________________________________________________________________
 ; The dialog has been resized, adjust the width and height of the controls.
 
 Proc DebugDialog_OnSize:
-    Arguments @Handle, @WidthHeight
+    Arguments @hwnd, @WidthHeight
 
       ; calculate the delta values (pixel difference old -> new size)
         movzx eax W$DebugDialog.Width
@@ -1796,18 +1796,18 @@ Proc DebugDialog_OnSize:
 
         move D$DebugDialogSize D@WidthHeight
 
-        call AdjustControlSize D@Handle, DEBUGDLG_REGISTER_TAB, esi, 0
-        call AdjustControlSize D@Handle, DEBUGDLG_FORMAT_COMBO, esi, 0
-        call AdjustControlSize D@Handle, DEBUGDLG_REG_LIST, esi, 0
-        call AdjustControlSize D@Handle, DEBUGDLG_DATA_TAB, esi, edi
-        call DebugDialog_AdjustDataTabSize D@Handle
-        call 'USER32.InvalidateRect' D@Handle &NULL &TRUE
+        Call AdjustControlSize D@hwnd, DEBUGDLG_REGISTER_TAB, esi, 0
+        Call AdjustControlSize D@hwnd, DEBUGDLG_FORMAT_COMBO, esi, 0
+        Call AdjustControlSize D@hwnd, DEBUGDLG_REG_LIST, esi, 0
+        Call AdjustControlSize D@hwnd, DEBUGDLG_DATA_TAB, esi, edi
+        Call DebugDialog_AdjustDataTabSize D@hwnd
+        Call 'USER32.InvalidateRect' D@hwnd &NULL &TRUE
 
       ; notify rebar
         movzx eax W$DebugDialog.Width
         SendMessage D$Debug_RebarHandle, &WM_SIZE, eax, 0
 
-        mov eax 0
+        Mov eax 0
 EndP
 ____________________________________________________________________________________________
 
@@ -1818,46 +1818,46 @@ ________________________________________________________________________________
 [TabID: ?]
 
 Proc DebugDialog_OnChangeRegisterTab:
-    Arguments @Handle
+    Arguments @hwnd
 
-    call 'User32.GetDlgItem' D@Handle, DEBUGDLG_REGISTER_TAB | mov ebx eax
+    Call 'User32.GetDlgItem' D@hwnd, DEBUGDLG_REGISTER_TAB | Mov ebx eax
     SendMessage ebx, &TCM_GETCURSEL, 0, 0
     SendMessage ebx, &TCM_GETITEM, eax, TabItem
     move D$TabID D$TabItem@lParam
 
-    call DebugDialog_UpdateRegisterButtons D@Handle
+    Call DebugDialog_UpdateRegisterButtons D@hwnd
 
     ; Refill format/representation combo
-    mov ebx D$DebugFormatComboHandle
+    Mov ebx D$DebugFormatComboHandle
     SendMessage ebx, &CB_RESETCONTENT, 0, 0
-    mov ecx D$TabID, esi D$RegFormats+ecx*4
-    lodsd | mov ecx eax
+    Mov ecx D$TabID, esi D$RegFormats+ecx*4
+    lodsd | Mov ecx eax
 D0:     push ecx
             lodsd
             If D$UnicodeStrings = 0
                 SendMessage ebx, &CB_ADDSTRING, 0, D$eax
             Else
-                call 'User32.SendMessageW' ebx, &CB_ADDSTRING, 0, D$eax
+                Call 'User32.SendMessageW' ebx, &CB_ADDSTRING, 0, D$eax
             EndIf
         pop ecx
     loop D0<
 
-    mov ecx D$TabID
+    Mov ecx D$TabID
     SendMessage ebx, &CB_SETCURSEL, D$TabFormats+ecx*4, 0
-    SendMessage D@Handle, &WM_COMMAND, (&CBN_SELCHANGE shl 16 or DEBUGDLG_FORMAT_COMBO), ebx
+    SendMessage D@hwnd, &WM_COMMAND, (&CBN_SELCHANGE shl 16 or DEBUGDLG_FORMAT_COMBO), ebx
 EndP
 ____________________________________________________________________________________________
 
 [DataViewHandle: ? MemoryInspectorHandle: ? CurrentDataPageHandle: ?]
 
 Proc DebugDialog_CreateDataTab:
-    Arguments @Handle
+    Arguments @hwnd
 
       ; Create tab control
         movzx ecx W$DebugDialog.Width
         movzx edx W$DebugDialog.Height | sub edx 195
 
-        call 'User32.CreateWindowExA',
+        Call 'User32.CreateWindowExA',
             0,
             {"SysTabControl32",0},
             {"DataTab",0},
@@ -1868,41 +1868,41 @@ Proc DebugDialog_CreateDataTab:
             D$hInstance,
             0
 
-        mov ebx eax
+        Mov ebx eax
         SendMessage eax &WM_SETFONT, D$DialogFontHandle, &TRUE
 
       ; Add tabs
-        mov D$TabItem@imask &TCIF_TEXT
-        mov D$TabItem@pszText DataView
+        Mov D$TabItem@imask &TCIF_TEXT
+        Mov D$TabItem@pszText DataView
         SendMessage ebx, &TCM_INSERTITEM, 0, TabItem
-        mov D$TabItem@pszText MemoryInspector
+        Mov D$TabItem@pszText MemoryInspector
         SendMessage ebx, &TCM_INSERTITEM, 1, TabItem
-        mov D$TabItem@pszText CallStack
+        Mov D$TabItem@pszText CallStack
         SendMessage ebx, &TCM_INSERTITEM, 2, TabItem
-        mov D$TabItem@pszText Log
+        Mov D$TabItem@pszText Log
         SendMessage ebx, &TCM_INSERTITEM, 3, TabItem
-        mov D$TabItem@pszText AddressSpace
+        Mov D$TabItem@pszText AddressSpace
         SendMessage ebx, &TCM_INSERTITEM, 4, TabItem
 
       ; Create sub windows
-        call 'User32.CreateDialogParamA' D$hinstance, 1011, ebx, DataViewProc, 0
-        mov D$DataViewHandle eax
-        mov D$CurrentDataPageHandle eax
-        call 'User32.CreateDialogParamA' D$hinstance, 1012, ebx, MemoryInspectorProc, 0
-        mov D$MemoryInspectorHandle eax
-        call 'USER32.ShowWindow' eax, &SW_HIDE
+        Call 'User32.CreateDialogParamA' D$hinstance, 1011, ebx, DataViewProc, 0
+        Mov D$DataViewHandle eax
+        Mov D$CurrentDataPageHandle eax
+        Call 'User32.CreateDialogParamA' D$hinstance, 1012, ebx, MemoryInspectorProc, 0
+        Mov D$MemoryInspectorHandle eax
+        Call 'USER32.ShowWindow' eax, &SW_HIDE
 
-        ;call 'user32.CreateDialogParamA' D$hinstance, 1015, ebx, CallStackProc, 0
-        call CreateNewForm_CallStackForm ebx
-        call 'USER32.ShowWindow' D$CallStackFormHandle, &SW_HIDE
+        ;Call 'user32.CreateDialogParamA' D$hinstance, 1015, ebx, CallStackProc, 0
+        Call CreateNewForm_CallStackForm ebx
+        Call 'USER32.ShowWindow' D$CallStackFormHandle, &SW_HIDE
 
-        call CreateNewForm_LogForm ebx
-        call 'USER32.ShowWindow' D$LogForm_handle, &SW_HIDE
+        Call CreateNewForm_LogForm ebx
+        Call 'USER32.ShowWindow' D$LogForm_handle, &SW_HIDE
 
-        call CreateNewForm_AddressSpaceForm ebx
-        call 'USER32.ShowWindow' D$ASForm_handle, &SW_HIDE
+        Call CreateNewForm_AddressSpaceForm ebx
+        Call 'USER32.ShowWindow' D$ASForm_handle, &SW_HIDE
 
-        call DebugDialog_AdjustDataTabSize D@Handle
+        Call DebugDialog_AdjustDataTabSize D@hwnd
 EndP
 ____________________________________________________________________________________________
 
@@ -1921,24 +1921,24 @@ DebugDialog_GetFPUStatus:
     ; Output tag word
     CopyString FPUTagWord
     push edi
-        mov esi C.FloatSave.TagWord, ecx 2 | call toBinary
-        mov ecx StringBufTail | sub ecx edi
-        mov esi edi
+        Mov esi C.FloatSave.TagWord, ecx 2 | Call toBinary
+        Mov ecx StringBufTail | sub ecx edi
+        Mov esi edi
     pop edi
     rep movsb
 
-    mov W$edi 0A0D | add edi 2
+    Mov W$edi 0A0D | add edi 2
 
     ; Output control word
     CopyString FPUControlWord
     push edi
-        mov esi C.FloatSave.ControlWord, ecx 2 | call toBinary
-        mov ecx StringBufTail | sub ecx edi
-        mov esi edi
+        Mov esi C.FloatSave.ControlWord, ecx 2 | Call toBinary
+        Mov ecx StringBufTail | sub ecx edi
+        Mov esi edi
     pop edi
     rep movsb
 
-    mov W$edi 0A0D | add edi 2
+    Mov W$edi 0A0D | add edi 2
 
     ; Rounding mode
     CopyString FPURoundingMode
@@ -1946,46 +1946,46 @@ DebugDialog_GetFPUStatus:
     shr eax 10 | and eax 3
     CopyString D$FPURndModes+eax*4
 
-    mov W$edi 0A0D | add edi 2
+    Mov W$edi 0A0D | add edi 2
 
     ; Precision
     CopyString FPUPrecision
     movzx eax W$C.FloatSave.ControlWord
     shr eax 8 | and eax 3
     CopyString D$FPUPrecModes+eax*4
-    mov W$edi 0A0D | add edi 2
+    Mov W$edi 0A0D | add edi 2
 
     ; Output statusword
     CopyString FPUStatusWord
     push edi
-        mov esi C.FloatSave.Statusword, ecx 2 | call toBinary
-        mov ecx StringBufTail | sub ecx edi
-        mov esi edi
+        Mov esi C.FloatSave.Statusword, ecx 2 | Call toBinary
+        Mov ecx StringBufTail | sub ecx edi
+        Mov esi edi
     pop edi
     rep movsb
 
-    mov W$edi 0A0D | add edi 2
+    Mov W$edi 0A0D | add edi 2
 
     movzx eax W$C.FloatSave.StatusWord
-    mov esi NoException
+    Mov esi NoException
     test al 01 | jz L0>
-    mov esi FLT_INVALID_OPERATION
+    Mov esi FLT_INVALID_OPERATION
 L0: test al 02 | jz L0>
-    mov esi FLT_DENORMAL_OPERAND
+    Mov esi FLT_DENORMAL_OPERAND
 L0: test al 04 | jz L0>
-    mov esi FLT_DIVIDE_BY_ZERO
+    Mov esi FLT_DIVIDE_BY_ZERO
 L0: test al 08 | jz L0>
-    mov esi FLT_OVERFLOW
+    Mov esi FLT_OVERFLOW
 L0: test al 010 | jz L0>
-    mov esi FLT_UNDERFLOW
+    Mov esi FLT_UNDERFLOW
 L0: test al 020 | jz L0>
-    mov esi FLT_INEXACT_RESULT
+    Mov esi FLT_INEXACT_RESULT
 L0: test al 040 | jz L0>
-    mov esi FLT_STACK_CHECK
+    Mov esi FLT_STACK_CHECK
 L0: While B$esi <> 0
         movsb
     End_While
-    mov B$edi 0
+    Mov B$edi 0
 
 ret
 
@@ -1997,57 +1997,57 @@ ________________________________________________________________________________
 DebugDialog_GetCPUInfo:
 
     CopyString CPUVendor
-    mov W$edi 0A0D | add edi 2
+    Mov W$edi 0A0D | add edi 2
 
-    mov esi CPUName
+    Mov esi CPUName
     While B$esi = ' '
         inc esi
     EndWhile
     While B$esi <> 0
         movsb
     EndWhile
-    mov D$edi 0A0D0A0D | add edi 4
+    Mov D$edi 0A0D0A0D | add edi 4
 
     CopyString CPUFeatures
-    mov W$edi 0A0D | add edi 2
+    Mov W$edi 0A0D | add edi 2
 
   ; Scan the general flags
-    mov edx D$CPUFlags
+    Mov edx D$CPUFlags
 
     test edx FLAG_MMX | jz L0>
-    mov D$edi 'MMX,', B$edi+4 ' '
+    Mov D$edi 'MMX,', B$edi+4 ' '
     add edi 5
 
 L0: test edx FLAG_SSE | jz L0>
-    mov D$edi 'SSE,', B$edi+4 ' '
+    Mov D$edi 'SSE,', B$edi+4 ' '
     add edi 5
 
 L0: test edx FLAG_SSE2 | jz L0>
-    mov D$edi 'SSE2', W$edi+4 ', '
+    Mov D$edi 'SSE2', W$edi+4 ', '
     add edi 6
 L0: sub edi 2
-    mov W$edi 0A0D | add edi 2
+    Mov W$edi 0A0D | add edi 2
 
     test edx FLAG_CMOV | jz L0>
     CopyString ConditionMove
-L0: mov W$edi 0A0D | add edi 2
+L0: Mov W$edi 0A0D | add edi 2
 
   ; Scan extended flags
-    mov edx D$CPUFlagsEx
+    Mov edx D$CPUFlagsEx
 
     test edx FLAG_EX_MMX | jz L0>
-    mov D$edi 'AMD ', D$edi+4 'MMX ', D$edi+8 'Exte', D$edi+12 'nsio', D$edi+16 'ns, '
+    Mov D$edi 'AMD ', D$edi+4 'MMX ', D$edi+8 'Exte', D$edi+12 'nsio', D$edi+16 'ns, '
     add edi 20
 L0: test edx FLAG_EX_3DNOW | jz L0>
-    mov D$edi '3dno', D$edi+4 'w,  '
+    Mov D$edi '3dno', D$edi+4 'w,  '
     add edi 7
 L0: test edx FLAG_EX_3DNOWEX | jz L0>
-    mov D$edi '3dno', D$edi+4 'w Ex', D$edi+8 'tens', D$edi+12 'ions', W$edi+16 ', '
+    Mov D$edi '3dno', D$edi+4 'w Ex', D$edi+8 'tens', D$edi+12 'ions', W$edi+16 ', '
     add edi 18
 L0: sub edi 2
-    mov W$edi 0A0D | add edi 2
+    Mov W$edi 0A0D | add edi 2
 
-    mov B$edi 0
+    Mov B$edi 0
 ret
 ____________________________________________________________________________________________
 
@@ -2057,93 +2057,93 @@ ________________________________________________________________________________
 [FPUFlagMasks: 04000 0400 0200 0100]
 
 Proc DebugDialog_UpdateFlags:
-    Arguments @Handle
+    Arguments @hwnd
 
         ; update the eflags
-        mov ebx D$C.regFlag, edi 90, esi FlagMasks
+        Mov ebx D$C.regFlag, edi 90, esi FlagMasks
         Do
-            mov edx &FALSE
+            Mov edx &FALSE
             lodsd
             test ebx eax | jz L0>
             inc edx
 L0:         SendMessage D$Debug_FlagBarHandle, &TB_CHECKBUTTON, edi, edx
-            ;call 'User32.SendDlgItemMessageA' D@Handle, edi, &BM_SETCHECK, edx, 0
+            ;Call 'User32.SendDlgItemMessageA' D@hwnd, edi, &BM_SETCHECK, edx, 0
             inc edi
         Loop_Until edi > 98
 
         ; update FPU flags
-        mov ebx D$C.FloatSave.StatusWord, edi 101, esi FPUFlagMasks
+        Mov ebx D$C.FloatSave.StatusWord, edi 101, esi FPUFlagMasks
         Do
-            mov edx &FALSE
+            Mov edx &FALSE
             lodsd
             test ebx eax | jz L0>
             inc edx
 L0:         SendMessage D$DebugFPUbarHandle, &TB_CHECKBUTTON, edi, edx
-            ;call 'User32.SendDlgItemMessageA' D@Handle, edi, &BM_SETCHECK, edx, 0
+            ;Call 'User32.SendDlgItemMessageA' D@hwnd, edi, &BM_SETCHECK, edx, 0
             inc edi
         Loop_Until edi > 104
 EndP
 ____________________________________________________________________________________________
 
 Proc DebugDialog_UpdateRegisterButtons:
-    Arguments @Handle
+    Arguments @hwnd
 
         On B$DebuggerReady = &FALSE, ExitP
 
         .If D$TabID = 0
-            mov ebx 0
+            Mov ebx 0
             While ebx < 8
-                mov eax D$GPRRegMap+ebx*4
-                call IsProcessMemory D$eax
-                mov edi eax
+                Mov eax D$GPRRegMap+ebx*4
+                Call IsProcessMemory D$eax
+                Mov edi eax
 
-                mov eax ebx
+                Mov eax ebx
                 add eax DEBUGDLG_FIRSTREG_BUTTON
-                call 'USER32.GetDlgItem' D@Handle, eax
-                mov esi eax
-                call 'USER32.ShowWindow' esi, &SW_SHOW
-                call 'USER32.EnableWindow' esi, edi
+                Call 'USER32.GetDlgItem' D@hwnd, eax
+                Mov esi eax
+                Call 'USER32.ShowWindow' esi, &SW_SHOW
+                Call 'USER32.EnableWindow' esi, edi
                 inc ebx
             EndWhile
         .Else
-            mov ebx DEBUGDLG_FIRSTREG_BUTTON
+            Mov ebx DEBUGDLG_FIRSTREG_BUTTON
             While ebx <= DEBUGDLG_LASTREG_BUTTON
-                call 'USER32.GetDlgItem' D@Handle, ebx
-                call 'USER32.ShowWindow' eax, &SW_HIDE
+                Call 'USER32.GetDlgItem' D@hwnd, ebx
+                Call 'USER32.ShowWindow' eax, &SW_HIDE
                 inc ebx
             EndWhile
         .EndIf
 EndP
 
 Proc DebugDialog_RedrawRegisterButtons:
-    Arguments @Handle
+    Arguments @hwnd
 
-        mov ebx DEBUGDLG_FIRSTREG_BUTTON
+        Mov ebx DEBUGDLG_FIRSTREG_BUTTON
         While ebx <= DEBUGDLG_LASTREG_BUTTON
-            call 'USER32.GetDlgItem' D@Handle, ebx
-            call 'USER32.InvalidateRect' eax, &NULL, &TRUE
+            Call 'USER32.GetDlgItem' D@hwnd, ebx
+            Call 'USER32.InvalidateRect' eax, &NULL, &TRUE
             inc ebx
         EndWhile
 EndP
 ____________________________________________________________________________________________
 
 Proc DebugDialog_AdjustDataTabSize:
-    Arguments @Handle
+    Arguments @hwnd
     Local @TabHandle
     Uses ebx
 
-        call 'USER32.GetDlgItem' D@Handle, DEBUGDLG_DATA_TAB
-        mov D@TabHandle eax
+        Call 'USER32.GetDlgItem' D@hwnd, DEBUGDLG_DATA_TAB
+        Mov D@TabHandle eax
 
-        call 'USER32.GetClientRect' D@TabHandle, DebugRect
+        Call 'USER32.GetClientRect' D@TabHandle, DebugRect
         SendMessage D@TabHandle, &TCM_ADJUSTRECT, &FALSE, DebugRect
-        mov eax D$DebugRect@left
-        mov ebx D$DebugRect@top
-        mov ecx D$DebugRect@right
-        mov edx D$DebugRect@bottom
+        Mov eax D$DebugRect@left
+        Mov ebx D$DebugRect@top
+        Mov ecx D$DebugRect@right
+        Mov edx D$DebugRect@bottom
         sub ecx eax
         sub edx ebx
-        call 'USER32.SetWindowPos' D$CurrentDataPageHandle, 0, eax, ebx, ecx, edx, &SWP_NOZORDER
+        Call 'USER32.SetWindowPos' D$CurrentDataPageHandle, 0, eax, ebx, ecx, edx, &SWP_NOZORDER
 EndP
 ____________________________________________________________________________________________
 
@@ -2154,21 +2154,21 @@ ________________________________________________________________________________
 Proc DebugDialog_ContinueDebuggee:
     On B$IsDebugEvent = &FALSE, ExitP
 
-    call DebugDialog_EnableContinueMenu &FALSE
+    Call DebugDialog_EnableContinueMenu &FALSE
 
     move D$ContinueMode D$UserWants
 
     If B$ContinueMode = CONTINUE_STEPOVER
-        call NextInstructionDecode ; decode again - might be overwritten by callstackscanner
-        call IsMultiStepInstruction
-        On eax = &FALSE, mov B$ContinueMode CONTINUE_STEP
+        Call NextInstructionDecode ; decode again - might be overwritten by callstackscanner
+        Call IsMultiStepInstruction
+        On eax = &FALSE, Mov B$ContinueMode CONTINUE_STEP
     ElseIf B$ContinueMode = CONTINUE_RUN
-        mov D$LastSourcePos 0
+        Mov D$LastSourcePos 0
     EndIf
 
-    call 'User32.SetWindowTextA' D$DebugDialogHandle, {'Running ...' 0}
+    Call 'User32.SetWindowTextA' D$DebugDialogHandle, {'Running ...' 0}
 
-    call 'Kernel32.SetEvent' D$UserInputEvent
+    Call 'Kernel32.SetEvent' D$UserInputEvent
 EndP
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -2181,33 +2181,33 @@ Proc DebugDialog_CreateImageList:
     Local @Image, @Mask
 
   ; Create the images
-    call 'User32.LoadImageA' D$hInstance, 10, &IMAGE_BITMAP, 0, 0, 0
+    Call 'User32.LoadImageA' D$hInstance, 10, &IMAGE_BITMAP, 0, 0, 0
     If eax = 0
-        call ReportWinError {'DebugDialog_CreateImageList: LoadImage (1)' 0}
+        Call ReportWinError {'DebugDialog_CreateImageList: LoadImage (1)' 0}
     EndIf
-    mov D@Image eax
+    Mov D@Image eax
 
-    call 'User32.LoadImageA' D$hInstance, 11, &IMAGE_BITMAP, 0, 0, 0
+    Call 'User32.LoadImageA' D$hInstance, 11, &IMAGE_BITMAP, 0, 0, 0
     If eax = 0
-        call ReportWinError {'DebugDialog_CreateImageList: LoadImage (2)' 0}
+        Call ReportWinError {'DebugDialog_CreateImageList: LoadImage (2)' 0}
     EndIf
-    mov D@Mask eax
+    Mov D@Mask eax
 
-    call 'ComCtl32.ImageList_Create' 16, 16, &ILC_COLOR8+&ILC_MASK, 8, 8
-    mov D$DebugDialog_ImageList eax
+    Call 'ComCtl32.ImageList_Create' 16, 16, &ILC_COLOR8+&ILC_MASK, 8, 8
+    Mov D$DebugDialog_ImageList eax
 
-    call 'ComCtl32.ImageList_Add' D$DebugDialog_ImageList, D@Image, D@Mask
+    Call 'ComCtl32.ImageList_Add' D$DebugDialog_ImageList, D@Image, D@Mask
     If eax = 0-1
-        call ReportWinError {'Debug TB: ImageList_Add' 0}
+        Call ReportWinError {'Debug TB: ImageList_Add' 0}
     EndIf
 
-    call 'GDI32.DeleteObject' D@Image
-    call 'GDI32.DeleteObject' D@Mask
+    Call 'GDI32.DeleteObject' D@Image
+    Call 'GDI32.DeleteObject' D@Mask
 EndP
 ____________________________________________________________________________________________
 
 DebugDialog_DestroyImageList:
-    call 'COMCTL32.ImageList_Destroy' D$DebugDialog_ImageList
+    Call 'COMCTL32.ImageList_Destroy' D$DebugDialog_ImageList
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -2276,14 +2276,14 @@ Proc DebugWindow_CreateMenu:
         @bmpChecked 24,  @bmpUnchecked 28,  @ItemData 32,  @Data 36,  @cch 40
 
   ; Store menu handle in ebx
-;    call 'User32.CreateMenu' | mov ebx eax
+;    Call 'User32.CreateMenu' | Mov ebx eax
 
   ; Create menu-bar (toolbar)
-    call 'User32.CreateWindowExA' 0, {'ToolbarWindow32' 0}, 0,
+    Call 'User32.CreateWindowExA' 0, {'ToolbarWindow32' 0}, 0,
         DEBUG_TOOLBAR_STYLE,
         0, 0, 200, 0, D$DebugDialogHandle, DEBUGDLG_MENUBAR, D$hInstance, 0
 
-    mov ebx eax
+    Mov ebx eax
     SendMessage ebx, &WM_SETFONT, D$DialogFont_handle, 0
     SendMessage ebx, &TB_BUTTONSTRUCTSIZE, 20, 0
 
@@ -2300,118 +2300,118 @@ Proc DebugWindow_CreateMenu:
     EndIf
 
   ; Add the bands
-    mov D$DebugRebarBand@hwndChild ebx
+    Mov D$DebugRebarBand@hwndChild ebx
     ;or D$DebugRebarBand@fStyle &RBBS_BREAK
     SendMessage ebx, &TB_GETMAXSIZE, 0, Point
-    ;call 'user32.GetClientRect'  D$Debug_ToolbarHandle, DebugRect
+    ;Call 'user32.GetClientRect'  D$Debug_ToolbarHandle, DebugRect
     ;mov eax D$DebugRect@right | sub eax D$DebugRect@left
-    mov eax D$PointX | add eax 10
-    mov D$DebugRebarBand@cx eax
+    Mov eax D$PointX | add eax 10
+    Mov D$DebugRebarBand@cx eax
     SendMessage D$DebugRebarHandle, &RB_INSERTBAND, BAND_MENUBAR, DebugRebarBand
     SendMessage D$DebugRebarHandle, &RB_SHOWBAND, BAND_MENUBAR, 1
     ;and D$DebugRebarBand@fStyle (not &RBBS_BREAK)
     ________________________________________________________________________________________
 
-    mov D@Size 44
-    mov D@Mask &MIIM_ID+&MIIM_TYPE
-    mov D@Type &MFT_OWNERDRAW
+    Mov D@Size 44
+    Mov D@Mask &MIIM_ID+&MIIM_TYPE
+    Mov D@Type &MFT_OWNERDRAW
 
   ; Continue menu
-    call 'USER32.CreatePopupMenu' | mov edi eax | mov D$ContinueMenu eax
-    ;call AppendMenu ebx, &MF_STRING+&MF_POPUP, edi, D$StrContinuePtr
+    Call 'USER32.CreatePopupMenu' | Mov edi eax | Mov D$ContinueMenu eax
+    ;Call AppendMenu ebx, &MF_STRING+&MF_POPUP, edi, D$StrContinuePtr
 
-    mov D@ID M02_Run
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_Run
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
 
-    mov D@ID M02_Step_Into
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_Step_Into
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
 
-    mov D@ID M02_Step_Over
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_Step_Over
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
 
-    mov D@Mask &MIIM_TYPE
-    mov D@Type &MFT_SEPARATOR
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@Mask &MIIM_TYPE
+    Mov D@Type &MFT_SEPARATOR
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
 
-    mov D@Mask &MIIM_ID+&MIIM_TYPE
-    mov D@Type &MFT_OWNERDRAW
-    mov D@ID M02_Return_To_Caller
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@Mask &MIIM_ID+&MIIM_TYPE
+    Mov D@Type &MFT_OWNERDRAW
+    Mov D@ID M02_Return_To_Caller
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
 
   ; Break menu
-    call 'USER32.CreatePopupMenu' | mov edi eax, D$BreakMenu eax
-    ;call AppendMenu ebx, &MF_STRING+&MF_POPUP, edi, D$StrBreakPtr
+    Call 'USER32.CreatePopupMenu' | Mov edi eax, D$BreakMenu eax
+    ;Call AppendMenu ebx, &MF_STRING+&MF_POPUP, edi, D$StrBreakPtr
 
-    mov D@ID M02_Pause
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_Pause
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
 
-    mov D@ID M02_Terminate
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_Terminate
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
 
   ; Settings menu
-    call 'USER32.CreatePopupMenu' | mov edi eax, D$SettingsMenu eax
-    ;call AppendMenu ebx, &MF_STRING+&MF_POPUP, edi, D$StrSettingsPtr
+    Call 'USER32.CreatePopupMenu' | Mov edi eax, D$SettingsMenu eax
+    ;Call AppendMenu ebx, &MF_STRING+&MF_POPUP, edi, D$StrSettingsPtr
 
-    mov D@ID M02_Hold_on_BP
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
-    mov D@ID M02_Inst_Level
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
-    mov D@ID M02_Source_Level
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
-    mov D@ID M02_Show_All
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
-    mov D@ID M02_Font
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_Hold_on_BP
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_Inst_Level
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_Source_Level
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_Show_All
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_Font
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
 
-    mov D@Mask &MIIM_TYPE
-    mov D@Type &MFT_SEPARATOR
-    call 'User32.InsertMenuItemA' edi, 4, 1, D@Item
-    call 'User32.InsertMenuItemA' edi, 3, 1, D@Item
-    call 'User32.InsertMenuItemA' edi, 1, 1, D@Item
+    Mov D@Mask &MIIM_TYPE
+    Mov D@Type &MFT_SEPARATOR
+    Call 'User32.InsertMenuItemA' edi, 4, 1, D@Item
+    Call 'User32.InsertMenuItemA' edi, 3, 1, D@Item
+    Call 'User32.InsertMenuItemA' edi, 1, 1, D@Item
 ;;
   ; Toolbar sub menu
-    call 'USER32.CreatePopupMenu' | mov esi eax, D$Debug_ToolbarMenu eax
-    call 'User32.AppendMenuA' edi, &MF_STRING+&MF_POPUP, esi, {'Toolbar' 0}
-    ;call 'User32.AppendMenuA' ebx, &MF_STRING, DEBUGDLG_TB_CONFIGURE, {'Configure ...' 0}
-    call 'User32.AppendMenuA' esi, &MF_STRING, DEBUGDLG_TB_SHOW_TEXT, {'Show text' 0}
-    call 'User32.AppendMenuA' esi, &MF_SEPARATOR, 0, 0
-    call 'User32.AppendMenuA' esi, &MF_STRING+&MF_CHECKED, DEBUGDLG_TB_SHOW_CMDS, {'Show commands' 0}
-    call 'User32.AppendMenuA' esi, &MF_STRING+&MF_CHECKED, DEBUGDLG_TB_SHOW_FLAGS, {'Show flags' 0}
-    call 'User32.AppendMenuA' esi, &MF_STRING, DEBUGDLG_TB_SHOW_FPU, {'Show FPU flags' 0}
+    Call 'USER32.CreatePopupMenu' | Mov esi eax, D$Debug_ToolbarMenu eax
+    Call 'User32.AppendMenuA' edi, &MF_STRING+&MF_POPUP, esi, {'Toolbar' 0}
+    ;Call 'User32.AppendMenuA' ebx, &MF_STRING, DEBUGDLG_TB_CONFIGURE, {'Configure ...' 0}
+    Call 'User32.AppendMenuA' esi, &MF_STRING, DEBUGDLG_TB_SHOW_TEXT, {'Show text' 0}
+    Call 'User32.AppendMenuA' esi, &MF_SEPARATOR, 0, 0
+    Call 'User32.AppendMenuA' esi, &MF_STRING+&MF_CHECKED, DEBUGDLG_TB_SHOW_CMDS, {'Show commands' 0}
+    Call 'User32.AppendMenuA' esi, &MF_STRING+&MF_CHECKED, DEBUGDLG_TB_SHOW_FLAGS, {'Show flags' 0}
+    Call 'User32.AppendMenuA' esi, &MF_STRING, DEBUGDLG_TB_SHOW_FPU, {'Show FPU flags' 0}
 ;;
   ; Information menu
-    call 'USER32.CreatePopupMenu' | mov edi eax, D$ExtrasMenu eax
-    ;call AppendMenu ebx, &MF_STRING+&MF_POPUP, edi, D$StrInformationPtr
+    Call 'USER32.CreatePopupMenu' | Mov edi eax, D$ExtrasMenu eax
+    ;Call AppendMenu ebx, &MF_STRING+&MF_POPUP, edi, D$StrInformationPtr
 
-    mov D@Mask &MIIM_ID+&MIIM_TYPE
-    mov D@Type &MFT_OWNERDRAW
+    Mov D@Mask &MIIM_ID+&MIIM_TYPE
+    Mov D@Type &MFT_OWNERDRAW
 
-    mov D@ID M02_CPU_Info
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
-    mov D@ID M02_FPU_Status
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
-    mov D@ID M02_Show_code_at
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_CPU_Info
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_FPU_Status
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_Show_code_at
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
 
-    mov D@Mask &MIIM_TYPE
-    mov D@Type &MFT_SEPARATOR
-    call 'User32.InsertMenuItemA' edi, 2, 1, D@Item
+    Mov D@Mask &MIIM_TYPE
+    Mov D@Type &MFT_SEPARATOR
+    Call 'User32.InsertMenuItemA' edi, 2, 1, D@Item
 
   ; Help menu
-    call 'USER32.CreatePopupMenu' | mov edi eax, D$HelpMenu eax
-    ;call AppendMenu ebx, &MF_STRING+&MF_POPUP, edi, D$StrHelpPtr
+    Call 'USER32.CreatePopupMenu' | Mov edi eax, D$HelpMenu eax
+    ;Call AppendMenu ebx, &MF_STRING+&MF_POPUP, edi, D$StrHelpPtr
 
-    mov D@Mask &MIIM_ID+&MIIM_TYPE
-    mov D@Type &MFT_OWNERDRAW
+    Mov D@Mask &MIIM_ID+&MIIM_TYPE
+    Mov D@Type &MFT_OWNERDRAW
 
-    mov D@ID M02_About
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
-    mov D@ID M02_Help
-    call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_About
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
+    Mov D@ID M02_Help
+    Call 'User32.InsertMenuItemA' edi, -1, 1, D@Item
 
   ; Return menu handle
-    mov D$MenuBarHandle ebx
-    mov eax ebx
+    Mov D$MenuBarHandle ebx
+    Mov eax ebx
 EndP
 ____________________________________________________________________________________________
 
@@ -2424,22 +2424,22 @@ Proc MenubarHookProc:
     Arguments @Code, @wParam, @Msg
     Uses ebx, edi
 
-    call 'USER32.CallNextHookEx' D$MenubarHook, D@Code, D@wParam, D@Msg
+    Call 'USER32.CallNextHookEx' D$MenubarHook, D@Code, D@wParam, D@Msg
     push eax
 
-        mov ebx D@Msg
-        mov eax D$ebx+4
+        Mov ebx D@Msg
+        Mov eax D$ebx+4
 
         .If eax = &WM_LBUTTONDOWN
           ; Collapse menu if clicked outside menu area.
             If D@Code <> &MSGF_MENU
-                call 'User32.PostMessageA' D$DebugDialogHandle, WM_COLLAPSEMENU, 0, 0
+                Call 'User32.PostMessageA' D$DebugDialogHandle, WM_COLLAPSEMENU, 0, 0
             EndIf
 
         .ElseIf eax = &WM_RBUTTONDOWN
           ; Collapse menu if clicked outside menu area.
             If D@Code <> &MSGF_MENU
-                call 'User32.PostMessageA' D$DebugDialogHandle, WM_COLLAPSEMENU, 0, 0
+                Call 'User32.PostMessageA' D$DebugDialogHandle, WM_COLLAPSEMENU, 0, 0
             EndIf
 
         .ElseIf eax = &WM_MOUSEMOVE
@@ -2448,16 +2448,16 @@ Proc MenubarHookProc:
           ; old menu and track the new menu.
             movzx eax W$ebx+12
             movzx edx W$ebx+14
-            mov D$PointX eax
-            mov D$PointY edx
-            call 'USER32.ScreenToClient' D$MenuBarHandle, Point
-            call 'User32.SendMessageA' D$MenuBarHandle, &TB_HITTEST, 0, Point
+            Mov D$PointX eax
+            Mov D$PointY edx
+            Call 'USER32.ScreenToClient' D$MenuBarHandle, Point
+            Call 'User32.SendMessageA' D$MenuBarHandle, &TB_HITTEST, 0, Point
             test eax eax | js L0>
             cmp eax NUM_MENUBAR_ENTRIES | jae L0>
-            mov edi eax
+            Mov edi eax
             If D$CurrentMenubarIndex <> eax
-                call 'User32.PostMessageA' D$DebugDialogHandle, WM_COLLAPSEMENU, 0, 0
-                call 'User32.PostMessageA' D$DebugDialogHandle, WM_POPUPMENU, edi, 0
+                Call 'User32.PostMessageA' D$DebugDialogHandle, WM_COLLAPSEMENU, 0, 0
+                Call 'User32.PostMessageA' D$DebugDialogHandle, WM_POPUPMENU, edi, 0
             EndIf
 L0:
         .ElseIf eax = &WM_KEYDOWN
@@ -2466,17 +2466,17 @@ L0:
           ; it continously receives WM_MOUSEMOVE messages (why?) which makes it
           ; switch back to the former menu immediately.
             If D$ebx+8 = &VK_LEFT
-                call 'User32.PostMessageA' D$DebugDialogHandle, WM_COLLAPSEMENU, 0, 0
-                mov eax D$CurrentMenubarIndex
+                Call 'User32.PostMessageA' D$DebugDialogHandle, WM_COLLAPSEMENU, 0, 0
+                Mov eax D$CurrentMenubarIndex
                 dec eax | jns L1>
-                mov eax (NUM_MENUBAR_ENTRIES-1)
-L1:             call 'User32.PostMessageA' D$DebugDialogHandle, WM_POPUPMENU, eax, 0
+                Mov eax (NUM_MENUBAR_ENTRIES-1)
+L1:             Call 'User32.PostMessageA' D$DebugDialogHandle, WM_POPUPMENU, eax, 0
             ElseIf D$ebx+8 = &VK_RIGHT
-                call 'User32.PostMessageA' D$DebugDialogHandle, WM_COLLAPSEMENU, 0, 0
-                mov eax D$CurrentMenubarIndex
+                Call 'User32.PostMessageA' D$DebugDialogHandle, WM_COLLAPSEMENU, 0, 0
+                Mov eax D$CurrentMenubarIndex
                 inc eax | cmp eax NUM_MENUBAR_ENTRIES | jb L1>
-                mov eax 0
-L1:             call 'User32.PostMessageA' D$DebugDialogHandle, WM_POPUPMENU, eax, 0
+                Mov eax 0
+L1:             Call 'User32.PostMessageA' D$DebugDialogHandle, WM_POPUPMENU, eax, 0
             EndIf
 
         .EndIf
@@ -2497,76 +2497,76 @@ Proc DebugDialog_OnPopupMenu:
     SendMessage D$MenuBarHandle, &TB_GETRECT, D@Item, D@Rect
     move D$PointX D@left
     move D$PointY D@bottom
-    call 'USER32.ClientToScreen' D$MenuBarHandle, Point
+    Call 'USER32.ClientToScreen' D$MenuBarHandle, Point
 
-    mov edx D@Item
+    Mov edx D@Item
     If edx = 0
-        mov eax D$ContinueMenu
+        Mov eax D$ContinueMenu
     ElseIf edx = 1
-        mov eax D$BreakMenu
+        Mov eax D$BreakMenu
     ElseIf edx = 2
-        mov eax D$SettingsMenu
+        Mov eax D$SettingsMenu
     ElseIf edx = 3
-        mov eax D$ExtrasMenu
+        Mov eax D$ExtrasMenu
     ElseIf edx = 4
-        mov eax D$HelpMenu
+        Mov eax D$HelpMenu
     EndIf
-    mov D$HottrackMenu eax, D$CurrentMenuBarIndex edx
+    Mov D$HottrackMenu eax, D$CurrentMenuBarIndex edx
 
   ; How can I measure the width of a popup menu before it is tracked?
-    call 'USER32.GetWindowRect' D$HotTrackMenu, D@Rect
-    call 'USER32.GetSystemMetrics' &SM_CXSCREEN
-    mov ecx D@right | sub ecx D@left
-    mov edx D$PointX
+    Call 'USER32.GetWindowRect' D$HotTrackMenu, D@Rect
+    Call 'USER32.GetSystemMetrics' &SM_CXSCREEN
+    Mov ecx D@right | sub ecx D@left
+    Mov edx D$PointX
     add edx ecx
     If edx > eax
         sub eax ecx
-        mov D$PointX eax
+        Mov D$PointX eax
     EndIf
 
     SendMessage D$MenuBarHandle, &TB_PRESSBUTTON, D@Item, 1
 
-    mov D$HotTracking 1
+    Mov D$HotTracking 1
 
   ; Install mouse hook
     If D$MenubarHook <> 0
-        call 'OutputDebugStringA' {'Unhook (!)' 0}
-        call 'USER32.UnhookWindowsHookEx' D$MenubarHook
-        mov D$MenubarHook 0
+        Call 'OutputDebugStringA' {'Unhook (!)' 0}
+        Call 'USER32.UnhookWindowsHookEx' D$MenubarHook
+        Mov D$MenubarHook 0
     EndIf
 
-    call 'Kernel32.GetCurrentThreadId'
-    call 'User32.SetWindowsHookExA' &WH_MSGFILTER, MenubarHookProc, D$hInstance, eax
-    mov D$MenubarHook eax
+    Call 'Kernel32.GetCurrentThreadId'
+    Call 'User32.SetWindowsHookExA' &WH_MSGFILTER, MenubarHookProc, D$hInstance, eax
+    Mov D$MenubarHook eax
 
     PRINTLN 'SetHook'
 
-  ; Open the menu. Note: The call doesn't return until the menu is closed!
-    call 'USER32.TrackPopupMenu' D$HotTrackMenu, &TPM_LEFTBUTTON, D$PointX, D$PointY, 0, D$DebugDialogHandle, 0
+  ; Open the menu. Note: The Call doesn't return until the menu is closed!
+    Call 'USER32.TrackPopupMenu' D$HotTrackMenu, &TPM_LEFTBUTTON, D$PointX, D$PointY, 0, D$DebugDialogHandle, 0
 
     SendMessage D$MenuBarHandle, &TB_PRESSBUTTON, D@Item, 0
 
     If D$MenuBarHook <> 0
         PRINTLN 'Unhook'
-        call 'USER32.UnhookWindowsHookEx' D$MenubarHook
-        mov D$MenubarHook 0
+        Call 'USER32.UnhookWindowsHookEx' D$MenubarHook
+        Mov D$MenubarHook 0
     EndIf
 
-    mov D$HotTracking 0
+    Mov D$HotTracking 0
 EndP
 ____________________________________________________________________________________________
-[PRINTLN | call 'OutputDebugStringA' {#1 0}]
+[PRINTLN | Call 'OutputDebugStringA' {#1 0}]
 
 ; Collapse menu.
 ; TODO: Check if WM_CANCELMODE works under Windows NT.
 
 DebugDialog_OnCollapseMenu:
     SendMessage D$DebugDialogHandle, &WM_CANCELMODE, 0, 0
-    mov D$HotTracking 0
+    Mov D$HotTracking 0
     If D$MenubarHook <> 0
         PRINTLN 'Unhook (C)'
-        call 'USER32.UnhookWindowsHookEx' D$MenubarHook
-        mov D$MenubarHook 0
+        Call 'USER32.UnhookWindowsHookEx' D$MenubarHook
+        Mov D$MenubarHook 0
     EndIf
 ret
 ____________________________________________________________________________________________
@@ -2576,11 +2576,11 @@ ________________________________________________________________________________
 Proc DebugDialog_MenubarNotify:
     Arguments @NotifyMsg, @Code, @Item
 
-    mov eax 0
+    Mov eax 0
 
     If D@Code = &TBN_DROPDOWN
-        call 'User32.PostMessageA' D$DebugDialogHandle, WM_POPUPMENU, D@Item, 0
-        mov eax &TBDDRET_DEFAULT
+        Call 'User32.PostMessageA' D$DebugDialogHandle, WM_POPUPMENU, D@Item, 0
+        Mov eax &TBDDRET_DEFAULT
     EndIf
 EndP
 ____________________________________________________________________________________________
@@ -2590,26 +2590,26 @@ ________________________________________________________________________________
 [PrevFocusWindow: ?]
 
 Proc DebugDialog_OnSysCommand:
-    Arguments @Handle, @Type, @lParam
+    Arguments @hwnd, @Type, @lParam
 
     ..If D@Type = &SC_KEYMENU
 
         .If D$HotTracking = 0
 
-            mov eax D@lParam
+            Mov eax D@lParam
             If eax = 0 ; F10
                 ;SendMessage D$MenuBarHandle, &TB_PRESSBUTTON, 0, 0
                 SendMessage D$MenuBarHandle, &TB_SETHOTITEM, 0, 0
-                call 'USER32.SetFocus' D$MenuBarHandle
+                Call 'USER32.SetFocus' D$MenuBarHandle
                 ;mov D$PrevFocusWindow eax
             EndIf
 
         .EndIf
 
-        mov eax 0
+        Mov eax 0
 
     ..Else
-        call 'User32.DefWindowProcA' D@Handle, &WM_SYSCOMMAND, D@Type, D@lParam
+        Call 'User32.DefWindowProcA' D@hwnd, &WM_SYSCOMMAND, D@Type, D@lParam
     ..EndIf
 EndP
 ____________________________________________________________________________________________
@@ -2617,7 +2617,7 @@ ________________________________________________________________________________
 ; Handle keyboard menu navigation [Arrow keys, ESC]
 
 Proc DebugDialog_OnKeyDown:
-    Arguments @Handle, @Key, @lParam
+    Arguments @hwnd, @Key, @lParam
 
     SendMessage D$MenuBarHandle, &TB_GETHOTITEM, 0, 0
 
@@ -2625,22 +2625,22 @@ Proc DebugDialog_OnKeyDown:
         If D@Key = &VK_RIGHT
             inc eax
             On eax = NUM_MENUBAR_ENTRIES,
-                mov eax 0
+                Mov eax 0
 
         ElseIf D@Key = &VK_LEFT
             dec eax
             On eax = 0-1
-                mov eax NUM_MENUBAR_ENTRIES-1
+                Mov eax NUM_MENUBAR_ENTRIES-1
 
         ElseIf D@Key = &VK_ESCAPE
-            ;call 'USER32.SetFocus' D$PrevFocusWindow
-            mov eax 0-1
+            ;Call 'USER32.SetFocus' D$PrevFocusWindow
+            Mov eax 0-1
         EndIf
 
         SendMessage D$MenuBarHandle, &TB_SETHOTITEM, eax, 0
     .EndIf
 
-    mov eax 0
+    Mov eax 0
 EndP
 ____________________________________________________________________________________________
 ; Call (indeed jump to) either to the ansi or unicode taste of API functions.
@@ -2664,15 +2664,15 @@ Proc DebugDialog_EnableContinueMenu:
     Arguments @Enable
 
     If D@Enable = 1
-        mov ebx &MF_ENABLED
+        Mov ebx &MF_ENABLED
     Else
-        mov ebx &MF_GRAYED
+        Mov ebx &MF_GRAYED
     EndIf
 
-    call 'USER32.EnableMenuItem' D$ContinueMenu, M02_Run, ebx
-    call 'USER32.EnableMenuItem' D$ContinueMenu, M02_Step_Into, ebx
-    call 'USER32.EnableMenuItem' D$ContinueMenu, M02_Step_Over, ebx
-    call 'USER32.EnableMenuItem' D$ContinueMenu, M02_Return_to_Caller, ebx
+    Call 'USER32.EnableMenuItem' D$ContinueMenu, M02_Run, ebx
+    Call 'USER32.EnableMenuItem' D$ContinueMenu, M02_Step_Into, ebx
+    Call 'USER32.EnableMenuItem' D$ContinueMenu, M02_Step_Over, ebx
+    Call 'USER32.EnableMenuItem' D$ContinueMenu, M02_Return_to_Caller, ebx
 
     SendMessage D$Debug_ToolbarHandle, &TB_ENABLEBUTTON, M02_Run, D@Enable
     SendMessage D$Debug_ToolbarHandle, &TB_ENABLEBUTTON, M02_Step_Into, D@Enable
@@ -2681,25 +2681,25 @@ Proc DebugDialog_EnableContinueMenu:
 
   ; Invert
     If D@Enable = 1
-        mov ebx &MF_GRAYED
-        mov D@Enable 0
+        Mov ebx &MF_GRAYED
+        Mov D@Enable 0
     Else
-        mov ebx &MF_ENABLED
-        mov D@Enable 1
+        Mov ebx &MF_ENABLED
+        Mov D@Enable 1
     EndIf
-    call 'USER32.EnableMenuItem' D$BreakMenu, M02_Pause, ebx
+    Call 'USER32.EnableMenuItem' D$BreakMenu, M02_Pause, ebx
     SendMessage D$Debug_ToolbarHandle, &TB_ENABLEBUTTON, M02_Pause, D@Enable
 
-    call 'USER32.DrawMenuBar' D$DebugDialogHandle
+    Call 'USER32.DrawMenuBar' D$DebugDialogHandle
 EndP
 ____________________________________________________________________________________________
 
 DebugDialog_InitDbgMenu:
-    call 'USER32.CheckMenuItem' D$SettingsMenu, M02_Hold_on_BP, &MF_CHECKED
-    call 'USER32.CheckMenuRadioItem' D$SettingsMenu,
+    Call 'USER32.CheckMenuItem' D$SettingsMenu, M02_Hold_on_BP, &MF_CHECKED
+    Call 'USER32.CheckMenuRadioItem' D$SettingsMenu,
         M02_Inst_Level, M02_Source_Level, M02_Inst_Level, &MF_BYCOMMAND
 
-    call DebugDialog_EnableContinueMenu 0
+    Call DebugDialog_EnableContinueMenu 0
 ret
 ____________________________________________________________________________________________
 
@@ -2709,79 +2709,79 @@ Proc DebugDialog_OnDrawMenuItem:
     Arguments @DrawItemStruc
     Local @Brush
 
-    mov ebx D@DrawItemStruc
+    Mov ebx D@DrawItemStruc
 
-    mov esi DebugMenuTable
-    lodsd | mov ecx eax ; number of entries
-    mov eax D$ebx+DRAWITEM_ITEMID
+    Mov esi DebugMenuTable
+    lodsd | Mov ecx eax ; number of entries
+    Mov eax D$ebx+DRAWITEM_ITEMID
     While D$esi <> eax
         add esi 16
         dec ecx | jz L9>>
     EndWhile
 
-    call 'GDI32.SelectObject' D$ebx+DRAWITEM_HDC, D$DialogFont_handle
+    Call 'GDI32.SelectObject' D$ebx+DRAWITEM_HDC, D$DialogFont_handle
     push eax
 
     Test_If D$ebx+DRAWITEM_ITEMSTATE &ODS_GRAYED
-        call 'USER32.GetSysColor' &COLOR_GRAYTEXT
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
+        Call 'USER32.GetSysColor' &COLOR_GRAYTEXT
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
         jmp L1>
     Test_Else_If D$ebx+DRAWITEM_ITEMSTATE &ODS_SELECTED
-        call 'USER32.GetSysColor' &COLOR_HIGHLIGHTTEXT
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
+        Call 'USER32.GetSysColor' &COLOR_HIGHLIGHTTEXT
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
 
-        call 'USER32.GetSysColor' &COLOR_HIGHLIGHT
-        call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, eax
+        Call 'USER32.GetSysColor' &COLOR_HIGHLIGHT
+        Call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, eax
 
-        call 'USER32.GetSysColorBrush' &COLOR_HIGHLIGHT
+        Call 'USER32.GetSysColorBrush' &COLOR_HIGHLIGHT
     Test_Else
-        call 'USER32.GetSysColor' &COLOR_MENUTEXT
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
+        Call 'USER32.GetSysColor' &COLOR_MENUTEXT
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
 
-L1:     call 'USER32.GetSysColor' &COLOR_MENU
-        call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, eax
+L1:     Call 'USER32.GetSysColor' &COLOR_MENU
+        Call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, eax
 
-        call 'USER32.GetSysColorBrush' &COLOR_MENU
+        Call 'USER32.GetSysColorBrush' &COLOR_MENU
     Test_End
 
     lea edx D$ebx+DRAWITEM_RCITEM_LEFT
-    call 'USER32.FillRect' D$ebx+DRAWITEM_HDC, edx, eax
+    Call 'USER32.FillRect' D$ebx+DRAWITEM_HDC, edx, eax
 
-    mov eax D$esi+12 ; image index
+    Mov eax D$esi+12 ; image index
     If eax <> 0-1
-        mov ecx D$ebx+DRAWITEM_RCITEM_LEFT | add ecx 2
-        mov edx D$ebx+DRAWITEM_RCITEM_TOP  | add edx 2
+        Mov ecx D$ebx+DRAWITEM_RCITEM_LEFT | add ecx 2
+        Mov edx D$ebx+DRAWITEM_RCITEM_TOP  | add edx 2
         Test_If D$ebx+DRAWITEM_ITEMSTATE &ODS_GRAYED
-            mov edi &ILD_MASK
+            Mov edi &ILD_MASK
         Test_Else_If D$ebx+DRAWITEM_ITEMSTATE &ODS_SELECTED
-            mov edi &ILD_NORMAL
+            Mov edi &ILD_NORMAL
         Test_Else
-            mov edi &ILD_TRANSPARENT
+            Mov edi &ILD_TRANSPARENT
         Test_End
 
         Test_If D$ebx+DRAWITEM_ITEMSTATE &ODS_CHECKED
-            mov eax 6
+            Mov eax 6
         Test_End
 
-L0:     call 'COMCTL32.ImageList_Draw' D$DebugDialog_ImageList, eax, D$ebx+DRAWITEM_HDC, ecx, edx, edi
+L0:     Call 'COMCTL32.ImageList_Draw' D$DebugDialog_ImageList, eax, D$ebx+DRAWITEM_HDC, ecx, edx, edi
     EndIf
 
     add D$ebx+DRAWITEM_RCITEM_LEFT 22
 
-    mov eax D$esi+4
-    call DrawMenuItemText D$eax, &DT_LEFT
+    Mov eax D$esi+4
+    Call DrawMenuItemText D$eax, &DT_LEFT
 
-    mov eax D$esi+8
+    Mov eax D$esi+8
     If eax <> 0
       ; Draw shortcut rightaligned
         dec D$ebx+DRAWITEM_RCITEM_RIGHT
-        call DrawMenuItemTextA eax, &DT_RIGHT
+        Call DrawMenuItemTextA eax, &DT_RIGHT
     EndIf
 
     pop eax
-    call 'GDI32.SelectObject' D$ebx+DRAWITEM_HDC, eax
+    Call 'GDI32.SelectObject' D$ebx+DRAWITEM_HDC, eax
 
-L9: mov eax 1
+L9: Mov eax 1
 EndP
 ____________________________________________________________________________________________
 
@@ -2798,26 +2798,26 @@ Proc DrawMenuItemText: ; Localized (ANSI or Unicode)
         inc D$ebx+DRAWITEM_RCITEM_LEFT
         inc D$ebx+DRAWITEM_RCITEM_RIGHT
 
-        call 'USER32.GetSysColor' &COLOR_3DHIGHLIGHT
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
+        Call 'USER32.GetSysColor' &COLOR_3DHIGHLIGHT
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
         lea edx D$ebx+DRAWITEM_RCITEM_LEFT
-        mov eax &DT_SINGLELINE+&DT_VCENTER | or eax D@Align
-        call DrawText D$ebx+DRAWITEM_HDC, D@Text, 0-1, edx, eax
+        Mov eax &DT_SINGLELINE+&DT_VCENTER | or eax D@Align
+        Call DrawText D$ebx+DRAWITEM_HDC, D@Text, 0-1, edx, eax
 
         dec D$ebx+DRAWITEM_RCITEM_TOP
         dec D$ebx+DRAWITEM_RCITEM_BOTTOM
         dec D$ebx+DRAWITEM_RCITEM_LEFT
         dec D$ebx+DRAWITEM_RCITEM_RIGHT
 
-        call 'USER32.GetSysColor' &COLOR_GRAYTEXT
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
-        call 'GDI32.SetBkMode' D$ebx+DRAWITEM_HDC, &TRANSPARENT
+        Call 'USER32.GetSysColor' &COLOR_GRAYTEXT
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
+        Call 'GDI32.SetBkMode' D$ebx+DRAWITEM_HDC, &TRANSPARENT
 
     Test_End
 
     lea edx D$ebx+DRAWITEM_RCITEM_LEFT
-    mov eax &DT_SINGLELINE+&DT_VCENTER | or eax D@Align
-    call DrawText D$ebx+DRAWITEM_HDC, D@Text, 0-1, edx, eax
+    Mov eax &DT_SINGLELINE+&DT_VCENTER | or eax D@Align
+    Call DrawText D$ebx+DRAWITEM_HDC, D@Text, 0-1, edx, eax
 
 EndP
 ____________________________________________________________________________________________
@@ -2835,26 +2835,26 @@ Proc DrawMenuItemTextA: ; ANSI only
         inc D$ebx+DRAWITEM_RCITEM_LEFT
         inc D$ebx+DRAWITEM_RCITEM_RIGHT
 
-        call 'USER32.GetSysColor' &COLOR_3DHIGHLIGHT
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
+        Call 'USER32.GetSysColor' &COLOR_3DHIGHLIGHT
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
         lea edx D$ebx+DRAWITEM_RCITEM_LEFT
-        mov eax &DT_SINGLELINE+&DT_VCENTER | or eax D@Align
-        call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, D@Text, 0-1, edx, eax
+        Mov eax &DT_SINGLELINE+&DT_VCENTER | or eax D@Align
+        Call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, D@Text, 0-1, edx, eax
 
         dec D$ebx+DRAWITEM_RCITEM_TOP
         dec D$ebx+DRAWITEM_RCITEM_BOTTOM
         dec D$ebx+DRAWITEM_RCITEM_LEFT
         dec D$ebx+DRAWITEM_RCITEM_RIGHT
 
-        call 'USER32.GetSysColor' &COLOR_GRAYTEXT
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
-        call 'GDI32.SetBkMode' D$ebx+DRAWITEM_HDC, &TRANSPARENT
+        Call 'USER32.GetSysColor' &COLOR_GRAYTEXT
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
+        Call 'GDI32.SetBkMode' D$ebx+DRAWITEM_HDC, &TRANSPARENT
 
     Test_End
 
     lea edx D$ebx+DRAWITEM_RCITEM_LEFT
-    mov eax &DT_SINGLELINE+&DT_VCENTER | or eax D@Align
-    call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, D@Text, 0-1, edx, eax
+    Mov eax &DT_SINGLELINE+&DT_VCENTER | or eax D@Align
+    Call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, D@Text, 0-1, edx, eax
 
 EndP
 ____________________________________________________________________________________________
@@ -2862,25 +2862,25 @@ ________________________________________________________________________________
 Proc DebugDialog_OnMeasureMenuItem:
     Arguments @MeasureItem
 
-    mov ebx D@MeasureItem
-    mov edx D$ebx+8 ; item id
-    mov esi DebugMenuTable
+    Mov ebx D@MeasureItem
+    Mov edx D$ebx+8 ; item id
+    Mov esi DebugMenuTable
     lodsd ; eax = num entries
     While D$esi <> edx
         add esi 16
         dec eax | jz L9>
     EndWhile
 
-    mov eax D$esi+4
-    call MeasureStringWidth D$eax, D$DialogFontHandle
+    Mov eax D$esi+4
+    Call MeasureStringWidth D$eax, D$DialogFontHandle
 
     On D$esi+8 <> 0,
         add eax 50 ; shortcut
 
     add eax 22 ; icon+padding
 
-    mov D$ebx+12 eax ; width
-    mov D$ebx+16 20 ; height
+    Mov D$ebx+12 eax ; width
+    Mov D$ebx+16 20 ; height
 L9:
 EndP
 ____________________________________________________________________________________________
@@ -2960,27 +2960,27 @@ Proc DebugDialog_CreateCommandTB:
   ; Save states & clear if toolbar is REcreated
     .If D$Debug_ToolbarHandle <> 0
         SendMessage D$DebugToolbarHandle, &TB_GETSTATE, M02_Run, 0
-        mov B$DebugToolbarButtons+8 al
+        Mov B$DebugToolbarButtons+8 al
         SendMessage D$DebugToolbarHandle, &TB_GETSTATE, M02_Terminate, 0
-        mov B$DebugToolbarButtons+28 al
+        Mov B$DebugToolbarButtons+28 al
         SendMessage D$DebugToolbarHandle, &TB_GETSTATE, M02_Pause, 0
-        mov B$DebugToolbarButtons+48 al
+        Mov B$DebugToolbarButtons+48 al
         SendMessage D$DebugToolbarHandle, &TB_GETSTATE, M02_Step_Into, 0
-        mov B$DebugToolbarButtons+68 al
+        Mov B$DebugToolbarButtons+68 al
         SendMessage D$DebugToolbarHandle, &TB_GETSTATE, M02_Step_Over, 0
-        mov B$DebugToolbarButtons+88 al
+        Mov B$DebugToolbarButtons+88 al
         SendMessage D$DebugToolbarHandle, &TB_GETSTATE, M02_Return_to_Caller, 0
-        mov B$DebugToolbarButtons+108 al
+        Mov B$DebugToolbarButtons+108 al
         SendMessage D$Debug_RebarHandle, &RB_DELETEBAND, 1, 0
-        call 'USER32.DestroyWindow' D$Debug_ToolbarHandle
+        Call 'USER32.DestroyWindow' D$Debug_ToolbarHandle
     .EndIf
 
   ; Create toolbar
-    call 'User32.CreateWindowExA' 0, {'ToolbarWindow32' 0}, 0,
+    Call 'User32.CreateWindowExA' 0, {'ToolbarWindow32' 0}, 0,
         DEBUG_TOOLBAR_STYLE,
         0, 0, 120, 0, D$DebugDialogHandle, DEBUGDLG_TOOLBAR, D$hInstance, 0
 
-    mov D$DebugToolbarHandle eax
+    Mov D$DebugToolbarHandle eax
     SendMessage eax, &WM_SETFONT, D$DialogFont_handle, 0
 
     SendMessage D$Debug_ToolbarHandle, &TB_BUTTONSTRUCTSIZE, 20, 0
@@ -2995,12 +2995,12 @@ Proc DebugDialog_CreateCommandTB:
         move D$DebugToolbarButtons+96   D$StrStepOverPtr
         move D$DebugToolbarButtons+116  D$StrRetPtr
     Else
-        mov D$DebugToolbarButtons+16   0
-        mov D$DebugToolbarButtons+36   0
-        mov D$DebugToolbarButtons+56   0
-        mov D$DebugToolbarButtons+76   0
-        mov D$DebugToolbarButtons+96   0
-        mov D$DebugToolbarButtons+116  0
+        Mov D$DebugToolbarButtons+16   0
+        Mov D$DebugToolbarButtons+36   0
+        Mov D$DebugToolbarButtons+56   0
+        Mov D$DebugToolbarButtons+76   0
+        Mov D$DebugToolbarButtons+96   0
+        Mov D$DebugToolbarButtons+116  0
     EndIf
 
     If D$UnicodeStrings = 0
@@ -3012,10 +3012,10 @@ Proc DebugDialog_CreateCommandTB:
   ; Add band
     move D$DebugRebarBand@hwndChild D$DebugToolbarHandle
     SendMessage D$Debug_ToolbarHandle, &TB_GETMAXSIZE, 0, Point
-    ;call 'user32.GetClientRect'  D$Debug_ToolbarHandle, DebugRect
+    ;Call 'user32.GetClientRect'  D$Debug_ToolbarHandle, DebugRect
     ;mov eax D$DebugRect@right | sub eax D$DebugRect@left
-    mov eax D$PointX | add eax 10
-    mov D$DebugRebarBand@cx eax
+    Mov eax D$PointX | add eax 10
+    Mov D$DebugRebarBand@cx eax
     ;mov D$DebugRebarBand@cxIdeal eax
     ;mov D$DebugRebarBand@cxMinChild eax
 
@@ -3028,35 +3028,35 @@ ________________________________________________________________________________
 
 Proc DebugDialog_CreateToolbar:
 
-    call 'ComCtl32.InitCommonControlsEx' Init_Common_Controls
+    Call 'ComCtl32.InitCommonControlsEx' Init_Common_Controls
 
   ; Create rebar
-    call 'User32.CreateWindowExA',
+    Call 'User32.CreateWindowExA',
         &WS_EX_TOOLWINDOW, {'ReBarWindow32' 0}, 0,
         &WS_VISIBLE+&WS_CHILD+&RBS_VARHEIGHT+&RBS_FIXEDORDER+&RBS_BANDBORDERS+&WS_BORDER+&RBS_VERTICALGRIPPER, ;+&CCS_NODIVIDER,
         0, 0, 0, 0,
         D$DebugDialogHandle, DEBUGDLG_REBAR,
         D$hInstance, 0
 
-    mov D$DebugRebarHandle eax
+    Mov D$DebugRebarHandle eax
 
   ; Create menubar
-    call DebugWindow_CreateMenu
+    Call DebugWindow_CreateMenu
 
   ; Create flag toolbar
-    call 'User32.CreateWindowExA' 0, {'ToolbarWindow32' 0}, 0,
+    Call 'User32.CreateWindowExA' 0, {'ToolbarWindow32' 0}, 0,
         DEBUG_TOOLBAR_STYLE,
         0, 0, 80, 0, D$DebugDialogHandle, DEBUGDLG_FLAGS, D$hInstance, 0
 
-    mov D$Debug_FlagBarHandle eax
+    Mov D$Debug_FlagBarHandle eax
     SendMessage eax, &WM_SETFONT, D$DialogFont_handle, 0
 
   ; Create FPU flag toolbar
-    call 'User32.CreateWindowExA' 0, {'ToolbarWindow32' 0}, 0,
+    Call 'User32.CreateWindowExA' 0, {'ToolbarWindow32' 0}, 0,
         DEBUG_TOOLBAR_STYLE,
         0, 0, 80, 0, D$DebugDialogHandle, DEBUGDLG_FPUFLAGS, D$hInstance, 0
 
-    mov D$Debug_FPUBarHandle eax
+    Mov D$Debug_FPUBarHandle eax
     SendMessage eax, &WM_SETFONT, D$DialogFont_handle, 0
 
   ; Send the TB_BUTTONSTRUCTSIZE message, which is required for
@@ -3064,7 +3064,7 @@ Proc DebugDialog_CreateToolbar:
     SendMessage D$Debug_FlagBarHandle, &TB_BUTTONSTRUCTSIZE, 20, 0
     SendMessage D$Debug_FPUBarHandle, &TB_BUTTONSTRUCTSIZE, 20, 0
 
-    call DebugDialog_CreateCommandTB
+    Call DebugDialog_CreateCommandTB
 
   ; Add buttons
     SendMessage D$Debug_FlagBarHandle, &TB_ADDBUTTONS, 9, DebugFlagButtons
@@ -3073,40 +3073,40 @@ Proc DebugDialog_CreateToolbar:
   ; Add the bands
     move D$DebugRebarBand@hwndChild D$Debug_FlagbarHandle
     SendMessage D$Debug_FlagbarHandle, &TB_GETMAXSIZE, 0, Point
-    mov eax D$PointX ;| add eax 8
-    ;call 'user32.GetClientRect'  D$Debug_FlagbarHandle, DebugRect
+    Mov eax D$PointX ;| add eax 8
+    ;Call 'user32.GetClientRect'  D$Debug_FlagbarHandle, DebugRect
     ;mov eax D$DebugRect@right | sub eax D$DebugRect@left
 
     ;mov  D$DebugRebarBand@cxIdeal eax
-    mov  D$DebugRebarBand@cx eax
+    Mov  D$DebugRebarBand@cx eax
     ;mov  D$DebugRebarBand@cxMinChild eax
     SendMessage D$DebugRebarHandle, &RB_INSERTBAND, BAND_FLAGS, DebugRebarBand
     SendMessage D$DebugRebarHandle, &RB_SHOWBAND, BAND_FLAGS, 1
 
     move D$DebugRebarBand@hwndChild D$Debug_FPUbarHandle
     SendMessage D$Debug_FPUbarHandle, &TB_GETMAXSIZE, 0, Point
-    mov eax D$PointX ;| add eax 8
-    ;call 'user32.GetClientRect'  D$Debug_FPUbarHandle, DebugRect
+    Mov eax D$PointX ;| add eax 8
+    ;Call 'user32.GetClientRect'  D$Debug_FPUbarHandle, DebugRect
     ;mov eax D$DebugRect@right | sub eax D$DebugRect@left
 
     ;mov  D$DebugRebarBand@cxIdeal eax
-    mov  D$DebugRebarBand@cx eax
+    Mov  D$DebugRebarBand@cx eax
     ;mov  D$DebugRebarBand@cxMinChild eax
     or   D$DebugRebarBand@fStyle &RBBS_HIDDEN
     SendMessage D$DebugRebarHandle, &RB_INSERTBAND, 0-1, DebugRebarBand
 
   ; Create the context menu
-    call 'USER32.CreatePopupMenu' | mov ebx eax, D$Debug_ToolbarMenu eax
-    ;call 'User32.AppendMenuA' ebx, &MF_STRING, DEBUGDLG_TB_CONFIGURE, {'Configure ...' 0}
-    call 'User32.AppendMenuA' ebx, &MF_STRING, DEBUGDLG_TB_SHOW_TEXT, {'Show text' 0}
-    call 'User32.AppendMenuA' ebx, &MF_SEPARATOR, 0, 0
-    call 'User32.AppendMenuA' ebx, &MF_STRING+&MF_CHECKED, DEBUGDLG_TB_SHOW_CMDS, {'Show commands' 0}
-    call 'User32.AppendMenuA' ebx, &MF_STRING+&MF_CHECKED, DEBUGDLG_TB_SHOW_FLAGS, {'Show flags' 0}
-    call 'User32.AppendMenuA' ebx, &MF_STRING, DEBUGDLG_TB_SHOW_FPU, {'Show FPU flags' 0}
+    Call 'USER32.CreatePopupMenu' | Mov ebx eax, D$Debug_ToolbarMenu eax
+    ;Call 'User32.AppendMenuA' ebx, &MF_STRING, DEBUGDLG_TB_CONFIGURE, {'Configure ...' 0}
+    Call 'User32.AppendMenuA' ebx, &MF_STRING, DEBUGDLG_TB_SHOW_TEXT, {'Show text' 0}
+    Call 'User32.AppendMenuA' ebx, &MF_SEPARATOR, 0, 0
+    Call 'User32.AppendMenuA' ebx, &MF_STRING+&MF_CHECKED, DEBUGDLG_TB_SHOW_CMDS, {'Show commands' 0}
+    Call 'User32.AppendMenuA' ebx, &MF_STRING+&MF_CHECKED, DEBUGDLG_TB_SHOW_FLAGS, {'Show flags' 0}
+    Call 'User32.AppendMenuA' ebx, &MF_STRING, DEBUGDLG_TB_SHOW_FPU, {'Show FPU flags' 0}
 
 ;;
     SendMessage D@TbHandle, &TB_GETITEMRECT, 0, DebugRect    
-    mov eax D$DebugRect@width | shl eax 16
+    Mov eax D$DebugRect@width | shl eax 16
     SendMessage D@TbHandle, &TB_SETBUTTONWIDTH, 0, eax
 ;;
 ;;
@@ -3114,18 +3114,18 @@ Proc DebugDialog_CreateToolbar:
     SendMessage D$Debug_FlagbarHandle, &TB_AUTOSIZE, 0, 0 
     SendMessage D$Debug_FPUbarHandle,  &TB_AUTOSIZE, 0, 0 
 ;;
-    ;call 'User32.ShowWindow' D@TbHandle, &SW_SHOW
+    ;Call 'User32.ShowWindow' D@TbHandle, &SW_SHOW
 EndP
 ____________________________________________________________________________________________
 
 DebugDialog_DestroyToolbar:
-    call 'USER32.DestroyWindow' D$DebugToolbarHandle
-    mov D$DebugToolbarHandle 0
-    call 'USER32.DestroyWindow' D$DebugRebarHandle
-    mov D$DebugRebarHandle 0
-    call 'USER32.DestroyMenu' D$Debug_ToolbarMenu
-    mov D$Debug_ToolbarMenu 0
-    mov D$DebugDialog.RebarHeight 0
+    Call 'USER32.DestroyWindow' D$DebugToolbarHandle
+    Mov D$DebugToolbarHandle 0
+    Call 'USER32.DestroyWindow' D$DebugRebarHandle
+    Mov D$DebugRebarHandle 0
+    Call 'USER32.DestroyMenu' D$Debug_ToolbarMenu
+    Mov D$Debug_ToolbarMenu 0
+    Mov D$DebugDialog.RebarHeight 0
 ret
 ____________________________________________________________________________________________
 
@@ -3138,12 +3138,12 @@ Proc DebugDialog_RebarHitTest:
 
   ; Hittest expects client coordinates
     move D@pt.x D@X, D@pt.y D@Y
-    call 'USER32.ScreenToClient' D$Debug_RebarHandle, D@RBHitTest
+    Call 'USER32.ScreenToClient' D$Debug_RebarHandle, D@RBHitTest
     SendMessage D$Debug_RebarHandle, &RB_HITTEST, 0, D@RBHitTest
 
   ; Show context menu
     If D@iBand <> 0-1
-        call 'USER32.TrackPopupMenu' D$Debug_ToolbarMenu, 0, D@X, D@Y, 0, D$DebugDialogHandle, 0
+        Call 'USER32.TrackPopupMenu' D$Debug_ToolbarMenu, 0, D@X, D@Y, 0, D$DebugDialogHandle, 0
     EndIf
 EndP
 ____________________________________________________________________________________________
@@ -3156,50 +3156,50 @@ Proc DebugDialog_ToggleToolbar:
 
   ; store band index in ebx
     If D@Command = DEBUGDLG_TB_SHOW_CMDS
-        mov ebx 1
+        Mov ebx 1
     ElseIf D@Command = DEBUGDLG_TB_SHOW_FLAGS
-        mov ebx 2
+        Mov ebx 2
     ElseIf D@Command = DEBUGDLG_TB_SHOW_FPU
-        mov ebx 3
+        Mov ebx 3
     EndIf
 
   ; get check state of menu item, invert, toggle band and set inverted check state
-    call 'User32.GetMenuState' D$Debug_ToolbarMenu, D@Command, &MF_BYCOMMAND
+    Call 'User32.GetMenuState' D$Debug_ToolbarMenu, D@Command, &MF_BYCOMMAND
     push eax
         xor edx edx | test eax &MF_CHECKED | setz dl
         SendMessage D$Debug_RebarHandle, &RB_SHOWBAND, ebx, edx
     pop eax
     xor eax &MF_CHECKED | and eax &MF_CHECKED
-    call 'USER32.CheckMenuItem' D$Debug_ToolbarMenu, D@Command, eax
+    Call 'USER32.CheckMenuItem' D$Debug_ToolbarMenu, D@Command, eax
 EndP
 ____________________________________________________________________________________________
 
 Proc DebugDialog_ToggleToolbarText:
     Structure @TBButtonInfo 32, @Size 0, @Mask 4, @Text 24
 
-    mov D@Size 32, D@Mask &TBIF_TEXT
+    Mov D@Size 32, D@Mask &TBIF_TEXT
 
   ; get check state of menu item, invert, toggle band and set inverted check state
-    call 'User32.GetMenuState' D$Debug_ToolbarMenu, DEBUGDLG_TB_SHOWTEXT, &MF_BYCOMMAND
+    Call 'User32.GetMenuState' D$Debug_ToolbarMenu, DEBUGDLG_TB_SHOWTEXT, &MF_BYCOMMAND
     push eax
         xor edx edx | test eax &MF_CHECKED | setz dl
-        mov B$DebugShowTBText dl
-        call DebugDialog_CreateCommandTB
+        Mov B$DebugShowTBText dl
+        Call DebugDialog_CreateCommandTB
 ;;
       ; TODO show text
-        mov ebx 0
+        Mov ebx 0
         While ebx < 6
-            mov D@Text 0
+            Mov D@Text 0
             SendMessage D$Debug_ToolbarHandle, &TB_SETBUTTONINFOA, ebx, D@TBButtonInfo
             If eax = 0
-                call ReportWinError {'SetButtonInfo' 0}
+                Call ReportWinError {'SetButtonInfo' 0}
             EndIf
             inc ebx
         EndWhile
 ;;
     pop eax
     xor eax &MF_CHECKED | and eax &MF_CHECKED
-    call 'USER32.CheckMenuItem' D$Debug_ToolbarMenu, DEBUGDLG_TB_SHOWTEXT, eax
+    Call 'USER32.CheckMenuItem' D$Debug_ToolbarMenu, DEBUGDLG_TB_SHOWTEXT, eax
     SendMessage D$Debug_ToolbarHandle, &TB_AUTOSIZE, 0, 0
 
 EndP
@@ -3208,30 +3208,30 @@ ________________________________________________________________________________
 [DebugDialog.RebarHeight: ?]
 
 Proc DebugDialog_RebarNotify:
-    Arguments @Message
+    Arguments @msg
 
   ; Reposition all other child windows
-    .If D@Message = &RBN_HEIGHTCHANGE
+    .If D@msg = &RBN_HEIGHTCHANGE
         SendMessage D$DebugRebarHandle, &RB_GETBARHEIGHT, 0, 0
-        mov edx D$DebugDialog.RebarHeight
-        mov D$DebugDialog.RebarHeight eax
-        sub eax edx | mov ebx eax
+        Mov edx D$DebugDialog.RebarHeight
+        Mov D$DebugDialog.RebarHeight eax
+        sub eax edx | Mov ebx eax
 
-        call AdjustControlPos D$DebugDialogHandle, DEBUGDLG_REGISTER_TAB, 0, ebx
-        call AdjustControlPos D$DebugDialogHandle, DEBUGDLG_FORMAT_COMBO, 0, ebx
-        call AdjustControlPos D$DebugDialogHandle, DEBUGDLG_REG_LIST, 0, ebx
-        call AdjustControlPos D$DebugDialogHandle, DEBUGDLG_DATA_TAB, 0, ebx
-        call AdjustControlPos D$DebugDialogHandle, 3, 0, ebx
-        mov esi 71
+        Call AdjustControlPos D$DebugDialogHandle, DEBUGDLG_REGISTER_TAB, 0, ebx
+        Call AdjustControlPos D$DebugDialogHandle, DEBUGDLG_FORMAT_COMBO, 0, ebx
+        Call AdjustControlPos D$DebugDialogHandle, DEBUGDLG_REG_LIST, 0, ebx
+        Call AdjustControlPos D$DebugDialogHandle, DEBUGDLG_DATA_TAB, 0, ebx
+        Call AdjustControlPos D$DebugDialogHandle, 3, 0, ebx
+        Mov esi 71
         While esi < 79
-            call AdjustControlPos D$DebugDialogHandle, esi, 0, ebx
+            Call AdjustControlPos D$DebugDialogHandle, esi, 0, ebx
             inc esi
         EndWhile
         neg ebx
-        call AdjustControlSize D$DebugDialogHandle, DEBUGDLG_DATA_TAB, 0, ebx
-        call DebugDialog_AdjustDataTabSize D$DebugDialogHandle
+        Call AdjustControlSize D$DebugDialogHandle, DEBUGDLG_DATA_TAB, 0, ebx
+        Call DebugDialog_AdjustDataTabSize D$DebugDialogHandle
 
-        call 'USER32.InvalidateRect' D$DebugDialogHandle, &NULL, &TRUE
+        Call 'USER32.InvalidateRect' D$DebugDialogHandle, &NULL, &TRUE
     .EndIf
 EndP
 ____________________________________________________________________________________________
@@ -3240,9 +3240,9 @@ Proc DebugDialog_SaveToolbarSettings:
     Arguments @FileHandle
     Structure @Tbar 36, @Id 0, @Size 4, @Flags 8, @X1 12, @X2 16, @X3 20, @Style1 24, @Style2 28, @Style3 32
 
-    mov D@Id 'TBar', D@Size 28
+    Mov D@Id 'TBar', D@Size 28
 
-    mov al B$DebugShowTBText | mov B@Flags al
+    Mov al B$DebugShowTBText | Mov B@Flags al
 
     SendMessage D$DebugRebarHandle, &RB_GETBANDINFO, 1, DebugRebarBand
     move D@Style1 D$DebugRebarBand@fStyle
@@ -3256,7 +3256,7 @@ Proc DebugDialog_SaveToolbarSettings:
     move D@Style3 D$DebugRebarBand@fStyle
     move D@X3 D$DebugRebarBand@cx
 
-    call 'KERNEL32.WriteFile' D@FileHandle, D@Tbar, 36, BytesTransfered, 0
+    Call 'KERNEL32.WriteFile' D@FileHandle, D@Tbar, 36, BytesTransfered, 0
 EndP
 ____________________________________________________________________________________________
 
@@ -3264,16 +3264,16 @@ Proc DebugDialog_LoadToolbarSettings:
     Arguments @FileHandle @Size
     Structure @Tbar 28, @Flags 0, @X1 4, @X2 8, @X3 12, @Style1 16, @Style2 20, @Style3 24
 
-    mov eax 0
+    Mov eax 0
     On D@Size <> 28, ExitP
 
-    call 'KERNEL32.ReadFile' D@FileHandle, D@Tbar, D@Size, BytesTransfered, 0
+    Call 'KERNEL32.ReadFile' D@FileHandle, D@Tbar, D@Size, BytesTransfered, 0
 
     On B@Flags <> 0,
-        call DebugDialog_ToggleToolbarText
+        Call DebugDialog_ToggleToolbarText
 
-    mov ebx D$DebugRebarBand@fMask
-    mov D$DebugRebarBand@fMask &RBBIM_STYLE+&RBBIM_SIZE
+    Mov ebx D$DebugRebarBand@fMask
+    Mov D$DebugRebarBand@fMask &RBBIM_STYLE+&RBBIM_SIZE
 
     move D$DebugRebarBand@fStyle D@Style1
     move D$DebugRebarBand@cx D@X1
@@ -3288,15 +3288,15 @@ Proc DebugDialog_LoadToolbarSettings:
     SendMessage D$DebugRebarHandle, &RB_SETBANDINFO, 3, DebugRebarBand
 
     xor eax eax | test D@Style1 &RBBS_HIDDEN | setz al | shl al 3
-    call 'USER32.CheckMenuItem' D$Debug_ToolbarMenu, DEBUGDLG_TB_SHOW_CMDS, eax
+    Call 'USER32.CheckMenuItem' D$Debug_ToolbarMenu, DEBUGDLG_TB_SHOW_CMDS, eax
     xor eax eax | test D@Style2 &RBBS_HIDDEN | setz al | shl al 3
-    call 'USER32.CheckMenuItem' D$Debug_ToolbarMenu, DEBUGDLG_TB_SHOW_FLAGS, eax
+    Call 'USER32.CheckMenuItem' D$Debug_ToolbarMenu, DEBUGDLG_TB_SHOW_FLAGS, eax
     xor eax eax | test D@Style3 &RBBS_HIDDEN | setz al | shl al 3
-    call 'USER32.CheckMenuItem' D$Debug_ToolbarMenu, DEBUGDLG_TB_SHOW_FPU, eax
+    Call 'USER32.CheckMenuItem' D$Debug_ToolbarMenu, DEBUGDLG_TB_SHOW_FPU, eax
 
-    mov D$DebugRebarBand@fMask ebx
+    Mov D$DebugRebarBand@fMask ebx
 
-    mov eax 1
+    Mov eax 1
 EndP
 ____________________________________________________________________________________________
 
@@ -3340,14 +3340,14 @@ ________________________________________________________________________________
 [DebugFontHandle: ?]
 
 Proc DebugDialog_SetFont:
-    Arguments @Handle
+    Arguments @hwnd
 
         On D$DebugFontHandle <> 0,
-            call 'GDI32.DeleteObject' D$DebugFontHandle
-        call 'GDI32.CreateFontIndirectA' DEBUGLOGFONT
-        mov D$DebugFontHandle eax
-        call MeasureFont
-        SendMessage D@Handle, &WM_SETFONT, D$DebugFontHandle, &TRUE
+            Call 'GDI32.DeleteObject' D$DebugFontHandle
+        Call 'GDI32.CreateFontIndirectA' DEBUGLOGFONT
+        Mov D$DebugFontHandle eax
+        Call MeasureFont
+        SendMessage D@hwnd, &WM_SETFONT, D$DebugFontHandle, &TRUE
 EndP
 ____________________________________________________________________________________________
 
@@ -3360,15 +3360,15 @@ ________________________________________________________________________________
 Proc MeasureFont:
     Local @DC
 
-    call 'GDI32.CreateDCA' {'DISPLAY' 0}, 0, 0, 0
-    mov D@DC eax
+    Call 'GDI32.CreateDCA' {'DISPLAY' 0}, 0, 0, 0
+    Mov D@DC eax
 
-    call 'GDI32.SelectObject' D@DC, D$DebugFontHandle
-    call 'GDI32.GetTextExtentPoint32A' D@DC, {'M' 0}, 1, Point
+    Call 'GDI32.SelectObject' D@DC, D$DebugFontHandle
+    Call 'GDI32.GetTextExtentPoint32A' D@DC, {'M' 0}, 1, Point
 
     move D$DebugFontCharWidth D$PointX
 
-    call 'GDI32.DeleteDC' D@DC
+    Call 'GDI32.DeleteDC' D@DC
 EndP
 ____________________________________________________________________________________________
 
@@ -3384,19 +3384,19 @@ Proc MeasureStringWidthA:
     Local @DC
     Uses edi
 
-    call 'GDI32.CreateDCA' {'DISPLAY' 0}, 0, 0, 0
-    mov D@DC eax
+    Call 'GDI32.CreateDCA' {'DISPLAY' 0}, 0, 0, 0
+    Mov D@DC eax
 
-    call 'GDI32.SelectObject' D@DC, D@Font
+    Call 'GDI32.SelectObject' D@DC, D@Font
 
-    mov edi D@String, ecx 0-1, al 0
+    Mov edi D@String, ecx 0-1, al 0
     repne scasb
-    mov eax 0-2 | sub eax ecx
+    Mov eax 0-2 | sub eax ecx
 
-    call 'GDI32.GetTextExtentPoint32A' D@DC, D@String, eax, Point
-    call 'GDI32.DeleteDC' D@DC
+    Call 'GDI32.GetTextExtentPoint32A' D@DC, D@String, eax, Point
+    Call 'GDI32.DeleteDC' D@DC
 
-    mov eax D$PointX
+    Mov eax D$PointX
 EndP
 ____________________________________________________________________________________________
 
@@ -3405,31 +3405,31 @@ Proc MeasureStringWidthW:
     Local @DC
     Uses edi
 
-    call 'GDI32.CreateDCA' {'DISPLAY' 0}, 0, 0, 0
-    mov D@DC eax
+    Call 'GDI32.CreateDCA' {'DISPLAY' 0}, 0, 0, 0
+    Mov D@DC eax
 
-    call 'GDI32.SelectObject' D@DC, D@Font
+    Call 'GDI32.SelectObject' D@DC, D@Font
 
-    mov edi D@String, ecx 0-1, ax 0
+    Mov edi D@String, ecx 0-1, ax 0
     repne scasw
-    mov eax 0-2 | sub eax ecx
+    Mov eax 0-2 | sub eax ecx
 
-    call 'GDI32.GetTextExtentPoint32W' D@DC, D@String, eax, Point
-    call 'GDI32.DeleteDC' D@DC
+    Call 'GDI32.GetTextExtentPoint32W' D@DC, D@String, eax, Point
+    Call 'GDI32.DeleteDC' D@DC
 
-    mov eax D$PointX
+    Mov eax D$PointX
 EndP
 ____________________________________________________________________________________________
 
 ; Present font dialog
 
 Proc DebugDialog_ChangeFont:
-    Arguments @Handle
+    Arguments @hwnd
 
-        move D$DEBUGCHOOSEFONT.hwndOwner D@Handle
-        call 'COMDLG32.ChooseFontA' DEBUGCHOOSEFONT    ; user sets the font:
+        move D$DEBUGCHOOSEFONT.hwndOwner D@hwnd
+        Call 'COMDLG32.ChooseFontA' DEBUGCHOOSEFONT    ; user sets the font:
         If eax > 0
-            call DebugDialog_SetFont D@Handle
+            Call DebugDialog_SetFont D@hwnd
         End_If
 EndP
 ____________________________________________________________________________________________
@@ -3442,10 +3442,10 @@ ________________________________________________________________________________
 Proc TagGPRModified:
     Uses esi edi
 
-    mov ecx 0, edx 0
-    mov esi GPRRegMap, edi OldGPR_Values
+    Mov ecx 0, edx 0
+    Mov esi GPRRegMap, edi OldGPR_Values
     Do
-        lodsd | mov eax D$eax
+        lodsd | Mov eax D$eax
         cmp eax D$edi | je L0>
             bts edx ecx ; tag as changed
 L0:     stosd
@@ -3453,11 +3453,11 @@ L0:     stosd
     Loop_Until ecx = 8
 
     If D$GPR_FirstTime = 1
-        mov edx 0
-        mov D$GPR_FirstTime 0
+        Mov edx 0
+        Mov D$GPR_FirstTime 0
     EndIf
 
-    mov D$GPR_Modified_Mask edx
+    Mov D$GPR_Modified_Mask edx
 EndP
 ____________________________________________________________________________________________
 
@@ -3469,57 +3469,57 @@ Proc LoadDebugConfig:
     Local @File, @Value, @Size, @Id
     Uses edi, esi
 
-    call GetRosAsmFilesPath
+    Call GetRosAsmFilesPath
 
-    mov edi RosAsmFilesPath, eax 0, ecx 0-1
+    Mov edi RosAsmFilesPath, eax 0, ecx 0-1
     repne scasb | dec edi
-    mov esi DebugConfig, ecx 13
+    Mov esi DebugConfig, ecx 13
     rep movsb
 
-    call 'Kernel32.CreateFileA' RosAsmFilesPath, &GENERIC_READ, &FILE_SHARE_READ, 0,
+    Call 'Kernel32.CreateFileA' RosAsmFilesPath, &GENERIC_READ, &FILE_SHARE_READ, 0,
         &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
 
-    mov B$edi 0
+    Mov B$edi 0
 
     On eax = &INVALID_HANDLE_VALUE, ExitP
-    mov D@File eax
+    Mov D@File eax
 
 L0: lea eax D@Id
-    call 'KERNEL32.ReadFile' D@File, eax, 8, BytesTransfered, 0
+    Call 'KERNEL32.ReadFile' D@File, eax, 8, BytesTransfered, 0
     ..If D$BytesTransfered = 8
         .If D@Id = 'RegX'
           ; Show seg&debug regs (0=No [default]; 1=Show)
             lea eax D@Value
-            call 'KERNEL32.ReadFile' D@File, eax, 4, BytesTransfered, 0
+            Call 'KERNEL32.ReadFile' D@File, eax, 4, BytesTransfered, 0
             On D@Value = 1,
                 SendMessage D$DebugDialogHandle, &WM_COMMAND, M02_Show_All, 0
         .ElseIf D@Id = 'Step'
           ; Stepping mode (0=instruction level [default]; 1=source level)
             lea eax D@Value
-            call 'KERNEL32.ReadFile' D@File, eax, 4, BytesTransfered, 0
+            Call 'KERNEL32.ReadFile' D@File, eax, 4, BytesTransfered, 0
             On D@Value = 1,
                 SendMessage D$DebugDialogHandle, &WM_COMMAND, M02_Source_Level, 0
         .ElseIf D@Id = 'Font'
-            call 'KERNEL32.ReadFile' D@File, DebugLogFont, D@Size, BytesTransfered, 0
-            call DebugDialog_SetFont D$DebugDialogHandle
+            Call 'KERNEL32.ReadFile' D@File, DebugLogFont, D@Size, BytesTransfered, 0
+            Call DebugDialog_SetFont D$DebugDialogHandle
         .ElseIf D@Id = 'Rect'
-            call 'KERNEL32.ReadFile' D@File, DebugRect, D@Size, BytesTransfered, 0
-            mov eax D$DebugRect@right | sub eax D$DebugRect@left
-            mov edx D$DebugRect@bottom | sub edx D$DebugRect@top
-            call 'USER32.MoveWindow' D$DebugDialogHandle, D$DebugRect@left, D$DebugRect@top, eax, edx, &TRUE
+            Call 'KERNEL32.ReadFile' D@File, DebugRect, D@Size, BytesTransfered, 0
+            Mov eax D$DebugRect@right | sub eax D$DebugRect@left
+            Mov edx D$DebugRect@bottom | sub edx D$DebugRect@top
+            Call 'USER32.MoveWindow' D$DebugDialogHandle, D$DebugRect@left, D$DebugRect@top, eax, edx, &TRUE
         .ElseIf D@Id = 'TBar'
-            call DebugDialog_LoadToolbarSettings D@File, D@Size
+            Call DebugDialog_LoadToolbarSettings D@File, D@Size
             cmp eax 0 | je L9>
         .ElseIf D@Id = 'LaLa'
-            call DataView_LoadSettings D@File, D@Size
+            Call DataView_LoadSettings D@File, D@Size
         .Else
           ; Unknown chunk, skip it
-L9:         call 'KERNEL32.SetFilePointer' D@File, D@Size, 0, &FILE_CURRENT
+L9:         Call 'KERNEL32.SetFilePointer' D@File, D@Size, 0, &FILE_CURRENT
         .EndIf
         jmp L0<<
     ..EndIf
 
-    call 'KERNEL32.CloseHandle' D@File
+    Call 'KERNEL32.CloseHandle' D@File
 EndP
 ____________________________________________________________________________________________
 
@@ -3529,59 +3529,59 @@ Proc SaveDebugConfig:
     Local @File, @Value, @Size, @Id
     Uses edi, esi
 
-    call GetRosAsmFilesPath
+    Call GetRosAsmFilesPath
 
-    mov edi RosAsmFilesPath, eax 0, ecx 0-1
+    Mov edi RosAsmFilesPath, eax 0, ecx 0-1
     repne scasb | dec edi
-    mov esi DebugConfig, ecx 13
+    Mov esi DebugConfig, ecx 13
     rep movsb
 
-    call 'Kernel32.CreateFileA' RosAsmFilesPath, &GENERIC_WRITE, &FILE_SHARE_READ, 0,
+    Call 'Kernel32.CreateFileA' RosAsmFilesPath, &GENERIC_WRITE, &FILE_SHARE_READ, 0,
         &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
 
-    mov B$edi 0
+    Mov B$edi 0
 
     On eax = &INVALID_HANDLE_VALUE, ExitP
-    mov D@File eax
+    Mov D@File eax
 
   ; Show segment & debug regs
-    call 'User32.GetMenuState' D$SettingsMenu, M02_Show_All, &MF_BYCOMMAND
+    Call 'User32.GetMenuState' D$SettingsMenu, M02_Show_All, &MF_BYCOMMAND
     and eax &MF_CHECKED
     If eax <> 0
-        mov D@Value 1
+        Mov D@Value 1
     Else
-        mov D@Value 0
+        Mov D@Value 0
     EndIf
-    mov D@Id 'RegX'
-    mov D@Size 4
+    Mov D@Id 'RegX'
+    Mov D@Size 4
     lea eax D@Id
-    call 'KERNEL32.WriteFile' D@File, eax, 12, BytesTransfered, 0
+    Call 'KERNEL32.WriteFile' D@File, eax, 12, BytesTransfered, 0
 
   ; Stepping Mode
-    mov D@Id 'Step'
+    Mov D@Id 'Step'
     move D@Value D$Stepping
     lea eax D@Id
-    call 'KERNEL32.WriteFile' D@File, eax, 12, BytesTransfered, 0
+    Call 'KERNEL32.WriteFile' D@File, eax, 12, BytesTransfered, 0
 
   ; Font
-    mov D@Id 'Font'
-    mov D@Size 60
+    Mov D@Id 'Font'
+    Mov D@Size 60
     lea eax D@Id
-    call 'KERNEL32.WriteFile' D@File, eax, 8, BytesTransfered, 0
-    call 'KERNEL32.WriteFile' D@File, DebugLogFont, D@Size, BytesTransfered, 0
+    Call 'KERNEL32.WriteFile' D@File, eax, 8, BytesTransfered, 0
+    Call 'KERNEL32.WriteFile' D@File, DebugLogFont, D@Size, BytesTransfered, 0
 
   ; Position
-    mov D@Id 'Rect'
-    mov D@Size 16
-    call 'USER32.GetWindowRect' D$DebugDialogHandle, DebugRect
+    Mov D@Id 'Rect'
+    Mov D@Size 16
+    Call 'USER32.GetWindowRect' D$DebugDialogHandle, DebugRect
     lea eax D@Id
-    call 'KERNEL32.WriteFile' D@File, eax, 8, BytesTransfered, 0
-    call 'KERNEL32.WriteFile' D@File, DebugRect, D@Size, BytesTransfered, 0
+    Call 'KERNEL32.WriteFile' D@File, eax, 8, BytesTransfered, 0
+    Call 'KERNEL32.WriteFile' D@File, DebugRect, D@Size, BytesTransfered, 0
 
-    call DebugDialog_SaveToolbarSettings D@File
-    call DataView_SaveSettings D@File
+    Call DebugDialog_SaveToolbarSettings D@File
+    Call DataView_SaveSettings D@File
 
-    call 'KERNEL32.CloseHandle' D@File
+    Call 'KERNEL32.CloseHandle' D@File
 EndP
 ____________________________________________________________________________________________
 
@@ -3592,38 +3592,38 @@ Proc DebugDialog_ShowCaller:
         move D$CurrentStackPointer D$C.regEsp
     EndIf
 
-    call ScanStackForCodePointer D$CurrentStackPointer
+    Call ScanStackForCodePointer D$CurrentStackPointer
     add edx 4
     add D$CurrentStackPointer edx
 
     dec eax
-    call SourceDebugPos eax
+    Call SourceDebugPos eax
 EndP
 ____________________________________________________________________________________________
 
 ; Process WM_DEBUGEVENT message.
 
 Proc DebugDialog_OnDebugEvent:
-    Arguments @Handle
+    Arguments @hwnd
     Local @Inside
 
       ; Find changed registers
-        call TagGPRModified
+        Call TagGPRModified
 
       ; Find position in source
-        call SourceDebugPos D$SourcePosCodeAddress
-        call IsProcessCode D$C.regEip | mov D@Inside eax
+        Call SourceDebugPos D$SourcePosCodeAddress
+        Call IsProcessCode D$C.regEip | Mov D@Inside eax
 
       ; Copy exception description
-        mov edi DebugCaption
+        Mov edi DebugCaption
         .If D$DebugEventType = DET_BP
-            mov D$edi 'BP  ' | add edi 3
+            Mov D$edi 'BP  ' | add edi 3
         .ElseIf D$DebugEventType = DET_STEP
-            mov D$edi 'STEP', B$edi+4 ' ' | add edi 5
+            Mov D$edi 'STEP', B$edi+4 ' ' | add edi 5
         .ElseIf D$DebugEventType = DET_WP
-            mov D$edi 'WP  ' | add edi 3
+            Mov D$edi 'WP  ' | add edi 3
         .ElseIf D$DebugEventType = DET_EXCEPTION
-            mov D$edi 'EXCE', D$edi+4 'PTIO', W$edi+8 'N ' | add edi 10
+            Mov D$edi 'EXCE', D$edi+4 'PTIO', W$edi+8 'N ' | add edi 10
         .EndIf
 
         ;mov esi D$BreakTitle, edi DebugCaption
@@ -3632,34 +3632,34 @@ Proc DebugDialog_OnDebugEvent:
         ; Under 95 we cannot access the process memory after an exception has occurred
         ; Step-Over and InstructionDecode wouldn't work for that reason. (really?)
         ...If D$ExceptionFlags = 0
-            call NextInstructionDecode
+            Call NextInstructionDecode
             ; For source level stepping, compare the last source pos with the current
             ; if it hasn't changed, continue to step into/over.
             ; UPDATE: Only when stepping inside the process code
-            mov eax D$SourcePos
+            Mov eax D$SourcePos
             ..If eax = D$LastSourcePos
                 .If D@Inside = &TRUE
                     If B$Stepping = 1
-                        call DebugDialog_ContinueDebuggee
+                        Call DebugDialog_ContinueDebuggee
                         ExitP
                     EndIf
                 .EndIf
             ..Else
-                mov D$LastSourcePos eax
+                Mov D$LastSourcePos eax
             ..EndIf
             ; Show next instruction in caption, e.g. "BREAKPOINT - [push eax]"
             ;mov eax ' - [' | stosd
-            mov al '[' | stosb
-            mov esi D$NextInstructionPtr
+            Mov al '[' | stosb
+            Mov esi D$NextInstructionPtr
             While B$esi <> 0 | movsb | EndWhile
-            mov al ']' | stosb
+            Mov al ']' | stosb
         ...End_If
 
         On D$ExceptionFlags = 0,
-            call DebugDialog_EnableContinueMenu &TRUE
+            Call DebugDialog_EnableContinueMenu &TRUE
 ;;
         test D$ExceptionFlags E_MUSTEXIT | jnz L0>
-            call DebugDialog_EnableContinueMenu &TRUE
+            Call DebugDialog_EnableContinueMenu &TRUE
 L0:
         test D$ExceptionFlags E_OUTSIDE | jnz L0>
 L0:     
@@ -3668,27 +3668,27 @@ L0:
       ; Show current module name
         If D$CurrentModule <> 0
             push esi
-                mov esi D$CurrentModule
-                mov B$edi ' ' | inc edi
+                Mov esi D$CurrentModule
+                Mov B$edi ' ' | inc edi
                 While B$esi <> 0 | movsb | EndWhile
             pop esi
         EndIf
 
       ; Show caption
-        mov B$edi 0
-        SendMessage D@Handle, &WM_SETTEXT, 0, DebugCaption
+        Mov B$edi 0
+        SendMessage D@hwnd, &WM_SETTEXT, 0, DebugCaption
 
         ; Refresh register content output & flags
-        call DebugDialog_OnChangeRegisterTab D@Handle
-        call DebugDialog_UpdateFlags D@Handle
-        call DebugDialog_UpdateRegisterButtons D@Handle
-        call 'User32.IsIconic' D$hwnd
+        Call DebugDialog_OnChangeRegisterTab D@hwnd
+        Call DebugDialog_UpdateFlags D@hwnd
+        Call DebugDialog_UpdateRegisterButtons D@hwnd
+        Call 'User32.IsIconic' D$H.MainWindow
         If eax = &TRUE
-            call 'USER32.ShowWindow' D$hwnd, &SW_RESTORE
+            Call 'USER32.ShowWindow' D$H.MainWindow, &SW_RESTORE
         EndIf
-        call 'USER32.ShowWindow' D@Handle, &SW_RESTORE
-        call 'USER32.SetForegroundWindow' D$hwnd
-        call 'USER32.SetForegroundWindow' D@Handle
+        Call 'USER32.ShowWindow' D@hwnd, &SW_RESTORE
+        Call 'USER32.SetForegroundWindow' D$H.MainWindow
+        Call 'USER32.SetForegroundWindow' D@hwnd
 
       ; Refresh the data dialogs - they shall reload the displayed data from the debuggee
         SendMessage D$CurrentDataPageHandle, WM_REFRESH_CONTENT, 0, 0
@@ -3697,13 +3697,13 @@ L0:
             SendMessage D$DataViewHandle, WM_SELECT_SYMBOL, D$WatchedAddress, 0
 
         On D$ExceptionFlags <> 0,
-            call ShowExceptionInfo
+            Call ShowExceptionInfo
 
-        mov D$CurrentStackPointer 0
+        Mov D$CurrentStackPointer 0
 
         ;test D$ExceptionFlags E_OUTSIDE | jz L0>
-        ;    call 'USER32.MessageBoxA' D$hwnd, ErrorOutside, ErrorOutsideTitle, &MB_ICONEXCLAMATION
-L0:     mov eax 0
+        ;    Call 'USER32.MessageBoxA' D$H.MainWindow, ErrorOutside, ErrorOutsideTitle, &MB_ICONEXCLAMATION
+L0:     Mov eax 0
 EndP
 ____________________________________________________________________________________________
 
@@ -3711,22 +3711,22 @@ ________________________________________________________________________________
 
 Proc DebugDialog_KillDebugger:
   ; Tried to kill debug-dialog while debugger is still running
-    mov D$TerminateDebuggee &TRUE, D$DialogKillsDebugger &TRUE
+    Mov D$TerminateDebuggee &TRUE, D$DialogKillsDebugger &TRUE
 
     .If D$IsDebugEvent = 1
       ; If the debug-thread waits for an user input event, simulate that the user pressed
       ; "Terminate Debuggee". If we don't do that, the debugger will wait forever--
-        call DebugDialog_ContinueDebuggee
+        Call DebugDialog_ContinueDebuggee
     .Else
       ; Wait for the debug-thread to terminate. After a few seconds the debuggee and the
       ; debugger thread is terminated if the debugger thread does not exit voluntarily.
-        call 'KERNEL32.WaitForSingleObject' D$DebugThreadHandle, 5000
+        Call 'KERNEL32.WaitForSingleObject' D$DebugThreadHandle, 5000
         If eax = &WAIT_TIMEOUT
-            call 'User32.MessageBoxA' D$hwnd, DebugThreadHangs, CriticalError, &MB_ICONEXCLAMATION
-            call CloseProcess
-            call 'KERNEL32.TerminateThread' D$DebugThreadHandle, 0
+            Call 'User32.MessageBoxA' D$H.MainWindow, DebugThreadHangs, CriticalError, &MB_ICONEXCLAMATION
+            Call CloseProcess
+            Call 'KERNEL32.TerminateThread' D$DebugThreadHandle, 0
         EndIf
-        mov D$DebugThreadHandle &NULL
+        Mov D$DebugThreadHandle &NULL
     .EndIf
 EndP
 ____________________________________________________________________________________________
@@ -3734,310 +3734,310 @@ ________________________________________________________________________________
 ; Process WM_CREATE message. Create child windows and load configuration.
 
 Proc DebugDialog_OnCreate:
-    Arguments @Handle
+    Arguments @hwnd
 
-        move D$DebugDialogHandle D@Handle
-        ;call 'USER32.GetMenu' D@Handle | mov D$DebugMenuHandle eax
+        move D$DebugDialogHandle D@hwnd
+        ;Call 'USER32.GetMenu' D@hwnd | Mov D$DebugMenuHandle eax
 
       ; Hide tree
-        On D$ShowTreeHandle <> 0, call 'USER32.ShowWindow' D$ShowTreeHandle &SW_HIDE
+        On D$ShowTreeHandle <> 0, Call 'USER32.ShowWindow' D$ShowTreeHandle &SW_HIDE
 
       ; Init the flags
-        mov D$GPR_FirstTime 1, D$GPR_Modified_Mask 0
-        mov D$TerminateDebuggee &FALSE, D$DialogKillsDebugger &FALSE
-        mov D$HoldOnBreakpoints &TRUE, D$PauseThreads &FALSE
+        Mov D$GPR_FirstTime 1, D$GPR_Modified_Mask 0
+        Mov D$TerminateDebuggee &FALSE, D$DialogKillsDebugger &FALSE
+        Mov D$HoldOnBreakpoints &TRUE, D$PauseThreads &FALSE
 
-        call 'User32.GetClientRect' D@Handle, DebugRect
+        Call 'User32.GetClientRect' D@hwnd, DebugRect
         move W$DebugDialog.Width W$DebugRect@width
         move W$DebugDialog.Height W$DebugRect@height
 
       ; Place dialog in upper right corner of the source editor.
       ; The position is overwritten when the configuration file is loaded so it
       ; only has any effect when no config file is available.
-        call 'User32.GetClientRect' D$Hwnd, DebugRect
-        mov esi D$DebugRect@width
-        mov edi D$DebugRect@height
-        call 'User32.GetWindowRect' D@Handle, DebugRect
-        mov eax D$DebugRect@left
+        Call 'User32.GetClientRect' D$H.MainWindow, DebugRect
+        Mov esi D$DebugRect@width
+        Mov edi D$DebugRect@height
+        Call 'User32.GetWindowRect' D@hwnd, DebugRect
+        Mov eax D$DebugRect@left
         sub D$DebugRect@right eax ; width
         sub esi D$DebugRect@width
-        mov D$DebugRect@left esi ; xpos
-        mov eax D$DebugRect@top
+        Mov D$DebugRect@left esi ; xpos
+        Mov eax D$DebugRect@top
         sub D$DebugRect@bottom eax ; height
         If edi > D$DebugRect@bottom
-            mov D$DebugRect@bottom edi
+            Mov D$DebugRect@bottom edi
         EndIf
-        mov D$DebugRect@top 0
-        call 'USER32.ClientToScreen' D$Hwnd, DebugRect
-        call 'USER32.MoveWindow' D@Handle, D$DebugRect@left, D$DebugRect@top,
+        Mov D$DebugRect@top 0
+        Call 'USER32.ClientToScreen' D$H.MainWindow, DebugRect
+        Call 'USER32.MoveWindow' D@hwnd, D$DebugRect@left, D$DebugRect@top,
                                  D$DebugRect@right, D$DebugRect@bottom, &TRUE
 
       ; Key mapping
-        call 'User32.CreateAcceleratorTableA' DbgAccels, DbgAccelsNum
-        mov D$DbgAccelHandle eax
+        Call 'User32.CreateAcceleratorTableA' DbgAccels, DbgAccelsNum
+        Mov D$DbgAccelHandle eax
 
       ; Create default font
-        mov eax D$NationalFontHandle
+        Mov eax D$NationalFontHandle
         If eax <> 0
-            mov D$DialogFont_handle eax
+            Mov D$DialogFont_handle eax
         Else
-            call 'GDI32.CreateFontA' 8 4 0 0 400 0 0 0 1,   ;  DEFAULT_CHARSET 1  OEM_CHARSET 255
+            Call 'GDI32.CreateFontA' 8 4 0 0 400 0 0 0 1,   ;  DEFAULT_CHARSET 1  OEM_CHARSET 255
                                      0 0 0 0 Helv
-            mov D$DialogFont_handle eax
+            Mov D$DialogFont_handle eax
         EndIf
 
         ;SendMessage eax, &WM_SETFONT, D$DialogFont_handle, 1
-        ;SendMessage eax, &WM_SETFONT, D@Handle, 1
+        ;SendMessage eax, &WM_SETFONT, D@hwnd, 1
 
       ; Create the image list
-        call DebugDialog_CreateImageList
+        Call DebugDialog_CreateImageList
 
       ; Create the child windows / menu, toolbar, tabs
-        call DebugDialog_CreateRegisterTabs D@Handle
-        call DebugDialog_CreateDataTab D@Handle
-        call DebugDialog_CreateToolbar
-        call DebugDialog_InitDbgMenu
+        Call DebugDialog_CreateRegisterTabs D@hwnd
+        Call DebugDialog_CreateDataTab D@hwnd
+        Call DebugDialog_CreateToolbar
+        Call DebugDialog_InitDbgMenu
 
       ; Create the monospace font
-        call DebugDialog_SetFont D@Handle
+        Call DebugDialog_SetFont D@hwnd
 
-        call 'User32.SetWindowTextA' D@Handle, {'Running ...' 0}
+        Call 'User32.SetWindowTextA' D@hwnd, {'Running ...' 0}
 
       ; Create the mouse hint form and timer
-        call InitMouseOverDataHints
+        Call InitMouseOverDataHints
 
       ; Finally load configuration from file if available. All windows must be created
       ; at this point.
-        call LoadDebugConfig
+        Call LoadDebugConfig
 
-        mov eax 0 ;&TRUE
+        Mov eax 0 ;&TRUE
 EndP
 ____________________________________________________________________________________________
 
 ; Process WM_CLOSE message. Save configuration & send destroy message.
 
 Proc DebugDialog_OnClose:
-    Arguments @Handle
+    Arguments @hwnd
 
       ; Save configuration
-        call SaveDebugConfig
+        Call SaveDebugConfig
 
       ; Terminate debugger if it is still running.
-        mov D$DebuggerReady &FALSE
+        Mov D$DebuggerReady &FALSE
         If D$IsDebugging = &TRUE
-            call DebugDialog_KillDebugger
+            Call DebugDialog_KillDebugger
         End_If
 
       ; Kill timer and destroy mouse hint window
-        call DeleteMouseOverDataHints
+        Call DeleteMouseOverDataHints
 
       ; Destroy dialog
-        call 'User32.DestroyWindow' D@Handle
-        mov D$DebugDialogHandle 0
+        Call 'User32.DestroyWindow' D@hwnd
+        Mov D$DebugDialogHandle 0
 
       ; Restore RosAsm windows
-        On D$ShowTreeHandle <> 0, call 'USER32.ShowWindow' D$ShowTreeHandle, &SW_SHOW
-        call 'User32.IsIconic' D$hwnd
+        On D$ShowTreeHandle <> 0, Call 'USER32.ShowWindow' D$ShowTreeHandle, &SW_SHOW
+        Call 'User32.IsIconic' D$H.MainWindow
         If eax = &TRUE
-            call 'USER32.ShowWindow' D$hwnd, &SW_RESTORE
+            Call 'USER32.ShowWindow' D$H.MainWindow, &SW_RESTORE
         EndIf
-        call 'USER32.SetForegroundWindow' D$hwnd
-        mov eax 0
+        Call 'USER32.SetForegroundWindow' D$H.MainWindow
+        Mov eax 0
 EndP
 ____________________________________________________________________________________________
 
 ; Process WM_DESTROY message. Free resources, destroy child windows.
 
 Proc DebugDialog_OnDestroy:
-    Arguments @Handle
+    Arguments @hwnd
 
       ; Destroy child windows
-        call 'USER32.DestroyWindow' D$DataViewHandle
-        call 'USER32.DestroyWindow' D$MemoryInspectorHandle
-        call 'USER32.DestroyWindow' D$CallStackFormHandle
-        call 'USER32.DestroyWindow' D$LogForm_handle
-        call 'USER32.DestroyWindow' D$ASForm_handle
-        mov D$CurrentDataPageHandle 0
+        Call 'USER32.DestroyWindow' D$DataViewHandle
+        Call 'USER32.DestroyWindow' D$MemoryInspectorHandle
+        Call 'USER32.DestroyWindow' D$CallStackFormHandle
+        Call 'USER32.DestroyWindow' D$LogForm_handle
+        Call 'USER32.DestroyWindow' D$ASForm_handle
+        Mov D$CurrentDataPageHandle 0
 
-        call DebugDialog_DestroyToolbar
+        Call DebugDialog_DestroyToolbar
 
       ; Free images
-        call DebugDialog_DestroyImageList
+        Call DebugDialog_DestroyImageList
 
       ; Destroy key map
-        call 'USER32.DestroyAcceleratorTable' D$DbgAccelHandle
-        mov D$DbgAccelHandle 0
+        Call 'USER32.DestroyAcceleratorTable' D$DbgAccelHandle
+        Mov D$DbgAccelHandle 0
 
       ; Delete fonts
         If D$DebugFontHandle <> 0
-            call 'GDI32.DeleteObject' D$DebugFontHandle
-            mov D$DebugFontHandle 0
+            Call 'GDI32.DeleteObject' D$DebugFontHandle
+            Mov D$DebugFontHandle 0
         EndIf
         If D$DialogFontHandle <> 0
             On D$NationalFontHandle = 0,
-                call 'GDI32.DeleteObject' D$DialogFontHandle
-            mov D$DialogFontHandle 0
+                Call 'GDI32.DeleteObject' D$DialogFontHandle
+            Mov D$DialogFontHandle 0
         EndIf
 
-        mov eax 0
+        Mov eax 0
 EndP
 ____________________________________________________________________________________________
 
 ; Process WM_COMMAND message. Menu, accelerator (key-press) and button notifications.
 
 Proc DebugDialog_OnCommand:
-    Arguments @Handle, @wParam, @lParam
+    Arguments @hwnd, @wParam, @lParam
 
         movzx eax W@wParam
         movzx edx W@wParam+2
 
         .If eax = M02_Hold_on_BP
-            call 'User32.GetMenuState' D$SettingsMenu, M02_Hold_on_BP, &MF_BYCOMMAND
+            Call 'User32.GetMenuState' D$SettingsMenu, M02_Hold_on_BP, &MF_BYCOMMAND
             xor B$HoldOnBreakpoints 1 ; bool toggle
             xor eax &MF_CHECKED | and eax &MF_CHECKED
-            call 'USER32.CheckMenuItem' D$SettingsMenu, M02_Hold_on_BP, eax
+            Call 'USER32.CheckMenuItem' D$SettingsMenu, M02_Hold_on_BP, eax
 
         .Else_if eax = M02_Show_All
-            call 'User32.GetMenuState' D$SettingsMenu, M02_Show_All, &MF_BYCOMMAND
+            Call 'User32.GetMenuState' D$SettingsMenu, M02_Show_All, &MF_BYCOMMAND
             push eax
                 xor edx edx | test eax &MF_CHECKED | setz dl
-                call DebugDialog_ShowAdvancedTabs D@Handle edx
+                Call DebugDialog_ShowAdvancedTabs D@hwnd edx
             pop eax
             xor eax &MF_CHECKED | and eax &MF_CHECKED
-            call 'USER32.CheckMenuItem' D$SettingsMenu, M02_Show_All, eax
+            Call 'USER32.CheckMenuItem' D$SettingsMenu, M02_Show_All, eax
 
         .Else_if eax = M02_Run
-            mov B$UserWants CONTINUE_RUN
-            call DebugDialog_ContinueDebuggee
+            Mov B$UserWants CONTINUE_RUN
+            Call DebugDialog_ContinueDebuggee
 
         .Else_if eax = M02_Step_Over
-            mov B$UserWants CONTINUE_STEPOVER
-            call DebugDialog_ContinueDebuggee
+            Mov B$UserWants CONTINUE_STEPOVER
+            Call DebugDialog_ContinueDebuggee
 
         .Else_if eax = M02_Step_Into
-            mov B$UserWants CONTINUE_STEP
-            call DebugDialog_ContinueDebuggee
+            Mov B$UserWants CONTINUE_STEP
+            Call DebugDialog_ContinueDebuggee
 
         .Else_if eax = M02_Return_to_Caller
-            mov B$UserWants CONTINUE_RETURNTOCALLER
-            call DebugDialog_ContinueDebuggee
+            Mov B$UserWants CONTINUE_RETURNTOCALLER
+            Call DebugDialog_ContinueDebuggee
 
         .Else_if eax = M02_Terminate
-            mov B$TerminateDebuggee &TRUE
-            call DebugDialog_ContinueDebuggee
+            Mov B$TerminateDebuggee &TRUE
+            Call DebugDialog_ContinueDebuggee
 
         .Else_if eax = M02_Pause
-            mov B$PauseThreads &TRUE
+            Mov B$PauseThreads &TRUE
 
         .Else_If eax = M02_Show_code_at
-            call CreateNewForm_CodeAddressForm
+            Call CreateNewForm_CodeAddressForm
 
         .Else_if eax = M02_Inst_Level
-            call 'USER32.CheckMenuRadioItem' D$SettingsMenu, M02_Inst_Level, M02_Source_Level,
+            Call 'USER32.CheckMenuRadioItem' D$SettingsMenu, M02_Inst_Level, M02_Source_Level,
                                              M02_Inst_Level, &MF_BYCOMMAND
-            mov B$Stepping 0
+            Mov B$Stepping 0
 
         .Else_if eax = M02_Source_Level
-            call 'USER32.CheckMenuRadioItem' D$SettingsMenu, M02_Inst_Level, M02_Source_Level,
+            Call 'USER32.CheckMenuRadioItem' D$SettingsMenu, M02_Inst_Level, M02_Source_Level,
                                              M02_Source_Level, &MF_BYCOMMAND
-            mov B$Stepping 1
+            Mov B$Stepping 1
 
         .Else_if eax = M02_Font
-            call DebugDialog_ChangeFont D@Handle
+            Call DebugDialog_ChangeFont D@hwnd
 
         .Else_if eax = M02_CPU_Info
             VirtualAlloc DebugTextBuffer 4096
-            mov edi D$DebugTextBuffer
-            call DebugDialog_GetCPUInfo
-            call 'User32.MessageBoxA' D@Handle, D$DebugTextBuffer, {'CPU Information' 0}, &MB_OK__&MB_ICONINFORMATION
+            Mov edi D$DebugTextBuffer
+            Call DebugDialog_GetCPUInfo
+            Call 'User32.MessageBoxA' D@hwnd, D$DebugTextBuffer, {'CPU Information' 0}, &MB_OK__&MB_ICONINFORMATION
             VirtualFree D$DebugTextBuffer
 
         .Else_if eax = M02_FPU_Status
             VirtualAlloc DebugTextBuffer 4096
-            mov edi D$DebugTextBuffer
-            call DebugDialog_GetFPUStatus
-            call 'User32.MessageBoxA' D@Handle, D$DebugTextBuffer, {'FPU Status' 0}, &MB_OK__&MB_ICONINFORMATION
+            Mov edi D$DebugTextBuffer
+            Call DebugDialog_GetFPUStatus
+            Call 'User32.MessageBoxA' D@hwnd, D$DebugTextBuffer, {'FPU Status' 0}, &MB_OK__&MB_ICONINFORMATION
             VirtualFree D$DebugTextBuffer
 
         .Else_if eax = M02_Help
-            call Help, B_U_AsmName, {'Debugger' 0}, ContextHlpMessage
+            Call Help, B_U_AsmName, {'Debugger' 0}, ContextHlpMessage
 
         .Else_if eax = M02_About
-            call 'User32.MessageBoxA' D@Handle, AboutDebugger, DebuggerVersion, &MB_OK__&MB_ICONINFORMATION
+            Call 'User32.MessageBoxA' D@hwnd, AboutDebugger, DebuggerVersion, &MB_OK__&MB_ICONINFORMATION
 
         .Else_If eax = DEBUGDLG_FORMAT_COMBO ; Representation Combo
             If edx = &CBN_SELCHANGE
                 SendMessage D@lParam, &CB_GETCURSEL, 0, 0
-                On eax <> &CB_ERR, call DebugDialog_OnFormatChange D@Handle eax
+                On eax <> &CB_ERR, Call DebugDialog_OnFormatChange D@hwnd eax
             End_If
 
         .Else_if eax = DEBUGDLG_TB_CONFIGURE
             ; TODO
         .Else_If eax = DEBUGDLG_TB_SHOW_CMDS
-            call DebugDialog_ToggleToolbar eax
+            Call DebugDialog_ToggleToolbar eax
         .Else_If eax = DEBUGDLG_TB_SHOW_FLAGS
-            call DebugDialog_ToggleToolbar eax
+            Call DebugDialog_ToggleToolbar eax
         .Else_If eax = DEBUGDLG_TB_SHOW_FPU
-            call DebugDialog_ToggleToolbar eax
+            Call DebugDialog_ToggleToolbar eax
         .Else_If eax = DEBUGDLG_TB_SHOW_TEXT
-            call DebugDialog_ToggleToolbarText
+            Call DebugDialog_ToggleToolbarText
 
         .Else_if eax >= DEBUGDLG_FIRSTREG_BUTTON
             If eax <= DEBUGDLG_LASTREG_BUTTON
                 sub eax DEBUGDLG_FIRSTREG_BUTTON
-                mov eax D$GPRRegMap+eax*4
-                mov ecx D$eax
+                Mov eax D$GPRRegMap+eax*4
+                Mov ecx D$eax
                 and ecx 0_FFFF_F000
                 SendMessage D$MemoryInspectorHandle, WM_SET_PAGE, ecx, D$eax
             End_if
         .End_If
-        mov eax 0
+        Mov eax 0
 EndP
 ____________________________________________________________________________________________
 
 ; Process WM_NOTIFY message. Handles tab selection changes and rebar height change.
 
 Proc DebugDialog_OnNotify:
-    Arguments @Handle, @Notification
+    Arguments @hwnd, @Notification
 
-        mov ebx D@Notification
-        mov edx D$ebx+4
-        mov eax D$ebx+8
+        Mov ebx D@Notification
+        Mov edx D$ebx+4
+        Mov eax D$ebx+8
         ..If edx = DEBUGDLG_REGISTER_TAB
             If eax = &TCN_SELCHANGE
                 SendMessage D$ebx, &TCM_GETCURSEL, 0, 0
-                mov D$TabItem@imask &TCIF_PARAM
+                Mov D$TabItem@imask &TCIF_PARAM
                 SendMessage D$ebx, &TCM_GETITEM, eax, TabItem
-                call DebugDialog_OnChangeRegisterTab D@Handle
+                Call DebugDialog_OnChangeRegisterTab D@hwnd
             End_If
-            mov eax 0
+            Mov eax 0
         ..ElseIf edx = DEBUGDLG_DATA_TAB
             .If eax = &TCN_SELCHANGE
                 SendMessage D$ebx, &TCM_GETCURSEL, 0, 0
                 If eax = 0
-                    mov edi D$DataViewHandle
+                    Mov edi D$DataViewHandle
                 ElseIf eax = 1
-                    mov edi D$MemoryInspectorHandle
+                    Mov edi D$MemoryInspectorHandle
                 ElseIf eax = 2
-                    mov edi D$CallStackFormHandle
+                    Mov edi D$CallStackFormHandle
                 ElseIf eax = 3
-                    mov edi D$LogForm_handle
+                    Mov edi D$LogForm_handle
                 ElseIf eax = 4
-                    mov edi D$ASForm_handle
+                    Mov edi D$ASForm_handle
                 EndIf
-                call 'USER32.ShowWindow' D$CurrentDataPageHandle, &SW_HIDE
-                call 'USER32.ShowWindow' edi, &SW_SHOW
-                mov D$CurrentDataPageHandle edi
-                call DebugDialog_AdjustDataTabSize D@Handle
+                Call 'USER32.ShowWindow' D$CurrentDataPageHandle, &SW_HIDE
+                Call 'USER32.ShowWindow' edi, &SW_SHOW
+                Mov D$CurrentDataPageHandle edi
+                Call DebugDialog_AdjustDataTabSize D@hwnd
             .End_If
-            mov eax 0 ; mandatory for TCN_SELCHANGING !!!
+            Mov eax 0 ; mandatory for TCN_SELCHANGING !!!
         ..ElseIf edx = DEBUGDLG_REBAR
-            call DebugDialog_RebarNotify eax
-            mov eax 0
+            Call DebugDialog_RebarNotify eax
+            Mov eax 0
         ..ElseIf edx = DEBUGDLG_MENUBAR
-            call DebugDialog_MenubarNotify ebx eax D$ebx+12
+            Call DebugDialog_MenubarNotify ebx eax D$ebx+12
         ..Else
-            mov eax 0
+            Mov eax 0
         ..EndIf
 
 EndP
@@ -4046,7 +4046,7 @@ ________________________________________________________________________________
 ; Process WM_SETFONT message. Propagate message to affected child windows.
 
 Proc DebugDialog_OnSetFont:
-    Arguments @Handle @hFont, @Redraw
+    Arguments @hwnd @hFont, @Redraw
 
         SendMessage D$RegListHandle, &WM_SETFONT, D@hFont, D@Redraw
         SendMessage D$DataViewHandle, &WM_SETFONT, D@hFont, D@Redraw
@@ -4055,9 +4055,9 @@ Proc DebugDialog_OnSetFont:
         SendMessage D$LogFormHandle, &WM_SETFONT, D@hFont, D@Redraw
         SendMessage D$MouseHintFormHandle, &WM_SETFONT, D@hFont, D@Redraw
         SendMessage D$ASFormHandle, &WM_SETFONT, D@hFont, D@Redraw
-        mov ebx DEBUGDLG_FIRSTREG_BUTTON
+        Mov ebx DEBUGDLG_FIRSTREG_BUTTON
         While ebx <= DEBUGDLG_LASTREG_BUTTON
-            call 'User32.GetDlgItem' D@Handle, ebx
+            Call 'User32.GetDlgItem' D@hwnd, ebx
             SendMessage eax, &WM_SETFONT, D@hFont, D@Redraw
             inc ebx
         EndWhile
@@ -4076,27 +4076,27 @@ CreateDebugWindow:
     move D$DebugWindowClass@hIconSm D$wc_hIcon
     move D$DebugWindowClass@hCursor D$wc_hCursor
 
-    call 'User32.RegisterClassExA' DebugWindowClass
+    Call 'User32.RegisterClassExA' DebugWindowClass
 
-    ;call 'USER32.LoadMenuA' D$hInstance, M02_MENU
-    ;call DebugWindow_CreateMenu
+    ;Call 'USER32.LoadMenuA' D$hInstance, M02_MENU
+    ;Call DebugWindow_CreateMenu
 
-    call 'User32.CreateWindowExA' 0,
+    Call 'User32.CreateWindowExA' 0,
         DebugWindowClassName,
         0,
         &WS_OVERLAPPEDWINDOW+&WS_VISIBLE+&WS_POPUP,
         0, 0, 160, 240,
-        D$hwnd, 0,
+        D$H.MainWindow, 0,
         D$hInstance, 0
 
     If eax = 0
-        call ReportWinError {'Debugger: CreateWindowEx' 0}
-        mov eax 0 | ret
+        Call ReportWinError {'Debugger: CreateWindowEx' 0}
+        Mov eax 0 | ret
     EndIf
 
-    mov D$DebugDialogHandle eax
+    Mov D$DebugDialogHandle eax
 
-    mov eax 1
+    Mov eax 1
 ret
 ____________________________________________________________________________________________
 [DebugWindowClass:
@@ -4204,89 +4204,89 @@ ________________________________________________________________________________
 ;;
 
 Proc DebugDlgProc:
-    Arguments @Handle @Message @wParam @lParam
+    Arguments @hwnd @msg @wParam @lParam
     Uses ebx, esi, edi
 
-    .If D@Message = &WM_CREATE
-        call DebugDialog_OnCreate D@Handle
+    .If D@msg = &WM_CREATE
+        Call DebugDialog_OnCreate D@hwnd
 
-    .Else_If D@Message = &WM_CONTEXTMENU
+    .Else_If D@msg = &WM_CONTEXTMENU
         movzx eax W@lParam
         movzx ecx W@lParam+2
-        call DebugDialog_RebarHitTest eax ecx
+        Call DebugDialog_RebarHitTest eax ecx
 
-    .Else_if D@Message = WM_BEGIN_DEBUG
-        mov D$DebuggerReady &TRUE
-        mov eax 0
+    .Else_if D@msg = WM_BEGIN_DEBUG
+        Mov D$DebuggerReady &TRUE
+        Mov eax 0
 
-    .Else_If D@Message = WM_LOG
-        SendMessage D$LogForm_Handle, D@Message, D@wParam, D@lParam
+    .Else_If D@msg = WM_LOG
+        SendMessage D$LogForm_Handle, D@msg, D@wParam, D@lParam
 
-    .Else_If D@Message = WM_DEBUGEVENT
-        call DebugDialog_OnDebugEvent D@Handle
+    .Else_If D@msg = WM_DEBUGEVENT
+        Call DebugDialog_OnDebugEvent D@hwnd
 
-    .Else_If D@Message = WM_POPUPMENU
-        call DebugDialog_OnPopupMenu D@wParam
+    .Else_If D@msg = WM_POPUPMENU
+        Call DebugDialog_OnPopupMenu D@wParam
 
-    .Else_If D@Message = WM_COLLAPSEMENU
-        call DebugDialog_OnCollapseMenu
+    .Else_If D@msg = WM_COLLAPSEMENU
+        Call DebugDialog_OnCollapseMenu
 
-    .Else_If D@Message = &WM_CLOSE
-        call DebugDialog_OnClose D@Handle
+    .Else_If D@msg = &WM_CLOSE
+        Call DebugDialog_OnClose D@hwnd
 
-    .Else_If D@Message = &WM_DESTROY
-        call DebugDialog_OnDestroy D@Handle
+    .Else_If D@msg = &WM_DESTROY
+        Call DebugDialog_OnDestroy D@hwnd
 
-    .Else_If D@Message = &WM_COMMAND
-        call DebugDialog_OnCommand D@Handle, D@wParam, D@lParam
+    .Else_If D@msg = &WM_COMMAND
+        Call DebugDialog_OnCommand D@hwnd, D@wParam, D@lParam
 
-    .Else_If D@Message = &WM_SYSCOMMAND
-        call DebugDialog_OnSysCommand D@Handle, D@wParam, D@lParam
+    .Else_If D@msg = &WM_SYSCOMMAND
+        Call DebugDialog_OnSysCommand D@hwnd, D@wParam, D@lParam
 
-    .Else_if D@Message = &WM_KEYDOWN
-        call DebugDialog_OnKeyDown D@Handle, D@wParam, D@lParam
+    .Else_if D@msg = &WM_KEYDOWN
+        Call DebugDialog_OnKeyDown D@hwnd, D@wParam, D@lParam
 
-    .Else_If D@Message = &WM_NOTIFY
-        call DebugDialog_OnNotify D@Handle, D@lParam
+    .Else_If D@msg = &WM_NOTIFY
+        Call DebugDialog_OnNotify D@hwnd, D@lParam
 
-    .Else_if D@Message = &WM_GETMINMAXINFO
-        mov eax D@lParam
-        mov D$eax+24 200
-        mov D$eax+28 480
-        mov eax 0
+    .Else_if D@msg = &WM_GETMINMAXINFO
+        Mov eax D@lParam
+        Mov D$eax+24 200
+        Mov D$eax+28 480
+        Mov eax 0
 
-    .Else_if D@Message = &WM_SIZE
+    .Else_if D@msg = &WM_SIZE
         If D@wParam <> &SIZE_MINIMIZED
-            call DebugDialog_OnSize D@Handle, D@lParam
+            Call DebugDialog_OnSize D@hwnd, D@lParam
         EndIf
 
-    .Else_if D@Message = &WM_ACTIVATEAPP
-        mov eax 0
+    .Else_if D@msg = &WM_ACTIVATEAPP
+        Mov eax 0
 
-    .Else_if D@Message = &WM_SETFONT
-        call DebugDialog_OnSetFont D@Handle, D@wParam, D@lParam
+    .Else_if D@msg = &WM_SETFONT
+        Call DebugDialog_OnSetFont D@hwnd, D@wParam, D@lParam
 
-    .Else_if D@Message = &WM_DRAWITEM
+    .Else_if D@msg = &WM_DRAWITEM
         If D@wParam = 0
-            call DebugDialog_OnDrawMenuItem D@lParam
+            Call DebugDialog_OnDrawMenuItem D@lParam
         Else
-            call DebugDialog_OnDrawRegisterItem D@lParam
+            Call DebugDialog_OnDrawRegisterItem D@lParam
         EndIf
-        mov eax &TRUE
+        Mov eax &TRUE
 
-    .Else_if D@Message = &WM_MEASUREITEM
-        mov eax D@lParam
+    .Else_if D@msg = &WM_MEASUREITEM
+        Mov eax D@lParam
         If D@wParam = 0
           ; menu
-            call DebugDialog_OnMeasureMenuItem D@lParam
+            Call DebugDialog_OnMeasureMenuItem D@lParam
         Else
           ; listbox
             move D$eax+16 D$DbgLineHeight
         EndIf
-        mov eax &TRUE
+        Mov eax &TRUE
 
     .Else
-        call 'User32.DefWindowProcA' D@Handle, D@Message, D@wParam, D@lParam
+        Call 'User32.DefWindowProcA' D@hwnd, D@msg, D@wParam, D@lParam
     .End_If
 
 EndP
@@ -4317,46 +4317,46 @@ Proc MemoryInspector_OnDrawItem:
     Arguments @DrawItemStruc
     Local @Brush @Offset @Selected
 
-    mov ebx D@DrawItemStruc
-    call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0
+    Mov ebx D@DrawItemStruc
+    Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0
 
-    mov D@Selected 0
+    Mov D@Selected 0
     test D$ebx+DRAWITEM_ITEMSTATE &ODS_SELECTED
     setz al
     xor al 1
-    mov B@Selected al
+    Mov B@Selected al
 
     ; Print Offset
-    mov edx D$DebugFontCharWidth | shl edx 2 | add edx PADDING ; 4 chars
-    mov eax D$ebx+DRAWITEM_RCITEM_LEFT | mov D$ItemRect@x1 eax
-    add eax edx | mov D$ItemRect@x2 eax
+    Mov edx D$DebugFontCharWidth | shl edx 2 | add edx PADDING ; 4 chars
+    Mov eax D$ebx+DRAWITEM_RCITEM_LEFT | Mov D$ItemRect@x1 eax
+    add eax edx | Mov D$ItemRect@x2 eax
     move D$ItemRect@y1 D$ebx+DRAWITEM_RCITEM_TOP
     move D$ItemRect@y2 D$ebx+DRAWITEM_RCITEM_BOTTOM
 
-    mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
-    On B@Selected = 1, mov edi 2
-    call 'GDI32.CreateSolidBrush' D$BackgroundCol@Name+edi*4 | mov D@Brush eax
-    call 'USER32.FillRect' D$ebx+DRAWITEM_HDC ItemRect D@Brush
-    call 'GDI32.DeleteObject' D@Brush
-    call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC D$BackgroundCol@Name+edi*4
+    Mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
+    On B@Selected = 1, Mov edi 2
+    Call 'GDI32.CreateSolidBrush' D$BackgroundCol@Name+edi*4 | Mov D@Brush eax
+    Call 'USER32.FillRect' D$ebx+DRAWITEM_HDC ItemRect D@Brush
+    Call 'GDI32.DeleteObject' D@Brush
+    Call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC D$BackgroundCol@Name+edi*4
 
-    mov ecx D$ebx+DRAWITEM_ITEMDATA ; offset into page
+    Mov ecx D$ebx+DRAWITEM_ITEMDATA ; offset into page
     lea edi D@Offset
-    mov B$edi '+'
-    mov al ch | and al 0F
+    Mov B$edi '+'
+    Mov al ch | and al 0F
     add al '0'
     On al > '9', add al 7
-    mov B$edi+1 al
-    mov al cl | shr al 4
+    Mov B$edi+1 al
+    Mov al cl | shr al 4
     add al '0'
     On al > '9', add al 7
-    mov B$edi+2 al
-    mov al cl | and al 0F
+    Mov B$edi+2 al
+    Mov al cl | and al 0F
     add al '0'
     On al > '9', add al 7
-    mov B$edi+3 al
+    Mov B$edi+3 al
 
-    call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, edi, 4, ItemRect,
+    Call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, edi, 4, ItemRect,
          (&DT_SINGLELINE+&DT_LEFT+&DT_VCENTER)
         ; (&DT_SINGLELINE+&DT_CENTER+&DT_VCENTER)
 ;;
@@ -4368,30 +4368,30 @@ Proc MemoryInspector_OnDrawItem:
     move D$ItemRect@x1 D$ItemRect@x2
     move D$ItemRect@x2 D$ebx+DRAWITEM_RCITEM_RIGHT
 
-    mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
-    On B@Selected = 1, mov edi 2
-    call 'GDI32.CreateSolidBrush' D$BackgroundCol@Value+edi*4 | mov D@Brush eax
-    call 'USER32.FillRect' D$ebx+DRAWITEM_HDC, ItemRect, D@Brush
-    call 'GDI32.DeleteObject' D@Brush
-    call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, D$BackgroundCol@Value+edi*4
+    Mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
+    On B@Selected = 1, Mov edi 2
+    Call 'GDI32.CreateSolidBrush' D$BackgroundCol@Value+edi*4 | Mov D@Brush eax
+    Call 'USER32.FillRect' D$ebx+DRAWITEM_HDC, ItemRect, D@Brush
+    Call 'GDI32.DeleteObject' D@Brush
+    Call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, D$BackgroundCol@Value+edi*4
 
     If B@Selected = 1
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0FF_FFFF
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0FF_FFFF
     EndIf
 
-    mov esi D$CurrentPage
+    Mov esi D$CurrentPage
     add esi D$ebx+DRAWITEM_ITEMDATA
-    mov edi ItemString
-    mov ecx 8
-    call D$MemFormatConversionProc
+    Mov edi ItemString
+    Mov ecx 8
+    Call D$MemFormatConversionProc
 
-    call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, ItemString, 0-1, ItemRect,
+    Call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, ItemString, 0-1, ItemRect,
          (&DT_SINGLELINE+&DT_CENTER+&DT_VCENTER)
 
     ; Draw focus rect if selected
     If B@Selected = 1
         lea eax D$ebx+DRAWITEM_RCITEM_LEFT
-        call 'USER32.DrawFocusRect' D$ebx+DRAWITEM_HDC, eax
+        Call 'USER32.DrawFocusRect' D$ebx+DRAWITEM_HDC, eax
     EndIf
 EndP
 
@@ -4403,7 +4403,7 @@ ________________________________________________________________________________
 ;   eax : Integer
 
 HexStringToInt:
-    mov edx 0
+    Mov edx 0
     While B$esi <> 0
 
         lodsb
@@ -4419,12 +4419,12 @@ L0:     shl edx 4
         or dl al
 
     EndWhile
-    mov eax edx
+    Mov eax edx
 ret
 ; Invalid character error
-L6: call 'User32.MessageBoxA' 0, {'Hexadecimal notation: Only 0-9 and A-F allowed!' 0},
+L6: Call 'User32.MessageBoxA' 0, {'Hexadecimal notation: Only 0-9 and A-F allowed!' 0},
         {'Invalid character' 0}, &MB_ICONWARNING
-    mov eax 0-1
+    Mov eax 0-1
 ret
 ____________________________________________________________________________________________
 
@@ -4436,9 +4436,9 @@ ________________________________________________________________________________
 
 IntToHexString:
     push edi
-        mov ecx 8, edx eax, edi HexString
+        Mov ecx 8, edx eax, edi HexString
 
-L0:     mov eax 0
+L0:     Mov eax 0
         shld eax edx 4
         shl edx 4
 
@@ -4447,7 +4447,7 @@ L0:     mov eax 0
         stosb
         loop L0<
 
-        mov B$edi 0
+        Mov B$edi 0
     pop edi
 ret
 ____________________________________________________________________________________________
@@ -4458,42 +4458,42 @@ ________________________________________________________________________________
 ; Otherwise the old value is restored.
 
 Proc MemInspector_OnGoToAddress:
-    Arguments @Handle
+    Arguments @hwnd
     Local @Address, @SegBase, @SegLimit
     Uses esi, edi
 
-        call 'USER32.GetDlgItemTextA' D@Handle, MEMINSPECTOR_PAGEEDIT, HexString, 10
-        mov esi HexString
+        Call 'USER32.GetDlgItemTextA' D@hwnd, MEMINSPECTOR_PAGEEDIT, HexString, 10
+        Mov esi HexString
       ; Segment override?
         If W$esi = 'FS'
             move D@SegBase D$FS.Linear
             move D@SegLimit D$FS.Limit
             add esi 3
         Else
-            mov D@SegBase 0
-            mov D@SegLimit 0_FFFF_FFFF
+            Mov D@SegBase 0
+            Mov D@SegLimit 0_FFFF_FFFF
         EndIf
-        call HexStringToInt
+        Call HexStringToInt
         If eax > D@SegLimit
-            call 'User32.MessageBoxA' D@Handle, {'The offset is beyond the segment limit!' 0},
+            Call 'User32.MessageBoxA' D@hwnd, {'The offset is beyond the segment limit!' 0},
                 {'Invalid address' 0}, &MB_ICONWARNING
             jmp L0>
         EndIf
 
         add eax D@SegBase
-        mov D@Address eax
+        Mov D@Address eax
 
-        call IsProcessMemory D@Address
+        Call IsProcessMemory D@Address
         If eax > 0
-            mov eax D@Address
+            Mov eax D@Address
             and eax PageBaseMask
-            SendMessage D@Handle, WM_SET_PAGE, eax, D@Address
+            SendMessage D@hwnd, WM_SET_PAGE, eax, D@Address
         Else
-            call 'User32.MessageBoxA' D@Handle, {'This is not a valid address!' 0},
+            Call 'User32.MessageBoxA' D@hwnd, {'This is not a valid address!' 0},
                 {'Invalid address' 0}, &MB_ICONWARNING
-L0:         mov eax D$CurrentPageAddress
-            call IntToHexString
-            call 'User32.SetDlgItemTextA' D@Handle, MEMINSPECTOR_PAGEEDIT, HexString
+L0:         Mov eax D$CurrentPageAddress
+            Call IntToHexString
+            Call 'User32.SetDlgItemTextA' D@hwnd, MEMINSPECTOR_PAGEEDIT, HexString
         EndIf
 EndP
 ____________________________________________________________________________________________
@@ -4501,176 +4501,176 @@ ________________________________________________________________________________
 ; Tag Dialog 1012
 
 Proc MemoryInspectorProc:
-    Arguments @Handle @Message @wParam @lParam
+    Arguments @hwnd @msg @wParam @lParam
     Uses ebx, esi, edi
 
-    ...If D@Message = &WM_INITDIALOG
+    ...If D@msg = &WM_INITDIALOG
         VirtualAlloc CurrentPage 4096
-        mov D$CurrentPageAddress 0
+        Mov D$CurrentPageAddress 0
 
-        call 'USER32.GetClientRect' D@Handle, DebugRect
+        Call 'USER32.GetClientRect' D@hwnd, DebugRect
         move W$MemInspector.Width W$DebugRect@width
         move W$MemInspector.Height W$DebugRect@height
 
-        call 'USER32.GetDlgItem' D@Handle, MEMINSPECTOR_DATA_LIST | mov ebx eax
-        mov esi 0
+        Call 'USER32.GetDlgItem' D@hwnd, MEMINSPECTOR_DATA_LIST | Mov ebx eax
+        Mov esi 0
         While esi < 4096
             SendMessage ebx, &LB_ADDSTRING, 0, esi
             add esi 8
         EndWhile
 
-        call 'USER32.GetDlgItem' D@Handle, MEMINSPECTOR_FORMAT_COMBO | mov ebx eax
+        Call 'USER32.GetDlgItem' D@hwnd, MEMINSPECTOR_FORMAT_COMBO | Mov ebx eax
         SendMessage ebx, &CB_RESETCONTENT, 0, 0
-        mov esi MemFormats
+        Mov esi MemFormats
         lodsd
-        mov edi eax
+        Mov edi eax
         While edi > 0
             lodsd
             If D$UnicodeStrings = 0
                 SendMessage ebx, &CB_ADDSTRING, 0, D$eax
             Else
-                call 'User32.SendMessageW' ebx, &CB_ADDSTRING, 0, D$eax
+                Call 'User32.SendMessageW' ebx, &CB_ADDSTRING, 0, D$eax
             EndIf
             dec edi
         EndWhile
         SendMessage ebx, &CB_SETCURSEL, 0, 0
         move D$MemFormatConversionProc D$MemConvert
 
-        call 'USER32.GetDlgItem' D@Handle, MEMINSPECTOR_PREV_BUTTON
-        call 'USER32.EnableWindow' eax, &FALSE
-        call 'USER32.GetDlgItem' D@Handle, MEMINSPECTOR_NEXT_BUTTON
-        call 'USER32.EnableWindow' eax, &FALSE
+        Call 'USER32.GetDlgItem' D@hwnd, MEMINSPECTOR_PREV_BUTTON
+        Call 'USER32.EnableWindow' eax, &FALSE
+        Call 'USER32.GetDlgItem' D@hwnd, MEMINSPECTOR_NEXT_BUTTON
+        Call 'USER32.EnableWindow' eax, &FALSE
 
-        call 'USER32.GetDlgItem' D@Handle, MEMINSPECTOR_PAGE_EDIT
+        Call 'USER32.GetDlgItem' D@hwnd, MEMINSPECTOR_PAGE_EDIT
         SendMessage eax, &EM_SETLIMITTEXT, 8, 0
 
-        mov eax &TRUE
+        Mov eax &TRUE
 
-    ...ElseIf D@Message = WM_REFRESH_CONTENT
+    ...ElseIf D@msg = WM_REFRESH_CONTENT
         If D$CurrentPageAddress <> 0
-            call 'KERNEL32.ReadProcessMemory' D$PI.hProcess,
+            Call 'KERNEL32.ReadProcessMemory' D$PI.hProcess,
                 D$CurrentPageAddress, D$CurrentPage, PageSize, &NULL
-            call 'USER32.GetDlgItem' D@Handle, MEMINSPECTOR_DATA_LIST
-            call 'USER32.InvalidateRect' eax, &NULL, &TRUE
+            Call 'USER32.GetDlgItem' D@hwnd, MEMINSPECTOR_DATA_LIST
+            Call 'USER32.InvalidateRect' eax, &NULL, &TRUE
         EndIf
 
-        mov eax 0
+        Mov eax 0
 
-    ...ElseIf D@Message = WM_SET_PAGE
-        mov eax D@wParam
+    ...ElseIf D@msg = WM_SET_PAGE
+        Mov eax D@wParam
         If eax <> D$CurrentPageAddress
-            mov D$CurrentPageAddress eax
-            call 'KERNEL32.ReadProcessMemory' D$PI.hProcess, D@wParam, D$CurrentPage, 01000, &NULL
+            Mov D$CurrentPageAddress eax
+            Call 'KERNEL32.ReadProcessMemory' D$PI.hProcess, D@wParam, D$CurrentPage, 01000, &NULL
         EndIf
       ; Write Base address of page into an edit
-        mov eax D@wParam
-        call IntToHexString
-        call 'User32.SetDlgItemTextA' D@Handle, MEMINSPECTOR_PAGE_EDIT, HexString
+        Mov eax D@wParam
+        Call IntToHexString
+        Call 'User32.SetDlgItemTextA' D@hwnd, MEMINSPECTOR_PAGE_EDIT, HexString
       ; Switch to memory inspector tab
-        call SelectTab D$DebugDialogHandle, DEBUGDLG_DATA_TAB, 1
+        Call SelectTab D$DebugDialogHandle, DEBUGDLG_DATA_TAB, 1
       ; Scroll list to address (lParam) and redraw list entries
-        call 'USER32.GetDlgItem' D@Handle, MEMINSPECTOR_DATA_LIST
-        mov ebx eax
-        mov edi D@lParam
+        Call 'USER32.GetDlgItem' D@hwnd, MEMINSPECTOR_DATA_LIST
+        Mov ebx eax
+        Mov edi D@lParam
         and edi 0FFF
         shr edi 3
         SendMessage ebx, &LB_SETTOPINDEX, edi, 0
         SendMessage ebx, &LB_SETCURSEL, edi, 0
-        call 'USER32.SetFocus' ebx
+        Call 'USER32.SetFocus' ebx
       ; Activate / Deactivate Prev & Next Buttons
-        call 'USER32.GetDlgItem' D@Handle, MEMINSPECTOR_PREV_BUTTON
-        mov ebx eax
-        call FindPrevPage D$CurrentPageAddress
-        On eax > 0, mov eax &TRUE
-        call 'USER32.EnableWindow' ebx, eax
-        call 'USER32.GetDlgItem' D@Handle, MEMINSPECTOR_NEXT_BUTTON
-        mov ebx eax
-        call FindNextPage D$CurrentPageAddress
-        On eax > 0, mov eax &TRUE
-        call 'USER32.EnableWindow' ebx, eax
+        Call 'USER32.GetDlgItem' D@hwnd, MEMINSPECTOR_PREV_BUTTON
+        Mov ebx eax
+        Call FindPrevPage D$CurrentPageAddress
+        On eax > 0, Mov eax &TRUE
+        Call 'USER32.EnableWindow' ebx, eax
+        Call 'USER32.GetDlgItem' D@hwnd, MEMINSPECTOR_NEXT_BUTTON
+        Mov ebx eax
+        Call FindNextPage D$CurrentPageAddress
+        On eax > 0, Mov eax &TRUE
+        Call 'USER32.EnableWindow' ebx, eax
 
-        mov eax 0
+        Mov eax 0
 
-    ...ElseIf D@Message = &WM_DESTROY
+    ...ElseIf D@msg = &WM_DESTROY
         VirtualFree D$CurrentPage
-        mov eax 0
+        Mov eax 0
 ;;
-    ...Else_if D@Message = &WM_KEYDOWN
-        call 'USER32.GetFocus'
-        call 'USER32.GetDlgCtrlID' eax
+    ...Else_if D@msg = &WM_KEYDOWN
+        Call 'USER32.GetFocus'
+        Call 'USER32.GetDlgCtrlID' eax
         ;.If eax = MEMINSPECTOR_PAGE_EDIT
             If W@wParam = &VK_RETURN
                 nop
             EndIf
         ;.EndIf
 ;;
-    ...Else_if D@Message = &WM_COMMAND
+    ...Else_if D@msg = &WM_COMMAND
         ..If W@wParam = MEMINSPECTOR_FORMAT_COMBO
             .If W@wParam+2 = &CBN_SELCHANGE
                 SendMessage D@lParam, &CB_GETCURSEL, 0, 0
                 If eax <> &CB_ERR
                     move D$MemFormatConversionProc D$MemConvert+eax*4
-                    call 'USER32.GetDlgItem' D@Handle, MEMINSPECTOR_DATA_LIST
-                    call 'USER32.InvalidateRect' eax, &NULL, &TRUE
+                    Call 'USER32.GetDlgItem' D@hwnd, MEMINSPECTOR_DATA_LIST
+                    Call 'USER32.InvalidateRect' eax, &NULL, &TRUE
                 EndIf
             .End_If
         ..Else_if W@wParam = MEMINSPECTOR_PREV_BUTTON
-            call FindPrevPage D$CurrentPageAddress
+            Call FindPrevPage D$CurrentPageAddress
             If eax > 0
-                SendMessage D@Handle, WM_SET_PAGE, eax, eax
+                SendMessage D@hwnd, WM_SET_PAGE, eax, eax
             EndIf
         ..Else_if W@wParam = MEMINSPECTOR_NEXT_BUTTON
-            call FindNextPage D$CurrentPageAddress
+            Call FindNextPage D$CurrentPageAddress
             If eax > 0
-                SendMessage D@Handle, WM_SET_PAGE, eax, eax
+                SendMessage D@hwnd, WM_SET_PAGE, eax, eax
             EndIf
         ..Else_if W@wParam = MEMINSPECTOR_TABLE_BUTTON
-            call 'User32.DialogBoxParamA' D$hinstance, 1013, D$DebugDialogHandle,
+            Call 'User32.DialogBoxParamA' D$hinstance, 1013, D$DebugDialogHandle,
                                           PageTableProc, D$CurrentPageAddress
             If eax >= 01000
-                SendMessage D@Handle, WM_SET_PAGE, eax, eax
+                SendMessage D@hwnd, WM_SET_PAGE, eax, eax
             EndIf
         ..Else_if W@wParam = MEMINSPECTOR_PAGE_EDIT
             movzx eax W@wParam+2
         ..Else_if W@wParam = &IDOK
-            call MemInspector_OnGoToAddress D@Handle
+            Call MemInspector_OnGoToAddress D@hwnd
         ..End_If
-        mov eax 0
+        Mov eax 0
 
-    ...ElseIf D@Message = &WM_SIZE
+    ...ElseIf D@msg = &WM_SIZE
         movzx eax W$MemInspector.Width
         movzx esi W@lParam
         sub esi eax
         movzx eax W$MemInspector.Height
         movzx edi W@lParam+2
         sub edi eax
-        call AdjustControlSize D@Handle, MEMINSPECTOR_DATA_LIST, esi, edi
-        call AdjustControlSize D@Handle, MEMINSPECTOR_FORMAT_COMBO, esi, 0
-        call AdjustControlPos D@Handle, MEMINSPECTOR_PREV_BUTTON, 0, edi
-        call AdjustControlPos D@Handle, MEMINSPECTOR_NEXT_BUTTON, esi, edi
-        call AdjustControlPos D@Handle, MEMINSPECTOR_TABLE_BUTTON, 0, edi
-        call AdjustControlSize D@Handle, MEMINSPECTOR_TABLE_BUTTON, esi, 0
-        call 'USER32.InvalidateRect' D@Handle, &NULL, &TRUE
+        Call AdjustControlSize D@hwnd, MEMINSPECTOR_DATA_LIST, esi, edi
+        Call AdjustControlSize D@hwnd, MEMINSPECTOR_FORMAT_COMBO, esi, 0
+        Call AdjustControlPos D@hwnd, MEMINSPECTOR_PREV_BUTTON, 0, edi
+        Call AdjustControlPos D@hwnd, MEMINSPECTOR_NEXT_BUTTON, esi, edi
+        Call AdjustControlPos D@hwnd, MEMINSPECTOR_TABLE_BUTTON, 0, edi
+        Call AdjustControlSize D@hwnd, MEMINSPECTOR_TABLE_BUTTON, esi, 0
+        Call 'USER32.InvalidateRect' D@hwnd, &NULL, &TRUE
         move D$MemInspectorSize D@lParam
-        mov eax 0
+        Mov eax 0
 
-    ...Else_if D@Message = &WM_SETFONT
-        call 'USER32.GetDlgItem' D@Handle, MEMINSPECTOR_DATA_LIST
+    ...Else_if D@msg = &WM_SETFONT
+        Call 'USER32.GetDlgItem' D@hwnd, MEMINSPECTOR_DATA_LIST
         SendMessage eax, &WM_SETFONT, D@wParam, D@lParam
-        call 'USER32.GetDlgItem' D@Handle, MEMINSPECTOR_PAGE_EDIT
+        Call 'USER32.GetDlgItem' D@hwnd, MEMINSPECTOR_PAGE_EDIT
         SendMessage eax, &WM_SETFONT, D@wParam, D@lParam
 
-    ...Else_if D@Message = &WM_DRAWITEM
-        call MemoryInspector_OnDrawItem D@lParam
-        mov eax &TRUE
+    ...Else_if D@msg = &WM_DRAWITEM
+        Call MemoryInspector_OnDrawItem D@lParam
+        Mov eax &TRUE
 
-    ...Else_if D@Message = &WM_MEASUREITEM
-        mov eax D@lParam
-        mov D$eax+16 15
-        mov eax &TRUE
+    ...Else_if D@msg = &WM_MEASUREITEM
+        Mov eax D@lParam
+        Mov D$eax+16 15
+        Mov eax &TRUE
 
     ...Else
-        mov eax &FALSE
+        Mov eax &FALSE
     ...EndIf
 
 EndP
@@ -4687,72 +4687,72 @@ Proc PageTable_WritePageDescription:
     Uses esi, edi
 
         ; Write address
-        mov eax D@Address
-        mov edi PageDesc, ecx 4, edx eax
+        Mov eax D@Address
+        Mov edi PageDesc, ecx 4, edx eax
         test eax 0FFFF | jz L0>
-        mov D$edi ' >> '
+        Mov D$edi ' >> '
         add edi 4
 L0:     add edi 8
 
-L0:     mov al dl
-        mov ah al | and ah 0F | shr al 4
+L0:     Mov al dl
+        Mov ah al | and ah 0F | shr al 4
 
         add ah '0'
         On ah > '9', add ah 7
-        dec edi | mov B$edi ah
+        dec edi | Mov B$edi ah
         add al '0'
         On al > '9', add al 7
-        dec edi | mov B$edi al
+        dec edi | Mov B$edi al
 
         shr edx 8
         loop L0<
 
         ; Write protection "XRWC GN"
-        mov edi Pagedesc+9, ecx D@Protect
+        Mov edi Pagedesc+9, ecx D@Protect
         On B$Pagedesc = ' ', add edi 4
-        mov B$edi-1 9
-        mov D$edi '----', D$edi+4 ' -- '
+        Mov B$edi-1 9
+        Mov D$edi '----', D$edi+4 ' -- '
         If ecx = &PAGE_READONLY
-            mov B$edi+1 'R'
+            Mov B$edi+1 'R'
         Else_if ecx = &PAGE_READWRITE
-            mov W$edi+1 'RW'
+            Mov W$edi+1 'RW'
         Else_if ecx = &PAGE_EXECUTE
-            mov B$edi 'X'
+            Mov B$edi 'X'
         Else_if ecx = &PAGE_EXECUTE_READ
-            mov W$edi 'XR'
+            Mov W$edi 'XR'
         Else_if ecx = &PAGE_EXECUTE_READWRITE
-            mov D$edi 'XRW-'
+            Mov D$edi 'XRW-'
         Else_if ecx = &PAGE_EXECUTE_WRITECOPY
-            mov D$edi 'XRWC'
+            Mov D$edi 'XRWC'
         Else_if ecx = &PAGE_WRITECOPY
-            mov D$edi '-RWC'
+            Mov D$edi '-RWC'
         EndIf
         test ecx &PAGE_GUARD | jz L0>
-        mov B$edi+5 'G'
+        Mov B$edi+5 'G'
 L0:     test ecx &PAGE_NOCACHE | jz L0>
-        mov B$edi+6 'N'
+        Mov B$edi+6 'N'
 L0:
         ; Write module filename (dll/exe), if available
-        mov edi Pagedesc+17
+        Mov edi Pagedesc+17
         On B$Pagedesc = ' ', add edi 4
-        mov eax 0
-        call GetModuleName D@Address
+        Mov eax 0
+        Call GetModuleName D@Address
         If eax <> 0
-            mov esi eax
+            Mov esi eax
 L0:         movsb | cmp B$esi 0 | jne L0<
         EndIf
-        mov D$edi 0
+        Mov D$edi 0
 EndP
 
 Proc PageTable_AddItem:
     Arguments @Base, @Size, @Protect, @Type
     Uses esi, edi
 
-        mov esi D@Base, edi esi
+        Mov esi D@Base, edi esi
         add edi D@Size
 
         While esi < edi
-            call PageTable_WritePageDescription esi, D@Protect
+            Call PageTable_WritePageDescription esi, D@Protect
             SendMessage ebx, &LB_ADDSTRING, 0, PageDesc
             SendMessage ebx, &LB_SETITEMDATA, eax, esi
             add esi 01000
@@ -4763,11 +4763,11 @@ ________________________________________________________________________________
 Proc PageTable_Build:
     Uses esi
 
-        mov esi D$AddressLowerBound
+        Mov esi D$AddressLowerBound
         While esi < D$AddressUpperBound
-            call VirtualQuery esi
+            Call VirtualQuery esi
             If eax = 1
-                call PageTable_AddItem esi, ecx,
+                Call PageTable_AddItem esi, ecx,
                     D$MemoryInformation@Protect, D$MemoryInformation@Type
             ElseIf eax = 0-1
                 ExitP
@@ -4780,38 +4780,38 @@ ________________________________________________________________________________
 ; Tag Dialog 1013
 
 Proc PageTableProc:
-    Arguments @Handle, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
     Uses ebx, esi, edi
 
-    ..If D@Message = &WM_INITDIALOG
-        call 'User32.GetDlgItem' D@Handle, 10
-        mov ebx eax
+    ..If D@msg = &WM_INITDIALOG
+        Call 'User32.GetDlgItem' D@hwnd, 10
+        Mov ebx eax
         SendMessage ebx, &LB_RESETCONTENT, 0, 0
         SendMessage ebx, &WM_SETFONT, D$DebugFontHandle, &TRUE
-        call PageTable_Build
-        mov eax &TRUE
+        Call PageTable_Build
+        Mov eax &TRUE
 
-    ..Else_if D@Message = &WM_COMMAND
+    ..Else_if D@msg = &WM_COMMAND
         .If D@wParam = 1
-            call 'User32.GetDlgItem' D@Handle, 10
-            mov ebx eax
+            Call 'User32.GetDlgItem' D@hwnd, 10
+            Mov ebx eax
             SendMessage ebx, &LB_GETCURSEL, 0, 0
             SendMessage ebx, &LB_GETITEMDATA, eax, 0
-            call 'USER32.EndDialog' D@Handle, eax
+            Call 'USER32.EndDialog' D@hwnd, eax
         .Else_if W@wParam = 10
             If W@wParam+2 = &LBN_DBLCLK
                 SendMessage D@lParam, &LB_GETCURSEL, 0, 0
                 SendMessage D@lParam, &LB_GETITEMDATA, eax, 0
-                call 'USER32.EndDialog' D@Handle, eax
+                Call 'USER32.EndDialog' D@hwnd, eax
             EndIf
         .EndIf
-        mov eax 0
+        Mov eax 0
 
-    ..Else_if D@Message = &WM_CLOSE
-        call 'User32.EndDialog' D@Handle, 0
-        mov eax 0
+    ..Else_if D@msg = &WM_CLOSE
+        Call 'User32.EndDialog' D@hwnd, 0
+        Mov eax 0
     ..Else
-        mov eax &FALSE
+        Mov eax &FALSE
     ..EndIf
 EndP
 ____________________________________________________________________________________________
@@ -4819,7 +4819,7 @@ ________________________________________________________________________________
 ; Tag Dialog 1014
 
 ShowExceptionInfo:
-    call 'User32.CreateDialogParamA' D$hInstance, 1014, D$hwnd, ExceptionInfoProc, D$E.ExceptionCode
+    Call 'User32.CreateDialogParamA' D$hInstance, 1014, D$H.MainWindow, ExceptionInfoProc, D$E.ExceptionCode
 ret
 
 [EXCEPTINFO_DESC 10 EXCEPTINFO_ADDRESS 15 EXCEPTINFO_INSTRUCTION 20 EXCEPTINFO_INFO 25]
@@ -4848,111 +4848,111 @@ ret
 [ExceptionCaption: B$ ? #128]
 
 Proc ExceptionInfoProc:
-    Arguments @Handle, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
     Uses ebx, esi, edi
 
-    ..If D@Message = &WM_INITDIALOG
+    ..If D@msg = &WM_INITDIALOG
 
       ; Output module in caption
         If D$CurrentModule <> 0
-            mov eax D$CurrentModule
+            Mov eax D$CurrentModule
         Else
-            mov eax {'Exception in Non-Code Section' 0}
+            Mov eax {'Exception in Non-Code Section' 0}
         EndIf
-        call 'User32.SetWindowTextA' D@Handle, eax
+        Call 'User32.SetWindowTextA' D@hwnd, eax
 
       ; Output exception description
-        mov eax D$E.ExceptionCode
-        mov esi ExceptionMap
+        Mov eax D$E.ExceptionCode
+        Mov esi ExceptionMap
         While D$esi <> 0
             cmp eax D$esi | je L0>
             add esi 8
         EndWhile
-        mov edx eax, ecx 4, edi D$esi+4
-        call IntToHex
-L0:     call 'USER32.GetDlgItem' D@Handle, EXCEPTINFO_DESC | mov ebx eax
+        Mov edx eax, ecx 4, edi D$esi+4
+        Call IntToHex
+L0:     Call 'USER32.GetDlgItem' D@hwnd, EXCEPTINFO_DESC | Mov ebx eax
         SendMessage ebx, &WM_SETFONT, D$DebugFontHandle, &TRUE
-        call 'User32.SetWindowTextA' ebx, D$esi+4
+        Call 'User32.SetWindowTextA' ebx, D$esi+4
 
       ; Output troubling instruction and its address
-        mov eax D$E.ExceptionAddress
-        call IntToHexString
-        call 'USER32.GetDlgItem' D@Handle, EXCEPTINFO_ADDRESS | mov ebx eax
+        Mov eax D$E.ExceptionAddress
+        Call IntToHexString
+        Call 'USER32.GetDlgItem' D@hwnd, EXCEPTINFO_ADDRESS | Mov ebx eax
         SendMessage ebx, &WM_SETFONT, D$Font1Handle, &TRUE
-        call 'User32.SetWindowTextA' ebx, HexString
+        Call 'User32.SetWindowTextA' ebx, HexString
 
-        call NextInstructionDecode
-        call 'USER32.GetDlgItem' D@Handle, EXCEPTINFO_INSTRUCTION | mov ebx eax
+        Call NextInstructionDecode
+        Call 'USER32.GetDlgItem' D@hwnd, EXCEPTINFO_INSTRUCTION | Mov ebx eax
         SendMessage ebx, &WM_SETFONT, D$Font1Handle, &TRUE
-        call 'User32.SetWindowTextA' ebx, D$NextInstructionPtr
+        Call 'User32.SetWindowTextA' ebx, D$NextInstructionPtr
 
       ; Output further information for protection faults
         .If D$E.ExceptionCode = &EXCEPTION_ACCESS_VIOLATION
-            mov eax D$E.ExceptionInfo ; read/write
+            Mov eax D$E.ExceptionInfo ; read/write
             If eax = 0
-                mov D$AV_ReadWrite 'read', D$AV_ReadWrite+4 ' fro', B$AV_ReadWrite+8 'm'
+                Mov D$AV_ReadWrite 'read', D$AV_ReadWrite+4 ' fro', B$AV_ReadWrite+8 'm'
             Else
-                mov D$AV_ReadWrite 'writ', D$AV_ReadWrite+4 'e at', B$AV_ReadWrite+8 ' '
+                Mov D$AV_ReadWrite 'writ', D$AV_ReadWrite+4 'e at', B$AV_ReadWrite+8 ' '
             EndIf
-            mov edx D$E.ExceptionInfo+4 ; inaccessible address
-            mov ecx 4, edi AV_Address
-            call IntToHex
-            call 'User32.SetDlgItemTextA' D@Handle, EXCEPTINFO_INFO, Exception_AV
+            Mov edx D$E.ExceptionInfo+4 ; inaccessible address
+            Mov ecx 4, edi AV_Address
+            Call IntToHex
+            Call 'User32.SetDlgItemTextA' D@hwnd, EXCEPTINFO_INFO, Exception_AV
         .EndIf
 
       ; If the exception can be continued hand to the SEH
-        call 'USER32.GetDlgItem' D@Handle, 2
-        mov edx D$ExceptionFlags | and edx E_MUSTEXIT
+        Call 'USER32.GetDlgItem' D@hwnd, 2
+        Mov edx D$ExceptionFlags | and edx E_MUSTEXIT
         If edx <> 0
-            mov edx 0
+            Mov edx 0
         Else
-            mov edx 1
+            Mov edx 1
         EndIf
-        call 'USER32.EnableWindow' eax, edx
+        Call 'USER32.EnableWindow' eax, edx
 
-        call 'USER32.GetDlgItem' D@Handle, 1
-        call 'USER32.SetFocus' eax
-        mov eax 0
+        Call 'USER32.GetDlgItem' D@hwnd, 1
+        Call 'USER32.SetFocus' eax
+        Mov eax 0
 
-    ..Else_if D@Message = &WM_CTLCOLORSTATIC
-        call 'USER32.GetDlgItem' D@Handle, EXCEPTINFO_DESC
+    ..Else_if D@msg = &WM_CTLCOLORSTATIC
+        Call 'USER32.GetDlgItem' D@hwnd, EXCEPTINFO_DESC
         If eax = D@lParam
-            call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
-            mov eax D$DialogsBackGroundBrushHandle
+            Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
+            Mov eax D$DialogsBackGroundBrushHandle
             ExitP
         EndIf
-        call 'USER32.GetDlgItem' D@Handle, EXCEPTINFO_INSTRUCTION
+        Call 'USER32.GetDlgItem' D@hwnd, EXCEPTINFO_INSTRUCTION
         If eax = D@lParam
-            call 'GDI32.SetTextColor' D@wParam, 099
-            call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
-            mov eax D$DialogsBackGroundBrushHandle
+            Call 'GDI32.SetTextColor' D@wParam, 099
+            Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
+            Mov eax D$DialogsBackGroundBrushHandle
             ExitP
         EndIf
-        call 'USER32.GetDlgItem' D@Handle, EXCEPTINFO_ADDRESS
+        Call 'USER32.GetDlgItem' D@hwnd, EXCEPTINFO_ADDRESS
         If eax = D@lParam
-            call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
-            mov eax D$DialogsBackGroundBrushHandle
+            Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
+            Mov eax D$DialogsBackGroundBrushHandle
             ExitP
         EndIf
-        mov eax 0
+        Mov eax 0
 
-    ..Else_if D@Message = &WM_COMMAND
+    ..Else_if D@msg = &WM_COMMAND
         .If D@wParam = 1
-            call 'USER32.EndDialog' D@Handle, 0
-            mov B$TerminateDebuggee &TRUE
-            call DebugDialog_ContinueDebuggee
+            Call 'USER32.EndDialog' D@hwnd, 0
+            Mov B$TerminateDebuggee &TRUE
+            Call DebugDialog_ContinueDebuggee
             ;SendMessage D$DebugDialogHandle, &WM_CLOSE, 0, 0
         .ElseIf D@wParam = 2
-            call 'USER32.EndDialog' D@Handle, 0
-            call DebugDialog_ContinueDebuggee
+            Call 'USER32.EndDialog' D@hwnd, 0
+            Call DebugDialog_ContinueDebuggee
         .EndIf
-        mov eax 0
+        Mov eax 0
 
-    ..Else_if D@Message = &WM_CLOSE
-        call 'User32.EndDialog' D@Handle, 0
-        mov eax 0
+    ..Else_if D@msg = &WM_CLOSE
+        Call 'User32.EndDialog' D@hwnd, 0
+        Mov eax 0
     ..Else
-        mov eax &FALSE
+        Mov eax &FALSE
     ..EndIf
 EndP
 
@@ -4970,66 +4970,66 @@ Proc DataView_OnDrawItem:
     Arguments @DrawItemStruc
     Local @Brush @Address @Selected
 
-    mov ebx D@DrawItemStruc
-    call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0
+    Mov ebx D@DrawItemStruc
+    Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0
 
-    mov D@Selected 0
+    Mov D@Selected 0
     test D$ebx+DRAWITEM_ITEMSTATE &ODS_SELECTED
     setz al
     xor al 1
-    mov B@Selected al
+    Mov B@Selected al
 
   ; Print Offset
-    mov edx D$DebugFontCharWidth | shl edx 3 | add edx PADDING ; 8 chars
-    mov eax D$ebx+DRAWITEM_RCITEM_LEFT | mov D$ItemRect@x1 eax
-    add eax edx | mov D$ItemRect@x2 eax
+    Mov edx D$DebugFontCharWidth | shl edx 3 | add edx PADDING ; 8 chars
+    Mov eax D$ebx+DRAWITEM_RCITEM_LEFT | Mov D$ItemRect@x1 eax
+    add eax edx | Mov D$ItemRect@x2 eax
     move D$ItemRect@y1 D$ebx+DRAWITEM_RCITEM_TOP
     move D$ItemRect@y2 D$ebx+DRAWITEM_RCITEM_BOTTOM
 
-    mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
-    On B@Selected = 1, mov edi 2
-    call 'GDI32.CreateSolidBrush' D$BackgroundCol@Name+edi*4 | mov D@Brush eax
-    call 'USER32.FillRect' D$ebx+DRAWITEM_HDC ItemRect D@Brush
-    call 'GDI32.DeleteObject' D@Brush
-    call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC D$BackgroundCol@Name+edi*4
+    Mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
+    On B@Selected = 1, Mov edi 2
+    Call 'GDI32.CreateSolidBrush' D$BackgroundCol@Name+edi*4 | Mov D@Brush eax
+    Call 'USER32.FillRect' D$ebx+DRAWITEM_HDC ItemRect D@Brush
+    Call 'GDI32.DeleteObject' D@Brush
+    Call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC D$BackgroundCol@Name+edi*4
 
-    call IsWatchPoint D$ebx+DRAWITEM_ITEMDATA
+    Call IsWatchPoint D$ebx+DRAWITEM_ITEMDATA
     If eax = 1
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0CC
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0CC
     ElseIf eax = 3
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 066CC
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 066CC
     EndIf
 
-    mov eax D$ebx+DRAWITEM_ITEMDATA
-    call IntToHexString
-    call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, HexString, 8, ItemRect,
+    Mov eax D$ebx+DRAWITEM_ITEMDATA
+    Call IntToHexString
+    Call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, HexString, 8, ItemRect,
          (&DT_SINGLELINE+&DT_CENTER+&DT_VCENTER)
 
   ; Print value
     move D$ItemRect@x1 D$ItemRect@x2
     move D$ItemRect@x2 D$ebx+DRAWITEM_RCITEM_RIGHT
 
-    mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
-    On B@Selected = 1, mov edi 2
-    call 'GDI32.CreateSolidBrush' D$BackgroundCol@Value+edi*4 | mov D@Brush eax
-    call 'USER32.FillRect' D$ebx+DRAWITEM_HDC ItemRect D@Brush
-    call 'GDI32.DeleteObject' D@Brush
-    call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, D$BackgroundCol@Value+edi*4
+    Mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
+    On B@Selected = 1, Mov edi 2
+    Call 'GDI32.CreateSolidBrush' D$BackgroundCol@Value+edi*4 | Mov D@Brush eax
+    Call 'USER32.FillRect' D$ebx+DRAWITEM_HDC ItemRect D@Brush
+    Call 'GDI32.DeleteObject' D@Brush
+    Call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, D$BackgroundCol@Value+edi*4
 
     If B@Selected = 1
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0FF_FFFF
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0FF_FFFF
     EndIf
 
     SendMessage D$ebx+DRAWITEM_HWNDITEM, &CB_GETLBTEXT, D$ebx+DRAWITEM_ITEMID, ItemString
 
     add D$ItemRect@x1 5
-    call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, ItemString, 0-1, ItemRect,
+    Call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, ItemString, 0-1, ItemRect,
          (&DT_SINGLELINE+&DT_LEFT+&DT_VCENTER)
 
     ; Draw focus rect if selected
     If B@Selected = 1
         lea eax D$ebx+DRAWITEM_RCITEM_LEFT
-        call 'USER32.DrawFocusRect' D$ebx+DRAWITEM_HDC, eax
+        Call 'USER32.DrawFocusRect' D$ebx+DRAWITEM_HDC, eax
     EndIf
 EndP
 ____________________________________________________________________________________________
@@ -5038,121 +5038,121 @@ Proc DataView_OnDrawValueItem:
     Arguments @DrawItemStruc
     Local @Brush @Address @Selected
 
-    mov ebx D@DrawItemStruc
+    Mov ebx D@DrawItemStruc
     On D$ebx+DRAWITEM_ITEMID = 0-1, ExitP
 
-    call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0
+    Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, 0
 
-    mov D@Selected 0
+    Mov D@Selected 0
     test D$ebx+DRAWITEM_ITEMSTATE &ODS_SELECTED
     setz al
     xor al 1
-    mov B@Selected al
+    Mov B@Selected al
 
   ; Print size
-    mov edx D$DebugFontCharWidth | shl edx 3 | add edx PADDING ; 8 chars
-    mov eax D$ebx+DRAWITEM_RCITEM_LEFT | mov D$ItemRect@x1 eax
-    add eax edx | mov D$ItemRect@x2 eax
+    Mov edx D$DebugFontCharWidth | shl edx 3 | add edx PADDING ; 8 chars
+    Mov eax D$ebx+DRAWITEM_RCITEM_LEFT | Mov D$ItemRect@x1 eax
+    add eax edx | Mov D$ItemRect@x2 eax
     move D$ItemRect@y1 D$ebx+DRAWITEM_RCITEM_TOP
     move D$ItemRect@y2 D$ebx+DRAWITEM_RCITEM_BOTTOM
 
-    mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
-    ;On B@Selected = 1, mov edi 2
-    call 'GDI32.CreateSolidBrush' D$BackgroundCol@Name+edi*4 | mov D@Brush eax
-    call 'USER32.FillRect' D$ebx+DRAWITEM_HDC ItemRect D@Brush
-    call 'GDI32.DeleteObject' D@Brush
-    call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC D$BackgroundCol@Name+edi*4
+    Mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
+    ;On B@Selected = 1, Mov edi 2
+    Call 'GDI32.CreateSolidBrush' D$BackgroundCol@Name+edi*4 | Mov D@Brush eax
+    Call 'USER32.FillRect' D$ebx+DRAWITEM_HDC ItemRect D@Brush
+    Call 'GDI32.DeleteObject' D@Brush
+    Call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC D$BackgroundCol@Name+edi*4
 
-    mov eax D$ebx+DRAWITEM_ITEMDATA
+    Mov eax D$ebx+DRAWITEM_ITEMDATA
     If al = 'D'
-        mov eax {'32bit' 0}
+        Mov eax {'32bit' 0}
     ElseIf al = 'W'
-        mov eax {'16bit' 0}
+        Mov eax {'16bit' 0}
     ElseIf al = 'B'
-        mov eax {'8bit' 0}
+        Mov eax {'8bit' 0}
     ElseIf al = 'S'
-        mov eax {'ASCII' 0}
+        Mov eax {'ASCII' 0}
     ElseIf al = 'F'
-        mov eax {'32bit FP' 0}
+        Mov eax {'32bit FP' 0}
     ElseIf al = 'R'
-        mov eax {'64bit FP' 0}
+        Mov eax {'64bit FP' 0}
     ElseIf al = 'T'
-        mov eax {'80bit FP' 0}
+        Mov eax {'80bit FP' 0}
     EndIf
-    call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, eax, -1, ItemRect, (&DT_SINGLELINE+&DT_CENTER+&DT_VCENTER)
+    Call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, eax, -1, ItemRect, (&DT_SINGLELINE+&DT_CENTER+&DT_VCENTER)
 
   ; Print value
     move D$ItemRect@x1 D$ItemRect@x2
     move D$ItemRect@x2 D$ebx+DRAWITEM_RCITEM_RIGHT
 
-    mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
-    ;On B@Selected = 1, mov edi 2
-    call 'GDI32.CreateSolidBrush' D$BackgroundCol@Value+edi*4 | mov D@Brush eax
-    call 'USER32.FillRect' D$ebx+DRAWITEM_HDC ItemRect D@Brush
-    call 'GDI32.DeleteObject' D@Brush
-    call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC D$BackgroundCol@Value+edi*4
+    Mov edi D$ebx+DRAWITEM_ITEMID | and edi 1
+    ;On B@Selected = 1, Mov edi 2
+    Call 'GDI32.CreateSolidBrush' D$BackgroundCol@Value+edi*4 | Mov D@Brush eax
+    Call 'USER32.FillRect' D$ebx+DRAWITEM_HDC ItemRect D@Brush
+    Call 'GDI32.DeleteObject' D@Brush
+    Call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC D$BackgroundCol@Value+edi*4
 
-    mov B$HexSeparator 3
+    Mov B$HexSeparator 3
 
-    mov eax D$ebx+DRAWITEM_ITEMDATA, esi DataBuffer
+    Mov eax D$ebx+DRAWITEM_ITEMDATA, esi DataBuffer
     If al = 'D'
-        mov ecx 4 | call toHex
-        sub edi 2 | mov W$edi '0x'
+        Mov ecx 4 | Call toHex
+        sub edi 2 | Mov W$edi '0x'
     ElseIf al = 'W'
-        mov ecx 2 | call toHex
-        sub edi 2 | mov W$edi '0x'
+        Mov ecx 2 | Call toHex
+        sub edi 2 | Mov W$edi '0x'
     ElseIf al = 'B'
-        mov ecx 1 | call toHex
-        sub edi 2 | mov W$edi '0x'
+        Mov ecx 1 | Call toHex
+        sub edi 2 | Mov W$edi '0x'
     ElseIf al = 'S'
-        mov edi DataBuffer
+        Mov edi DataBuffer
     ElseIf al = 'F'
-        mov ecx 4 | call toFloat
+        Mov ecx 4 | Call toFloat
     ElseIf al = 'R'
-        mov ecx 8 | call toDouble
+        Mov ecx 8 | Call toDouble
     ElseIf al = 'T'
-        mov ecx 10 | call toExtended
+        Mov ecx 10 | Call toExtended
     EndIf
 
     add D$ItemRect@x1 5
-    call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, edi, 0-1, ItemRect,
+    Call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, edi, 0-1, ItemRect,
          (&DT_SINGLELINE+&DT_LEFT+&DT_VCENTER)
 
-    mov eax D$ItemRect@x2 | sub eax D$ItemRect@x1
-    mov edx 0, ecx 3 | div ecx
+    Mov eax D$ItemRect@x2 | sub eax D$ItemRect@x1
+    Mov edx 0, ecx 3 | div ecx
     push eax
         add D$ItemRect@x1 eax
 
-        mov eax D$ebx+DRAWITEM_ITEMDATA, esi DataBuffer
+        Mov eax D$ebx+DRAWITEM_ITEMDATA, esi DataBuffer
         If al = 'D'
-            mov ecx 4 | call toUDWord
+            Mov ecx 4 | Call toUDWord
         ElseIf al = 'W'
-            mov ecx 2 | call toUWord
+            Mov ecx 2 | Call toUWord
         ElseIf al = 'B'
-            mov ecx 1 | call toUByte
+            Mov ecx 1 | Call toUByte
         Else
             pop eax | jmp L0>
         EndIf
-        call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, edi, 0-1, ItemRect, (&DT_SINGLELINE+&DT_LEFT+&DT_VCENTER)
+        Call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, edi, 0-1, ItemRect, (&DT_SINGLELINE+&DT_LEFT+&DT_VCENTER)
     pop eax
     add D$ItemRect@x1 eax
 
-    mov eax D$ebx+DRAWITEM_ITEMDATA, esi DataBuffer
+    Mov eax D$ebx+DRAWITEM_ITEMDATA, esi DataBuffer
     If al = 'D'
-        mov ecx 4 | call toSDWord
+        Mov ecx 4 | Call toSDWord
     ElseIf al = 'W'
-        mov ecx 2 | call toSWord
+        Mov ecx 2 | Call toSWord
     ElseIf al = 'B'
-        mov ecx 1 | call toSByte
+        Mov ecx 1 | Call toSByte
     Else
         pop eax | jmp L0>
     EndIf
-    call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, edi, 0-1, ItemRect, (&DT_SINGLELINE+&DT_LEFT+&DT_VCENTER)
+    Call 'User32.DrawTextA' D$ebx+DRAWITEM_HDC, edi, 0-1, ItemRect, (&DT_SINGLELINE+&DT_LEFT+&DT_VCENTER)
 
     ; Draw focus rect if selected
 L0: If B@Selected = 1
         lea eax D$ebx+DRAWITEM_RCITEM_LEFT
-        call 'USER32.DrawFocusRect' D$ebx+DRAWITEM_HDC, eax
+        Call 'USER32.DrawFocusRect' D$ebx+DRAWITEM_HDC, eax
     EndIf
 EndP
 ____________________________________________________________________________________________
@@ -5163,7 +5163,7 @@ Proc DataView_InsertDataLabel:
     Arguments @ComboHandle, @Name, @Address
     Uses ebx
 
-    mov ebx 0
+    Mov ebx 0
 
 L0: SendMessage D@ComboHandle, &CB_GETITEMDATA, ebx, 0
     cmp eax &CB_ERR | je L1> ; EOL or highest address > append
@@ -5187,28 +5187,28 @@ Proc DataView_FillDataLabelCombo:
     SendMessage D@ComboHandle, &CB_RESETCONTENT, 0, 0
     move D$DataLabelComboHandle D@ComboHandle
 
-    mov esi D$PlainLabelList
-    lodsd | mov edx D$PlainLabelList | add edx eax
+    Mov esi D$PlainLabelList
+    lodsd | Mov edx D$PlainLabelList | add edx eax
 
 L0: inc esi ; '|'
 
-L0: mov ebx esi
+L0: Mov ebx esi
     While B$esi <> 2
         inc esi
     End_While
     test B$esi+5 DataLabelFlag | jz L2>
 
-        mov edi ItemString, esi ebx
+        Mov edi ItemString, esi ebx
         While B$esi <> 2
             movsb
         End_While
-        mov B$edi 0
+        Mov B$edi 0
         push edx
-            mov ebx D$esi+1 | add ebx D$DataAjust
+            Mov ebx D$esi+1 | add ebx D$DataAjust
             If D@SortByName = 1
                 SendMessage D@ComboHandle, &CB_ADDSTRING, 0, ItemString
             Else
-                call DataView_InsertDataLabel D@ComboHandle, ItemString, ebx
+                Call DataView_InsertDataLabel D@ComboHandle, ItemString, ebx
             EndIf
             SendMessage D@ComboHandle, &CB_SETITEMDATA, eax, ebx
         pop edx
@@ -5224,16 +5224,16 @@ Proc DataView_LoadSettings:
     Arguments @FileHandle @Size
 
   ; Copy label to stack
-    mov eax D@Size | add eax 4 | and eax 0_FFFF_FFFC ; reserve for \0 and dw-align stack
-    sub esp eax | mov edi esp
-    call 'KERNEL32.ReadFile' D@FileHandle, edi, D@Size, BytesTransfered, 0
-    mov ecx D@Size | mov B$edi+ecx 0 ; terminate string
+    Mov eax D@Size | add eax 4 | and eax 0_FFFF_FFFC ; reserve for \0 and dw-align stack
+    sub esp eax | Mov edi esp
+    Call 'KERNEL32.ReadFile' D@FileHandle, edi, D@Size, BytesTransfered, 0
+    Mov ecx D@Size | Mov B$edi+ecx 0 ; terminate string
 
   ; Search and select
     SendMessage D$DataLabelComboHandle, &CB_FINDSTRING, 0-1, edi
     SendMessage D$DataLabelComboHandle, &CB_SETCURSEL, eax, 0
 
-    mov eax 1
+    Mov eax 1
 EndP
 ____________________________________________________________________________________________
 
@@ -5241,22 +5241,22 @@ Proc DataView_SaveSettings:
     Arguments @FileHandle
     Structure @Settings 8, @Id 0, @Size 4
 
-    mov D@Id 'LaLa' ; LAst LAbel
+    Mov D@Id 'LaLa' ; LAst LAbel
 
   ; Get currently selected label
     SendMessage D$DataLabelComboHandle, &CB_GETCURSEL, 0, 0
     On eax = 0-1, ExitP
-    mov ebx eax
+    Mov ebx eax
     SendMessage D$DataLabelComboHandle, &CB_GETLBTEXTLEN, ebx, 0
-    mov D@Size eax
+    Mov D@Size eax
 
   ; Copy label to stack
     add eax 4 | and eax 0_FFFF_FFFC ; reserve for \0 and dw-align stack
-    sub esp eax | mov edi esp
+    sub esp eax | Mov edi esp
     SendMessage D$DataLabelComboHandle, &CB_GETLBTEXT, ebx, edi
 
-    call 'KERNEL32.WriteFile' D@FileHandle, D@Settings, 8, BytesTransfered, 0
-    call 'KERNEL32.WriteFile' D@FileHandle, edi, D@Size, BytesTransfered, 0
+    Call 'KERNEL32.WriteFile' D@FileHandle, D@Settings, 8, BytesTransfered, 0
+    Call 'KERNEL32.WriteFile' D@FileHandle, edi, D@Size, BytesTransfered, 0
 EndP
 ____________________________________________________________________________________________
 
@@ -5271,21 +5271,21 @@ Proc DataView_OnSelectDataLabel:
         SendMessage D@ComboHandle, &CB_GETCURSEL, 0, 0
         On eax = &CB_ERR, ExitP
         SendMessage D@ComboHandle, &CB_GETITEMDATA, eax, 0
-        mov D$DataPointer eax
+        Mov D$DataPointer eax
 
-        call 'USER32.GetDlgItem' D@DlgHandle, DATAVIEW_VALUE_LIST
-        mov D@ListHandle eax
+        Call 'USER32.GetDlgItem' D@DlgHandle, DATAVIEW_VALUE_LIST
+        Mov D@ListHandle eax
 
         SendMessage D@ListHandle, &LB_RESETCONTENT, 0, 0
 
         ; Read a block of memory with a max size of 64 byte
-        call IsProcessMemory D$DataPointer
+        Call IsProcessMemory D$DataPointer
         On eax = 0, ExitP
-        mov ebx 64
+        Mov ebx 64
         If eax < ebx
-            mov ebx eax
+            Mov ebx eax
         EndIf
-        call 'KERNEL32.ReadProcessMemory' D$PI.hProcess, D$DataPointer, DataBuffer, ebx, &NULL
+        Call 'KERNEL32.ReadProcessMemory' D$PI.hProcess, D$DataPointer, DataBuffer, ebx, &NULL
 
         ; DWord Size
         On ebx >= 4, SendMessage D@ListHandle, &LB_ADDSTRING, 0, 'D'
@@ -5294,9 +5294,9 @@ Proc DataView_OnSelectDataLabel:
         ; Byte size
         SendMessage D@ListHandle, &LB_ADDSTRING, 0, 'B'
         ; String
-        call IsString DataBuffer 64
+        Call IsString DataBuffer 64
         If ah = 1
-            mov B$DataBuffer+63 0
+            Mov B$DataBuffer+63 0
             SendMessage D@ListHandle, &LB_ADDSTRING, 0, 'S'
         EndIf
         ; Float
@@ -5307,24 +5307,24 @@ Proc DataView_OnSelectDataLabel:
         On ebx >= 10, SendMessage D@ListHandle, &LB_ADDSTRING, 0, 'T'
 
         ; Activate 'More' button
-        call 'USER32.GetDlgItem' D@DlgHandle, M03_SHOW_MEM
-        call 'USER32.EnableWindow' eax, &TRUE
+        Call 'USER32.GetDlgItem' D@DlgHandle, M03_SHOW_MEM
+        Call 'USER32.EnableWindow' eax, &TRUE
         ; Activate/Deactivate 'More From Pointer' button
         .If ebx >= 4
-            call IsProcessMemory D$DataBuffer
+            Call IsProcessMemory D$DataBuffer
             If eax > 0
-                mov ebx &TRUE
+                Mov ebx &TRUE
             Else
-                mov ebx &FALSE
+                Mov ebx &FALSE
             EndIf
-            call 'User32.GetDlgItem' D@DlgHandle, M03_SHOW_PMEM
-            call 'USER32.EnableWindow' eax, ebx
+            Call 'User32.GetDlgItem' D@DlgHandle, M03_SHOW_PMEM
+            Call 'USER32.EnableWindow' eax, ebx
             If ebx = &TRUE
-                mov eax &MF_ENABLED
+                Mov eax &MF_ENABLED
             Else
-                mov eax &MF_GRAYED
+                Mov eax &MF_GRAYED
             EndIf
-            call 'USER32.EnableMenuItem' D$DataView.PopupMenu, M03_SHOW_PMEM, eax
+            Call 'USER32.EnableMenuItem' D$DataView.PopupMenu, M03_SHOW_PMEM, eax
         .EndIf
 EndP
 ____________________________________________________________________________________________
@@ -5333,11 +5333,11 @@ Proc DataView_SelectSymbol:
     Arguments @DlgHandle, @Address
     Local @ComboHandle
 
-        call SelectTab D$DebugDialogHandle, DEBUGDLG_DATA_TAB, 0
-        call 'USER32.GetDlgItem' D@DlgHandle, DATAVIEW_LABEL_COMBO
-        mov D@ComboHandle eax
+        Call SelectTab D$DebugDialogHandle, DEBUGDLG_DATA_TAB, 0
+        Call 'USER32.GetDlgItem' D@DlgHandle, DATAVIEW_LABEL_COMBO
+        Mov D@ComboHandle eax
         SendMessage D@ComboHandle, &CB_GETCOUNT, 0, 0
-        mov edi eax, esi 0, ebx D@Address
+        Mov edi eax, esi 0, ebx D@Address
         While esi < edi
             SendMessage D@ComboHandle, &CB_GETITEMDATA, esi, 0
             If eax = ebx
@@ -5354,24 +5354,24 @@ Proc DataView_ShowDeclaration:
     Arguments @DlgHandle
     Local @ComboHandle, @LabelLen
 
-        call 'USER32.GetDlgItem' D@DlgHandle, DATAVIEW_LABEL_COMBO
-        mov D@ComboHandle eax
+        Call 'USER32.GetDlgItem' D@DlgHandle, DATAVIEW_LABEL_COMBO
+        Mov D@ComboHandle eax
 
         SendMessage D@ComboHandle, &CB_GETCURSEL, 0, 0
         On eax = &CB_ERR, ExitP
         SendMessage D@ComboHandle, &CB_GETLBTEXT, eax, ItemString
-        mov D@LabelLen eax
+        Mov D@LabelLen eax
 
-        call RestoreRealSource
+        Call RestoreRealSource
 
-        mov edx ItemString, ebx D@LabelLen
-        call InternSearch
+        Mov edx ItemString, ebx D@LabelLen
+        Call InternSearch
         If B$BlockInside = &TRUE
-            mov B$BlockInside &FALSE
-            mov esi D$CurrentWritingPos | dec esi | call InternalRightClick
+            Mov B$BlockInside &FALSE
+            Mov esi D$CurrentWritingPos | dec esi | Call InternalRightClick
         End_If
 
-        call SetPartialEditionFromPos
+        Call SetPartialEditionFromPos
 EndP
 ____________________________________________________________________________________________
 
@@ -5388,30 +5388,30 @@ ________________________________________________________________________________
 Proc DataView_CreatePopupMenu:
     Arguments @DlgHandle
 
-    call 'USER32.CreatePopupMenu' | mov ebx eax, D$DataView.PopupMenu eax
-    call AppendMenu ebx, &MF_OWNERDRAW, M03_SHOW_MEM, 0
-    call AppendMenu ebx, &MF_OWNERDRAW, M03_SHOW_PMEM, 0
-    call AppendMenu ebx, &MF_OWNERDRAW, M03_SHOW_DECL, 0
-    call AppendMenu ebx, &MF_SEPARATOR, 0, 0
-    call AppendMenu ebx, &MF_OWNERDRAW, M03_WATCH_W, 0
-    call AppendMenu ebx, &MF_OWNERDRAW, M03_WATCH_RW, 0
-    call AppendMenu ebx, &MF_SEPARATOR, 0, 0
-    call AppendMenu ebx, &MF_OWNERDRAW, M03_SORTBYNAME, 0
-    call AppendMenu ebx, &MF_OWNERDRAW, M03_SORTBYADDRESS, 0
+    Call 'USER32.CreatePopupMenu' | Mov ebx eax, D$DataView.PopupMenu eax
+    Call AppendMenu ebx, &MF_OWNERDRAW, M03_SHOW_MEM, 0
+    Call AppendMenu ebx, &MF_OWNERDRAW, M03_SHOW_PMEM, 0
+    Call AppendMenu ebx, &MF_OWNERDRAW, M03_SHOW_DECL, 0
+    Call AppendMenu ebx, &MF_SEPARATOR, 0, 0
+    Call AppendMenu ebx, &MF_OWNERDRAW, M03_WATCH_W, 0
+    Call AppendMenu ebx, &MF_OWNERDRAW, M03_WATCH_RW, 0
+    Call AppendMenu ebx, &MF_SEPARATOR, 0, 0
+    Call AppendMenu ebx, &MF_OWNERDRAW, M03_SORTBYNAME, 0
+    Call AppendMenu ebx, &MF_OWNERDRAW, M03_SORTBYADDRESS, 0
 
-    call 'USER32.CheckMenuRadioItem' D$DataView.PopupMenu, M03_SORTBYNAME, M03_SORTBYADDRESS,
+    Call 'USER32.CheckMenuRadioItem' D$DataView.PopupMenu, M03_SORTBYNAME, M03_SORTBYADDRESS,
         M03_SORTBYNAME, &MF_BYCOMMAND
 EndP
 ____________________________________________________________________________________________
 
 Proc DataView_UpdatePopupMenu:
-    call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_RW, &MF_UNCHECKED
-    call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_W, &MF_UNCHECKED
-    call IsWatchPoint D$DataPointer
+    Call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_RW, &MF_UNCHECKED
+    Call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_W, &MF_UNCHECKED
+    Call IsWatchPoint D$DataPointer
     If eax = 0011
-        call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_RW, &MF_CHECKED
+        Call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_RW, &MF_CHECKED
     ElseIf eax = 1
-        call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_W, &MF_CHECKED
+        Call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_W, &MF_CHECKED
     EndIf
 EndP
 ____________________________________________________________________________________________
@@ -5422,79 +5422,79 @@ Proc DebugDialog_OnDrawMenuItem:
     Arguments @DrawItemStruc
     Local @Brush
 
-    mov ebx D@DrawItemStruc
+    Mov ebx D@DrawItemStruc
 
-    mov esi DebugMenuTable
-    lodsd | mov ecx eax ; number of entries
-    mov eax D$ebx+DRAWITEM_ITEMID
+    Mov esi DebugMenuTable
+    lodsd | Mov ecx eax ; number of entries
+    Mov eax D$ebx+DRAWITEM_ITEMID
     While D$esi <> eax
         add esi 16
         dec ecx | jz L9>>
     EndWhile
 
-    call 'GDI32.SelectObject' D$ebx+DRAWITEM_HDC, D$DialogFont_handle
+    Call 'GDI32.SelectObject' D$ebx+DRAWITEM_HDC, D$DialogFont_handle
     push eax
 
     Test_If D$ebx+DRAWITEM_ITEMSTATE &ODS_GRAYED
-        call 'USER32.GetSysColor' &COLOR_GRAYTEXT
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
+        Call 'USER32.GetSysColor' &COLOR_GRAYTEXT
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
         jmp L1>
     Test_Else_If D$ebx+DRAWITEM_ITEMSTATE &ODS_SELECTED
-        call 'USER32.GetSysColor' &COLOR_MENUTEXT
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
+        Call 'USER32.GetSysColor' &COLOR_MENUTEXT
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
 
-        call 'USER32.GetSysColor' &COLOR_HIGHLIGHTTEXT
-        call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, eax
+        Call 'USER32.GetSysColor' &COLOR_HIGHLIGHTTEXT
+        Call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, eax
 
-        call 'USER32.GetSysColorBrush' &COLOR_HIGHLIGHTTEXT
+        Call 'USER32.GetSysColorBrush' &COLOR_HIGHLIGHTTEXT
     Test_Else
-        call 'USER32.GetSysColor' &COLOR_MENUTEXT
-        call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
+        Call 'USER32.GetSysColor' &COLOR_MENUTEXT
+        Call 'GDI32.SetTextColor' D$ebx+DRAWITEM_HDC, eax
 
-L1:     call 'USER32.GetSysColor' &COLOR_MENU
-        call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, eax
+L1:     Call 'USER32.GetSysColor' &COLOR_MENU
+        Call 'GDI32.SetBkColor' D$ebx+DRAWITEM_HDC, eax
 
-        call 'USER32.GetSysColorBrush' &COLOR_MENU
+        Call 'USER32.GetSysColorBrush' &COLOR_MENU
     Test_End
 
     lea edx D$ebx+DRAWITEM_RCITEM_LEFT
-    call 'USER32.FillRect' D$ebx+DRAWITEM_HDC, edx, eax
+    Call 'USER32.FillRect' D$ebx+DRAWITEM_HDC, edx, eax
 
-    mov eax D$esi+12 ; image index
+    Mov eax D$esi+12 ; image index
     If eax <> 0-1
-        mov ecx D$ebx+DRAWITEM_RCITEM_LEFT | add ecx 2
-        mov edx D$ebx+DRAWITEM_RCITEM_TOP  | add edx 2
+        Mov ecx D$ebx+DRAWITEM_RCITEM_LEFT | add ecx 2
+        Mov edx D$ebx+DRAWITEM_RCITEM_TOP  | add edx 2
         Test_If D$ebx+DRAWITEM_ITEMSTATE &ODS_GRAYED
-            mov edi &ILD_MASK
+            Mov edi &ILD_MASK
         Test_Else_If D$ebx+DRAWITEM_ITEMSTATE &ODS_SELECTED
-            mov edi &ILD_NORMAL
+            Mov edi &ILD_NORMAL
         Test_Else
-            mov edi &ILD_TRANSPARENT
+            Mov edi &ILD_TRANSPARENT
         Test_End
 
         Test_If D$ebx+DRAWITEM_ITEMSTATE &ODS_CHECKED
-            mov eax 6
+            Mov eax 6
         Test_End
 
-L0:     call 'COMCTL32.ImageList_Draw' D$DebugDialog_ImageList, eax, D$ebx+DRAWITEM_HDC, ecx, edx, edi
+L0:     Call 'COMCTL32.ImageList_Draw' D$DebugDialog_ImageList, eax, D$ebx+DRAWITEM_HDC, ecx, edx, edi
     EndIf
 
     add D$ebx+DRAWITEM_RCITEM_LEFT 22
 
-    mov eax D$esi+4
-    call DrawMenuItemText D$eax, &DT_LEFT
+    Mov eax D$esi+4
+    Call DrawMenuItemText D$eax, &DT_LEFT
 
-    mov eax D$esi+8
+    Mov eax D$esi+8
     If eax <> 0
       ; Draw shortcut rightaligned
         dec D$ebx+DRAWITEM_RCITEM_RIGHT
-        call DrawMenuItemTextA eax, &DT_RIGHT
+        Call DrawMenuItemTextA eax, &DT_RIGHT
     EndIf
 
     pop eax
-    call 'GDI32.SelectObject' D$ebx+DRAWITEM_HDC, eax
+    Call 'GDI32.SelectObject' D$ebx+DRAWITEM_HDC, eax
 
-L9: mov eax 1
+L9: Mov eax 1
 EndP
 ;;
 ____________________________________________________________________________________________
@@ -5507,29 +5507,29 @@ ________________________________________________________________________________
 [ComboChildClass: B$ ? #32]
 
 Proc EnumComboChilds:
-    Arguments @Handle, @Param
+    Arguments @hwnd, @Param
     Uses esi, edi
 
-    call 'User32.GetClassNameA' D@Handle, ComboChildClass, 32
-    mov edi ComboListClass, esi ComboChildClass, ecx eax
+    Call 'User32.GetClassNameA' D@hwnd, ComboChildClass, 32
+    Mov edi ComboListClass, esi ComboChildClass, ecx eax
     repe cmpsb | je L1>
-    mov eax 1 | ExitP ; continue search
+    Mov eax 1 | ExitP ; continue search
 
   ; Listbox of the combo
-L1: call 'User32.SetWindowLongA' D@Handle, &GWL_WNDPROC, DataView_InterceptRightClick
-    mov D$DataView.LBProc eax
-    mov eax 0 ; finish search
+L1: Call 'User32.SetWindowLongA' D@hwnd, &GWL_WNDPROC, DataView_InterceptRightClick
+    Mov D$DataView.LBProc eax
+    Mov eax 0 ; finish search
 EndP
 ____________________________________________________________________________________________
 
 Proc DataView_OverrideComboProc:
     Arguments @DlgHandle
 
-    mov D$DataView.LBProc 0
-    call 'USER32.GetDlgItem' D@DlgHandle, DATAVIEW_LABEL_COMBO | mov ebx eax
-    call 'USER32.EnumChildWindows' ebx, EnumComboChilds, 0
+    Mov D$DataView.LBProc 0
+    Call 'USER32.GetDlgItem' D@DlgHandle, DATAVIEW_LABEL_COMBO | Mov ebx eax
+    Call 'USER32.EnumChildWindows' ebx, EnumComboChilds, 0
     If D$DataView.LBProc = 0
-        call 'User32.MessageBoxA' 0,
+        Call 'User32.MessageBoxA' 0,
             {'Listbox not found in combo! Please report this problem and your OS version on the board.' 0},
             {'EnumChildWindows' 0}, &MB_OK+&MB_ICONWARNING
     EndIf
@@ -5538,51 +5538,51 @@ EndP
 [DataView.LBProc: ?]
 
 Proc DataView_InterceptRightClick:
-    Arguments @Handle, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
     Uses ebx esi edi
 
-    If D@Message = &WM_RBUTTONDOWN
+    If D@msg = &WM_RBUTTONDOWN
       ; Simulate left click (select item) before showing the popup menu
-        SendMessage D@Handle, &WM_LBUTTONDOWN, D@wParam, D@lParam
-        SendMessage D@Handle, &WM_LBUTTONUP, D@wParam, D@lParam
+        SendMessage D@hwnd, &WM_LBUTTONDOWN, D@wParam, D@lParam
+        SendMessage D@hwnd, &WM_LBUTTONUP, D@wParam, D@lParam
       ; Show the popup menu at the position of the mouse-click
         movzx eax W@lParam
         movzx ecx W@lParam+2
-        mov D$PointX eax, D$PointY ecx
-        call 'USER32.ClientToScreen' D@Handle, Point
-        call 'USER32.TrackPopupMenu' D$DataView.PopupMenu, &TPM_LEFTALIGN, D$PointX, D$PointY, 0, D$DataViewHandle, 0
-    ElseIf D@Message = &WM_LBUTTONDBLCLK
+        Mov D$PointX eax, D$PointY ecx
+        Call 'USER32.ClientToScreen' D@hwnd, Point
+        Call 'USER32.TrackPopupMenu' D$DataView.PopupMenu, &TPM_LEFTALIGN, D$PointX, D$PointY, 0, D$DataViewHandle, 0
+    ElseIf D@msg = &WM_LBUTTONDBLCLK
       ; Show more
-        mov eax D$DataPointer | and eax 0_FFFF_F000
+        Mov eax D$DataPointer | and eax 0_FFFF_F000
         SendMessage D$MemoryInspectorHandle, WM_SET_PAGE, eax, D$DataPointer
     EndIf
-    call 'User32.CallWindowProcA' D$DataView.LBProc, D@Handle, D@Message, D@wParam, D@lParam
+    Call 'User32.CallWindowProcA' D$DataView.LBProc, D@hwnd, D@msg, D@wParam, D@lParam
 EndP
 ____________________________________________________________________________________________
 
 ; Process WM_INITDIALOG message.
 
 Proc DataViewDialog_OnCreate:
-    Arguments @Handle
+    Arguments @hwnd
 
-        call 'USER32.GetClientRect' D@Handle, DebugRect
+        Call 'USER32.GetClientRect' D@hwnd, DebugRect
         move W$DataView.Width W$DebugRect@width
         move W$DataView.Height W$DebugRect@height
 
-        call 'USER32.GetDlgItem' D@Handle, DATAVIEW_LABEL_COMBO
-        call DataView_FillDataLabelCombo eax 1
+        Call 'USER32.GetDlgItem' D@hwnd, DATAVIEW_LABEL_COMBO
+        Call DataView_FillDataLabelCombo eax 1
 
-        call DataView_CreatePopupMenu D@Handle
-        call DataView_OverrideComboProc D@Handle
+        Call DataView_CreatePopupMenu D@hwnd
+        Call DataView_OverrideComboProc D@hwnd
 
-        mov eax &TRUE
+        Mov eax &TRUE
 EndP
 ____________________________________________________________________________________________
 
 ; Process WM_SIZE message.
 
 Proc DataViewDialog_OnSize:
-    Arguments @Handle, @WidthHeight
+    Arguments @hwnd, @WidthHeight
 
         movzx eax W$DataView.Width
         movzx esi W@WidthHeight
@@ -5590,74 +5590,74 @@ Proc DataViewDialog_OnSize:
         movzx eax W$DataView.Height
         movzx edi W@WidthHeight+2
         sub edi eax
-        call AdjustControlSize D@Handle, DATAVIEW_LABEL_COMBO, esi, edi
-        call AdjustControlSize D@Handle, DATAVIEW_VALUE_LIST, esi, 0
-        call AdjustControlPos D@Handle, DATAVIEW_VALUE_LIST, 0, edi
-        call 'USER32.InvalidateRect' D@Handle, &NULL, &TRUE
+        Call AdjustControlSize D@hwnd, DATAVIEW_LABEL_COMBO, esi, edi
+        Call AdjustControlSize D@hwnd, DATAVIEW_VALUE_LIST, esi, 0
+        Call AdjustControlPos D@hwnd, DATAVIEW_VALUE_LIST, 0, edi
+        Call 'USER32.InvalidateRect' D@hwnd, &NULL, &TRUE
 
         move D$DataViewSize D@WidthHeight
-        mov eax 0
+        Mov eax 0
 EndP
 ____________________________________________________________________________________________
 
 ; Process WM_COMMAND message.
 
 Proc DataViewDialog_OnCommand:
-    Arguments @Handle, @wParam, @lParam
+    Arguments @hwnd, @wParam, @lParam
 
         movzx ecx W@wParam
         movzx eax W@wParam+2
         .If ecx = DATAVIEW_LABEL_COMBO
             If eax = &CBN_SELCHANGE
-                call DataView_OnSelectDataLabel D@Handle, D@lParam
-                call DataView_UpdatePopupMenu
+                Call DataView_OnSelectDataLabel D@hwnd, D@lParam
+                Call DataView_UpdatePopupMenu
             EndIf
         .ElseIf ecx = M03_SHOW_MEM
-            mov eax D$DataPointer
+            Mov eax D$DataPointer
             and eax 0_FFFF_F000
             SendMessage D$MemoryInspectorHandle, WM_SET_PAGE, eax, D$DataPointer
         .ElseIf ecx = M03_SHOW_PMEM
-            mov eax D$DataBuffer
+            Mov eax D$DataBuffer
             and eax 0_FFFF_F000
             SendMessage D$MemoryInspectorHandle, WM_SET_PAGE, eax, D$DataBuffer
         .ElseIf ecx = M03_SHOW_DECL
-            call DataView_ShowDeclaration D@Handle
+            Call DataView_ShowDeclaration D@hwnd
         .ElseIf ecx = M03_WATCH_W
-            call 'USER32.GetMenuState' D$DataView.PopupMenu, M03_WATCH_W, 0
+            Call 'USER32.GetMenuState' D$DataView.PopupMenu, M03_WATCH_W, 0
             and eax &MF_CHECKED
             If eax = 0
-                call SetWatchPoint D$DataPointer, 4, 1
-                call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_W, &MF_CHECKED
+                Call SetWatchPoint D$DataPointer, 4, 1
+                Call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_W, &MF_CHECKED
             Else
-                call DeleteWatchPoint
-                call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_W, &MF_CHECKED
+                Call DeleteWatchPoint
+                Call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_W, &MF_CHECKED
             EndIf
-            call 'USER32.GetDlgItem' D@Handle, DATAVIEW_LABEL_COMBO
-            call 'USER32.InvalidateRect' eax, 0, &FALSE
+            Call 'USER32.GetDlgItem' D@hwnd, DATAVIEW_LABEL_COMBO
+            Call 'USER32.InvalidateRect' eax, 0, &FALSE
         .ElseIf ecx = M03_WATCH_RW
-            call 'USER32.GetMenuState' D$DataView.PopupMenu, M03_WATCH_RW, 0
+            Call 'USER32.GetMenuState' D$DataView.PopupMenu, M03_WATCH_RW, 0
             and eax &MF_CHECKED
             If eax = 0
-                call SetWatchPoint D$DataPointer, 4, 3
-                call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_RW, &MF_CHECKED
+                Call SetWatchPoint D$DataPointer, 4, 3
+                Call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_RW, &MF_CHECKED
             Else
-                call DeleteWatchPoint
-                call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_RW, &MF_CHECKED
+                Call DeleteWatchPoint
+                Call 'USER32.CheckMenuItem' D$DataView.PopupMenu, M03_WATCH_RW, &MF_CHECKED
             EndIf
-            call 'USER32.GetDlgItem' D@Handle, DATAVIEW_LABEL_COMBO
-            call 'USER32.InvalidateRect' eax, 0, &FALSE
+            Call 'USER32.GetDlgItem' D@hwnd, DATAVIEW_LABEL_COMBO
+            Call 'USER32.InvalidateRect' eax, 0, &FALSE
         .ElseIf ecx = M03_SORTBYNAME
-            call 'USER32.CheckMenuRadioItem' D$DataView.PopupMenu, M03_SORTBYNAME, M03_SORTBYADDRESS,
+            Call 'USER32.CheckMenuRadioItem' D$DataView.PopupMenu, M03_SORTBYNAME, M03_SORTBYADDRESS,
                                              M03_SORTBYNAME, &MF_BYCOMMAND
-            call DataView_FillDataLabelCombo D$DataLabelComboHandle 1
+            Call DataView_FillDataLabelCombo D$DataLabelComboHandle 1
 
         .ElseIf ecx = M03_SORTBYADDRESS
-            call 'USER32.CheckMenuRadioItem' D$DataView.PopupMenu, M03_SORTBYNAME, M03_SORTBYADDRESS,
+            Call 'USER32.CheckMenuRadioItem' D$DataView.PopupMenu, M03_SORTBYNAME, M03_SORTBYADDRESS,
                                              M03_SORTBYADDRESS, &MF_BYCOMMAND
-            call DataView_FillDataLabelCombo D$DataLabelComboHandle 0
+            Call DataView_FillDataLabelCombo D$DataLabelComboHandle 0
         .EndIf
 
-        mov eax 0
+        Mov eax 0
 EndP
 ____________________________________________________________________________________________
 
@@ -5671,54 +5671,54 @@ ________________________________________________________________________________
 ; Tag Dialog 1011
 
 Proc DataViewProc:
-    Arguments @Handle, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
     Uses ebx, esi, edi
 
-    .If D@Message = &WM_INITDIALOG
-        call DataViewDialog_OnCreate D@Handle
+    .If D@msg = &WM_INITDIALOG
+        Call DataViewDialog_OnCreate D@hwnd
 
-    .Else_If D@Message = &WM_SIZE
-        call DataViewDialog_OnSize D@Handle, D@lParam
+    .Else_If D@msg = &WM_SIZE
+        Call DataViewDialog_OnSize D@hwnd, D@lParam
 
-    .Else_If D@Message = &WM_COMMAND
-        call DataViewDialog_OnCommand D@Handle, D@wParam, D@lParam
+    .Else_If D@msg = &WM_COMMAND
+        Call DataViewDialog_OnCommand D@hwnd, D@wParam, D@lParam
 
-    .Else_if D@Message = WM_REFRESH_CONTENT
-        call 'USER32.GetDlgItem' D@Handle, DATAVIEW_LABEL_COMBO
-        call DataView_OnSelectDataLabel D@Handle, eax
+    .Else_if D@msg = WM_REFRESH_CONTENT
+        Call 'USER32.GetDlgItem' D@hwnd, DATAVIEW_LABEL_COMBO
+        Call DataView_OnSelectDataLabel D@hwnd, eax
 
-    .Else_if D@Message = WM_SELECT_SYMBOL
-        call DataView_SelectSymbol D@Handle, D@wParam
+    .Else_if D@msg = WM_SELECT_SYMBOL
+        Call DataView_SelectSymbol D@hwnd, D@wParam
 
-    .Else_if D@Message = &WM_SETFONT
-        call 'USER32.GetDlgItem' D@Handle, DATAVIEW_LABEL_COMBO
+    .Else_if D@msg = &WM_SETFONT
+        Call 'USER32.GetDlgItem' D@hwnd, DATAVIEW_LABEL_COMBO
         SendMessage eax, &WM_SETFONT, D@wParam, D@lParam
-        call 'USER32.GetDlgItem' D@Handle, DATAVIEW_VALUE_LIST
+        Call 'USER32.GetDlgItem' D@hwnd, DATAVIEW_VALUE_LIST
         SendMessage eax, &WM_SETFONT, D@wParam, D@lParam
 
-    .Else_if D@Message = &WM_DRAWITEM
+    .Else_if D@msg = &WM_DRAWITEM
         If D@wParam = 0
-            call DebugDialog_OnDrawMenuItem D@lParam
+            Call DebugDialog_OnDrawMenuItem D@lParam
         ElseIf D@wParam = DATAVIEW_LABEL_COMBO
-            call DataView_OnDrawItem D@lParam
+            Call DataView_OnDrawItem D@lParam
         Else
-            call DataView_OnDrawValueItem D@lParam
+            Call DataView_OnDrawValueItem D@lParam
         EndIf
-        mov eax &TRUE
+        Mov eax &TRUE
 
-    .Else_if D@Message = &WM_MEASUREITEM
-        mov eax D@lParam
+    .Else_if D@msg = &WM_MEASUREITEM
+        Mov eax D@lParam
         If D@wParam = 0
           ; menu
-            call DebugDialog_OnMeasureMenuItem D@lParam
+            Call DebugDialog_OnMeasureMenuItem D@lParam
         Else
           ; listbox
-            mov D$eax+16 15
+            Mov D$eax+16 15
         EndIf
-        mov eax &TRUE
+        Mov eax &TRUE
 
     .Else
-        mov eax &FALSE
+        Mov eax &FALSE
     .EndIf
 EndP
 
@@ -5734,35 +5734,35 @@ ________________________________________________________________________________
 [HexSeparator: ?]
 
 toHex:
-    mov edi StringBufTail
-    mov eax 0, B$edi 0
+    Mov edi StringBufTail
+    Mov eax 0, B$edi 0
 
 L0: lodsb
-    mov ah al | and ah 0F | shr al 4
+    Mov ah al | and ah 0F | shr al 4
 
     add ah '0'
     On ah > '9', add ah 7
-    dec edi | mov B$edi ah
+    dec edi | Mov B$edi ah
 
     add al '0'
     On al > '9', add al 7
-    dec edi | mov B$edi al
+    dec edi | Mov B$edi al
 
     dec ecx
     jecxz L1>
 
     test B$HexSeparator cl | jnz L0<
-    dec edi | mov B$edi ' '
+    dec edi | Mov B$edi ' '
 
     jmp L0<
 
 L1: ret
 
 toAscii:
-    mov edi StringBuf
+    Mov edi StringBuf
     rep movsb
-    mov B$edi 0
-    mov edi StringBuf
+    Mov B$edi 0
+    Mov edi StringBuf
 ret
 ____________________________________________________________________________________________
 
@@ -5775,27 +5775,27 @@ ________________________________________________________________________________
 ; Uses
 ;   eax, edx
 
-[DwordToHex | mov ecx 4 | mov edx #1 | call IntToHex]
-[WordToHex  | mov ecx 2 | mov  dx #1 | call IntToHex]
-[ByteToHex  | mov ecx 1 | mov  dl #1 | call IntToHex]
+[DwordToHex | Mov ecx 4 | Mov edx #1 | Call IntToHex]
+[WordToHex  | Mov ecx 2 | Mov  dx #1 | Call IntToHex]
+[ByteToHex  | Mov ecx 1 | Mov  dl #1 | Call IntToHex]
 
 IntToHex:
-    mov eax ecx | add eax eax
+    Mov eax ecx | add eax eax
     add edi eax
-    mov eax 0 ;, B$edi 0
+    Mov eax 0 ;, B$edi 0
 
     push edi
 
-L0:     mov al dl | shr edx 8
-        mov ah al | and ah 0F | shr al 4
+L0:     Mov al dl | shr edx 8
+        Mov ah al | and ah 0F | shr al 4
 
         add ah '0'
         On ah > '9', add ah 7
-        dec edi | mov B$edi ah
+        dec edi | Mov B$edi ah
 
         add al '0'
         On al > '9', add al 7
-        dec edi | mov B$edi al
+        dec edi | Mov B$edi al
 
         dec ecx | jnz L0<
 
@@ -5814,39 +5814,39 @@ ________________________________________________________________________________
 
 toSegHex:
     push edx
-        mov ecx 2, dx W$esi
-        mov esi edi
-        mov edi SegInfo
-        call IntToHex
+        Mov ecx 2, dx W$esi
+        Mov esi edi
+        Mov edi SegInfo
+        Call IntToHex
 
-        mov ecx 4, edx D$esi
-        mov edi SegInfo.Base
-        call IntToHex
+        Mov ecx 4, edx D$esi
+        Mov edi SegInfo.Base
+        Call IntToHex
 
-        mov ecx 4, edx D$esi+4
-        mov edi SegInfo.Limit
-        call IntToHex
+        Mov ecx 4, edx D$esi+4
+        Mov edi SegInfo.Limit
+        Call IntToHex
     pop edx
-    mov edi SegInfo
+    Mov edi SegInfo
 ret
 ____________________________________________________________________________________________
 
 Proc toBinary:
     Uses edx
 
-        mov edi StringBufTail, B$edi 0
+        Mov edi StringBufTail, B$edi 0
 
-L0:     mov dl 1
+L0:     Mov dl 1
         lodsb
 
-L1:     mov ah '0'
+L1:     Mov ah '0'
         test al dl | jz L2>
         inc ah
-L2:     dec edi | mov B$edi ah
+L2:     dec edi | Mov B$edi ah
         shl dl 1
         jnc L1<
 
-        dec edi | mov B$edi ' '
+        dec edi | Mov B$edi ' '
         loop L0<
         inc edi
 EndP
@@ -5855,23 +5855,23 @@ ________________________________________________________________________________
 Proc toSByte:
     Uses ebx, edx
 
-        mov edi StringBufTail, B$edi 0, ebx 10
+        Mov edi StringBufTail, B$edi 0, ebx 10
 
 L0:     lodsb
-        mov dl al
+        Mov dl al
         test dl 0_80 | jz L1>
         neg al
 
-L1:     mov ah 0
+L1:     Mov ah 0
         div bl
         add ah '0'
-        dec edi | mov B$edi ah
+        dec edi | Mov B$edi ah
         cmp al 0 | jnz L1<
 
         test dl 0_80 | jz L2>
-        dec edi | mov B$edi '-'
+        dec edi | Mov B$edi '-'
 
-L2:     dec edi | mov B$edi ' '
+L2:     dec edi | Mov B$edi ' '
         loop L0<
 
         inc edi
@@ -5880,17 +5880,17 @@ EndP
 Proc toUByte:
     Uses ebx
 
-        mov edi StringBufTail, B$edi 0, ebx 10
+        Mov edi StringBufTail, B$edi 0, ebx 10
 
 L0:     lodsb
 
-L1:     mov ah 0
+L1:     Mov ah 0
         div bl
         add ah '0'
-        dec edi | mov B$edi ah
+        dec edi | Mov B$edi ah
         cmp al 0 | jnz L1<
 
-        dec edi | mov B$edi ' '
+        dec edi | Mov B$edi ' '
         loop L0<
 
         inc edi
@@ -5900,7 +5900,7 @@ ________________________________________________________________________________
 Proc toSWord:
     Uses ebx, edx
 
-        mov edi StringBufTail, B$edi 0, ebx 10
+        Mov edi StringBufTail, B$edi 0, ebx 10
         shr ecx 1
 
 L0:     lodsw
@@ -5909,16 +5909,16 @@ L0:     lodsw
         neg ax
 
 L4:     movzx eax ax
-L1:     mov edx 0
+L1:     Mov edx 0
         div ebx
         add dl '0'
-        dec edi | mov B$edi dl
+        dec edi | Mov B$edi dl
         cmp eax 0 | jnz L1<
 
         test B$esi-1 0_80 | jz L2>
-        dec edi | mov B$edi '-'
+        dec edi | Mov B$edi '-'
 
-L2:     dec edi | mov B$edi ' '
+L2:     dec edi | Mov B$edi ' '
         loop L0<
 
         inc edi
@@ -5927,19 +5927,19 @@ EndP
 Proc toUWord:
     Uses ebx, edx
 
-        mov edi StringBufTail, B$edi 0, ebx 10
+        Mov edi StringBufTail, B$edi 0, ebx 10
         shr ecx 1
 
 L0:     lodsw
         movzx eax ax
 
-L1:     mov edx 0
+L1:     Mov edx 0
         div ebx
         add dl '0'
-        dec edi | mov B$edi dl
+        dec edi | Mov B$edi dl
         cmp eax 0 | jnz L1<
 
-        dec edi | mov B$edi ' '
+        dec edi | Mov B$edi ' '
         loop L0<
 
         inc edi
@@ -5949,7 +5949,7 @@ ________________________________________________________________________________
 Proc toSDword:
     Uses ebx, edx
 
-        mov edi StringBufTail, B$edi 0, ebx 10
+        Mov edi StringBufTail, B$edi 0, ebx 10
         shr ecx 2
 
 L0:     lodsd
@@ -5957,16 +5957,16 @@ L0:     lodsd
         test B$esi-1 0_80 | jz L1>
         neg eax
 
-L1:     mov edx 0
+L1:     Mov edx 0
         div ebx
         add dl '0'
-        dec edi | mov B$edi dl
+        dec edi | Mov B$edi dl
         cmp eax 0 | jnz L1<
 
         test B$esi-1 0_80 | jz L2>
-        dec edi | mov B$edi '-'
+        dec edi | Mov B$edi '-'
 
-L2:     dec edi | mov B$edi ' '
+L2:     dec edi | Mov B$edi ' '
         loop L0<
 
         inc edi
@@ -5975,18 +5975,18 @@ EndP
 Proc toUDword:
     Uses ebx, edx
 
-        mov edi StringBufTail, B$edi 0, ebx 10
+        Mov edi StringBufTail, B$edi 0, ebx 10
         shr ecx 2
 
 L0:     lodsd
 
-L1:     mov edx 0
+L1:     Mov edx 0
         div ebx
         add dl '0'
-        dec edi | mov B$edi dl
+        dec edi | Mov B$edi dl
         cmp eax 0 | jnz L1<
 
-        dec edi | mov B$edi ' '
+        dec edi | Mov B$edi ' '
         loop L0<
 
         inc edi
@@ -5997,39 +5997,39 @@ Proc toFloat:
     Uses edx
 
         shr ecx 2 | dec ecx
-        mov B$StringBuf 0, edx ecx
+        Mov B$StringBuf 0, edx ecx
 
 L0:     fld D$esi+edx*4 | fstp T$FloatBuf
-        mov edi StringBuf, al 0, ecx 255
+        Mov edi StringBuf, al 0, ecx 255
         repne scasb
-        mov B$edi-1 ' '
-        call FloatToUString FloatBuf edi
+        Mov B$edi-1 ' '
+        Call FloatToUString FloatBuf edi
 
         dec edx | jns L0<
 
-        mov edi StringBuf | inc edi
+        Mov edi StringBuf | inc edi
 EndP
 
 Proc toDouble:
     Uses edx
 
         shr ecx 3 | dec ecx
-        mov B$StringBuf 0, edx ecx
+        Mov B$StringBuf 0, edx ecx
 
 L0:     fld Q$esi+edx*8 | fstp T$FloatBuf
-        mov edi StringBuf, al 0, ecx 255
+        Mov edi StringBuf, al 0, ecx 255
         repne scasb
-        mov B$edi-1 ' '
-        call FloatToUString FloatBuf edi
+        Mov B$edi-1 ' '
+        Call FloatToUString FloatBuf edi
 
         dec edx | jns L0<
 
-        mov edi StringBuf | inc edi
+        Mov edi StringBuf | inc edi
 EndP
 
 toExtended:
-    mov edi StringBuf
-    call FloatToUString esi edi
+    Mov edi StringBuf
+    Call FloatToUString esi edi
 ret
 
 [StringBuf: B$ ? #255 StringBufTail: B$ ?]
@@ -6039,27 +6039,27 @@ ________________________________________________________________________________
 toHexWithAnsi:
     push esi, ecx
 L0:     lodsb
-        mov ah al | and ah 0F | shr al 4
+        Mov ah al | and ah 0F | shr al 4
         add al '0'
         On al > '9', add al 7
-        mov B$edi al | inc edi
+        Mov B$edi al | inc edi
         add ah '0'
         On ah > '9', add ah 7
-        mov B$edi ah | inc edi
-        mov B$edi ' ' | inc edi
+        Mov B$edi ah | inc edi
+        Mov B$edi ' ' | inc edi
         loop L0<
-        mov al '"' | stosb
+        Mov al '"' | stosb
     pop ecx, esi
 L0: lodsb
     If al < ' '
-        mov al '.'
+        Mov al '.'
     ElseIf al = '&'
         stosb
     EndIf
     stosb
     loop L0<
-    mov al '"' | stosb
-    mov B$edi 0
+    Mov al '"' | stosb
+    Mov B$edi 0
 ret
 ____________________________________________________________________________________________
 
@@ -6068,70 +6068,70 @@ ________________________________________________________________________________
 toHexWithCookedAnsi:
     push esi, ecx
 L0:     lodsb
-        mov ah al | and ah 0F | shr al 4
+        Mov ah al | and ah 0F | shr al 4
         add al '0'
         On al > '9', add al 7
-        mov B$edi al | inc edi
+        Mov B$edi al | inc edi
         add ah '0'
         On ah > '9', add ah 7
-        mov B$edi ah | inc edi
-        mov B$edi ' ' | inc edi
+        Mov B$edi ah | inc edi
+        Mov B$edi ' ' | inc edi
         loop L0<
-        mov al '"' | stosb
+        Mov al '"' | stosb
     pop ecx, esi
 
     xor eax eax
 
 L0: lodsb
-    On al < ' ', mov al B$InversedLowSigns+eax
+    On al < ' ', Mov al B$InversedLowSigns+eax
     and al 07F
     stosb
     On al = '&', stosb
     loop L0<
 
-    mov al '"' | stosb
-    mov B$edi 0
+    Mov al '"' | stosb
+    Mov B$edi 0
 ret
 
 ____________________________________________________________________________________________
 
 toHexDwords:
-    mov edx ecx
-L1:     mov ecx 4
+    Mov edx ecx
+L1:     Mov ecx 4
 L0:         lodsb
-            mov ah al | and ah 0F | shr al 4
+            Mov ah al | and ah 0F | shr al 4
             add ah '0'
             On ah > '9', add ah 7
-            mov B$edi+ecx*2-1 ah
+            Mov B$edi+ecx*2-1 ah
             add al '0'
             On al > '9', add al 7
-            mov B$edi+ecx*2-2 al
+            Mov B$edi+ecx*2-2 al
         loop L0<
-        mov B$edi+8 ' '
+        Mov B$edi+8 ' '
         add edi 9
         sub edx 4
     jnz L1<
-    mov B$edi-1 0
+    Mov B$edi-1 0
 ret
 ____________________________________________________________________________________________
 
 toHexWords:
-    mov edx ecx
-L1:     mov ecx 2
+    Mov edx ecx
+L1:     Mov ecx 2
 L0:         lodsb
-            mov ah al | and ah 0F | shr al 4
+            Mov ah al | and ah 0F | shr al 4
             add ah '0'
             On ah > '9', add ah 7
-            mov B$edi+ecx*2-1 ah
+            Mov B$edi+ecx*2-1 ah
             add al '0'
             On al > '9', add al 7
-            mov B$edi+ecx*2-2 al
+            Mov B$edi+ecx*2-2 al
         loop L0<
-        mov B$edi+4 ' '
+        Mov B$edi+4 ' '
         add edi 5
         sub edx 2
     jnz L1<
-    mov B$edi-1 0
+    Mov B$edi-1 0
 ret
 ____________________________________________________________________________________________
 
@@ -6139,19 +6139,19 @@ Proc toFloats:
     Uses edx
 
         shr ecx 2
-        mov edx ecx
-        mov ecx 0-1
+        Mov edx ecx
+        Mov ecx 0-1
 
         While edx > 0
             fld D$esi | fstp T$FloatBuf
-            call FloatToUString FloatBuf edi
+            Call FloatToUString FloatBuf edi
             add esi 4
-            mov al 0, ecx 255
+            Mov al 0, ecx 255
             repne scasb
-            mov B$edi-1 ' '
+            Mov B$edi-1 ' '
             dec edx
         EndWhile
-        mov B$edi-1 0
+        Mov B$edi-1 0
 EndP
 
 ____________________________________________________________________________________________
@@ -6170,40 +6170,40 @@ ________________________________________________________________________________
 
 InitMouseOverDataHints:
 ;;
-    call 'User32.CreateWindowExA' 0, StaticClassName, 0, &WS_POPUP+&SS_LEFT,
+    Call 'User32.CreateWindowExA' 0, StaticClassName, 0, &WS_POPUP+&SS_LEFT,
         &CW_USEDEFAULT, &CW_USEDEFAULT, 250, D$FontHeight,
-        D$hwnd, 0, D$hInstance, 0
+        D$H.MainWindow, 0, D$hInstance, 0
 
-    mov D$DataHintWinHandle eax, D$DataHintVisible 0
+    Mov D$DataHintWinHandle eax, D$DataHintVisible 0
     
     SendMessage D$DataHintWinHandle, &WM_SETFONT, D$DebugFontHandle, &TRUE
 ;;
-    call CreateNewForm_MouseHint
-    call 'USER32.SetTimer' 0, 2, 1000, MouseOverDataHint
-    mov D$MouseHintTimer eax
+    Call CreateNewForm_MouseHint
+    Call 'USER32.SetTimer' 0, 2, 1000, MouseOverDataHint
+    Mov D$MouseHintTimer eax
 ret
 
 DeleteMouseOverDataHints:
-    call 'USER32.KillTimer' 0, D$MouseHintTimer
-    mov D$MouseHintTimer 0
-    call 'USER32.DestroyWindow' D$MouseHintFormHandle
-    mov D$MouseHintFormHandle 0
+    Call 'USER32.KillTimer' 0, D$MouseHintTimer
+    Mov D$MouseHintTimer 0
+    Call 'USER32.DestroyWindow' D$MouseHintFormHandle
+    Mov D$MouseHintFormHandle 0
 ret
 
 Proc MouseOverDataHint:
-    Arguments @Handle, @Msg, @id, @Time
+    Arguments @hwnd, @Msg, @id, @Time
     Local @Column, @Row, @Size, @Address
     Uses ebx, esi, edi
 
     On D$IsDebugging = 0, jmp @Invalid
 
   ; Check if mouse is inside client space
-    call 'USER32.GetCursorPos' Point
-    call 'USER32.ScreenToClient' D$hwnd, Point
-    mov eax D$PointX
+    Call 'USER32.GetCursorPos' Point
+    Call 'USER32.ScreenToClient' D$H.MainWindow, Point
+    Mov eax D$PointX
     cmp eax D$RECTleft  | jl @Invalid
     cmp eax D$RECTright | jg @Invalid
-    mov edx D$PointY
+    Mov edx D$PointY
     cmp edx D$RECTtop    | jl @Invalid
     cmp edx D$RECTbottom | jg @Invalid
 
@@ -6211,38 +6211,38 @@ Proc MouseOverDataHint:
 
     move W$MousePosX ax, W$MousePosY dx
 
-    call SimpleMouseTextPos
+    Call SimpleMouseTextPos
 
-    mov D@Column eax, D@Row ebx
+    Mov D@Column eax, D@Row ebx
     push D$CaretRow
-        call SearchTxtPtr
+        Call SearchTxtPtr
     pop D$CaretRow
-    mov esi eax, ecx 0-1
+    Mov esi eax, ecx 0-1
 
-    call MouseHint@ScanForSeparator
+    Call MouseHint@ScanForSeparator
     On eax = 0-1, jmp @Invalid
     Do
-        call MouseHint@LookupEquates
+        Call MouseHint@LookupEquates
     Loop_Until ebx = 0
-    call MouseHint@Evaluate
+    Call MouseHint@Evaluate
     On eax = 0, jmp @Invalid
 
-    call RowToX D@Column | mov D$PointX eax
-    call LineToY D@Row   | add eax D$FontHeight
+    Call RowToX D@Column | Mov D$PointX eax
+    Call LineToY D@Row   | add eax D$FontHeight
     On B$ToolbarWanted = 1, add eax D$ToolBarPixelsHight
-    mov D$PointY eax
-    call 'USER32.ClientToScreen' D$hwnd, Point
+    Mov D$PointY eax
+    Call 'USER32.ClientToScreen' D$H.MainWindow, Point
 
-    call 'USER32.InvalidateRect' D$MouseHintFormHandle, 0, 1
-    call 'USER32.SetWindowPos' D$MouseHintFormHandle, 0, D$PointX, D$PointY, 0, 0, &SWP_NOSIZE+&SWP_SHOWWINDOW+&SWP_NOACTIVATE+&SWP_NOZORDER
+    Call 'USER32.InvalidateRect' D$MouseHintFormHandle, 0, 1
+    Call 'USER32.SetWindowPos' D$MouseHintFormHandle, 0, D$PointX, D$PointY, 0, 0, &SWP_NOSIZE+&SWP_SHOWWINDOW+&SWP_NOACTIVATE+&SWP_NOZORDER
 
-    mov D$MouseHintVisible 1
+    Mov D$MouseHintVisible 1
     ExitP
 
 @Invalid:
     If D$MouseHintVisible = 1
-        call 'USER32.SetWindowPos' D$MouseHintFormHandle, 0, 0, 0, 0, 0, &SWP_HIDEWINDOW+&SWP_NOMOVE+&SWP_NOSIZE+&SWP_NOACTIVATE+&SWP_NOZORDER
-        mov D$MouseHintVisible 0
+        Call 'USER32.SetWindowPos' D$MouseHintFormHandle, 0, 0, 0, 0, 0, &SWP_HIDEWINDOW+&SWP_NOMOVE+&SWP_NOSIZE+&SWP_NOACTIVATE+&SWP_NOZORDER
+        Mov D$MouseHintVisible 0
     EndIf
 EndP
 
@@ -6252,20 +6252,20 @@ ________________________________________________________________________________
 
 ; Tag Wizard Form "C:\projekte\RosAsm\Work\WizardFiles\WZRDForm0001.wwf"
 CreateNewForm_MouseHint:
-    call 'User32.RegisterClassExA' MouseHintFormClass
+    Call 'User32.RegisterClassExA' MouseHintFormClass
     imul eax D$FontHeight 4
-    call 'User32.CreateWindowExA',
+    Call 'User32.CreateWindowExA',
         &WS_EX_LEFT+&WS_EX_LTRREADING+&WS_EX_RIGHTSCROLLBAR,
         MouseHintFormClassName,
         0,
         &WS_BORDER+&WS_OVERLAPPED+&WS_POPUP,
         0, 0, 160, eax,
-        D$hwnd,
+        D$H.MainWindow,
         0,
         D$hInstance,
         0
-    mov D$MouseHintFormHandle eax
-    call 'User32.SendMessageA' D$MouseHintFormHandle, &WM_SETFONT, D$DebugFontHandle, &TRUE
+    Mov D$MouseHintFormHandle eax
+    Call 'User32.SendMessageA' D$MouseHintFormHandle, &WM_SETFONT, D$DebugFontHandle, &TRUE
 ret
 ____________________________________________________________________________________________
 [MouseHintFormClass:
@@ -6287,31 +6287,31 @@ ________________________________________________________________________________
 [MH_Rect: D$ ? #4]
 
 Proc MouseHintFormProc:
-    Arguments @handle @Message @wParam @lParam
+    Arguments @hwnd @msg @wParam @lParam
     Local @Brush
     Structure @PaintStruct 64 @hdc 0
     Uses esi, edi, ebx
 
-    .If D@Message = &WM_CREATE
-        mov eax 0
+    .If D@msg = &WM_CREATE
+        Mov eax 0
 
-    .Else_If D@Message = &WM_CLOSE
-        call 'USER32.DestroyWindow' D@handle
+    .Else_If D@msg = &WM_CLOSE
+        Call 'USER32.DestroyWindow' D@hwnd
 
-    .Else_If D@Message = &WM_DESTROY
-        mov eax 0
+    .Else_If D@msg = &WM_DESTROY
+        Mov eax 0
 
-    .Else_If D@Message = &WM_PAINT
+    .Else_If D@msg = &WM_PAINT
         If D$IsDebugging = 1
-            call 'User32.BeginPaint' D@handle, D@PaintStruct
-            call 'GDI32.SelectObject' D@hdc, D$DebugFontHandle
-            call MouseHintDrawWindow D@handle, D@hdc
-            call 'User32.EndPaint' D@handle D@PaintStruct
+            Call 'User32.BeginPaint' D@hwnd, D@PaintStruct
+            Call 'GDI32.SelectObject' D@hdc, D$DebugFontHandle
+            Call MouseHintDrawWindow D@hwnd, D@hdc
+            Call 'User32.EndPaint' D@hwnd D@PaintStruct
         EndIf
-        mov eax 0
+        Mov eax 0
 
     .Else
-        call 'User32.DefWindowProcA' D@handle D@Message D@wParam D@lParam
+        Call 'User32.DefWindowProcA' D@hwnd D@msg D@wParam D@lParam
     .End_If
 
 EndP
@@ -6320,7 +6320,7 @@ ________________________________________________________________________________
 
 
 Proc MouseHintDrawWindow:
-    Arguments @handle @hdc
+    Arguments @hwnd @hdc
     Local @Brush
     Structure @Rect 16 @left 0 @top 4 @right 8 @bottom 12
 
@@ -6328,162 +6328,162 @@ Proc MouseHintDrawWindow:
      @Line2: B$ ? #16
      @Line3: B$ ? #16]
 
-    call 'USER32.GetClientRect' D@handle, D@Rect
+    Call 'USER32.GetClientRect' D@hwnd, D@Rect
     move D@bottom D$FontHeight
 
-    call 'GDI32.CreateSolidBrush' 0_FF_FF_FF | mov D@Brush eax
-    call 'USER32.FillRect' D@hdc, D@Rect, D@Brush
-    call 'GDI32.DeleteObject' D@Brush
+    Call 'GDI32.CreateSolidBrush' 0_FF_FF_FF | Mov D@Brush eax
+    Call 'USER32.FillRect' D@hdc, D@Rect, D@Brush
+    Call 'GDI32.DeleteObject' D@Brush
 
-    call 'GDI32.SetBkColor' D@hdc, 0_FF_FF_FF
+    Call 'GDI32.SetBkColor' D@hdc, 0_FF_FF_FF
 
-    call 'GDI32.SetTextColor' D@hdc, 0_33_33_33
+    Call 'GDI32.SetTextColor' D@hdc, 0_33_33_33
 
   ; Output size
-    mov edi ItemString
-    mov al ' ' | stosb
-    mov al B$MouseHint@SizeMarker
+    Mov edi ItemString
+    Mov al ' ' | stosb
+    Mov al B$MouseHint@SizeMarker
     If al = 'D'
-        stosb | mov eax 'WORD' | stosd
+        stosb | Mov eax 'WORD' | stosd
     ElseIf al = 'W'
-        mov eax 'WORD' | stosd
+        Mov eax 'WORD' | stosd
     ElseIf al = 'B'
-        mov eax 'BYTE' | stosd
+        Mov eax 'BYTE' | stosd
     ElseIf al = 'F'
-        stosb | mov eax 'LOAT' | stosd
+        stosb | Mov eax 'LOAT' | stosd
     ElseIf al = 'R'
-        mov eax 'REAL' | stosd
+        Mov eax 'REAL' | stosd
     ElseIf al = 'T'
-        mov eax 'EXTE' | stosd
-        mov eax 'NDED' | stosd
+        Mov eax 'EXTE' | stosd
+        Mov eax 'NDED' | stosd
     EndIf
-    mov B$edi 0
+    Mov B$edi 0
 
-    call 'USER32.DrawTextA' D@hdc, ItemString, 0-1, D@Rect,
+    Call 'USER32.DrawTextA' D@hdc, ItemString, 0-1, D@Rect,
                             &DT_SINGLELINE+&DT_LEFT+&DT_VCENTER
 
   ; Output address
-    mov edi ItemString
+    Mov edi ItemString
     DwordToHex D$MouseHint@Address
-    mov al ' ' | stosb
-    mov B$edi 0
+    Mov al ' ' | stosb
+    Mov B$edi 0
 
-    call 'USER32.DrawTextA' D@hdc, ItemString, 0-1, D@Rect,
+    Call 'USER32.DrawTextA' D@hdc, ItemString, 0-1, D@Rect,
                             &DT_SINGLELINE+&DT_RIGHT+&DT_VCENTER
 
   ; Draw background for values
-    mov eax D$FontHeight
+    Mov eax D$FontHeight
     lea edx D$eax*4
     move D@Top eax, D@Bottom edx
 
-    call 'GDI32.CreateSolidBrush' 0_DD_EE_EE | mov D@Brush eax
-    call 'USER32.FillRect' D@hdc, D@Rect, D@Brush
-    call 'GDI32.DeleteObject' D@Brush
-    call 'GDI32.SetBkColor' D@hdc, 0_DD_EE_EE
+    Call 'GDI32.CreateSolidBrush' 0_DD_EE_EE | Mov D@Brush eax
+    Call 'USER32.FillRect' D@hdc, D@Rect, D@Brush
+    Call 'GDI32.DeleteObject' D@Brush
+    Call 'GDI32.SetBkColor' D@hdc, 0_DD_EE_EE
 
   ; Read a block of memory with a max size of 64 byte
-    call IsProcessMemory D$MouseHint@Address
+    Call IsProcessMemory D$MouseHint@Address
     On eax = 0, jmp @Invalid
-    mov ebx 64
-    On eax < ebx, mov ebx eax
-    call ReadProcessMem D$MouseHint@Address, DataBuffer, ebx
+    Mov ebx 64
+    On eax < ebx, Mov ebx eax
+    Call ReadProcessMem D$MouseHint@Address, DataBuffer, ebx
 
   ; Output value based on size selector (D$ / W$ / ...)
-    mov al B$MouseHint@SizeMarker
-    mov B@Line1 0, B@Line2 0, B@Line3 0
+    Mov al B$MouseHint@SizeMarker
+    Mov B@Line1 0, B@Line2 0, B@Line3 0
     .If al = 'D'
 L0:     On ebx < 4, jmp @Invalid
-        mov edi @Line1
+        Mov edi @Line1
         DwordToHex D$DataBuffer
-        mov B$edi 0
+        Mov B$edi 0
 
-        mov esi DataBuffer, ecx 4
-        call toUDword
-        mov esi edi, edi @Line2
+        Mov esi DataBuffer, ecx 4
+        Call toUDword
+        Mov esi edi, edi @Line2
         Do | movsb | LoopUntil B$esi-1 = 0
 
-        mov esi DataBuffer, ecx 4
-        call toSDword
-        mov esi edi, edi @Line3
+        Mov esi DataBuffer, ecx 4
+        Call toSDword
+        Mov esi edi, edi @Line3
         Do | movsb | LoopUntil B$esi-1 = 0
     .ElseIf al = 'W'
         ; Word Size
         On ebx < 2, jmp @Invalid
-        mov edi @Line1
+        Mov edi @Line1
         WordToHex W$DataBuffer
-        mov B$edi 0
+        Mov B$edi 0
 
-        mov esi DataBuffer, ecx 2
-        call toUword
-        mov esi edi, edi @Line2
+        Mov esi DataBuffer, ecx 2
+        Call toUword
+        Mov esi edi, edi @Line2
         Do | movsb | LoopUntil B$esi-1 = 0
 
-        mov esi DataBuffer, ecx 2
-        call toSword
-        mov esi edi, edi @Line3
+        Mov esi DataBuffer, ecx 2
+        Call toSword
+        Mov esi edi, edi @Line3
         Do | movsb | LoopUntil B$esi-1 = 0
 
     .ElseIf al = 'B'
         ; Byte size
-        mov edi @Line1
+        Mov edi @Line1
         ByteToHex B$DataBuffer
-        mov B$edi 0
+        Mov B$edi 0
 
-        mov esi DataBuffer, ecx 1
-        call toUByte
-        mov esi edi, edi @Line2
+        Mov esi DataBuffer, ecx 1
+        Call toUByte
+        Mov esi edi, edi @Line2
         Do | movsb | LoopUntil B$esi-1 = 0
 
-        mov esi DataBuffer, ecx 1
-        call toSByte
-        mov esi edi, edi @Line3
+        Mov esi DataBuffer, ecx 1
+        Call toSByte
+        Mov esi edi, edi @Line3
         Do | movsb | LoopUntil B$esi-1 = 0
 
     .ElseIf al = 'F'
         On ebx < 4, jmp @Invalid
-        mov edi @Line2
+        Mov edi @Line2
         fld F$DataBuffer | fstp T$FloatBuf
-        call FloatToUString FloatBuf edi
-        mov al 0, ecx 0-1 | repne scasb
+        Call FloatToUString FloatBuf edi
+        Mov al 0, ecx 0-1 | repne scasb
     .ElseIf al = 'R'
         On ebx < 8, jmp @Invalid
-        mov edi @Line2
+        Mov edi @Line2
         fld R$DataBuffer | fstp T$FloatBuf
-        call FloatToUString FloatBuf edi
-        mov al 0, ecx 0-1 | repne scasb
+        Call FloatToUString FloatBuf edi
+        Mov al 0, ecx 0-1 | repne scasb
     .ElseIf al = 'T'
         On ebx < 10, jmp @Invalid
-        mov edi @Line2
-        call FloatToUString DataBuffer edi
-        mov al 0, ecx 0-1 | repne scasb
+        Mov edi @Line2
+        Call FloatToUString DataBuffer edi
+        Mov al 0, ecx 0-1 | repne scasb
     .EndIf
 
-    mov eax D$FontHeight
+    Mov eax D$FontHeight
     lea eax D$eax*2
-    mov D@bottom eax
-    call 'USER32.DrawTextA' D@hdc, @Line1, 0-1, D@Rect,
+    Mov D@bottom eax
+    Call 'USER32.DrawTextA' D@hdc, @Line1, 0-1, D@Rect,
                             &DT_SINGLELINE+&DT_CENTER+&DT_VCENTER
 
-    mov eax D$FontHeight
+    Mov eax D$FontHeight
     add D@top eax
     add D@bottom eax
-    call 'USER32.DrawTextA' D@hdc, @Line2, 0-1, D@Rect,
+    Call 'USER32.DrawTextA' D@hdc, @Line2, 0-1, D@Rect,
                             &DT_SINGLELINE+&DT_CENTER+&DT_VCENTER
 
-    mov eax D$FontHeight
+    Mov eax D$FontHeight
     add D@top eax
     add D@bottom eax
-    call 'USER32.DrawTextA' D@hdc, @Line3, 0-1, D@Rect,
+    Call 'USER32.DrawTextA' D@hdc, @Line3, 0-1, D@Rect,
                             &DT_SINGLELINE+&DT_CENTER+&DT_VCENTER
     ExitP
 
 @Invalid:
-    mov eax D$FontHeight
+    Mov eax D$FontHeight
     lea edx D$eax*4
     move D@Top eax, D@Bottom edx
-    mov eax {'Invalid address' 0}
+    Mov eax {'Invalid address' 0}
 
-    call 'USER32.DrawTextA' D@hdc, eax, 0-1, D@Rect,
+    Call 'USER32.DrawTextA' D@hdc, eax, 0-1, D@Rect,
                             &DT_SINGLELINE+&DT_CENTER+&DT_VCENTER
 EndP
 ____________________________________________________________________________________________
@@ -6498,17 +6498,17 @@ ________________________________________________________________________________
 @EvaluateDataSymbol:
 
   ; Search address of data label (reuse information already stored in the label combo)
-    mov edx 0
+    Mov edx 0
     On D$DataLabelComboHandle = 0, ret
-    mov bl B$esi+ecx, B$esi+ecx 0 ; find routine requires zero terminated string!
+    Mov bl B$esi+ecx, B$esi+ecx 0 ; find routine requires zero terminated string!
     push ecx
         SendMessage D$DataLabelComboHandle, &CB_FINDSTRINGEXACT, ecx, esi
     pop ecx
-    mov B$esi+ecx bl
-    mov edx 0
+    Mov B$esi+ecx bl
+    Mov edx 0
     On eax = &CB_ERR, ret
     SendMessage D$DataLabelComboHandle, &CB_GETITEMDATA, eax, 0
-    mov edx 1
+    Mov edx 1
 ret
 ____________________________________________________________________________________________
 
@@ -6517,21 +6517,21 @@ ________________________________________________________________________________
 ; Output :  eax = value, edx = valid(1) invalid(0)
 
 @EvaluateNumber:
-    mov edx 0
+    Mov edx 0
     On B$esi < '0', ret
     On B$esi > '9', ret
 
     push esi ecx
         If W$esi = '00'
-            call TranslateBinary
+            Call TranslateBinary
         ElseIf B$esi = '0'
-            call TranslateHexa
+            Call TranslateHexa
         Else
-            call TranslateDecimal
+            Call TranslateDecimal
         EndIf
     pop ecx esi
 
-    mov edx 1
+    Mov edx 1
 ret
 ____________________________________________________________________________________________
 
@@ -6540,49 +6540,49 @@ ________________________________________________________________________________
 ; Output :  eax = value, edx = valid(1) invalid(0)
 
 @EvaluateRegister:
-    mov edx 0
+    Mov edx 0
     On B$esi <> 'E', ret
     On ecx <> 3, ret
 
-    mov eax D$esi
+    Mov eax D$esi
     and eax 0FF_FFFF
-    mov edi GPRegs
-    mov ecx 0
+    Mov edi GPRegs
+    Mov ecx 0
 
     While ecx < 8
         If D$GPRegs+ecx*4 = eax
-            mov eax D$GPRRegMap+ecx*4
-            mov eax D$eax
-            mov edx 1
+            Mov eax D$GPRRegMap+ecx*4
+            Mov eax D$eax
+            Mov edx 1
             ret
         EndIf
         inc ecx
     EndWhile
 
-    mov edx 0
+    Mov edx 0
 ret
 
 @EvaluateSegmentSelector:
-    mov edx 0
+    Mov edx 0
     On ecx <> 2, ret
     On B$esi+1 <> 'S', ret
 
-    mov edx 1
-    mov al B$esi
+    Mov edx 1
+    Mov al B$esi
     cmp al 'F' | jne L0>
-        mov eax D$FS.Linear | ret
+        Mov eax D$FS.Linear | ret
 L0: cmp al 'D' | jne L0>
-        mov eax D$DS.Linear | ret
+        Mov eax D$DS.Linear | ret
 L0: cmp al 'C' | jne L0>
-        mov eax D$CS.Linear | ret
+        Mov eax D$CS.Linear | ret
 L0: cmp al 'E' | jne L0>
-        mov eax D$ES.Linear | ret
+        Mov eax D$ES.Linear | ret
 L0: cmp al 'G' | jne L0>
-        mov eax D$GS.Linear | ret
+        Mov eax D$GS.Linear | ret
 L0: cmp al 'S' | jne L0>
-        mov eax D$SS.Linear | ret
+        Mov eax D$SS.Linear | ret
 
-L0: mov edx 0 ; invalid seg reg
+L0: Mov edx 0 ; invalid seg reg
 ret
 ____________________________________________________________________________________________
 
@@ -6593,11 +6593,11 @@ ________________________________________________________________________________
 Proc @EvaluateToken:
     Uses esi, edi, ebx, ecx
 
-    call @EvaluateRegister
+    Call @EvaluateRegister
     On edx = 1, ExitP
-    call @EvaluateNumber
+    Call @EvaluateNumber
     On edx = 1, ExitP
-    call @EvaluateDataSymbol
+    Call @EvaluateDataSymbol
     On edx = 1, ExitP
 EndP
 ____________________________________________________________________________________________
@@ -6608,11 +6608,11 @@ ________________________________________________________________________________
 
 Proc @Evaluate:
 
-    mov esi @Buffer
-    mov D@Address 0
-    mov ebx 0
-    mov dl addSign ; last operator
-    mov ecx 0-1
+    Mov esi @Buffer
+    Mov D@Address 0
+    Mov ebx 0
+    Mov dl addSign ; last operator
+    Mov ecx 0-1
 
     .Do
         inc ecx
@@ -6620,14 +6620,14 @@ Proc @Evaluate:
           ; operator precedence of '*' e.g. D$eax+ecx*4 -> @Address=eax, ebx=ecx
             If B$esi+ecx = mulSign
                 add D@Address ebx
-                mov ebx 0
+                Mov ebx 0
             EndIf
 
           ; get value of token -> eax. Break up if the token is unknown (e.g. local symbols)
             push edx
-                call @EvaluateToken
+                Call @EvaluateToken
                 If edx = 0
-                    mov eax 0
+                    Mov eax 0
                     ExitP
                 EndIf
             pop edx
@@ -6642,27 +6642,27 @@ Proc @Evaluate:
             EndIf
 
           ; save operator
-            mov dl B$esi+ecx
+            Mov dl B$esi+ecx
             add esi ecx
             inc esi
-            mov ecx 0-1
+            Mov ecx 0-1
         .ElseIf B$esi+ecx = ':'
           ; colon only after segment selector
-            call @EvaluateSegmentSelector
+            Call @EvaluateSegmentSelector
             If edx = 0
-                mov eax 0
+                Mov eax 0
                 ExitP
             EndIf
             add ebx eax
-            mov dl addSign ; segment base implies addition of the offset
+            Mov dl addSign ; segment base implies addition of the offset
             add esi ecx
             inc esi
-            mov ecx 0-1
+            Mov ecx 0-1
         .EndIf
     .Loop_Until B$esi+ecx = 0
 
     add D@Address ebx
-    mov eax 1
+    Mov eax 1
 EndP
 ____________________________________________________________________________________________
 
@@ -6676,19 +6676,19 @@ Proc @ReplaceEquate:
   ; If naked local symbol, check if this belongs to the scope of the current code label.
     If B$esi = '@'
         push edi ecx
-            mov edi LabelName
+            Mov edi LabelName
             push ecx
-                mov ecx 0-1, al 0
+                Mov ecx 0-1, al 0
                 repne scasb
             pop ecx
             dec edi
             rep movsb
-            mov B$edi 0
+            Mov B$edi 0
         pop ecx edi
-        mov esi LabelName
+        Mov esi LabelName
     EndIf
 
-    call GetFromQwordCheckSum esi, D$EquateList, D$EquateListLimit
+    Call GetFromQwordCheckSum esi, D$EquateList, D$EquateListLimit
 
     If eax <> 0
       ; Already copied name (len=ecx) is wiped off the buffer
@@ -6701,13 +6701,13 @@ Proc @ReplaceEquate:
         inc eax
 
       ; Store equate contents. First check if there's sufficient room to store it.
-        mov esi D$eax, ecx D$eax+4
+        Mov esi D$eax, ecx D$eax+4
         sub edx ecx | js L8>
         rep movsb
 
-        mov eax 1
+        Mov eax 1
     Else
-L8:     mov eax 0
+L8:     Mov eax 0
     End_If
 EndP
 ____________________________________________________________________________________________
@@ -6718,32 +6718,32 @@ ________________________________________________________________________________
 Proc @LookupEquates:
 
   ; HACK - get current label into labelname
-    call IsProcessCode D$C.regEIP
+    Call IsProcessCode D$C.regEIP
     If eax = 1
-        call ScanLabelListForCodeLabel D$C.regEIP, 0
+        Call ScanLabelListForCodeLabel D$C.regEIP, 0
     Else
-        mov B$LabelName 0
+        Mov B$LabelName 0
     EndIf
 
   ; output buffer on stack
     sub esp 256
-    mov edi esp
-    mov edx 255
+    Mov edi esp
+    Mov edx 255
 
-    mov ebx 0
-    mov esi @Buffer
-    mov ecx 0-1
+    Mov ebx 0
+    Mov esi @Buffer
+    Mov ecx 0-1
 
     Do
         inc ecx
         dec edx | js L8>
 
-        mov al B$esi+ecx
-        mov B$edi+ecx al
+        Mov al B$esi+ecx
+        Mov B$edi+ecx al
 
         .If al < ' '
           ; substitute equate with value
-            call @ReplaceEquate
+            Call @ReplaceEquate
             If eax = 1
                 inc ebx
             Else
@@ -6752,24 +6752,24 @@ Proc @LookupEquates:
 
           ; restore operator (might have been overwritten, different len equate<->value)
             add esi ecx
-            mov al B$esi | inc esi
-            mov B$edi al | inc edi
+            Mov al B$esi | inc esi
+            Mov B$edi al | inc edi
 
-            mov ecx 0-1
+            Mov ecx 0-1
         .EndIf
     Loop_Until B$esi+ecx = 0
 
-L8: mov ecx edi
+L8: Mov ecx edi
     sub ecx esp
 
-    mov esi esp
-    mov edi @Buffer
+    Mov esi esp
+    Mov edi @Buffer
 
     rep movsb
 
-    mov B$@Buffer+255 0
+    Mov B$@Buffer+255 0
 
-    mov eax ebx ; number of replacements
+    Mov eax ebx ; number of replacements
 EndP
 ____________________________________________________________________________________________
 
@@ -6783,12 +6783,12 @@ ________________________________________________________________________________
 Proc @CopyAndCook:
 
   ; scan forward & copy
-    mov edi @Buffer, edx 0
+    Mov edi @Buffer, edx 0
 
 L3:   ; next char
         inc esi
-        mov al B$esi
-        On al = 167, mov al 36
+        Mov al B$esi
+        On al = 167, Mov al 36
 
 L0:     cmp dl 1 | je L0>
 
@@ -6805,19 +6805,19 @@ L0:     cmp dl 1 | je L0>
 
 L0:   ; not a symbol char, check for 'connecting' chars ' ', '+', '-', '*'
         If al = '+'
-            mov dl 0-1
-            mov al addSign
+            Mov dl 0-1
+            Mov al addSign
             jmp L1>
         ElseIf al = '-'
-            mov dl 0-1
-            mov al subSign
+            Mov dl 0-1
+            Mov al subSign
             jmp L1>
         ElseIf al = '*'
-            mov dl 0-1
-            mov al mulSign
+            Mov dl 0-1
+            Mov al mulSign
             jmp L1>
         ElseIf al = ' '
-            On dl = 0, mov dl 1
+            On dl = 0, Mov dl 1
             jmp L3<
         EndIf
 
@@ -6827,7 +6827,7 @@ L0:   ; not a symbol char, check for 'connecting' chars ' ', '+', '-', '*'
 L2:   ; a..z -> A..Z
         sub al 020
 
-L4:     mov dl 0
+L4:     Mov dl 0
 
 L1:   ; copy
         stosb
@@ -6837,7 +6837,7 @@ L1:   ; copy
     jmp L3<
 
 
-L9: mov B$edi 0
+L9: Mov B$edi 0
 EndP
 ____________________________________________________________________________________________
 
@@ -6852,8 +6852,8 @@ ________________________________________________________________________________
 
 Proc @ScanForSeparator:
 
-    mov al B$esi
-    mov dl 0 ; expect separator=1 symbol=-1
+    Mov al B$esi
+    Mov dl 0 ; expect separator=1 symbol=-1
 
   ; scan backward
     While al <> 36 ;B$ParagraphChar ; '$' ; Dollar
@@ -6874,16 +6874,16 @@ Proc @ScanForSeparator:
 
 L0:   ; not a symbol char, check for 'connecting' chars ' ', '+', '-', '*'
         If al = '+'
-            mov dl 0-1
+            Mov dl 0-1
             jmp L1>
         ElseIf al = '-'
-            mov dl 0-1
+            Mov dl 0-1
             jmp L1>
         ElseIf al = '*'
-            mov dl 0-1
+            Mov dl 0-1
             jmp L1>
         ElseIf al = ' '
-            On dl = 0, mov dl 1
+            On dl = 0, Mov dl 1
             jmp L1>
         EndIf
 
@@ -6892,27 +6892,27 @@ L5:     inc esi
         cmp B$esi ' ' | je L5<
 
         cmp B$esi+1 '@' | jne L2>
-        mov al B$esi
-        mov B@SizeMarker al
+        Mov al B$esi
+        Mov B@SizeMarker al
 
         jmp L4>
 
 L3:   ; symbol
-        mov dl 0
+        Mov dl 0
 
 L1:     dec esi
-        mov al B$esi
+        Mov al B$esi
     EndWhile
 
-L7: mov al B$esi-1
-    mov B@SizeMarker al
+L7: Mov al B$esi-1
+    Mov B@SizeMarker al
 
-L4: call @CopyAndCook
-    mov eax 1
+L4: Call @CopyAndCook
+    Mov eax 1
     ExitP
 
 L2: ; not preceded by '$', check for data declaration
-    mov eax 0-1
+    Mov eax 0-1
 EndP
 
 ____________________________________________________________________________________________
@@ -6926,10 +6926,10 @@ Proc IsString:
     Arguments @Buffer, @Size
     Uses esi
 
-    mov ah 0, esi D@Buffer, ecx D@Size
+    Mov ah 0, esi D@Buffer, ecx D@Size
 L0: While B$esi <> 0
         lodsb
-        mov ah 1
+        Mov ah 1
         dec ecx | jz P9>
         cmp al ' ' | jb L9>
         cmp al 07F | jb L0<
@@ -6940,7 +6940,7 @@ L0: While B$esi <> 0
     EndWhile
     ExitP
 
-L9: mov ah 0
+L9: Mov ah 0
 EndP
 
 ____________________________________________________________________________________________
@@ -6948,11 +6948,11 @@ ________________________________________________________________________________
 ; This is a printf clone for internal use in RosAsm.
 
 [FormatString | &9=0 | C_Call FormatStr #L>1]
-[C_Call | &9=&9+4 | push #2 | #+1 | call #F | add esp &9]
+[C_Call | &9=&9+4 | push #2 | #+1 | Call #F | add esp &9]
 
 ; Formats a string
 ; The stack must be cleared by the caller - use FormatString macro!
-; Invokation: call FormatStr PatternString OutputString [Linked parameters in order of occurence]
+; Invokation: Call FormatStr PatternString OutputString [Linked parameters in order of occurence]
 ;
 ; Link  | Converted to            | Expected parameter
 ; ______|_________________________|____________________
@@ -6962,13 +6962,13 @@ ________________________________________________________________________________
 
 FormatStr:
     push ebp
-    mov ebp esp
+    Mov ebp esp
 
     push esi edi ebx edx ; rescue regs
 
-    mov esi D$ebp+12 ; pattern string >> esi
-    mov edi D$ebp+8 ; output buffer >> edi
-    mov ebx 2 ; paramter count >> ebx
+    Mov esi D$ebp+12 ; pattern string >> esi
+    Mov edi D$ebp+8 ; output buffer >> edi
+    Mov ebx 2 ; paramter count >> ebx
 
 L0: lodsb
     .If al = '%'
@@ -6976,25 +6976,25 @@ L0: lodsb
         If al = 's'
             ; Copy string to buffer
             push esi
-                mov esi D$ebp+8+ebx*4 | inc ebx
+                Mov esi D$ebp+8+ebx*4 | inc ebx
                 cmp esi 0 | je L3>
                 While B$esi <> 0 | movsb | EndWhile
         L3: pop esi
         ElseIf al = 'x'
             ; Convert to hex
-            mov eax D$ebp+8+ebx*4 | inc ebx
-            mov edx eax | add edi 7
+            Mov eax D$ebp+8+ebx*4 | inc ebx
+            Mov edx eax | add edi 7
             std
-            mov ecx 8
-L1:         mov al dl | and al 0F | cmp al 0A | jb L2>
+            Mov ecx 8
+L1:         Mov al dl | and al 0F | cmp al 0A | jb L2>
             add al 7
 L2:         add al '0' | stosb | shr edx 4 | loop L1<
             cld
             add edi 9
         ElseIf al = 'd'
             ; Convert integer to decimal representation
-            mov eax D$ebp+8+ebx*4 | inc ebx
-            call IntToStr
+            Mov eax D$ebp+8+ebx*4 | inc ebx
+            Call IntToStr
         Else
             stosb
         EndIf
@@ -7004,7 +7004,7 @@ L2:         add al '0' | stosb | shr edx 4 | loop L1<
     cmp al 0 | jne L0<
 
     ; Return stringlength in ecx
-    mov ecx edi
+    Mov ecx edi
     sub ecx D$ebp+8
     dec ecx
 
@@ -7022,33 +7022,33 @@ ________________________________________________________________________________
 TimeToStr:
     sub esp 16
 
-        call 'KERNEL32.GetLocalTime' esp
+        Call 'KERNEL32.GetLocalTime' esp
         movzx eax W$esp+8
-        mov edx 0, ecx 10 | div ecx
+        Mov edx 0, ecx 10 | div ecx
         add al '0'
         stosb
-        add dl '0' | mov al dl
+        add dl '0' | Mov al dl
         stosb
 
-        mov al ':' | stosb
+        Mov al ':' | stosb
 
         movzx eax W$esp+10
-        mov edx 0, ecx 10 | div ecx
+        Mov edx 0, ecx 10 | div ecx
         add al '0'
         stosb
-        add dl '0' | mov al dl
+        add dl '0' | Mov al dl
         stosb
 
-        mov al ':' | stosb
+        Mov al ':' | stosb
 
         movzx eax W$esp+12
-        mov edx 0, ecx 10 | div ecx
+        Mov edx 0, ecx 10 | div ecx
         add al '0'
         stosb
-        add dl '0' | mov al dl
+        add dl '0' | Mov al dl
         stosb
 
-        mov B$edi 0
+        Mov B$edi 0
 
     add esp 16
 ret

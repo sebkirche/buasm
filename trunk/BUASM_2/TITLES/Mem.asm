@@ -10,7 +10,7 @@ ________________________________________________________________________________
  VirtualAlloc Reserves Memory Chunks with a 01_0000 alignement and Commit Chunks with
  a 0_1000 alignement. These Memory Manager Routines purpose is to completely secure
  and simplify the calls for Mems and to save all these rooms spoiled by the 01_0000
- alignement. To simplify things, let us call 'Mother Chunks' the 01_0000 aligned ones
+ alignement. To simplify things, let us Call 'Mother Chunks' the 01_0000 aligned ones
  (Reservations default) and 'Child Chunks' the 0_1000 aligned ones (Commition default).
 
  For developements, an Equate 'GUARDPAGE' may be set to 0_1000. This ensure that, in
@@ -65,7 +65,7 @@ ________________________________________________________________________________
  > On D$Pointer > 0, VirtualFree D$Pointer
 
  This is the only one case for which the Manager does not send an error Message
- in case of bad call from the Application. If a wrong Address is sent to VirtualFree,
+ in case of bad Call from the Application. If a wrong Address is sent to VirtualFree,
  for example an Application Table Address instead of a Pointer content, the proper
  error Message is sent.
 
@@ -96,67 +96,67 @@ ________________________________________________________________________________
 
 VirtAlloc:                                  ; In: ebx = Pointer, edx = size
     push ebx
-        mov edi MemTable                    ; Search an empty Record.
+        Mov edi MemTable                    ; Search an empty Record.
         While D$edi > 0
             add edi MEMRECORD
           ; This Alert can only happend if i completly corrupt a Mem Pointer Value
           ; so that it is no more founded in the 'MemTable':
             If edi = MemTableEnd
-                call 'USER32.MessageBoxA' D$hwnd, MemAlertText, MemAlert,
+                Call 'USER32.MessageBoxA' D$H.MainWindow, MemAlertText, MemAlert,
                                           &MB_SYSTEMMODAL__&MB_ICONSTOP
-                call ViewRosAsmMems
+                Call ViewRosAsmMems
                 ShowMe VirtAllocOverFlowString
-                call 'KERNEL32.ExitProcess' 0
+                Call 'KERNEL32.ExitProcess' 0
             End_If
         End_While
 
       ; The 'add eax GUARDPAGE' is to reserve a never Committed Page (allow Win
       ; error if i overflow write to a Buffer):
-        mov eax edx | Align_On PAGESIZE eax | add eax GUARDPAGE
-        mov D$MemChunSize eax, D$edi+4 eax
+        Mov eax edx | Align_On PAGESIZE eax | add eax GUARDPAGE
+        Mov D$MemChunSize eax, D$edi+4 eax
 
       ; VirtualAlloc Reserves by 01_0000 Octets Block (16 Pages). So, as any previous
       ; Committed Block can not be smaller than 0_1000 or 0_2000 Octets (1 Page + 1 Page
       ; for 'Guard', the not used remaining space of any reservation cannot be bigger
       ; than 01_0000-(PAGESIZE+GUARDPAGE) (0_E000 or 0F000).
         If D$MemChunSize <= (01_0000-(PAGESIZE+GUARDPAGE))
-            push edi | call IsThereSomeRoom | pop edi   ; >>> eax= 0 or Pointer.
+            push edi | Call IsThereSomeRoom | pop edi   ; >>> eax= 0 or Pointer.
         Else                                            ; eax= Pointer >>> ebx = MotherPtr.
 
-            mov eax 0
+            Mov eax 0
         End_If
 
         If eax = 0
             push edi
-                mov eax D$MemChunSize | Align_On 010_000 eax
-                call 'KERNEL32.VirtualAlloc' &NULL, eax, &MEM_RESERVE, &PAGE_READWRITE
+                Mov eax D$MemChunSize | Align_On 010_000 eax
+                Call 'KERNEL32.VirtualAlloc' &NULL, eax, &MEM_RESERVE, &PAGE_READWRITE
                 On eax = 0, hexprint D$MemChunSize
                 ;hexprint eax
             pop edi
-            mov D$edi eax, D$edi+8 eax      ; D$edi+8 = Pointer
+            Mov D$edi eax, D$edi+8 eax      ; D$edi+8 = Pointer
         Else
-            mov D$edi eax, D$edi+8 ebx      ; D$edi+8 = MotherPointer ('IsThereSomeRoom' ebx)
+            Mov D$edi eax, D$edi+8 ebx      ; D$edi+8 = MotherPointer ('IsThereSomeRoom' ebx)
         End_If
 
-        On edi > D$LastMemRecord, mov D$LastMemRecord edi
-        mov ecx D$MemChunSize | sub ecx GUARDPAGE
+        On edi > D$LastMemRecord, Mov D$LastMemRecord edi
+        Mov ecx D$MemChunSize | sub ecx GUARDPAGE
       ;  push eax, ecx                      ; For my Tests
-        call 'KERNEL32.VirtualAlloc' eax, ecx, &MEM_COMMIT, &PAGE_READWRITE
+        Call 'KERNEL32.VirtualAlloc' eax, ecx, &MEM_COMMIT, &PAGE_READWRITE
       ;  pop ecx, ebx                       ; For my Tests
         If eax = 0
       ;      hexprint ecx | hexprint ebx    ; For my Tests
-            call 'USER32.MessageBoxA' D$hwnd, MemInternalAlert, MemAlert,
+            Call 'USER32.MessageBoxA' D$H.MainWindow, MemInternalAlert, MemAlert,
                                          &MB_SYSTEMMODAL__&MB_ICONSTOP
-            call ViewRosAsmMems
+            Call ViewRosAsmMems
             ShowMe VirtAllocFailureString
 
-            call 'KERNEL32.ExitProcess' 0
+            Call 'KERNEL32.ExitProcess' 0
         End_If
     pop ebx
-    mov D$ebx eax                           ; Return Pointer Value to caller.
+    Mov D$ebx eax                           ; Return Pointer Value to caller.
 ret
 
-[VirtualAlloc | mov ebx #1, edx #2 | call VirtAlloc | #+2]
+[VirtualAlloc | Mov ebx #1, edx #2 | Call VirtAlloc | #+2]
 ; Evocation: VirtualAlloc Pointer, Size
 ____________________________________________________________________________________________
 
@@ -169,45 +169,45 @@ VirtFree:       ; eax = D$Pointer
   ; computation begining by 'If D$esi-4 = ...", for example >>> Restore origin:
     and eax 0_FFFF_F000                 ; (Chunks are always Page-aligned).
 
-    mov esi MemTable
+    Mov esi MemTable
     While D$esi <> eax
         add esi MEMRECORD
         If esi = MemTableEnd
-            call 'USER32.MessageBoxA' D$hwnd, MemInternalAlert, MemInternalAlert,
+            Call 'USER32.MessageBoxA' D$H.MainWindow, MemInternalAlert, MemInternalAlert,
                                       &MB_SYSTEMMODAL__&MB_ICONSTOP
-            call ViewRosAsmMems
+            Call ViewRosAsmMems
             ShowMe VirtFreeOverFlowString
-            call 'KERNEL32.ExitProcess' 0
+            Call 'KERNEL32.ExitProcess' 0
         End_If
     End_While
 
     push esi
-        mov ecx D$esi+4 | sub ecx GUARDPAGE
-        call 'KERNEL32.VirtualFree' D$esi, ecx, &MEM_DECOMMIT
+        Mov ecx D$esi+4 | sub ecx GUARDPAGE
+        Call 'KERNEL32.VirtualFree' D$esi, ecx, &MEM_DECOMMIT
     pop esi
 
   ; Now, we can Release the whole Memory Block only if no other Chunk is Committed.
   ; If so, no other Block whith the same origin (Third dWord of records) can be
   ; found in the 'MemTable':
-    mov ebx D$esi+8, ecx 0
-    mov D$esi 0, D$esi+4 0, D$esi+8 0       ; Clear the record, anyway.
+    Mov ebx D$esi+8, ecx 0
+    Mov D$esi 0, D$esi+4 0, D$esi+8 0       ; Clear the record, anyway.
     push esi
-        mov esi MemTable
+        Mov esi MemTable
         While esi <= D$LastMemRecord
             If D$esi+8 = ebx
                 inc ecx
             End_If
             add esi MEMRECORD
         End_While
-        On ecx = 0, call 'KERNEL32.VirtualFree' ebx, &NULL, &MEM_RELEASE
+        On ecx = 0, Call 'KERNEL32.VirtualFree' ebx, &NULL, &MEM_RELEASE
     pop esi
     On esi = D$LastMemRecord, sub D$LastMemRecord MEMRECORD
 L9: popad
 ret
 
-[VirtualFree | cmp #1 0 | je V9> | mov eax #1
-                    call VirtFree
-               mov #1 0 | V9: | #+1]
+[VirtualFree | cmp #1 0 | je V9> | Mov eax #1
+                    Call VirtFree
+               Mov #1 0 | V9: | #+1]
 
 ; Evocation: VirtualFree D$Pointer (>>> D$Pointer = 0, when back).
 ____________________________________________________________________________________________
@@ -216,26 +216,26 @@ ________________________________________________________________________________
 ; holds the size of the wanted Block + one Page:
 
 IsThereSomeRoom:
-    mov esi MemTable
+    Mov esi MemTable
     .While esi <= D$LastMemRecord
         ..If D$esi > 0
-            mov eax D$esi | add eax D$esi+4
-            mov ebx eax | Align_On 01_0000 eax | sub eax ebx
+            Mov eax D$esi | add eax D$esi+4
+            Mov ebx eax | Align_On 01_0000 eax | sub eax ebx
 
           ; eax = supposed free room in this 01_0000 aligned reserved Chunk or sub-Chunk.
             .If eax >= D$MemChunSize
-                mov eax D$esi | add eax D$esi+4
-                mov ebx eax | add ebx D$MemChunSize
+                Mov eax D$esi | add eax D$esi+4
+                Mov ebx eax | add ebx D$MemChunSize
               ; eax = Start // ebx = End of possible free Block.
-                call IsThisRoomFree
+                Call IsThisRoomFree
                 If eax = &TRUE
-                    mov eax D$esi, ebx D$esi+8 | add eax D$esi+4 | jmp L9>>
+                    Mov eax D$esi, ebx D$esi+8 | add eax D$esi+4 | jmp L9>>
                 End_If
             .End_If
         ..End_If
         add esi MEMRECORD
     .End_While
-    mov eax 0
+    Mov eax 0
 L9: ret
 
 ;;
@@ -248,19 +248,19 @@ L9: ret
 ;;
 IsThisRoomFree:
     push esi
-        mov esi MemTable
+        Mov esi MemTable
         While esi <= D$LastMemRecord
-            mov ecx D$esi, edx ecx | add edx D$esi+4
+            Mov ecx D$esi, edx ecx | add edx D$esi+4
             If ebx <= ecx
                 ; OK
             Else_If eax >= edx
                 ; OK
             Else
-                mov eax &FALSE | jmp L9>
+                Mov eax &FALSE | jmp L9>
             End_If
             add esi MEMRECORD
         End_While
-        mov eax &TRUE
+        Mov eax &TRUE
 L9: pop esi
 ret
 
@@ -271,7 +271,7 @@ ________________________________________________________________________________
 
 
 
-[ExtendMemory | call NewMemory #1, #2, #3 | #+3]
+[ExtendMemory | Call NewMemory #1, #2, #3 | #+3]
 
 ; AddMemory MemoryPointer, ActualSizePointer, SizeToAdd
 
@@ -281,21 +281,21 @@ Proc NewMemory:
 
         pushad
           ; Compute the new Size:
-            mov ecx D@SizePointer, ecx D$ecx | add ecx D@Added
+            Mov ecx D@SizePointer, ecx D$ecx | add ecx D@Added
 
             VirtualAlloc @NewPointer, ecx
 
           ; Copy from Old to new memory:
             push ecx
-                mov esi D@Pointer, esi D$esi, edi eax, ecx D@SizePointer, ecx D$ecx
+                Mov esi D@Pointer, esi D$esi, edi eax, ecx D@SizePointer, ecx D$ecx
                 shr ecx 2 | rep movsd
             pop ecx
 
           ; Adjust the new Size:
-            mov ebx D@SizePointer, D$ebx ecx
+            Mov ebx D@SizePointer, D$ebx ecx
 
           ; Replace the old Memory Pointer by the new one:
-            mov ebx D@Pointer | Exchange D$ebx D@NewPointer
+            Mov ebx D@Pointer | Exchange D$ebx D@NewPointer
 
             VirtualFree D@NewPointer
         popad

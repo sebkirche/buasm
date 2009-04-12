@@ -18,18 +18,18 @@ Proc FinalExceptionHandler:
     Uses ebx esi edi
 
   ; Save whole source
-    On B$RealSourceRestored = &FALSE, call RestoreRealSource
-    mov B$WeAreSavingPart &FALSE | call SaveSource
+    On B$RealSourceRestored = &FALSE, Call RestoreRealSource
+    Mov B$WeAreSavingPart &FALSE | Call SaveSource
 
-    mov eax D@ExceptionInfo | call GetExceptionInfo D$eax
-    mov eax D@ExceptionInfo | call WriteCrashLog D$eax D$eax+4
+    Mov eax D@ExceptionInfo | Call GetExceptionInfo D$eax
+    Mov eax D@ExceptionInfo | Call WriteCrashLog D$eax D$eax+4
 
-    call 'User32.MessageBoxA' 0, ExceptionMessage,
+    Call 'User32.MessageBoxA' 0, ExceptionMessage,
         {'RosAsm crashed' 0}, &MB_OK+&MB_ICONEXCLAMATION
 
-    call 'KERNEL32.SetErrorMode' &SEM_NOGPFAULTERRORBOX
+    Call 'KERNEL32.SetErrorMode' &SEM_NOGPFAULTERRORBOX
 
-    mov eax &EXCEPTION_CONTINUE_SEARCH
+    Mov eax &EXCEPTION_CONTINUE_SEARCH
 EndP
 ____________________________________________________________________________________________
 
@@ -58,30 +58,30 @@ Thank you and sorry for the inconvenience.
 Proc GetExceptionInfo:
     Arguments @ExceptionRecord
 
-    mov ebx D@ExceptionRecord
+    Mov ebx D@ExceptionRecord
 
-    mov edi ExceptionAddress
+    Mov edi ExceptionAddress
     DwordToHex D$ebx+12 ; Address
 
-    mov eax D$ebx ; ExceptionCode
+    Mov eax D$ebx ; ExceptionCode
 
     .If eax = &EXCEPTION_ACCESS_VIOLATION
-        mov eax D$ebx+20 ; read/write
+        Mov eax D$ebx+20 ; read/write
         If eax = 0
-            mov D$AV_ReadWrite 'read', D$AV_ReadWrite+4 ' fro', B$AV_ReadWrite+8 'm'
+            Mov D$AV_ReadWrite 'read', D$AV_ReadWrite+4 ' fro', B$AV_ReadWrite+8 'm'
         Else
-            mov D$AV_ReadWrite 'writ', D$AV_ReadWrite+4 'e at', B$AV_ReadWrite+8 ' '
+            Mov D$AV_ReadWrite 'writ', D$AV_ReadWrite+4 'e at', B$AV_ReadWrite+8 ' '
         EndIf
-        mov edi AV_Address
+        Mov edi AV_Address
         DwordToHex D$ebx+24 ; inaccessible address
-        mov esi Exception_AV
+        Mov esi Exception_AV
     .Else
-        mov edi ExceptionCode
+        Mov edi ExceptionCode
         DwordToHex D$ebx ; exc. code
-        mov esi Exception_other
+        Mov esi Exception_other
     .EndIf
 
-    mov edi ExceptionDesc
+    Mov edi ExceptionDesc
     Do
         movsb
     Loop_until B$esi-1 = 0
@@ -99,7 +99,7 @@ ________________________________________________________________________________
 Proc EmitNewLine:
     Arguments @File
 
-    call 'Kernel32.WriteFile' D@File, NewLineSeq, 2, BytesTransfered, 0
+    Call 'Kernel32.WriteFile' D@File, NewLineSeq, 2, BytesTransfered, 0
 EndP
 
 [RegContent: B$ 'Exx=12345678' 0D 0A]
@@ -108,67 +108,67 @@ Proc WriteCrashLog:
     Arguments @ExceptionRecord @Context
     Local @File
 
-    call 'Kernel32.CreateFileA' {'crash.log' 0}, &GENERIC_WRITE, &FILE_SHARE_READ, 0,
+    Call 'Kernel32.CreateFileA' {'crash.log' 0}, &GENERIC_WRITE, &FILE_SHARE_READ, 0,
         &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
-    mov D@File eax
+    Mov D@File eax
 
     .If D@File <> &INVALID_HANDLE_VALUE
 
       ; Output RosAsm version
-        mov edi AppName | call StrLen
-        mov edx AppName | add edx 2 | sub eax 2
-        call 'Kernel32.WriteFile' D@File, edx, eax, BytesTransfered, 0
-        call EmitNewLine D@File
+        Mov edi STR.A.AppName | Call StrLen
+        Mov edx STR.A.AppName | add edx 2 | sub eax 2
+        Call 'Kernel32.WriteFile' D@File, edx, eax, BytesTransfered, 0
+        Call EmitNewLine D@File
 
       ; Output Windows version
-        call GetWindowsVersionString
-        mov edi WindowsVersion | call StrLen
-        call 'Kernel32.WriteFile' D@File, WindowsVersion, eax, BytesTransfered, 0
-        call EmitNewLine D@File
-        call EmitNewLine D@File
+        Call GetWindowsVersionString
+        Mov edi WindowsVersion | Call StrLen
+        Call 'Kernel32.WriteFile' D@File, WindowsVersion, eax, BytesTransfered, 0
+        Call EmitNewLine D@File
+        Call EmitNewLine D@File
 
       ; Output exception info
-        mov edi ExceptionInfo | call StrLen
-        call 'Kernel32.WriteFile' D@File, ExceptionInfo, eax, BytesTransfered, 0
-        call EmitNewLine D@File
-        call EmitNewLine D@File
+        Mov edi ExceptionInfo | Call StrLen
+        Call 'Kernel32.WriteFile' D@File, ExceptionInfo, eax, BytesTransfered, 0
+        Call EmitNewLine D@File
+        Call EmitNewLine D@File
 
       ; Output reg contents
-        mov ebx D@Context
+        Mov ebx D@Context
 
-        mov edi RegContent | mov W$edi+1 'AX' | add edi 4
+        Mov edi RegContent | Mov W$edi+1 'AX' | add edi 4
         DwordToHex D$ebx+0B0
-        call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
+        Call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
 
-        mov edi RegContent | mov W$edi+1 'BX' | add edi 4
+        Mov edi RegContent | Mov W$edi+1 'BX' | add edi 4
         DwordToHex D$ebx+0A4
-        call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
+        Call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
 
-        mov edi RegContent | mov W$edi+1 'CX' | add edi 4
+        Mov edi RegContent | Mov W$edi+1 'CX' | add edi 4
         DwordToHex D$ebx+0AC
-        call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
+        Call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
 
-        mov edi RegContent | mov W$edi+1 'DX' | add edi 4
+        Mov edi RegContent | Mov W$edi+1 'DX' | add edi 4
         DwordToHex D$ebx+0A8
-        call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
+        Call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
 
-        mov edi RegContent | mov W$edi+1 'SI' | add edi 4
+        Mov edi RegContent | Mov W$edi+1 'SI' | add edi 4
         DwordToHex D$ebx+0A0
-        call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
+        Call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
 
-        mov edi RegContent | mov W$edi+1 'DI' | add edi 4
+        Mov edi RegContent | Mov W$edi+1 'DI' | add edi 4
         DwordToHex D$ebx+09C
-        call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
+        Call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
 
-        mov edi RegContent | mov W$edi+1 'BP' | add edi 4
+        Mov edi RegContent | Mov W$edi+1 'BP' | add edi 4
         DwordToHex D$ebx+0B4
-        call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
+        Call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
 
-        mov edi RegContent | mov W$edi+1 'SP' | add edi 4
+        Mov edi RegContent | Mov W$edi+1 'SP' | add edi 4
         DwordToHex D$ebx+0C4
-        call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
+        Call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
 
-        call 'Kernel32.CloseHandle' D@File
+        Call 'Kernel32.CloseHandle' D@File
     .EndIf
 
 EndP
@@ -194,22 +194,22 @@ ________________________________________________________________________________
 [OSVI_SIZE 148 OSVI_EX_SIZE 156]
 
 Win2003ServerProductType:
-    mov ax W$OSVersionInfo.SuiteMask
+    Mov ax W$OSVersionInfo.SuiteMask
     test ax &VER_SUITE_DATACENTER | jz L0>
-        mov esi {'Datacenter Edition' 0} | ret
+        Mov esi {'Datacenter Edition' 0} | ret
 L0: test ax &VER_SUITE_ENTERPRISE | jz L0>
-        mov esi {'Enterprise Edition' 0} | ret
+        Mov esi {'Enterprise Edition' 0} | ret
 L0: test ax 0400 | jz L0> ;&VER_SUITE_BLADE | jz L0>
-        mov esi {'Web Edition' 0} | ret
-L0: mov esi {'Standard Edition' 0}
+        Mov esi {'Web Edition' 0} | ret
+L0: Mov esi {'Standard Edition' 0}
 ret
 
 Win2000ServerProductType:
     test ax &VER_SUITE_DATACENTER | jz L0>
-        mov esi {'Datacenter Server' 0} | ret
+        Mov esi {'Datacenter Server' 0} | ret
 L0: test ax &VER_SUITE_ENTERPRISE | jz L0>
-        mov esi {'Advanced Server' 0} | ret
-L0: mov esi {'Server' 0}
+        Mov esi {'Advanced Server' 0} | ret
+L0: Mov esi {'Server' 0}
 ret
 
 Proc TestWinNTSP6a:
@@ -217,15 +217,15 @@ Proc TestWinNTSP6a:
 
     .If D$OSVersionInfo.MajorVersion = 4
         lea eax D@Key
-        call 'ADVAPI32.RegOpenKeyExA' &HKEY_LOCAL_MACHINE,
+        Call 'ADVAPI32.RegOpenKeyExA' &HKEY_LOCAL_MACHINE,
             {'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Hotfix\Q246009' 0},
             0, &KEY_QUERY_VALUE, eax
 
         If eax = &ERROR_SUCCESS
-            mov al 'a' | stosb
+            Mov al 'a' | stosb
         EndIf
 
-        call 'ADVAPI32.RegCloseKey' D@Key
+        Call 'ADVAPI32.RegCloseKey' D@Key
     .EndIf
 EndP
 
@@ -234,23 +234,23 @@ EndP
 Proc GetWindowsProductInfo:
     Local @Key
 
-    mov esi 0
+    Mov esi 0
 
-    mov D$OSVersionInfo.Size OSVI_EX_SIZE
-    call 'Kernel32.GetVersionExA' OSVersionInfo
+    Mov D$OSVersionInfo.Size OSVI_EX_SIZE
+    Call 'Kernel32.GetVersionExA' OSVersionInfo
     ...If eax = 1
 
       ; workstation
         ..If W$OsVersionInfo.ProductType = &VER_NT_WORKSTATION
             .If D$OSVersionInfo.MajorVersion = 4
-                mov esi {'Workstation 4.0' 0}
+                Mov esi {'Workstation 4.0' 0}
             .Else
-                mov ax W$OSVersionInfo.SuiteMask
+                Mov ax W$OSVersionInfo.SuiteMask
                 and ax 0200 ;&VER_SUITE_PERSONAL
                 If ax <> 0
-                    mov esi {'Home Edition' 0}
+                    Mov esi {'Home Edition' 0}
                 Else
-                    mov esi {'Professional' 0}
+                    Mov esi {'Professional' 0}
                 EndIf
             .EndIf
 
@@ -258,17 +258,17 @@ Proc GetWindowsProductInfo:
          ..Else
             .If D$OSVersionInfo.MajorVersion = 5
                 If D$OSVersionInfo.MinorVersion = 2
-                    call Win2003ServerProductType
+                    Call Win2003ServerProductType
                 ElseIf D$OSVersionInfo.MinorVersion = 0
-                    call Win2000ServerProductType
+                    Call Win2000ServerProductType
                 EndIf
             .Else
-                mov ax W$OSVersionInfo.SuiteMask
+                Mov ax W$OSVersionInfo.SuiteMask
                 and ax &VER_SUITE_ENTERPRISE
                 If ax <> 0
-                    mov esi {'Server 4.0 Enterprise' 0}
+                    Mov esi {'Server 4.0 Enterprise' 0}
                 Else
-                    mov esi {'Server 4.0' 0}
+                    Mov esi {'Server 4.0' 0}
                 EndIf
             .EndIf
          ..EndIf
@@ -276,36 +276,36 @@ Proc GetWindowsProductInfo:
     ...Else
 
         lea eax D@Key
-        call 'ADVAPI32.RegOpenKeyExA' &HKEY_LOCAL_MACHINE,
+        Call 'ADVAPI32.RegOpenKeyExA' &HKEY_LOCAL_MACHINE,
             {'SYSTEM\CurrentControlSet\Control\ProductOptions' 0},
             0, &KEY_QUERY_VALUE, eax
 
         On eax <> &ERROR_SUCCESS, ExitP
 
-        mov D$WinNTPTLen 80
-        call 'ADVAPI32.RegQueryValueExA' D@Key, {'ProductType' 0},
+        Mov D$WinNTPTLen 80
+        Call 'ADVAPI32.RegQueryValueExA' D@Key, {'ProductType' 0},
             0, 0, WinNTProductType, WinNTPTLen
 
         On eax <> &ERROR_SUCCESS, ExitP
         On D$WinNTPTLen > 80, ExitP
 
-        call 'ADVAPI32.RegCloseKey' D@Key
+        Call 'ADVAPI32.RegCloseKey' D@Key
 
         If D$WinNTProductType = 'WINN'
-            mov esi {'Workstation' 0}
+            Mov esi {'Workstation' 0}
         ElseIf D$WinNTProductType = 'LANM'
-            mov esi {'Server' 0}
+            Mov esi {'Server' 0}
         ElseIf D$WinNTProductType = 'SERV'
-            mov esi {'Advanced Server' 0}
+            Mov esi {'Advanced Server' 0}
         EndIf
 
     ...EndIf
 EndP
 
 IntToStr:
-    mov dl 0FF | push edx                       ; Push stack end mark
-    mov ecx 10
-L0: mov edx 0
+    Mov dl 0FF | push edx                       ; Push stack end mark
+    Mov ecx 10
+L0: Mov edx 0
     div ecx | push edx | cmp eax 0 | ja L0<     ; Push remainders
 L2: pop eax                                     ; Retrieve Backward
     cmp al 0FF | je L9>                         ; Over?
@@ -314,62 +314,62 @@ L9: ret
 
 Proc GetWindowsVersionString:
 
-    mov D$OSVersionInfo.Size OSVI_SIZE
-    call 'Kernel32.GetVersionExA' OSVersionInfo
+    Mov D$OSVersionInfo.Size OSVI_SIZE
+    Call 'Kernel32.GetVersionExA' OSVersionInfo
 
-    mov edi WindowsVersion
+    Mov edi WindowsVersion
 
     ..If D$OSVersionInfo.PlatformId = &VER_PLATFORM_WIN32_NT
 
       ; Major versions
         .If D$OSVersionInfo.MajorVersion = 5
             If D$OSVersionInfo.MinorVersion = 2
-                mov esi {'MS Windows Server 2003' 0}
+                Mov esi {'MS Windows Server 2003' 0}
             ElseIf D$OSVersionInfo.MinorVersion = 1
-                mov esi {'MS Windows XP' 0}
+                Mov esi {'MS Windows XP' 0}
             ElseIf D$OSVersionInfo.MinorVersion = 0
-                mov esi {'MS Windows 2000' 0}
+                Mov esi {'MS Windows 2000' 0}
             EndIf
         .ElseIf D$OSVersionInfo.MajorVersion <= 4
-            mov esi {'MS Windows NT' 0}
+            Mov esi {'MS Windows NT' 0}
         .EndIf
 
         While B$esi <> 0 | movsb | EndWhile
-        mov al ' ' | stosb
+        Mov al ' ' | stosb
 
       ; Service pack number
-        mov esi OSVersionInfo.CSDVersion
+        Mov esi OSVersionInfo.CSDVersion
         While B$esi <> 0 | movsb | EndWhile
-        call TestWinNTSP6a
+        Call TestWinNTSP6a
 
       ; Build number
-        mov esi {' Build ' 0}
+        Mov esi {' Build ' 0}
         While B$esi <> 0 | movsb | EndWhile
         movzx eax W$OSVersionInfo.BuildNumber
-        call IntToStr
-        mov al ' ' | stosb
+        Call IntToStr
+        Mov al ' ' | stosb
 
       ; Home / Professional / ...
-        call GetWindowsProductInfo
+        Call GetWindowsProductInfo
         If esi <> 0
             While B$esi <> 0 | movsb | EndWhile
-            mov al ' ' | stosb
+            Mov al ' ' | stosb
         EndIf
 
     ..ElseIf D$OSVersionInfo.PlatformId = &VER_PLATFORM_WIN32_WINDOWS
 
       ; Major versions
         .If D$OSVersionInfo.MajorVersion = 4
-            mov eax 0
+            Mov eax 0
             If D$OSVersionInfo.MinorVersion = 90
-                mov esi {'MS Windows ME' 0}
+                Mov esi {'MS Windows ME' 0}
             ElseIf D$OSVersionInfo.MinorVersion = 10
-                mov esi {'MS Windows 98' 0}
-                On B$OSVersionInfo.CSDVersion+1 = 'A', mov eax ' SE'
+                Mov esi {'MS Windows 98' 0}
+                On B$OSVersionInfo.CSDVersion+1 = 'A', Mov eax ' SE'
             ElseIf D$OSVersionInfo.MinorVersion = 0
-                mov esi {'MS Windows 95 ' 0}
-                On B$OSVersionInfo.CSDVersion+1 = 'B', mov eax 'OSR2'
-                On B$OSVersionInfo.CSDVersion+1 = 'C', mov eax 'OSR2'
+                Mov esi {'MS Windows 95 ' 0}
+                On B$OSVersionInfo.CSDVersion+1 = 'B', Mov eax 'OSR2'
+                On B$OSVersionInfo.CSDVersion+1 = 'C', Mov eax 'OSR2'
             EndIf
             While B$esi <> 0 | movsb | EndWhile
             stosd
@@ -377,12 +377,12 @@ Proc GetWindowsVersionString:
 
     ..ElseIf D$OSVersionInfo.PlatformId = &VER_PLATFORM_WIN32S
 
-        mov esi {'MS Win32s' 0}
+        Mov esi {'MS Win32s' 0}
         While B$esi <> 0 | movsb | EndWhile
 
     ..EndIf
 
-    mov B$edi 0
+    Mov B$edi 0
 EndP
 
 
