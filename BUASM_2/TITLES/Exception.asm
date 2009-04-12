@@ -24,8 +24,9 @@ Proc FinalExceptionHandler:
     Mov eax D@ExceptionInfo | Call GetExceptionInfo D$eax
     Mov eax D@ExceptionInfo | Call WriteCrashLog D$eax D$eax+4
 
-    Call 'User32.MessageBoxA' 0, ExceptionMessage,
-        {'RosAsm crashed' 0}, &MB_OK+&MB_ICONEXCLAMATION
+    Call MessageBox {B$ "BUAsm CRASHED:" EOS},
+                    ExceptionMessage,
+                    &MB_SYSTEMMODAL+&MB_ICONEXCLAMATION
 
     Call 'KERNEL32.SetErrorMode' &SEM_NOGPFAULTERRORBOX
 
@@ -34,26 +35,27 @@ EndP
 ____________________________________________________________________________________________
 
 
-[ExceptionMessage:
-"An exception occurred inside RosAsm. It must terminate now.
+[ExceptionMessage: B$
+"An exception occurred inside BUsm. It must terminate now.
 
                     YOUR WORK IS NOT LOST!
                 
 Your source has been saved at the path of your application.
-To continue working restart RosAsm, open your application
+To continue working restart BUAsm, open your application
 and replace the source.
 
 Please post a bug report describing how to reproduce this
 problem along with the crash.log (in the applications folder)
-at RosAsm board.
+at BUAsm board.
 
 Thank you and sorry for the inconvenience.
 
-" ExceptionInfo: "Exception occurred at address " ExceptionAddress: "########.
-" ExceptionDesc: B$ 0 #256]
+" ExceptionInfo: B$ "Exception occurred at address " ExceptionAddress: B$ "########.
+" ExceptionDesc: B$ 0 # &MAX_PATH]
 
-[Exception_AV: 'Access Violation! Attempt to ' AV_ReadWrite: '######### address ' AV_Address: '########.' 0]
-[Exception_other: 'Unknown exception. Code ' Exception_Code: '########' 0]
+[Exception_AV: B$ "Access Violation ! Attempt to " AV_ReadWrite: B$ "######### address " AV_Address: B$ "########." EOS]
+
+[Exception_other: B$ "Unknown exception. Code " Exception_Code: B$ "########" EOS]
 
 Proc GetExceptionInfo:
     Arguments @ExceptionRecord

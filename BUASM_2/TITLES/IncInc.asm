@@ -282,7 +282,7 @@ EndP
 ;;
 DisplayIncludeListCompilationDialog:
   Call 'USER32.DialogBoxParamA',
-   D$hInstance,
+   D$H.Instance,
    id_IncludeListCompilationDialog ,
    0,
    IncludeListCompilationDialogCallBack,
@@ -495,15 +495,25 @@ ReadIncFile:
         Mov D$bininc.filehandle eax
 
         .If eax = &INVALID_HANDLE_VALUE
-            Mov eax incinc.errornotfound | Call MessageBox
+
+            Call MessageBox D$STR.A.MessageWindowTitleError,
+                            incinc.errornotfound,
+                            &MB_USERICON+&MB_SYSTEMMODAL
+
             popad
+
             Mov eax &FALSE | ret
+
         .End_If
 
         Call 'KERNEL32.GetFileSize' eax, 0 | Mov D$bininc.filesize eax | add eax 4
 ;;
         .If eax > (1024*1024*2) ; 1MB
-            Mov eax incinc.errorsize | Call MessageBox
+
+            Call MessageBox D$STR.A.MessageWindowTitleError,
+                            incinc.errorsize,
+                            &MB_USERICON+&MB_SYSTEMMODAL
+
             Call 'KERNEL32.CloseHandle' D$bininc.filehandle
             popad
             jmp L8>>

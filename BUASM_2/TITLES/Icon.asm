@@ -609,7 +609,7 @@ GreenSlider:
     Call 'User32.CreateWindowExA' 0, TrackClassName, TrackTitle,
                                   &WS_CHILD+&WS_VISIBLE+&TBS_LEFT+&TBS_VERT,
                                   410, 25, 20, 265, D$IconEditorHandle, ID_TRACKBAR,
-                                  D$hinstance, 0
+                                  D$H.Instance, 0
     Mov D$GreenSliderHandle eax
     Call 'User32.SendMessageA' D$GreenSliderHandle  &TBM_SETRANGE 1 0FF_0000
     Mov eax D$SlideGreen | not al
@@ -706,8 +706,15 @@ OpenPeForReadingIcon:
     Call 'KERNEL32.CreateFileA' esi &GENERIC_READ, &FILE_SHARE_READ,
                                 0, &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-        Mov eax D$BusyFilePtr | Call MessageBox ;;;;| pop eax | ret  ; return to caller of caller
-        Mov D$iSourceHandle 0
+
+       Call MessageBox D$STR.A.MessageWindowTitleError,
+                       D$BusyFilePtr,
+                       &MB_USERICON+&MB_SYSTEMMODAL
+
+                ;;;;| pop eax | ret  ; return to caller of caller
+
+        Mov D$iSourceHandle &NULL
+
     Else
         Mov D$iSourceHandle eax
 
@@ -835,7 +842,11 @@ PeNotFound:      Mov eax NoPE
 L9: ;If B$Disassembling = &TRUE
     ;    Mov D$iExePtr 0 | ret  ; restored by Disassembler Call (used as Flag, here).
     ;End_If
-    Call MessageBox ;;;;| Call IconSearchOut ;| pop eax |
+    Call MessageBox D$STR.A.MessageWindowTitleError,
+                    eax,
+                    &MB_USERICON+&MB_SYSTEMMODAL
+
+      ;;;;| Call IconSearchOut ;| pop eax |
     ret     ;;;; return to caller of caller
 
 L7: Mov B$NoResourcesPE &TRUE ;;;;| Call IconSearchOut |
@@ -873,7 +884,9 @@ PeekIcon:
 ret
 
 
-[iDestinationHandle: 0  PokeSure: 'Ready to modify choosen PE?', 0   NullTitle: ' ', 0]
+[iDestinationHandle: 0]
+
+[PokeSure: B$ "Ready to modify choosen PE ?" EOS]
 
 ; Poke inside PE:
 
@@ -886,15 +899,24 @@ PokeIcon:
         .If B$PeIconFound = &TRUE
             Mov edi eax | Mov esi iIcon | rep movsb  ; Copying from ower buffer
             Call 'KERNEL32.CloseHandle' D$iSourceHandle | Mov D$iSourceHandle 0
-            Call 'USER32.MessageBoxA' D$H.MainWindow  PokeSure  NullTitle,
-                                    &MB_YESNO+&MB_ICONEXCLAMATION +&MB_SYSTEMMODAL
-            On eax = &IDNO, jmp L9>>
+
+            Call MessageBox {B$ "QUESTION:" EOS},
+                            PokeSure,
+                            &MB_SYSTEMMODAL+&MB_ICONEXCLAMATION+&MB_YESNO
+
+            On D$FL.MsgBoxReturn = &IDNO jmp L9>>
 
             Call 'KERNEL32.CreateFileA' iSaveFilter &GENERIC_WRITE,
                                         &FILE_SHARE_READ, 0,
                                         &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
             If eax = &INVALID_HANDLE_VALUE
-                Mov eax D$BusyFilePtr | Call MessageBox | ret
+
+               Call MessageBox D$STR.A.MessageWindowTitleError,
+                               D$BusyFilePtr,
+                               &MB_USERICON+&MB_SYSTEMMODAL
+
+                ret
+
             Else
                 Mov D$iDestinationHandle eax
             End_If
@@ -935,10 +957,15 @@ FIDentriesTable: FIwidth: B$ 020   FIheight: 020    FIcolorCount: 010  0
 
 
 
-[BadFIsiz: 'No 36/36 icon in this file (or too much colors)', 0]
+[BadFIsiz: B$ "No 36/36 icon in this file (or too much colors)" EOS]
 
-BadFIsize: Mov eax BadFIsiz | Call MessageBox | ret
+BadFIsize:
 
+    Call MessageBox D$STR.A.MessageWindowTitleError,
+                    BadFIsiz,
+                    &MB_USERICON+&MB_SYSTEMMODAL
+
+ret
 
 ReadIcoFile:
   ; Opening a .ico file:
@@ -953,7 +980,12 @@ ReadIcoFile:
                                 0, &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
                                               ; hTemplateFile
     If eax = &INVALID_HANDLE_VALUE
-      Mov eax D$BusyFilePtr | Call MessageBox | ret         ; return to caller of caller
+
+        Call MessageBox D$STR.A.MessageWindowTitleError,
+                        D$BusyFilePtr,
+                        &MB_USERICON+&MB_SYSTEMMODAL
+
+         ret ;  return to caller of caller
     Else
       Mov D$iSourceHandle eax
     End_If
@@ -982,7 +1014,7 @@ L1: On D$esi+8 <> 02E8, jmp BadFIsize
 ret
 
 
-[NewOnly: 'This option saves only new files', 0]
+[NewOnly: B$ "This option saves only new files" EOS]
 
 WriteIcoFile:
   ; Opening a .ico file:
@@ -995,7 +1027,13 @@ WriteIcoFile:
                                 &CREATE_NEW, &FILE_ATTRIBUTE_NORMAL, 0
 
     If eax = &INVALID_HANDLE_VALUE
-      Mov eax NewOnly | Call MessageBox | ret  ; return to caller of caller
+
+        Call MessageBox D$STR.A.MessageWindowTitleError,
+                        NewOnly,
+                        &MB_USERICON+&MB_SYSTEMMODAL
+
+        ret  ; return to caller of caller
+
     Else
       Mov D$iDestinationHandle eax
     End_If
@@ -1022,7 +1060,7 @@ ret
 
 IconEdition:
     If D$IconEditorHandle = 0
-        Call 'User32.DialogBoxIndirectParamA' D$hinstance, IconDialogData, D$H.MainWindow,
+        Call 'User32.DialogBoxIndirectParamA' D$H.Instance, IconDialogData, D$H.MainWindow,
                                               IconEditProc, 0
     Else
         Beep
@@ -1070,7 +1108,7 @@ Proc IconEditProc:
     ...Else_If D@msg = &WM_COMMAND
         .If D@wParam = &IDCANCEL
             Mov D$IconEditorHandle 0
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
         .Else_If D@wParam = ID_Inew
             Mov edi iIconAndMask, ecx 128, al 0FF | rep stosb
             Mov edi iIconXorMask, ecx 512, al 0   | rep stosb
@@ -1085,7 +1123,7 @@ Proc IconEditProc:
             Call WriteIcoFile
         .Else_If D@wParam = ID_iKeep
             move D$IconEditorHandle 0
-            Call StoreIcon | Call 'User32.EndDialog' D@hwnd 0
+            Call StoreIcon | Call WM_CLOSE
         .Else_If D@wParam = ID_Help
             Call Help, B_U_AsmName, IconHelp, ContextHlpMessage
         .Else
@@ -1094,12 +1132,12 @@ Proc IconEditProc:
 
     ...Else_If D@msg = &WM_INITDIALOG
         move D$IconEditorHandle D@hwnd
-        move D$icohInstance D$hInstance
-        move D$iOPESInstance D$hInstance
+        move D$icohInstance D$H.Instance
+        move D$iOPESInstance D$H.Instance
         move D$icohwndFileOwner D@hwnd
         move D$ihwndPEFileOwner D@hwnd
         Call CreateIconBrushes
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
 
     ...Else_If D@msg = &WM_Close
         Mov D$IconEditorHandle 0

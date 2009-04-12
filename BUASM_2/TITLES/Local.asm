@@ -225,7 +225,10 @@ ________________________________________________________________________________
 ; 'LocalChunksTable'
 [MemAddrList: ? #5000 ]
 TestLocals:
-    Call 'USER32.MessageBoxA' 0, {'Ready to test Local Engine', 0}, {'TestLocals', 0}, 0
+
+    Call MessageBox {B$ "TestLocals" EOS},
+                    {B$ "Ready to test Local Engine" EOS},
+                     &MB_SYSTEMMODAL+&MB_USERICON
 
     LocalAlloc LocalTest1, 25
     LocalAlloc LocalTest2, 250
@@ -255,7 +258,10 @@ TestLocals:
     LocalFree D$LocalTest1
    ; int3
 
-    Call 'USER32.MessageBoxA' 0, {'test done', 0}, {'TestLocals', 0}, 0
+    Call MessageBox {B$ "TestLocals" EOS},
+                    {B$ "test done" EOS},
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
 ret
 
 
@@ -323,11 +329,17 @@ AllocationTest:
     Call 'USER32.GetDlgItemInt' D$TestLocalTableHandle, 20, 0, 0
 
     If eax = 0
-        Call 'USER32.MessageBoxA' 0, {'Set some number of Chunks (1 to 1024)', 0},
-                                     {'LocalTests', 0}, &MB_SYSTEMMODAL
+
+        Call MessageBox {B$ "Local tests" EOS},
+                        {B$ "Set some number of Chunks (1 to 1024)" EOS},
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
     Else_If eax > (01000/4)
-        Call 'USER32.MessageBoxA' 0, {'Set some number of Chunks (1 to 1024)', 0},
-                                     {'LocalTests', 0}, &MB_SYSTEMMODAL
+
+        Call MessageBox {B$ "Local tests" EOS},
+                        {B$ "Set some number of Chunks (1 to 1024)" EOS},
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
     Else
         Mov ecx eax
 

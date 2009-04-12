@@ -121,8 +121,8 @@ SetSimpleSearchBox:
     Mov edi FRdialog | add edi 8
     Mov ax 08 | stosw | Mov eax 0 | stosd | Mov eax 0_3D_00CB | stosd  ; U$ 04 0 0 0CB 03D
 
-L9: If D$FindReplaceHandle = 0
-        Call 'User32.CreateDialogIndirectParamA' D$hinstance, FRdialog, D$H.MainWindow, FRproc, 0
+L9: If D$H.FindReplace = 0
+        Call 'User32.CreateDialogIndirectParamA' D$H.Instance, FRdialog, D$H.MainWindow, FRproc, 0
     Else
         Beep
     End_If
@@ -184,17 +184,17 @@ ret
 ; Set them all to previous state (third parameter) at initialisation time:
 
 SetSearchFlagButtons:
-    Call 'User32.GetDlgItem' D$FindReplaceHandle, FR_DOWN
+    Call 'User32.GetDlgItem' D$H.FindReplace, FR_DOWN
     Call 'User32.SendMessageA' eax, &BM_SETCHECK, D$DownSearch, 0
 
-    Call 'User32.GetDlgItem' D$FindReplaceHandle, FR_UP
+    Call 'User32.GetDlgItem' D$H.FindReplace, FR_UP
     Mov ebx D$DownSearch | xor ebx &TRUE
     Call 'User32.SendMessageA' eax, &BM_SETCHECK, ebx, 0
 
-    Call 'User32.GetDlgItem' D$FindReplaceHandle, FR_MATCHCASE
+    Call 'User32.GetDlgItem' D$H.FindReplace, FR_MATCHCASE
     Call 'User32.SendMessageA' eax, &BM_SETCHECK, D$CaseSearch, 0
 
-    Call 'User32.GetDlgItem' D$FindReplaceHandle, FR_WHOLEWORD
+    Call 'User32.GetDlgItem' D$H.FindReplace, FR_WHOLEWORD
     Call 'User32.SendMessageA' eax, &BM_SETCHECK, D$WholeWordSearch, 0
 ret
 
@@ -257,17 +257,16 @@ ret
 
 _____________________________________________________________________________________
 
-[FinfOrReplace: ?    FindReplaceHandle: ?]
+[FinfOrReplace: D$ ?
+ H.FindReplace: D$ ?]
 
 Proc FRproc:
     Arguments @hwnd, @msg, @wParam, @lParam
 
-    pushad
-
     ...If D@msg  = &WM_INITDIALOG
         Mov B$ShiftBlockInside &FALSE
 
-        move D$FindReplaceHandle D@hwnd
+        move D$H.FindReplace D@hwnd
         Mov B$FinfOrReplace &FALSE                  ; flag 0 for Search / 1 Replace
         Call 'User32.GetDlgItem' D@hwnd 012C     ; 012C = our Find Edit Box
         Mov D$UserSearchStringHandle eax
@@ -276,14 +275,14 @@ Proc FRproc:
         Call RestoreSearchStrings
         Call SetSearchFlagButtons
         Call 'User32.SetFocus' D$UserSearchStringHandle  ; return 0  to
-        Call 'USER32.SetClassLongA' D$FindReplaceHandle &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         jmp L8>>                                        ; keep focus to first edit control
 
     ...Else_If D@msg = &WM_COMMAND
         Mov eax D@wParam
         .If eax = &FR_DIALOGTERM
 L0:         Call StoreSearchStrings
-            Mov D$FindReplaceHandle 0
+            Mov D$H.FindReplace 0
             Call 'User32.DestroyWindow' D@hwnd
         .Else_If eax = &FR_FINDNEXT
 L1:         Call GetUserSearchString
@@ -333,15 +332,15 @@ L1:         Call GetUserSearchString
         Call 'USER32.SetFocus' D@hwnd
 
     ...Else_If D@msg = &WM_CTLCOLOREDIT
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+
+        Call WM_CTLCOLOREDIT | Return
 
     ...Else
-L8:     popad | Mov eax &FALSE | jmp L9>
+L8:     Return &FALSE
 
     ...End_If
 
-    popad | Mov eax &TRUE
+    Mov eax &TRUE
 
 L9: EndP
 
@@ -461,9 +460,15 @@ L6: lodsb | cmp al LF | ja L6<
 
 L8: cld
     If B$OnReplaceAll = &FALSE
-        Mov eax StringNotFound | Call MessageBox            ; if not found
+
+        Call MessageBox D$STR.A.MessageWindowTitleError,
+                        StringNotFound,
+                        &MB_USERICON+&MB_SYSTEMMODAL
+
         Mov B$StringFound &FALSE
+
     End_If
+
     Mov D$NextSearchPos 0
 
 L9: cld | On B$Disassembling = &FALSE, Call AskForRedrawNow
@@ -506,19 +511,23 @@ StringReplace:
 ret
 
 
-[AllDanger: "
+[AllDanger: B$ "
 
   Are you sure you want 'replace all' ?
 
-", 0  AllTitle: 'Danger:', 0]
+" EOS]
+
+[AllTitle: B$ "DANGER:" EOS]
 
 [OnReplaceAll: SilentSearch: ?]
 
 StringReplaceAll:
-    Call 'USER32.MessageBoxA' D$H.MainWindow, AllDanger, AllTitle,
-                              &MB_ICONQUESTION+&MB_YESNO+&MB_SYSTEMMODAL
 
-    ..If eax = &IDYES
+    Call MessageBox AllTitle,
+                    AllDanger,
+                    &MB_SYSTEMMODAL+&MB_ICONQUESTION++&MB_YESNO
+
+    ..If D$FL.MsgBoxReturn = &IDYES
         Mov B$OnReplaceAll &TRUE
 
 L0:     Call RestoreRealSource
@@ -536,10 +545,11 @@ ret
 ;StringReplaceAll:
     Mov B$ShiftBlockInside &FALSE
 
-    Call 'USER32.MessageBoxA' D$H.MainWindow, AllDanger, AllTitle,
-                              &MB_ICONQUESTION+&MB_YESNO+&MB_SYSTEMMODAL
+    Call MessageBox AllTitle,
+                    AllDanger,
+                    &MB_SYSTEMMODAL+&MB_ICONQUESTION++&MB_YESNO
 
-    ..If eax = &IDYES
+    ..If D$FL.MsgBoxReturn = &IDYES
         Mov B$OnReplaceAll &TRUE
 L0:     Call RestoreRealSource
         Call StringSearch | cmp B$BlockInside &TRUE | jne L9>

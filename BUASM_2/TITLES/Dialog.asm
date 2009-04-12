@@ -148,17 +148,17 @@ D$ &WS_CHILD&WS_VISIBLE+&LBS_HASSTRINGS+&LBS_NOTIFY+&WS_VSCROLL+&WS_HSCROLL+&ES_
 
     You must set the ID number of last created control.
 
-    Unlike the Menu Editor, the Dialog Editor will not do this for you    
+    Unlike the menu editor, the dialog editor will not do this for you    
     and let you free of your equates choices.
 
     1) You are allowed to give the same ID number to several controls
 
-    2) The Dialog Editor have no way to save your Equates Names
+    2) The dialog editor have no way to save your Equates Names
         nor to set them for you as the names MUST be unique.
 
     So >>> paper / pencil...
 
-    ", 0]
+    " EOS]
 
 ;;
  Of no use now, but of some interrest:
@@ -205,7 +205,13 @@ D$ &WS_CHILD&WS_VISIBLE+&LBS_HASSTRINGS+&LBS_NOTIFY+&WS_VSCROLL+&WS_HSCROLL+&ES_
 
 AddOneControl:
     If W$PreviousControlID = 0
-        Call 'USER32.MessageBoxA' D$H.MainWindow, IDFstring, CCFtitle, &MB_SYSTEMMODAL | ret
+
+        Call MessageBox argh,
+                        IDFstring,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret
+
     Else
         Mov W$PreviousControlID 0            ; for next time test (filled -or not- by user)
     End_If
@@ -272,7 +278,7 @@ ShowDialogResult:
         and D$eax 0FFF_FFFF | or D$eax &WS_VISIBLE__&WS_POPUP
 
         Call 'User32.DestroyWindow' D$EditedDialogHandle
-        Call 'User32.CreateDialogIndirectParamA' D$hinstance, D$EditedDialogBoxData,
+        Call 'User32.CreateDialogIndirectParamA' D$H.Instance, D$EditedDialogBoxData,
                                                  D$H.MainWindow, EditedDialogBoxProc, 0
         Mov D$EditedDialogHandle eax
 
@@ -1153,11 +1159,11 @@ ReInitDialogEdition:
     push D$eax
         and D$eax 0FFF_FFFF | or D$eax 0_9000_0000
 
-        Call 'User32.CreateDialogIndirectParamA' D$hinstance, D$EditedDialogBoxData,
+        Call 'User32.CreateDialogIndirectParamA' D$H.Instance, D$EditedDialogBoxData,
                                                  D$EditWindowHandle, EditedDialogBoxProc, 0
         Mov D$EditedDialogHandle eax
 
-        Call 'User32.DialogBoxIndirectParamA' D$hinstance,      ; "create..." > modeless
+        Call 'User32.DialogBoxIndirectParamA' D$H.Instance,      ; "create..." > modeless
                     DialogBoxData, 0, EditDialogBoxProc, 0      ; "Dialog..." > modal
       ; Editor Handle in 'DialogEditorHandle'.
 
@@ -1204,10 +1210,15 @@ L0:     Mov esi DialogList
         While D$esi <> 0
             Mov eax D$esi
             If eax = D@ID
-                Call WriteDecimalID, eax, DoubleID
-                Call 'USER32.MessageBoxA' D@Parent, {'This Dialog ID already exist', 0},
-                                          DoubleID, &MB_OK
-                Mov eax &IDCANCEL | ExitP
+
+                Call WriteDecimalID eax,
+                                    DoubleID
+
+                Call MessageBox {B$ "THIS DIALOG ID ALREADY EXIST" EOS},
+                                DoubleID,
+                                &MB_SYSTEMMODAL+&MB_USERICON
+
+                Mov D$FL.MsgBoxReturn &IDCANCEL | ExitP
             Else
                 add esi 12 | add edi 12
             End_If
@@ -1275,8 +1286,6 @@ ret
 
 Proc EditDialogBoxProc:
     Arguments @hwnd, @msg, @wParam, @lParam
-
-    pushad
 
     .If B$OnMenuEdition = &TRUE
         If D@msg = &WM_NOTIFY
@@ -1375,7 +1384,7 @@ L1:         Call Help, B_U_AsmName, DialogHelp, ContextHlpMessage | jmp L7>>
             Mov ebx 12 | Call ExitDialog | jmp L7>>
 
         .Else_If D@wParam = &IDCANCEL
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
             Call 'User32.DestroyWindow' D$EditedDialogHandle
             Mov D$DialogEditorHandle 0, D$EditedDialogHandle 0
             Mov B$OnDialogEdition &FALSE, B$DialogLoadedFromResources &FALSE | jmp L7>>
@@ -1458,20 +1467,19 @@ L2:             Call 'User32.SetForegroundWindow' D$DialogEditorHandle
         End_If
         Mov B$OnDialogEdition &TRUE
 
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
 
     ...Else_If D@msg = &WM_CTLCOLORLISTBOX
         jmp L1>
 
     ...Else_If D@msg = &WM_CTLCOLOREDIT
-L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+L1:     Call WM_CTLCOLOREDIT | Return
 
     ...Else
-L8:     popad | Mov eax &FALSE | jmp L9>
+L8:     Return &FALSE
     ...End_If
 
-L7: popad | Mov eax &TRUE
+L7: Mov eax &TRUE
 
 L9: EndP
 
@@ -1875,7 +1883,7 @@ L0: push ecx
             Mov eax D$esi+4 | add eax 6
             Call 'User32.CreateWindowExA'  0, StaticClassName, 0,
                                            &WS_CHILD+&WS_VISIBLE+&SS_SIMPLE, 2, eax,
-                                           120 20, D$DialogEditorHandle 0 D$hInstance 0
+                                           120 20, D$DialogEditorHandle 0 D$H.Instance 0
         pop ebx, esi
         Mov D$DialogControlsHandles+ebx eax
         push esi, ebx
@@ -1887,7 +1895,7 @@ L0: push ecx
         push esi, ebx
             Call 'User32.CreateWindowExA'  0  EditClass  0,
                       &WS_CHILD+&WS_VISIBLE+&WS_BORDER+&ES_NUMBER+&ES_RIGHT+&ES_MULTILINE,
-                      80 D$esi+4  45 20, D$DialogEditorHandle 0 D$hInstance 0
+                      80 D$esi+4  45 20, D$DialogEditorHandle 0 D$H.Instance 0
         pop ebx, esi
         Mov D$DialogControlsHandles+ebx+4 eax
 
@@ -1895,7 +1903,7 @@ L0: push ecx
         push esi, ebx
             Call 'Comctl32.CreateUpDownControl',
               &WS_CHILD+&WS_BORDER+&WS_VISIBLE+&UDS_SETBUDDYINT+&UDS_NOTHOUSANDS+&UDS_HORZ,
-                      130 D$esi+4 20 20, D$DialogEditorHandle, 102, D$Hinstance,
+                      130 D$esi+4 20 20, D$DialogEditorHandle, 102, D$H.Instance,
                       eax  2000 0  D$esi+8
         pop ebx, esi
         Mov D$DialogControlsHandles+ebx+8 eax
@@ -1926,7 +1934,7 @@ ________________________________________________________________________________
 ShowTitleControl:
     Call 'User32.CreateWindowExA' 0  EditClass  0,
                      &WS_CHILD+&WS_VISIBLE+&WS_BORDER+&ES_AUTOHSCROLL+&ES_MULTILINE,
-                                 2 200 145 20, D$DialogEditorHandle 0 D$hInstance 0
+                                 2 200 145 20, D$DialogEditorHandle 0 D$H.Instance 0
     Mov D$DialogControlsHandles eax
 
   ; Copy data title (without quotes and comments) in TitleEditText:
@@ -2000,7 +2008,7 @@ ShowFontControls:
   ; Font Type edition combo box:
     Call 'User32.CreateWindowExA'  0, ComboClass, 0,
 &WS_CHILD+&WS_VISIBLE+&WS_BORDER+&CBS_HASSTRINGS+&CBS_AUTOHSCROLL+&CBS_DROPDOWNLIST+&WS_VSCROLL+&ES_AUTOVSCROLL,
-                      2, 240, 145, 220, D$DialogEditorHandle, 0, D$hInstance, 0
+                      2, 240, 145, 220, D$DialogEditorHandle, 0, D$H.Instance, 0
     Mov D$DialogControlsHandles eax
 
   ; Copy data font text (without quotes and comments) in TitleEditText:
@@ -2029,7 +2037,7 @@ ShowFontControls:
   ; Font size edition box:
     Call 'User32.CreateWindowExA'  0, ComboClass  0,
     &WS_CHILD+&WS_VISIBLE+&WS_BORDER+&CBS_HASSTRINGS+&CBS_AUTOHSCROLL+&CBS_DROPDOWNLIST+&WS_VSCROLL+&ES_AUTOVSCROLL,
-                                  100, 200, 47, 150, D$DialogEditorHandle, 0, D$hInstance, 0
+                                  100, 200, 47, 150, D$DialogEditorHandle, 0, D$H.Instance, 0
     Mov D$DialogControlsHandles+4 eax
 
     Call SearchFontIndex
@@ -4551,7 +4559,7 @@ SSCkeckBoxes:
         push eax, ebx, esi
             Call 'User32.CreateWindowExA' 0, ButtonClassName, esi,
                            &WS_CHILD__&WS_VISIBLE__&BS_AUTOCHECKBOX,
-                           16, eax, 140, 10, D$DialogEditorHandle, 0, D$hInstance, 0
+                           16, eax, 140, 10, D$DialogEditorHandle, 0, D$H.Instance, 0
             pop esi, ebx | push ebx, esi
             Mov D$DialogControlsHandles+ebx eax
             Call 'User32.SendMessageA' eax &WM_SETFONT D$MyFontHandle &TRUE
@@ -4561,7 +4569,7 @@ SSCkeckBoxes:
           ; This is the little Style [?] Buttons:
             Call 'User32.CreateWindowExA' 0, ButtonClassName, QuestionMark,
                            &WS_CHILD__&WS_VISIBLE,
-                           2, eax, 12, 12, D$DialogEditorHandle, 0, D$hInstance, 0
+                           2, eax, 12, 12, D$DialogEditorHandle, 0, D$H.Instance, 0
             Mov D$StyleHelpButtonsHandles+ebx eax
             Call 'User32.SendMessageA' eax &WM_SETFONT D$MyFontHandle &TRUE
         pop edi
@@ -4598,16 +4606,13 @@ ________________________________________________________________________________
 Proc HelpDialogProc:
     Arguments @hwnd, @msg, @wParam, @lParam
 
-    pushad
-
-    .If D@msg = &WM_INITDIALOG
+   .If D@msg = &WM_INITDIALOG
       ; lParam >>> InitValue >>> set Text...
         Call 'USER32.SetDlgItemTextA' D@hwnd, 1, D@lParam
 
     .Else_If D@msg = &WM_CTLCOLOREDIT
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        Call 'USER32.SendMessageA' D@lParam &EM_SETSEL 0 0
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>>
+
+        Call WM_CTLCOLOREDIT | Return
 
     .Else_If D@msg = &WM_PARENTNOTIFY
         jmp L4>
@@ -4629,14 +4634,14 @@ Proc HelpDialogProc:
 L4:         Call 'USER32.SetFocus' D$DialogListHandle
             jmp L5>
         Else_If eax = &EN_KILLFOCUS
-L5:         Call 'User32.EndDialog' D@hwnd 0
+L5:         Call WM_CLOSE
         End_If
 
     .Else
-L8:     popad | Mov eax &FALSE | jmp L9>
+L8:     Return &FALSE
     .End_If
 
-    popad | Mov eax &TRUE
+    Mov eax &TRUE
 
 L9: EndP
 
@@ -4651,13 +4656,14 @@ L9: EndP
 
   Set the Class first
 
-  ", 0
-
-    CCFtitle: "Arghhhhhh!!!!... " 0]
-
+  " EOS]
 
 ControlClassFirst:
-    Call 'USER32.MessageBoxA' D$H.MainWindow, CCFstring, CCFtitle, &MB_SYSTEMMODAL
+
+    Call MessageBox argh,
+                    CCFstring,
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
 ret
 
 ; from line pointed by user, searches what class and return in edi:ebx
@@ -4722,7 +4728,7 @@ ShowIDcontrols:
     push ebx
         Call 'USER32.CreateWindowExA' 0, EditClass, 0,
              &WS_CHILD+&WS_VISIBLE+&WS_BORDER+&ES_NUMBER+&ES_RIGHT+&ES_MULTILINE,
-             80, 200, 45, 20, D$DialogEditorHandle, 0, D$hInstance, 0
+             80, 200, 45, 20, D$DialogEditorHandle, 0, D$H.Instance, 0
         Mov D$DialogControlsHandles eax
         Call 'User32.GetDlgCtrlID' eax
     pop ebx
@@ -4731,7 +4737,7 @@ ShowIDcontrols:
 
     Call 'USER32.CreateWindowExA' 0, EditClass, 0,
              &WS_CHILD+&WS_VISIBLE+&ES_MULTILINE+&ES_READONLY,
-             4, 250, 140, 200, D$DialogEditorHandle, 0, D$hInstance, 0
+             4, 250, 140, 200, D$DialogEditorHandle, 0, D$H.Instance, 0
     Mov D$DialogControlsHandles+4 eax
     Call 'USER32.SendMessageA' eax, &WM_SETTEXT, 0, ID_Message
     Call 'USER32.SendMessageA' D$DialogControlsHandles+4, &WM_SETFONT, D$MyFontHandle, &TRUE
@@ -4828,7 +4834,7 @@ ret
 ShowClassControls:
     Call 'User32.CreateWindowExA'  0, ComboClass, 0,
 &WS_CHILD+&WS_VISIBLE+&WS_BORDER+&CBS_HASSTRINGS+&CBS_AUTOHSCROLL+&CBS_DROPDOWNLIST+&WS_VSCROLL+&ES_AUTOVSCROLL,
-                                  2, 200, 145, 320, D$DialogEditorHandle, 0, D$hInstance, 0
+                                  2, 200, 145, 320, D$DialogEditorHandle, 0, D$H.Instance, 0
     Mov D$DialogControlsHandles eax
 
     ; Copy data font text (without quotes and comments) in TitleEditText:
@@ -4877,8 +4883,11 @@ ret
 
 
 NoDialogMenu:
-    Call 'USER32.MessageBoxA', 0, {'There is no Menu in this Dialog', 0},
-                              {' Dialog Menu', 0}, &MB_SYSTEMMODAL
+
+    Call MessageBox {B$ "DIALOG MENU" EOS},
+                    {B$ "There is no menu in this dialog" EOS},
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
 ret
 
 
@@ -4962,7 +4971,7 @@ ret
 ;;
 
 AddMenuToDialog:
-    Call 'USER32.DialogBoxParamA' D$hinstance 31555 &NULL NewOrExistingMenuProc &NULL
+    Call 'USER32.DialogBoxParamA' D$H.Instance 31555 &NULL NewOrExistingMenuProc &NULL
 
     .If B$NewOrExistingMenuChoice = 6           ; New.
         Call NewMenu | Mov D$ActualMenutestID 0
@@ -5543,7 +5552,7 @@ ShowStyleInfo:
 
     sub esi 4 | sub esi StyleHelpButtonsHandles | add esi eax
 
-    Call 'USER32.CreateDialogIndirectParamA' D$hinstance, HelpDialog, ecx,
+    Call 'USER32.CreateDialogIndirectParamA' D$H.Instance, HelpDialog, ecx,
                                              HelpDialogProc, D$esi
 
 ret
@@ -5734,7 +5743,7 @@ ________________________________________________________________________________
 
      Call 'User32.CreateWindowExA'  0  EditClass  0,
              WS_CHILD+WS_VISIBLE+WS_BORDER+ES_NUMBER+ES_RIGHT+ES_MULTILINE,
-             80 D$esi+4  45 20, D$EDBPadressee 0 D$hInstance 0
+             80 D$esi+4  45 20, D$EDBPadressee 0 D$H.Instance 0
 
  ... just like any other ones...
 ;;
@@ -5816,19 +5825,23 @@ L0: Mov eax ebx | and eax 0_F000 | shr eax 12
 ret
 ____________________________________________________________________________________
 
-[DelMessage:"
+[DelMessage: B$ "
 
     To delete a control:
 
       Select any record in the control you want to delete.       
       Do not select a separator empty line.
-      Do not select a Dialog box record.
-    ", 0
+      Do not select a dialog box record.
+    " EOS]
 
- Wahoo: ' Whahooo!!!...', 0]
+[Wahoo: B$ "Whahooo !!!:" EOS]
 
 OutDelOneControl:
-    Call 'USER32.MessageBoxA' D$H.MainWindow, DelMessage, Wahoo, &MB_SYSTEMMODAL
+
+    Call MessageBox Wahoo,
+                    DelMessage,
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
 ret
 
 
@@ -6052,7 +6065,13 @@ SaveDialogToDisk:
                                &FILE_SHARE_READ, 0,
                                &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-        Mov eax D$BusyFilePtr | Call MessageBox | jmp L9>>
+
+        Call MessageBox D$STR.A.MessageWindowTitleError,
+                        D$BusyFilePtr,
+                        &MB_USERICON+&MB_SYSTEMMODAL
+
+        jmp L9>>
+
     End_If
 
     Mov D$DestinationHandle eax, D$NumberOfReadBytes 0
@@ -6096,7 +6115,7 @@ OpenDlgFile:
     Mov D$OtherFilesFilters DialogFilesFilters
     Mov D$OpenOtherFileTitle DialogFilesTitle
 
-    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$hInstance
+    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$H.Instance
 
     Mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
     Call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
@@ -6109,7 +6128,13 @@ OpenDlgFile:
                                 &FILE_SHARE_READ, 0,
                                 &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-      Mov eax D$BusyFilePtr | Call MessageBox | pop eax | ret  ; return to caller of caller
+
+        Call MessageBox D$STR.A.MessageWindowTitleError,
+                        D$BusyFilePtr,
+                        &MB_USERICON+&MB_SYSTEMMODAL
+
+      pop eax | ret  ; return to caller of caller
+
     Else
       Mov D$OtherSourceHandle eax
     End_If
@@ -6131,7 +6156,7 @@ ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
-[argh: 'Arghhh!!!...', 0]
+[argh: B$ "ARGHHH !!!:" EOS]
 
 [ClipBoardEnd: ?  OnClipDialog: ?]
 
@@ -6218,15 +6243,19 @@ ret
 [OK_ID 0DF  IDNumberEdit 0DE  Abort_ID 0E0]
 
 
-[EIDNMessage: "
+[EIDNMessage: B$ "
 
     Dialog ID numbers can't be greater than 0FFFF (65535)    
 
-", 0]
+" EOS]
 
 
 ErrorIDnumber:
-    Call 'USER32.MessageBoxA' D$H.MainWindow, EIDNMessage, Wahoo, &MB_SYSTEMMODAL
+
+    Call MessageBox Wahoo,
+                    EIDNMessage,
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
 ret
 
 
@@ -6262,7 +6291,7 @@ L0:         Mov edx 0 | div ebx
             Mov edi IDString, ebx 10 | add edi 9 | jmp L0<
         End_If
 
-        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
+        Call SetIconDialog
 
     ...Else_If D@msg = &WM_COMMAND
         ..If W@wParam = OK_ID
@@ -6284,12 +6313,12 @@ L0:         Mov edx 0 | div ebx
                 Else
                     Mov edi D$DialogListPtr | stosd | add D$DialogListPtr 4
                 End_If
-                Call 'User32.EndDialog' D@hwnd, 0
+                Call WM_CLOSE
             .End_If
 
         ..Else_If W@wParam = Abort_ID
             Mov B$UserAbortID &TRUE
-            Call 'User32.EndDialog' D@hwnd, 0
+            Call WM_CLOSE
         ..End_If
 
     ...Else
@@ -6313,7 +6342,7 @@ SaveNewResourceDialog:
     push ecx
         VirtualAlloc TempoMemPointer ecx                ; new memory for dialog data
 
-        Call 'User32.DialogBoxIndirectParamA' D$hinstance,
+        Call 'User32.DialogBoxIndirectParamA' D$H.Instance,
                WhatDialogIDData, 0, WhatDialogIdProc, 0 ; write ID in list <<<<<<<<
 
         If B$UserAbortID = &TRUE
@@ -6402,7 +6431,7 @@ ________________________________________________________________________________
 
 
 SaveResourceDialog:
-    Call 'User32.DialogBoxIndirectParamA' D$hinstance,
+    Call 'User32.DialogBoxIndirectParamA' D$H.Instance,
               WhatDialogIDData  0  WhatDialogIdProc 0   ; write ID in list <<<<<<<<
 
     If B$UserAbortID = &TRUE
@@ -6726,11 +6755,11 @@ ________________________________________________________________________________
  We now simply translate to text version before runing edition:
 ;;
 
-[NoResourceDialog: "
+[NoResourceDialog: B$ "
 
-    There is no Resources Dialog in this PE      
+    There is no resources dialog in this PE      
 
-", 0]
+" EOS]
 
 
 LoadFromResources:
@@ -6741,7 +6770,12 @@ LoadFromResources:
 
     Mov esi DialogList
     .If D$esi  = 0                    ; empty? > out
-        Call 'USER32.MessageBoxA' D$H.MainWindow, NoResourceDialog, Argh, &MB_SYSTEMMODAL | ret
+
+        Call MessageBox Argh,
+                        NoResourceDialog,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret
 
     .Else_If D$esi+12 = 0               ; only one resource? > OK
         Mov D$WhatDialogListPtr DialogList+4
@@ -6885,18 +6919,23 @@ L9:     VirtualFree D$CodeSourceA, D$CodeSourceB
 ret
 ____________________________________________________________________________________________
 
-[NoMenuMessage: "
-This Dialog Template cannot be loaded because it    
-includes a Menu that is not found in the actual
-Resources.
+[NoMenuMessage: B$ "
+This dialog template cannot be loaded because it    
+includes a menu that is not found in the actual
+resources.
 
                             Menu"
 
-MissingMenuID: "         ", 0]
+MissingMenuID: "         " EOS]
 
 NoSuchMenu:
+
     Call WriteDecimalID eax, MissingMenuID
-    Call 'USER32.MessageBoxA' D$H.MainWindow, NoMenuMessage, Argh, &MB_OK
+
+    Call MessageBox Argh,
+                    NoMenuMessage,
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
 ret
 ____________________________________________________________________________________________
 
@@ -6925,12 +6964,12 @@ WhatResourceTemplate:
 
         Call FromBinToTextTemplate | Call FromTextToBinTemplate
 
-        Call 'User32.CreateDialogIndirectParamA' D$hinstance, D$EditedDialogBoxData,
+        Call 'User32.CreateDialogIndirectParamA' D$H.Instance, D$EditedDialogBoxData,
                                                  D$EditWindowHandle, EditedDialogBoxProc, 0
         Mov D$ChoiceDialogHandle eax
 
         Call SetNextChoiceID
-        Call 'User32.DialogBoxIndirectParamA' D$hinstance, ChoiceBar, D$H.MainWindow, ChoiceDialogBoxProc, DialogList
+        Call 'User32.DialogBoxIndirectParamA' D$H.Instance, ChoiceBar, D$H.MainWindow, ChoiceDialogBoxProc, DialogList
       ; This is the deletion of the viewed Dialog (not of the Choice Bar Dialog):
         Call 'User32.EndDialog' D$ChoiceDialogHandle 0
 
@@ -7000,12 +7039,12 @@ L0:         add D$WhatDialogListPtr 12 | Mov eax D$WhatDialogListPtr
         .End_If
 
         Mov D$ChoiceDialogBoxHandle 0
-        Call 'User32.EndDialog' D@hwnd 0
+        Call WM_CLOSE
 
     ...Else_If D@msg = &WM_INITDIALOG
         move D$ChoiceDialogBoxHandle D@hwnd, D$ListOrigin D@lParam
 
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Call 'USER32.GetWindowPlacement' D@hwnd Control
         Mov eax D$Control.rcNormalPosition.top | shr eax 2
         add D$Control.rcNormalPosition.top eax
@@ -7036,15 +7075,24 @@ DeleteDialog:
     Call InitDialogMemory
     Mov esi DialogList
     .If D$esi  = 0                                          ; empty? > out
-        Call 'USER32.MessageBoxA' D$H.MainWindow, NoResourceDialog, Argh, &MB_SYSTEMMODAL | ret
+
+         Call MessageBox Argh,
+                         NoResourceDialog,
+                         &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret
+
     .Else                                                   ; Wich resources to kill?
         Call WhatResourceTemplate
     .End_If
     Mov eax D$WhatDialogListPtr
-    Call 'User32.CreateDialogIndirectParamA' D$hinstance, D$eax, D$H.MainWindow, EditedDialogBoxProc 0
+    Call 'User32.CreateDialogIndirectParamA' D$H.Instance, D$eax, D$H.MainWindow, EditedDialogBoxProc 0
         Mov D$ChoiceDialogHandle eax
 
-    Call 'USER32.MessageBoxA' D$H.MainWindow, SureDeleteDialog, Argh, &MB_SYSTEMMODAL+&MB_YESNO
+        Call MessageBox Argh,
+                        SureDeleteDialog,
+                        &MB_SYSTEMMODAL+&MB_USERICON+&MB_YESNO
+
     push eax
         Call 'User32.DestroyWindow' D$ChoiceDialogHandle
     pop eax
@@ -7069,8 +7117,13 @@ SimplyGetDialog:
 
     Mov esi DialogList
     If D$esi  = 0
-        Call 'USER32.MessageBoxA' D$H.MainWindow, NoResourceDialog, Argh, &MB_SYSTEMMODAL
+
+        Call MessageBox Argh,
+                        NoResourceDialog,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
         Mov eax 0 | ret
+
     Else
         Call WhatResourceTemplate
     End_If
@@ -7099,7 +7152,13 @@ SaveToBinaryFile:
                                &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
 
     If eax = &INVALID_HANDLE_VALUE
-        Mov eax D$BusyFilePtr | Call MessageBox | ret
+
+        Call MessageBox D$STR.A.MessageWindowTitleError,
+                        D$BusyFilePtr,
+                        &MB_USERICON+&MB_SYSTEMMODAL
+
+        ret
+
     End_If
 
     Mov D$DestinationHandle eax, D$NumberOfReadBytes 0
@@ -7122,7 +7181,7 @@ LoadFromBinaryFile:
     Mov D$OtherFilesFilters BinDialogFilesFilters
     Mov D$OpenOtherFileTitle DialogFilesTitle
 
-    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$hInstance
+    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$H.Instance
 
     Mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
     Call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
@@ -7133,7 +7192,13 @@ LoadFromBinaryFile:
                                 &FILE_SHARE_READ, 0,
                                 &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-      Mov eax D$BusyFilePtr | Call MessageBox | ret  ; return to caller of caller
+
+        Call MessageBox argh,
+                        D$BusyFilePtr,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret  ; return to caller of caller
+
     Else
       Mov D$OtherSourceHandle eax
     End_If
@@ -7158,7 +7223,7 @@ LoadFromBinaryFile:
     Mov eax D$BinDialogLength, D$esi+8 eax
 
     Mov B$DialogLoadedFromResources &FALSE
-    Call 'User32.DialogBoxIndirectParamA' D$hinstance, WhatDialogIDData, 0,
+    Call 'User32.DialogBoxIndirectParamA' D$H.Instance, WhatDialogIDData, 0,
                                           WhatDialogIdProc, 0
 
     If B$UserAbortID = &TRUE
@@ -7179,7 +7244,7 @@ ReplaceFromBinaryFile:
     Mov D$OtherFilesFilters BinDialogFilesFilters
     Mov D$OpenOtherFileTitle DialogFilesTitle
 
-    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$hInstance
+    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$H.Instance
 
     Mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
     Call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
@@ -7190,7 +7255,13 @@ ReplaceFromBinaryFile:
                                 &FILE_SHARE_READ, 0,
                                 &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-      Mov eax D$BusyFilePtr | Call MessageBox | ret  ; return to caller of caller
+
+      Call MessageBox argh,
+                      D$BusyFilePtr,
+                     &MB_SYSTEMMODAL+&MB_USERICON
+
+      ret  ; return to caller of caller
+
     Else
       Mov D$OtherSourceHandle eax
     End_If
@@ -7217,7 +7288,7 @@ ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
-[SureReplaceDialog: B$ 'Replace with this Dialog ?', 0]
+[SureReplaceDialog: B$ "Replace with this dialog ?" EOS]
 
 ReplaceDialogFromFile:  ; DeleteDialog // LoadDialogFromFile
 
@@ -7229,9 +7300,11 @@ ReplaceDialogFromFile:  ; DeleteDialog // LoadDialogFromFile
     Call OpenDlgFile | On D$ClipBoardPtr = 0, ret
                        On D$ClipBoardlen = 0, ret
 
-    Call 'USER32.MessageBoxA' D$H.MainWindow, SureReplaceDialog, Argh, &MB_SYSTEMMODAL+&MB_YESNO
+    Call MessageBox Argh,
+                    SureReplaceDialog,
+                    &MB_SYSTEMMODAL+&MB_USERICON+&MB_YESNO
 
-    If eax = &IDYES
+    If D$FL.MsgBoxReturn = &IDYES
         Mov esi D$ClipBoardPtr, edi D$WhatDialogListPtr, ecx D$ClipBoardlen
         Mov D$edi+4 ecx, edi D$edi
         rep movsb

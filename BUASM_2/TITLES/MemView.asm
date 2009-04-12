@@ -19,7 +19,7 @@ ________________________________________________________________________________
 [IDC_DISPLAYMEMINFO 40]
 
 ViewRosAsmMems:
-    Call 'USER32.DialogBoxParamA' D$hinstance, IDD_VIEWMEMWARNINGMSG, &NULL,
+    Call 'USER32.DialogBoxParamA' D$H.Instance, IDD_VIEWMEMWARNINGMSG, &NULL,
                                   MemViewWarning, &NULL
 ret
 
@@ -40,7 +40,7 @@ Proc MemViewWarning:
        ; Get the handle of the Static Image:
         Call 'USER32.GetDlgItem' D@hwnd IDC_LIBWARNING_SHOWICON
         Mov D$LibWarningStaticImage eax
-        Call 'USER32.LoadBitmapA' D$hInstance, IDB_LIBWARNING_BITMAP
+        Call 'USER32.LoadBitmapA' D$H.Instance, IDB_LIBWARNING_BITMAP
         Mov D$LibScanhIcon eax
 
         Call 'USER32.SendMessageA' D$LibWarningStaticImage, &STM_SETIMAGE,
@@ -57,14 +57,14 @@ Proc MemViewWarning:
         Call ClearBuffer MemTableView (MEMTABLESIZE*5*4)
        ; Call ClearBuffer MemTable (MEMTABLESIZE*4)
         Call ClearBuffer DumpMemWarnMsg 256
-        Call 'User32.EndDialog' D@hwnd &NULL
+        Call WM_CLOSE
 
     ..Else_If D@msg = &WM_COMMAND
         .If D@wParam = &IDOK
             Call ClearBuffer MemTableView (MEMTABLESIZE*5*4)
           ;  Call ClearBuffer MemTable (MEMTABLESIZE*4)
             Call ClearBuffer DumpMemWarnMsg 256
-            Call 'User32.EndDialog' D@hwnd &NULL
+            Call WM_CLOSE
         .Else_If D@wParam = IDC_DUMPMEM
             Mov eax MemTableEnd
             sub eax MemTable
@@ -118,7 +118,7 @@ Proc DumpMemory:
     Mov D$ChoosenLibFile 0
     move D$DumpMem.lpstrFile MemSaveFilter
     move D$DumpMem.hwndOwner D@hwnd
-    move D$DumpMem.hInstance D$hInstance
+    move D$DumpMem.hInstance D$H.Instance
     move D$DumpMem.lpstrFilter MemSaveFileFilter
     move D$DumpMem.lpstrTitle DumpMemFileTitle
     Call 'Comdlg32.GetSaveFileNameA' DumpMem
@@ -144,7 +144,7 @@ Proc SaveMemoryReport:
     Mov D$ChoosenLibFile 0
     move D$DumpMem.lpstrFile MemSaveFilter
     move D$DumpMem.hwndOwner D@hwnd
-    move D$DumpMem.hInstance D$hInstance
+    move D$DumpMem.hInstance D$H.Instance
     move D$DumpMem.lpstrFilter MemSaveReportFilter
     move D$DumpMem.lpstrTitle SaveReportMemFileTitle
     Call 'Comdlg32.GetSaveFileNameA' DumpMem

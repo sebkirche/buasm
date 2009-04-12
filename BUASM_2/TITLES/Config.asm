@@ -116,29 +116,32 @@ EndP
 
 ; User has selected a Path for RosAsmFiles (Equates.equ *must* be there).
 
-[MustHaveEquatesPath: "
-You have not provided a Path to Equates.equ.
+[MustHaveEquatesPath: B$ "
+You have not provided a path to Equates.equ.
 
-RosAsm is going to shut down, because it can't do anything       
-whithout the OS Equates List.
+BUAsm is going to shut down, because it can't do anything       
+whithout the OS equates List.
 
-", 0]
+" EOS]
 
-
-[BadEquatesPath: "
+[BadEquatesPath: B$ "
 You have provided a Path for 'Equates.equ',
 but this File is not there.
 
            Try again?
 
 
-", 0]
+" EOS]
 
 
 VerifyEquatesPath:
     ..If D$FolderPath = 0
         If B$IncludesOK = &FALSE
-L1:         Call 'USER32.MessageBoxA', D$H.MainWindow, MustHaveEquatesPath, Argh, &MB_SYSTEMMODAL
+
+L1:         Call MessageBox Argh,
+                            MustHaveEquatesPath,
+                            &MB_SYSTEMMODAL+&MB_USERICON
+
             Call 'KERNEL32.ExitProcess' 0
         End_If
 
@@ -153,9 +156,12 @@ L1:         Call 'USER32.MessageBoxA', D$H.MainWindow, MustHaveEquatesPath, Argh
         Call 'KERNEL32.FindFirstFileA' FolderPath, FindFile
 
         .If eax = &INVALID_HANDLE_VALUE
-            Call 'USER32.MessageBoxA' D$H.MainWindow, BadEquatesPath, Argh,
-                                      &MB_YESNO+&MB_SYSTEMMODAL+&MB_ICONQUESTION
-            If eax = &IDNO
+
+            Call MessageBox Argh,
+                            BadEquatesPath,
+                            &MB_SYSTEMMODAL+&MB_ICONQUESTION+&MB_YESNO
+
+            If D$FL.MsgBoxReturn = &IDNO
                 On B$IncludesOK = &FALSE, jmp L1<<
                 Mov eax 0-1
 
@@ -191,7 +197,7 @@ ________________________________________________________________________________
 
 Configuration:
     If D$ConfigDialogHandle = 0
-        Call 'USER32.DialogBoxParamA' D$hinstance, 3000, &NULL, ConfigTabProc, &NULL
+        Call 'USER32.DialogBoxParamA' D$H.Instance, 3000, &NULL, ConfigTabProc, &NULL
     Else
         Beep
     End_If
@@ -252,11 +258,11 @@ Proc ConfigTabProc:
         .If D$ConfigDialogHandle = 0
             move D$ConfigDialogHandle D@hwnd
             Call InitConfigDialogTab
-            Call 'USER32.CreateDialogParamA' D$hinstance, 4000, D$ConfigTabHandle,
+            Call 'USER32.CreateDialogParamA' D$H.Instance, 4000, D$ConfigTabHandle,
                                              ConfigTabProc, &NULL
             Mov D$ConfigTabbedDialogHandle eax, D$ConfigTabIndex 0
             Call InittabTreeView
-            Call 'USER32.SetClassLongA' D$ConfigDialogHandle &GCL_HICON D$wc_hIcon
+            Call SetIconDialog
         .End_If
         jmp L8>>
 
@@ -269,7 +275,7 @@ Proc ConfigTabProc:
             Call 'User32.DestroyWindow' D$ConfigTabbedDialogHandle
             Mov eax D$ConfigTabIndex, ecx 100 | mul ecx | add eax 4000
 push D$StringsLanguage ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            Call 'USER32.CreateDialogParamA' D$hinstance, eax, D$ConfigTabHandle,
+            Call 'USER32.CreateDialogParamA' D$H.Instance, eax, D$ConfigTabHandle,
                                              ConfigTabProc, &NULL
             Mov D$ConfigTabbedDialogHandle eax
 pop D$StringsLanguage  ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -307,10 +313,10 @@ pop D$StringsLanguage  ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             jmp L1>
 
         ..Else_If D@wParam = &IDOK
-            Call UpdateRegistry
+            Call WriteConfigFile
 
             If D$UserPopUpHandle > 0
-                Call 'USER32.DeleteMenu' D$MenuHandle 7 &MF_BYPOSITION
+                Call 'USER32.DeleteMenu' D$H.Menu 7 &MF_BYPOSITION
             End_If
             Call AddUserMenu | Call EnableMenutems | Call EnableHelpMenutems
             Call 'USER32.DrawMenuBar' D$H.MainWindow
@@ -353,9 +359,9 @@ L2:         .Else_If D$ConfigTabIndex = 3           ; Colors.
                 pushad
                     If eax = 20                     ;D$Color1Handle
                         Mov eax D$NormalBackColor | Call SetColor
-                        Mov D$NormalBackColor eax | Call ResetBackGroundColors
+                        Mov D$NormalBackColor eax | Call INIT_Colors
                     Else_If eax = 10                ; Color 2
-                        Mov eax D$StatementColor | Call SetColor | Mov D$StatementColor eax
+                        Mov eax D$RVBA.Normal | Call SetColor | Mov D$RVBA.Normal eax
                     Else_If eax = 11                ; Color 3
                         Mov eax D$CommentColor | Call SetColor | Mov D$CommentColor eax
                     Else_If eax = 12                ; Color 4
@@ -363,8 +369,8 @@ L2:         .Else_If D$ConfigTabIndex = 3           ; Colors.
                     Else_If eax = 13                ; Color 5
                         Mov eax D$BracketColor | Call SetColor | Mov D$BracketColor eax
                     Else_If eax = 21                ; Color of Edit Controls, List Boxes,...
-                        Mov eax D$DialogsBackColor | Call SetColor
-                        Mov D$DialogsBackColor eax | Call ResetBackGroundColors
+                        Mov eax D$RVBA.DialogsBackgnd | Call SetColor
+                        Mov D$RVBA.DialogsBackgnd eax | Call INIT_Colors
                     Else_If eax = 30
                         xor B$WantSizeMarkerColor &TRUE
                     End_If
@@ -490,8 +496,8 @@ L2:             popad
         jmp L1>
 
     ...Else_If D@msg = &WM_CTLCOLORLISTBOX
-L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+L1:     Call 'GDI32.SetBkColor' D@wParam D$RVBA.DialogsBackgnd
+        popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     ...Else
 L8:     popad | Mov eax &FALSE | jmp L9>
@@ -647,7 +653,7 @@ GetMaxBackUp:
         shl D$MaxBackUp 8 | Mov B$MaxBackUp '0'
     End_While
 
-    Call UpDateRegistry
+    Call WriteConfigFile
 ret
 
 
@@ -1065,7 +1071,7 @@ ________________________________________________________________________________
 
 ConfigSearchFile:
     move D$CONFIGOPENFILENAME@hWndOwner D$ConfigDialogHandle
-    move D$CONFIGOPENFILENAME@hInstance D$hInstance
+    move D$CONFIGOPENFILENAME@hInstance D$H.Instance
     Mov edi FullPathUserChoice, al 0, ecx 260 | rep stosb
     Call 'COMDLG32.GetOpenFileNameA' CONFIGOPENFILENAME
     If B$FullPathUserChoice <> 0
@@ -1079,8 +1085,9 @@ ________________________________________________________________________________
 
 ; User ask for a 'ConfigSearchFile'. He must first set the Menu Item text:
 
-[TitleErrorUserMenu: 'User Menu:', 0
- ErrorUserMenu:      'Enter the Menu item Text in the EditBox first.', 0]
+[TitleErrorUserMenu: B$ "USER MENU:" EOS]
+
+[ErrorUserMenu: B$ "Enter the menu item text in the editBox first." EOS]
 
 CheckUserMenuItemText:
   ; > in: eax = ID of [File...] Button (first one = 110
@@ -1094,7 +1101,11 @@ CheckUserMenuItemText:
     pop edi
     Call 'USER32.SendMessageA' eax &WM_GETTEXT 30 edi
     If eax = 0
-        Call 'USER32.MessageBoxA' D$H.MainWindow, ErrorUserMenu, TitleErrorUserMenu, &MB_SYSTEMMODAL
+
+        Call MessageBox TitleErrorUserMenu,
+                        ErrorUserMenu,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
         Mov eax &FALSE
     Else
         Mov eax &TRUE
@@ -1176,7 +1187,7 @@ ________________________________________________________________________________
 
 SetColor:
         move D$CHOOSECOLORAPI_hwndOwner D$ConfigDialogHandle
-        move D$CHOOSECOLORAPI_hInstance D$hInstance
+        move D$CHOOSECOLORAPI_hInstance D$H.Instance
         Mov D$CHOOSECOLORAPI_rgbResult eax
 
         push eax                                          ; old color set by caller in eax
@@ -1310,11 +1321,11 @@ ________________________________________________________________________________
 
 [RegistryData:  Color1          &REG_DWORD  NormalBackColor
               ; NEVER INSERT ANYTHING !!!
-                Color2          &REG_DWORD  StatementColor
+                Color2          &REG_DWORD  RVBA.Normal
                 Color3          &REG_DWORD  CommentColor
                 Color4          &REG_DWORD  TextColor
                 Color5          &REG_DWORD  BracketColor
-                Color10         &REG_DWORD  DialogsBackColor
+                Color10         &REG_DWORD  RVBA.DialogsBackgnd
                 SizeColorFlag   &REG_DWORD  WantSizeMarkerColor
               ; NEVER INSERT ANYTHING !!!
                 UserLanguage    &REG_DWORD  StringsLanguage
@@ -1455,7 +1466,7 @@ L1:     push esi
     Call CloseRegistry
 ret
 
-
+;;
 UpdateRegistry:
     On D$UserConfig = CONFIGFILE, jmp WriteConfigFile
 
@@ -1471,7 +1482,7 @@ L1: push esi
 
     Call CloseRegistry
 ret
-
+;;
 
 Proc GetFieldDataSize:
     Argument @Pointer
@@ -1614,7 +1625,7 @@ AddUserMenu:
     On B$UserMenu9String = 0, jmp L8>>
         Call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2009 UserMenu9String
 
- L8: Call 'USER32.InsertMenuA' D$MenuHandle 7 &MF_BYPOSITION__&MF_STRING__&MF_POPUP,
+ L8: Call 'USER32.InsertMenuA' D$H.Menu 7 &MF_BYPOSITION__&MF_STRING__&MF_POPUP,
                               D$UserPopUpHandle  UserPopMenu
 
 L9: ret
@@ -1765,7 +1776,7 @@ WhateverConfig:  ; 'Main'
 
         .If D$Result = &REG_CREATED_NEW_KEY
          ; Tag Dialog 3
-            Call 'USER32.DialogBoxParamA' D$hinstance, 3, &NULL,
+            Call 'USER32.DialogBoxParamA' D$H.Instance, 3, &NULL,
                                            ConfigProc, &NULL
             If D$UserConfig = 0FF
                 Call CloseRegistry
@@ -1825,7 +1836,7 @@ Proc ConfigProc:
 
         .If D@wParam = &IDCANCEL
             Mov D$UserConfig 0FF
-            Call 'User32.EndDialog' D@hwnd, 0
+            Call WM_CLOSE
 
         .Else_If D@wParam = &IDOK
             Call 'USER32.SendDlgItemMessageA' D@hwnd, 20, &BM_GETCHECK, 0, 0
@@ -1835,12 +1846,12 @@ Proc ConfigProc:
                 Mov D$UserConfig CONFIGFILE
             End_If
 
-            Call 'User32.EndDialog' D@hwnd, 0
+            Call WM_CLOSE
         .End_If
 
     ..Else_If D@msg = &WM_INITDIALOG
         move D$ShowApiDialogHandle D@hwnd
-        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
+        Call SetIconDialog
 
         Call 'User32.SetDlgItemTextA' D@hwnd, 10, ConfigMessage
 
@@ -1851,8 +1862,8 @@ Proc ConfigProc:
             Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0, 0
             Mov B$FirstCTLCOLOREDIT &FALSE
         End_If
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+        Call 'GDI32.SetBkColor' D@wParam D$RVBA.DialogsBackgnd
+        popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     ..Else
         popad | Mov eax &FALSE | jmp L9>
@@ -1867,15 +1878,18 @@ EndP
 ____________________________________________________________________________________________
 
 Create_Config_bin:
-    Call 'USER32.MessageBoxA' 0, Config.Bin_Message, Config.Bin_Title, &MB_YESNO
 
-    If eax = &IDYES
+    Call MessageBox Config.Bin_Title,
+                    Config.Bin_Message,
+                    &MB_SYSTEMMODAL+&MB_USERICON+&MB_YESNO
+
+    If D$FL.MsgBoxReturn = &IDYES
         Call SetMainConfigFilePath
         Call WriteConfigFile
     End_If
 ret
 
-[Config.Bin_Message:
+[Config.Bin_Message: B$
 "Do you want to create a 'config.bin' file in the current
 Directory?
 
@@ -1883,9 +1897,9 @@ When a 'config.bin' is found aside RosAsm, this file is
 used, instead of the Registry.
 
 If you mean, later to recover the Registry functionalities,    
-you will just have to delete this file", 0
+you will just have to delete this file" EOS
 
-Config.Bin_Title: 'Configuration File', 0]
+Config.Bin_Title: B$ "CONFIGURATION FILE" EOS]
 ____________________________________________________________________________________________
 
 

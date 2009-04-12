@@ -371,7 +371,11 @@ CreateFile:
 
 
    .If eax = &INVALID_HANDLE_VALUE
-        Mov eax D$BusyFileptr | Call MessageBox
+
+        Call MessageBox  D$STR.A.MessageWindowTitleError,
+                         D$BusyFileptr,
+                         &MB_USERICON+&MB_SYSTEMMODAL
+
         Mov eax &INVALID_HANDLE_VALUE | ret
 
    .Else
@@ -432,8 +436,8 @@ ret
 ; In case user wants to Load a Source Only and Resources are actually available, sends
 ; a warning Message:
 
-[LosingResources: 'Delete actual Resources?', 0
- WarningTitle: ' Warning:', 0]
+[LosingResources: B$ "Delete actual resources ?" EOS]
+[WarningTitle: B$ "Warning:" EOS]
 
 LooseResources:
     Mov B$KeepResources &FALSE, eax 0
@@ -446,9 +450,12 @@ LooseResources:
     Mov B$KeepResources &TRUE
 
     .If D$NoResourcesPE = &FALSE
-        Call 'USER32.MessageBoxA' D$H.MainWindow, LosingResources, WarningTitle,
-                                 &MB_SYSTEMMODAL__&MB_ICONSTOP__&MB_YESNO
-        If eax = &IDYES
+
+        Call MessageBox WarningTitle,
+                        LosingResources,
+                        &MB_SYSTEMMODAL+&MB_ICONSTOP+&MB_YESNO
+
+        If D$FL.MsgBoxReturn = &IDYES
             Mov B$KeepResources &FALSE
         End_If
     .Else
@@ -498,7 +505,13 @@ IncludeSource:
                                 &GENERIC_READ, &FILE_SHARE_READ,
                                 0, &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, &NULL
     If eax = &INVALID_HANDLE_VALUE
-        Mov eax D$BusyFilePtr | Call MessageBox | ret
+
+        Call MessageBox  D$STR.A.MessageWindowTitleError,
+                         D$BusyFileptr,
+                         &MB_USERICON+&MB_SYSTEMMODAL
+
+        ret
+
     Else
         Mov D$SourceHandle eax
     End_If
@@ -553,7 +566,7 @@ L1:     Call OpenSourceOnly | Call LoadBookMarks
     ..Else
         Mov B$OpeningSourceOnly &TRUE
       ; Tag Dialog 26001
-        Call 'USER32.DialogBoxParamA' D$hinstance, 26001, &NULL, AllOrPartProc, &NULL
+        Call 'USER32.DialogBoxParamA' D$H.Instance, 26001, &NULL, AllOrPartProc, &NULL
         Mov B$OpeningSourceOnly &FALSE
 
         .If B$AllOrPart = 0-1
@@ -588,7 +601,7 @@ NewFileNameDialog:
     Call GetDirectory ActualDir
 
   ; Tag Dialog 5
-    Call 'USER32.DialogBoxParamA' D$hInstance, 5, D$H.MainWindow, NewFileType, 0
+    Call 'USER32.DialogBoxParamA' D$H.Instance, 5, D$H.MainWindow, NewFileType, 0
 
     Mov eax D$FileTypeChoice
 
@@ -617,9 +630,11 @@ X1:     Mov edi D$BaseNamePointer
 
         .If eax = &ERROR_FILE_EXISTS
 
-            Call 'USER32.MessageBoxA' &NULL, {'Overwrite?', 0},
-                                    {'File already exist', 0}, &MB_YESNO
-            If eax = &IDYES
+            Call MessageBox {B$ "File already exist" EOS},
+                            {B$ "Overwrite ?" EOS},
+                             &MB_SYSTEMMODAL+&MB_USERICON+&MB_YESNO
+
+            If D$FL.MsgBoxReturn = &IDYES
                 Call 'KERNEL32.CopyFileA', BaseFilesPath, ActualDir, &FALSE
 
             Else
@@ -789,11 +804,11 @@ Proc GetRcData:
     Local @hwnd
     Uses edi
 
-        Call 'KERNEL32.FindResourceA' D$hInstance, D@ID, &RT_RCDATA
+        Call 'KERNEL32.FindResourceA' D$H.Instance, D@ID, &RT_RCDATA
         Mov D@hwnd eax
-        Call 'KERNEL32.SizeofResource' D$hInstance, D@hwnd
+        Call 'KERNEL32.SizeofResource' D$H.Instance, D@hwnd
         push eax
-            Call 'KERNEL32.LoadResource' D$hInstance, D@hwnd
+            Call 'KERNEL32.LoadResource' D$H.Instance, D@hwnd
             Call 'KERNEL32.LockResource' eax
             Mov esi eax
         pop ecx
@@ -829,7 +844,8 @@ L1:         Call 'User32.EndDialog' D@hwnd 0
         ..End_If
 
     ...Else_If D@msg = &WM_INITDIALOG
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+
+        Call SetIconDialog
 
         Call 'USER32.GetDlgItem' D@hwnd, 10 | Mov D$NewChoiceListHandle eax
 
@@ -867,9 +883,9 @@ EndP
  Base_04.dll: 'Base_04.dll', 0
  Base_05.dll: 'Base_05.dll', 0, 0]
 
-[MissBaseTitle: 'Missing Bases Files', 0
+[MissBaseTitle: B$ "Missing Bases Files" EOS]
 
- MissBase: "
+[MissBase: B$ "
  Download the Bases Files from RosAsm.org
  and save them in a folder called 'Bases',
  inside your 'RosAsmFiles' Folder.
@@ -877,7 +893,7 @@ EndP
  If you already have these Files at the
  proper Path, update them with the new
  Version.
- ", 0]
+ " EOS]
 
 [BasesListHandle: ?  BaseListEnd: ?]
 
@@ -957,8 +973,12 @@ VerifyBasesFolder:
                 pop eax
                 If eax = &INVALID_HANDLE_VALUE
                     pop eax, eax
-                    Call 'USER32.MessageBoxA' &NULL, MissBase, MissBaseTitle, &MB_SYSTEMMODAL
-                    Mov eax &FALSE | ret
+
+                        Call MessageBox MissBaseTitle,
+                                        MissBase,
+                                        &MB_SYSTEMMODAL+&MB_USERICON
+
+                    Mov D$FL.MsgBoxReturn &FALSE | ret
                 End_If
             pop esi
         pop edi
@@ -998,7 +1018,13 @@ L8: On B$esi+4 <> 0, jmp L0<
     Else_If al = 0
         ; OK
     Else
-        Mov eax BadNewExtension | Call MessageBox | Mov eax &FALSE | ret
+
+        Call MessageBox  D$STR.A.MessageWindowTitleError,
+                         BadNewExtension,
+                         &MB_USERICON+&MB_SYSTEMMODAL
+
+        Mov eax &FALSE | ret
+
     End_If
 
     sub esi 4 | Mov edi esi
@@ -1097,10 +1123,11 @@ ________________________________________________________________________________
  you. Nothing more, but i think that it is a very good solution to allow Asm communauty
  to exchange files without fearing.
 ;;
-[CheckMessageTitle: 'Bad CheckSum', 0
- CheckInfo: "
+[CheckMessageTitle: B$ "Bad CheckSum" EOS]
+
+[CheckInfo: B$ "
  This File has been modified, either
- by an external Tool, or by a Virus.     ", 0]
+ by an external Tool, or by a Virus.     " EOS]
 
 ReadCheckSum:
     pushad
@@ -1119,8 +1146,11 @@ ReadCheckSum:
 L0:         lodsb | add ebx eax | loop L0<
 
             If edx <> ebx
-                Call 'USER32.MessageBoxA' D$H.MainWindow, CheckInfo, CheckMessageTitle,
-                                           &MB_SYSTEMMODAL__&MB_ICONEXCLAMATION
+
+                Call MessageBox CheckMessageTitle,
+                                CheckInfo,
+                                &MB_SYSTEMMODAL+&MB_ICONEXCLAMATION
+
             End_If
         .End_If
     popad
@@ -1311,7 +1341,7 @@ ________________________________________________________________________________
  FindFile.nFileSizeLow: D$ ?
  FindFile.dwReserved0: D$ ?
  FindFile.dwReserved1: D$ ?]
-[FindFile.cFileName: B$ ? #&MAXPATH]
+[FindFile.cFileName: B$ ? # &MAXPATH]
 [FindFile.cAlternate: B$ ? #14]
 
 LoadBookMarks:
@@ -1337,8 +1367,14 @@ LoadBookMarks:
    pop edi, D$edi
 
    .If eax = &INVALID_HANDLE_VALUE
-        Mov eax D$BusyFilePtr | Call MessageBox
-        pop eax | ret                       ; pop return adress of caller and ret to Callback
+
+        Call MessageBox  D$STR.A.MessageWindowTitleError,
+                         D$BusyFilePtr,
+                         &MB_USERICON+&MB_SYSTEMMODAL
+
+
+        Pop eax | ret                       ; pop return adress of caller and ret to Callback
+
    .Else
         Mov D$BookMarksFileHandle eax
    .End_If
@@ -1453,7 +1489,12 @@ L0: lodsd | cmp eax '.src' | je L1>
             jmp TryDisassembly
 
 ExitNotPeExe:
-    Mov eax D$NotPeExePtr | Call MessageBox | Call AutoNew | jmp StartNewFile
+
+   Call MessageBox D$STR.A.MessageWindowTitleError,
+                   D$NotPeExePtr,
+                   &MB_USERICON+&MB_SYSTEMMODAL
+
+    Call AutoNew | jmp StartNewFile
 
 
 L1: lodsd | lodsd | Mov D$SourceLen eax
@@ -1548,7 +1589,7 @@ TryDisassembly:
     On D$AddressToBeForced = &TRUE, jmp DisMain
 
   ; Tag Dialog 27000
-    Call 'USER32.DialogBoxParamA' D$hInstance, 27000, D$H.MainWindow, DisassembleProc, 0
+    Call 'USER32.DialogBoxParamA' D$H.Instance, 27000, D$H.MainWindow, DisassembleProc, 0
     Test D$DisChoice 0_8000_0000 | jz L9>
         and D$DisChoice 0FF | jmp Dismain
 
@@ -1651,7 +1692,14 @@ L0:     pop esi
       ; Code Characteristics:
 L0:     lodsd | cmp eax '.tex' | je L1>
             add esi 36 | cmp esi D$EndOfSectionSearch | jb L0<
-            Mov eax D$NotPEPtr | Call MessageBox | ret
+
+            Call MessageBox D$STR.A.MessageWindowTitleError,
+                            D$NotPEPtr,
+                            &MB_USERICON+&MB_SYSTEMMODAL
+
+            ret
+
+
 L1:     add esi 32
         lodsd | Mov D$CodeCharacteristics eax
 
@@ -1691,7 +1739,7 @@ ret
 
 ; Writing files:
 
-[DestinationFile: ? #262]
+[DestinationFile: ? # 262]
 
 OpenDestinationFile:
     On D$DestinationHandle > 0, Call 'KERNEL32.CloseHandle' D$DestinationHandle
@@ -1700,10 +1748,15 @@ OpenDestinationFile:
                                 &FILE_SHARE_READ, 0,
                                 &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-        Mov eax D$BusyFilePtr | Call MessageBox
+
+        Call MessageBox D$STR.A.MessageWindowTitleError,
+                        D$BusyFilePtr,
+                        &MB_USERICON+&MB_SYSTEMMODAL
+
         Mov B$CompileErrorHappend &TRUE
+
       ; pop return adress of caller and ret to Callback:
-        pop eax | ret
+        Pop eax | ret
 
     Else
         Mov D$DestinationHandle eax
@@ -1772,11 +1825,13 @@ ret
 ControlS:
     ..If D$TitleTable = 0
         Call SaveSource
-        Call 'USER32.MessageBoxA' D$H.MainWindow, DestinationFile,
-                                {'Saved in actual Directory:', 0}, 0
+
+        Call MessageBox {B$ "Saved in actual directory:" EOS},
+                        DestinationFile,
+                        &MB_SYSTEMMODAL+&MB_USERICON
 
     ..Else
-        Call 'USER32.DialogBoxParamA' D$hinstance, 26000, &NULL, AllOrPartProc, &NULL
+        Call 'USER32.DialogBoxParamA' D$H.Instance, 26000, &NULL, AllOrPartProc, &NULL
 
         .If B$AllOrPart = 0-1
             Call RestoreRealSource | Call SaveSource
@@ -1788,9 +1843,13 @@ ControlS:
             Mov B$WeAreSavingPart &FALSE
 
         .Else_If B$AllOrPart = 9
-            Call 'USER32.MessageBoxA' D$H.MainWindow, {"     Do you wish to save all the TITLEs
-of this Application into as many asm Files?      ", 0}, {'Sure?', 0}, &MB_YESNO
-            If eax = &IDYES
+
+            Call MessageBox {B$ "Sure ?:" EOS},
+                            {B$ "Do you wish to save all the TITLEs
+of this Application into as many asm Files ?" EOS},
+                        &MB_SYSTEMMODAL+&MB_USERICON+&MB_YESNO
+
+            If D$FL.MsgBoxReturn = &IDYES
                 Mov B$WeAreSavingPart &TRUE
                 Call SaveActualPos
                 Call GetTitlesNumber
@@ -1800,7 +1859,10 @@ L0:             push ecx
                 pop ecx
                 loop L0<
 
-                Call 'USER32.MessageBoxA' D$H.MainWindow, {'Done', 0}, 0, 0
+                Call MessageBox {B$ "ACTION:" EOS},
+                                {B$ "Completed" EOS},
+                                &MB_SYSTEMMODAL+&MB_USERICON
+
                 Call RestoreActualPos
                 Mov B$WeAreSavingPart &FALSE
             End_If
@@ -1875,10 +1937,13 @@ ControlK:
     On D$MaxBackUp = '0000', ret
 
     If B$ReadyToRun = &FALSE
-        Call 'USER32.MessageBoxA' D$H.MainWindow,
-                                 {'You have to [Compile] or to [Run] before a PE BackUp', 0},
-                                 {'[Ctrl][K] BackUp aborted:', 0}, 0
+
+        Call MessageBox {B$ "[Ctrl][K] BackUp aborted:" EOS},
+                        {B$ "You have to [Compile] or to [Run] before a PE backup" EOS},
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
         ret
+
     End_If
 
     Mov esi MainName, edi BackUpPathName
@@ -1968,7 +2033,10 @@ L9:     Mov esi BackUpNewPathName, edi BackUpPathName
 
     .End_If
 
-    Call 'USER32.MessageBoxA' D$H.MainWindow, BackUpPathName, {'Backup done to:', 0}, 0
+    Call MessageBox {B$ "Backup done to:" EOS},
+                    BackUpPathName,
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
 ret
 
 IncTextDwordBeforeEsi:
@@ -2085,9 +2153,12 @@ SaveSource:
         pop eax
 
         If eax = &TRUE
-            Call 'USER32.MessageBoxA' D$H.MainWindow, IncSaveBody, IncSaveTitle,
-                                      &MB_SYSTEMMODAL_&MB_YESNO
-            On eax = &IDYES, jmp L2>
+
+            Call MessageBox IncSaveTitle,
+                            IncSaveBody,
+                            &MB_SYSTEMMODAL+&MB_YESNO
+
+            On D$FL.MsgBoxReturn = &IDYES, jmp L2>
         End_If
     .End_If
 
@@ -5935,10 +6006,11 @@ L5: lodsb | cmp al EOI | jne L0<<
     .If edi = D$ApiListA
         On D$SavingExtension = '.DLL', jmp L9>
 
-            Call 'USER32.MessageBoxA' D$H.MainWindow,
-            {"Are you sure you want to continue assemblying this?" 0},
-            D$NoApiPtr, &MB_SYSTEMMODAL__&MB_ICONEXCLAMATION__&MB_YESNO
-            If eax = &IDNO
+            Call MessageBox {B$ "Are you sure you want to continue assemblying this?" EOS},
+                            D$NoApiPtr,
+                            &MB_SYSTEMMODAL+&MB_ICONEXCLAMATION+&MB_YESNO
+
+            If D$FL.MsgBoxReturn = &IDNO
                 Mov B$CompileErrorHappend &TRUE, D$NextSearchPos 0
                 Call CloseProgressBar
                 cld | Mov esp D$OldStackPointer
@@ -10071,9 +10143,11 @@ InternalNextControl:
     Mov esi D$LineStart, ecx 80
 L5: lodsb | On al < 32, Mov B$esi-1 '.' | loop L5<
     Mov B$esi 0
-    pushad
-        Call 'USER32.MessageBoxA' D$H.MainWindow, D$LineStart, ErrorMessageTitle, &MB_SYSTEMMODAL
-    popad
+
+    Call MessageBox STR.A.ErrorMessageTitle,
+                    D$LineStart,
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
 ret
 
 
@@ -11804,9 +11878,10 @@ L0: Mov eax D$esi | or eax D$esi+4
 ;;
 
     Else
-        Call 'USER32.MessageBoxA' 0,
-      {"The Symoblics'CheckSums'Table can be viewed only after a Compilation.", 0},
-      {'Nothing to show', 0}, &MB_OK
+
+        Call MessageBox {B$ "NOTHING TO SHOW:" EOS},
+                        {"The symoblics'checksums'table can be viewed only after a compilation." EOS},
+                        &MB_SYSTEMMODAL+&MB_USERICON
 
     End_If
 ret

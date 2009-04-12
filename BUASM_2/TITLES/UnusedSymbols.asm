@@ -115,7 +115,7 @@ L1:         add esi 7
 L2:     .End_While
 ; Tag Dialog 4
         Call 'USER32.EndDialog' D@hwnd, 0
-        Call 'USER32.DialogBoxParamA' D$hInstance, 4, 0, UnusedCodeAndDataDialogCallBack, 0
+        Call 'USER32.DialogBoxParamA' D$H.Instance, 4, 0, UnusedCodeAndDataDialogCallBack, 0
 
         VirtualFree D$CodeLabelNameList
         VirtualFree D$DataLabelNameList

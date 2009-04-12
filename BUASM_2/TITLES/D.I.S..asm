@@ -152,9 +152,11 @@ L2: If ah > 0F
         jmp L8>
 
     Else_If B$esi > ' '
-L8:
-        Call 'USER32.MessageBoxA', 0, {'Bad Hexa Data encounted', 0},
-                                    FindFile.cFileName, 0 ;{'Reading Pe.dis', 0}, 0
+
+L8:     Call MessageBox {B$ "BAD HEXA DATA ENCOUNTED" EOS},
+                        FindFile.cFileName,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
         While B$esi <> '[' | dec esi | End_While
         Mov B$esi+200 0 | ;showme esi
         jmp DisFail
@@ -385,8 +387,11 @@ EncodeOneSignature:
         Mov ebx D$BisMem, D$ebx+eax*4 edi
 
     Else_If al < B$FirstByte
-        Call 'USER32.MessageBoxA' 0, {'Bad order of Records', 0},
-                                     FindFile.cFileName, 0
+
+        Call MessageBox {B$ "BAD ORDER OF RECORDS" EOS},
+                        FindFile.cFileName,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
         While D$esi <> 'Id: ' | dec esi | End_While
         Mov B$esi+200 0 | ;showme esi
         jmp DisFail
@@ -400,8 +405,11 @@ L0: Call GetHexaFromSignature
 L1: .If eax = QUESTIONMARKS
       ; Write the written number of Significative Bytes
         If cl = 0
-            Call 'USER32.MessageBoxA' 0, {'Record beginning with ??', 0},
-                                     FindFile.cFileName, 0
+
+          Call MessageBox {B$ "RECORD BEGINNING WITH ?:" EOS},
+                          FindFile.cFileName,
+                          &MB_SYSTEMMODAL+&MB_USERICON
+
             Mov B$esi+200 0 | ;showme esi
             While D$esi <> 'Id: ' | dec esi | End_While
             Mov B$esi+200 0 | ;showme esi
@@ -419,8 +427,11 @@ L1: .If eax = QUESTIONMARKS
 
     .Else_If eax = CRLF
         If cl <s 1
-            Call 'USER32.MessageBoxA' 0, {'Record ending with ??', 0},
-                                     FindFile.cFileName, 0
+
+           Call MessageBox {B$ "RECORD ENDING WITH ?:" EOS},
+                           FindFile.cFileName,
+                           &MB_SYSTEMMODAL+&MB_USERICON
+
             While D$esi <> 'Id: ' | dec esi | End_While
             Mov B$esi+200 0 | ;showme esi
             jmp DisFail

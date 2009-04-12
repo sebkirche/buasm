@@ -102,8 +102,11 @@ VirtAlloc:                                  ; In: ebx = Pointer, edx = size
           ; This Alert can only happend if i completly corrupt a Mem Pointer Value
           ; so that it is no more founded in the 'MemTable':
             If edi = MemTableEnd
-                Call 'USER32.MessageBoxA' D$H.MainWindow, MemAlertText, MemAlert,
-                                          &MB_SYSTEMMODAL__&MB_ICONSTOP
+
+                Call MessageBox MemAlert,
+                                MemAlertText,
+                                &MB_SYSTEMMODAL+&MB_ICONSTOP
+
                 Call ViewRosAsmMems
                 ShowMe VirtAllocOverFlowString
                 Call 'KERNEL32.ExitProcess' 0
@@ -145,8 +148,10 @@ VirtAlloc:                                  ; In: ebx = Pointer, edx = size
       ;  pop ecx, ebx                       ; For my Tests
         If eax = 0
       ;      hexprint ecx | hexprint ebx    ; For my Tests
-            Call 'USER32.MessageBoxA' D$H.MainWindow, MemInternalAlert, MemAlert,
-                                         &MB_SYSTEMMODAL__&MB_ICONSTOP
+            Call MessageBox MemAlert,
+                            MemInternalAlert,
+                            &MB_SYSTEMMODAL+&MB_ICONSTOP
+
             Call ViewRosAsmMems
             ShowMe VirtAllocFailureString
 
@@ -173,8 +178,11 @@ VirtFree:       ; eax = D$Pointer
     While D$esi <> eax
         add esi MEMRECORD
         If esi = MemTableEnd
-            Call 'USER32.MessageBoxA' D$H.MainWindow, MemInternalAlert, MemInternalAlert,
-                                      &MB_SYSTEMMODAL__&MB_ICONSTOP
+
+            Call MessageBox MemInternalAlert,
+                            MemInternalAlert,
+                            &MB_SYSTEMMODAL+&MB_ICONSTOP
+
             Call ViewRosAsmMems
             ShowMe VirtFreeOverFlowString
             Call 'KERNEL32.ExitProcess' 0

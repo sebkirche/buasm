@@ -36,7 +36,7 @@ ________________________________________________________________________________
 StructDialog:
     .If B$StructuresFileOK = &TRUE
         If D$StructHandle = 0
-            Call 'USER32.DialogBoxParamA' D$hinstance, 18000, &NULL, StrucProc, &NULL
+            Call 'USER32.DialogBoxParamA' D$H.Instance, 18000, &NULL, StrucProc, &NULL
         Else
             Beep
         End_If
@@ -55,12 +55,10 @@ ret
 Proc StrucProc:
     Arguments @hwnd, @msg, @wParam, @lParam
 
-    pushad
-
     ...If D@msg = &WM_INITDIALOG
         move D$StructHandle D@hwnd
 
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
 
        ; Call 'USER32.SetWindowLongA' D@hwnd &GWL_EXSTYLE &WS_EX_TOOLWINDOW
 
@@ -113,7 +111,7 @@ Proc StrucProc:
             Call ClipStructure
 L1:         Mov D$StructHandle 0
             VirtualFree D$WinStructures
-            Call 'USER32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
 
         .Else_If D@wParam = &IDHELP
             Call Help, B_U_AsmName, StructHelp, ContextHlpMessage
@@ -127,15 +125,14 @@ L1:         Mov D$StructHandle 0
         jmp L1>
 
     ...Else_If D@msg = &WM_CTLCOLORLISTBOX
-L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+L1:     Call WM_CTLCOLOREDIT | Return
 
     ...Else
-L8:     popad | Mov eax &FALSE | jmp L9>
+L8:     Return &FALSE
 
     ...End_If
 
-    popad | Mov eax &TRUE
+    Mov eax &TRUE
 
 L9: EndP
 
@@ -186,7 +183,7 @@ L1:     inc edi
 L2:     Mov ecx &MAX_PATH | add ecx MenuItemString | sub ecx edi
       ; Case when Call from the ToolBar
         On D$MenuID = 0, Mov D$MenuID 4001
-        Call 'USER32.GetMenuStringA' D$MenuHandle, D$MenuID, edi, ecx, &MF_BYCOMMAND
+        Call 'USER32.GetMenuStringA' D$H.Menu, D$MenuID, edi, ecx, &MF_BYCOMMAND
 
         Mov esi MenuItemString
         While B$esi <> 0 | inc esi | End_While | Mov D$esi '.str', B$esi+4 0

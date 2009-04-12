@@ -13,12 +13,12 @@ TITLE Strings
   
   * The 'StringsTable' contains 2 dWords Records. Typically:
   
-      STRING1 ErrorMessageTitlePtr: ErrorMessageTitle
+      STRING1 STR.A.MessageWindowTitleError: STR.A.ErrorMessageTitle
       
       Where: 
       - 'STRING1' is the StringID (Number 1)
-      - 'ErrorMessageTitlePtr' is the Substitution Label
-      - 'ErrorMessageTitle' is the Pointer to the default English Strings, in the Source
+      - 'STR.A.MessageWindowTitleError' is the Substitution Label
+      - 'STR.A.ErrorMessageTitle' is the Pointer to the default English Strings, in the Source
       
    The StringIDs purpose is to introduce some flexibility in the management:
    
@@ -69,7 +69,7 @@ TITLE Strings
 
 
 
-[ErrorMessageTitle: ' error', 0]  ; Error,  OutOnError
+[STR.A.ErrorMessageTitle: B$ "ERROR:" EOS]  ; Error,  OutOnError
 
 ; List of error messages:
 
@@ -262,7 +262,7 @@ TITLE Strings
 ;;
 
 [StringsTable:
- 1 ErrorMessageTitlePtr: ErrorMessageTitle
+ 1 STR.A.MessageWindowTitleError: STR.A.ErrorMessageTitle
  2 EmptyStringPtr: EmptyString
  3 MissingFilePtr: MissingFile
  4 BusyFilePtr: BusyFile
@@ -611,9 +611,11 @@ L0:         lodsw
                 lea ecx D$eax+ecx*2
             jmp L0<
 
-L5:         Call 'USER32.MessageBoxA', 0, {'Bad National Strings File. English assumed', 0},
-                                          {'National Strings', 0}, 0
-            Mov D$StringsLanguage '.en'
+L5:         Call MessageBox {B$ "National strings" EOS},
+                            {B$ "Bad national strings file. English assumed" EOS},
+                            &MB_USERICON+&MB_SYSTEMMODAL
+
+            Mov D$StringsLanguage ".en"
             ret
 
           ; esi point to the beginning of a String, and ecx is the ID Number.
@@ -659,9 +661,11 @@ L0:         lodsb
                 lea ecx D$eax+ecx*2
             jmp L0<
 
-L5:         Call 'USER32.MessageBoxA', 0, {'Bad National Strings File. English assumed', 0},
-                                          {'National Strings', 0}, 0
-            Mov D$StringsLanguage '.en'
+L5:         Call MessageBox {B$ "National strings" EOS},
+                            {B$ "Bad national strings file. English assumed" EOS},
+                            &MB_USERICON+&MB_SYSTEMMODAL
+
+            Mov D$StringsLanguage ".en"
             ret
 
           ; esi point to the beginning of a String, and ecx is the ID Number.

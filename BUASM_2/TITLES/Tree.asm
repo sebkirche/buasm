@@ -171,11 +171,16 @@ L6: dec esi | jmp L8<<
 ; adress of caller and return to Callback.
 
 [TreeAborted: 0]
-[AbortTreeMessage: "Unpaired Text delimiter or unpaired Bracket", 0]
+[AbortTreeMessage: B$ "Unpaired text delimiter or unpaired bracket" EOS]
 
 AbortTree:
+
     Mov ebx D$BackTablePtr | sub bl 4 | Mov D$ebx 0 | Mov D$BackTablePtr ebx
-    Call 'USER32.MessageBoxA' D$H.MainWindow, AbortTreeMessage, Argh, &MB_SYSTEMMODAL
+
+    Call MessageBox Argh,
+                    AbortTreeMessage,
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
     Mov B$TreeAborted &TRUE
 ret
 
@@ -344,16 +349,17 @@ L4:     dec D$TreeIndent                             ; > No more evocation in th
 L9: ret
 
 
-[ContinueOrphans: 'List Orphans Labels?', 0
- ManyOrphans: "
-   After analyzes, the resulting Tree is found poorly organised,   
-   and the amount of Labels is uge.
+[ContinueOrphans: B$ "LIST ORPHANS LABELS ? :" EOS]
+
+[ManyOrphans: B$ "
+   After analyzes, the resulting tree is found poorly organised,   
+   and the amount of labels is uge.
    
-   Listing all of the orphan Labels may take a very long time,
-   because the tree Builder will try to recreate a sub-Tree from
+   Listing all of the orphan labels may take a very long time,
+   because the tree builder will try to recreate a sub-tree from
    each orphan...
  
-                                    Go on listing?", 0]
+                                    Go on listing?" EOS]
 
 ListOrphanLabels:
     Mov D$TreeIndent 0, edx D$TreeListEnd, esi D$TreeList, ecx 0, ebx 0
@@ -369,9 +375,12 @@ L1: lodsb | cmp esi edx | jae L2>
   ; The number of orphans Labels may be uge with Disassemblies:
 L2: shr ecx 2
     If ecx > ebx
-            Call 'USER32.MessageBoxA' D$H.MainWindow, ManyOrphans, ContinueOrphans,
-                                      &MB_SYSTEMMODAL__&MB_YESNO
-        On eax = &IDNO, ret
+
+        Call MessageBox ContinueOrphans,
+                        ManyOrphans,
+                        &MB_SYSTEMMODAL+&MB_USERICON+&MB_YESNO
+
+        On D$FL.MsgBoxReturn = &IDNO, ret
     End_If
 
     Mov D$TreeIndent 0, edx D$TreeListEnd, esi D$TreeList
@@ -421,7 +430,7 @@ L9: ret
 
 CreateTreeViewList:
     If D$ShowTreeHandle = 0
-        Call 'USER32.CreateDialogParamA' D$hInstance, 22000, D$H.MainWindow, ShowTree, &NULL
+        Call 'USER32.CreateDialogParamA' D$H.Instance, 22000, D$H.MainWindow, ShowTree, &NULL
         On D$BookMarks > 0, Call ReInsertBookMarks
     Else
         Call 'USER32.SetForegroundWindow' D$ShowTreeHandle
@@ -466,7 +475,7 @@ Proc ShowTree:
     ..If D@msg = &WM_COMMAND
         .If D@wParam = &IDCANCEL
 L7:        Mov D$ShowTreeHandle 0
-           Call 'User32.EndDialog' D@hwnd 0   ; CloseTree
+           Call WM_CLOSE   ; CloseTree
 
         .Else
             shr D@wParam 16
@@ -495,7 +504,7 @@ L7:        Mov D$ShowTreeHandle 0
         Mov D$TreeViewItemEdge '    '
         move D$ShowTreeHandle D@hwnd
         Call StorePosInBackTable
-        Call 'USER32.SetClassLongA' D$ShowTreeHandle &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Call ClearTreeLevels
         Mov B$TreeAborted &FALSE | push ebp | Call BuildLabelTreeList | pop ebp
         cmp B$TreeAborted &TRUE | je L7<<
@@ -522,8 +531,8 @@ L1:     push D$TreeWP.ptMinPosition.x, D$TreeWP.ptMinPosition.y, D$TreeWP.flags
         jmp L1<
 
     ..Else_If D@msg = &WM_CTLCOLORLISTBOX
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+        Call 'GDI32.SetBkColor' D@wParam D$RVBA.DialogsBackgnd
+        popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     ..Else_If D@msg = &WM_ACTIVATE
        ; Wanted by... Anvar if i remember, but conflicts with any wish of moving

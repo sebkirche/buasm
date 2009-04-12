@@ -286,7 +286,7 @@ ________________________________________________________________________________
 ;;
   Routines called on user choice in the BP Float Menu
   
-  We reuse 'DebugDialogHandle' (set to 1 in case of Mouse BP without Debugger Runing
+  We reuse 'H.DebugDialog' (set to 1 in case of Mouse BP without Debugger Runing
   and to zero if none), in order to forbid editing Sources with Mouse defined BP inside
 ;;
 

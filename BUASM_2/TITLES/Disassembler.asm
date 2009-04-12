@@ -301,7 +301,7 @@ T0:             lodsb | On al < ' ', Mov al '.' | stosb | loop T0<
             Call WriteEax | Mov D$edi '    ' | add edi 4
 L1:     loop L0<
 ; Tag Dialog 1001
-        Call 'USER32.DialogBoxParamA' D$hInstance, 1001, &NULL, DisViewProc, &NULL
+        Call 'USER32.DialogBoxParamA' D$H.Instance, 1001, &NULL, DisViewProc, &NULL
 
         .If D$ViewCommand = 11
             Mov eax D$SectionsMap, D@Map eax
@@ -339,8 +339,6 @@ EndP
 Proc DisViewProc:
     Arguments @hwnd, @msg, @wParam, @lParam
 
-    pushad
-
     .If D@msg = &WM_INITDIALOG
         Mov D$EmptyDialogHandle eax
         Call 'USER32.SetDlgItemTextA' D@hwnd, 100, D$TempoMemPointer
@@ -348,7 +346,7 @@ Proc DisViewProc:
             Call 'User32.SendDlgItemMessageA' D@hwnd,100, &EM_LINESCROLL, 0, D$DisViewPos
         End_If
 
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Mov eax &TRUE
 
     .Else_If D@msg = &WM_CLOSE
@@ -368,17 +366,17 @@ Proc DisViewProc:
         End_If
 
     .Else_If D@msg = &WM_CTLCOLOREDIT
-        Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0-1, 0
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+
+        Call WM_CTLCOLOREDIT | Return
 
     .Else
-        popad | Mov eax &FALSE | jmp L9>
+        Return &FALSE
 
     .End_If
 
-    popad | Mov eax &TRUE
+    Mov eax &TRUE
 
-L9: EndP
+EndP
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 ;;
@@ -430,14 +428,14 @@ ________________________________________________________________________________
 ; 'DisMain' is called by 'OpenRosAsmPe' if no Source found inside and if the
 ; user wants it.
 
-[DisWarningMessage: ' ... with Un-modified File Name.           ', 0
- DisWarningTitle: 'Take care!!!...', 0]
+[DisWarningMessage: B$ " ... with Un-modified file name           " EOS]
+[DisWarningTitle: B$ "TAKE CARE !!!:" EOS]
 
-[WritingData: 'Writing Data...', 0
- DisPasses: 'Analyze of the Code flow...', 0
- PointersAnalyzes: 'Analyzes of pointers to Code. Wait...', 0
- NegativeAnalyze: 'Negative Analysis of Code. May be slow...', 0
- SymbolsWriting: 'Symbolic Analyze of Api calls Parameters...', 0]
+[WritingData: B$ "Writing Data..." EOS]
+[DisPasses: B$ "Analyze of the Code flow..." EOS]
+[PointersAnalyzes: B$ "Analyzes of pointers to Code. Wait..." EOS]
+[NegativeAnalyze: B$ "Negative Analysis of Code. May be slow..." EOS]
+[SymbolsWriting: B$ "Symbolic Analyze of Api calls Parameters..." EOS]
 
 [EndOfDisData: ?    FromUserPeStartToMap: ?]
 ____________________________________________________________________________________________
@@ -832,8 +830,11 @@ L1:     inc esi | Mov W$esi 'My'
         Call ChangeName | Mov D$OpenPEStruc+(12*4) OpenPEFileTitle
 
         If eax = &FALSE
-            Call 'USER32.MessageBoxA' D$H.MainWindow, DisWarningMessage, DisWarningTitle,
-                                    &MB_SYSTEMMODAL__&MB_ICONSTOP
+
+            Call MessageBox DllAdressRangeTitle,
+                            DllAdressRange,
+                            &MB_SYSTEMMODAL+&MB_ICONSTOP
+
         End_If
 
         Call SaveDisPeName UserDisPeName
@@ -2996,11 +2997,11 @@ ________________________________________________________________________________
 
 [NumberOfForwardedExport: ?]
 
-[ForwardedMessage: '     ', Forwarded: "Forwarded Exports found in this Module. 
+[ForwardedMessage: B$ "     " Forwarded: B$ "Forwarded exports found in this module. 
    
- RosAsm Assembler does not assume this method.    
- The rebuilt Module will therefore not work
- like the original (missing Functions).", 0]
+ BUAsm assembler does not assume this method.    
+ The rebuilt module will therefore not work
+ like the original (missing functions)." EOS]
 
 CheckExport:
     GetPeHeader SectionTable | On D$eax = 0, ret
@@ -3050,8 +3051,11 @@ L0: lodsd
         Mov eax D$NumberOfForwardedExport, edi ForwardedMessage
         Call WriteEaxDecimal
         While edi < Forwarded | Mov B$edi ' ' | inc edi | End_While
-        Call 'USER32.MessageBoxA', 0, ForwardedMessage,
-                                  {' Warning', 0}, 0
+
+        Call MessageBox {B$ "WARNING:" EOS},
+                        ForwardedMessage,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
     End_If
 ret
 
@@ -3236,8 +3240,13 @@ DisFail:
 
     Mov B$Disassembling &FALSE
     If B$SilentMap = &FALSE
-        Mov eax DisFailText | Call MessageBox
+
+        Call MessageBox argh,
+                        DisFailText,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
     End_If
+
     Mov B$SilentMap &FALSE
 
 L0: Mov ebx, esp | cmp ebx, D$OldStackPointer | jnb L1>
@@ -3260,7 +3269,7 @@ ________________________________________________________________________________
 
 ;InitDisProgressBar:
   ; Tag Dialog 25
-    Call 'USER32.DialogBoxParamA' D$hinstance, 25, &NULL, ProgressProc, &NULL
+    Call 'USER32.DialogBoxParamA' D$H.Instance, 25, &NULL, ProgressProc, &NULL
 ret
 
 Proc ProgressProc:
@@ -3270,17 +3279,17 @@ Proc ProgressProc:
 
     ..If D@msg = &WM_COMMAND
         If D@wParam = &IDCANCEL
-            Call 'USER32.EndDialog' D@hwnd, 0
+            Call WM_CLOSE
         End_If
 
     ..If D@msg = &WM_CLOSE
-        Call 'USER32.EndDialog' D@hwnd, 0
+        Call WM_CLOSE
 
     ..Else_If D@msg = &WM_INITDIALOG
         move D$hwndForBar D@hwnd
         Call 'USER32.GetDlgItem' D@hwnd 5 | Mov D$ProgressInst eax
 
-        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
+        Call SetIconDialog
       ; Set steping and Title:
         Call 'User32.SendMessageA' D$ProgressInst, &PBM_SETRANGE, 0, (128 shl 16)
         Call 'User32.SendMessageA' D$ProgressInst, &PBM_SETSTEP, 1, 0  ; 1/100
@@ -3303,9 +3312,9 @@ InitDisProgressBar:
       sub eax D$PBarWindowH | shr eax 1 | Mov D$PBarWindowY eax
 
   ; WindowExStyle > 084:    80 > tool  4 > no parent notify
-    Call 'User32.CreateWindowExA' 084, ClassName, &NULL, &WS_OVERLAPPEDWINDOW,
+    Call 'User32.CreateWindowExA' 084, STR.A.WindowClassMain, &NULL, &WS_OVERLAPPEDWINDOW,
                                   D$PBarWindowX, D$PBarWindowY, D$PBarWindowW, D$PBarWindowH,
-                                  D$H.MainWindow, 0, D$hInstance, 0
+                                  D$H.MainWindow, 0, D$H.Instance, 0
     Mov D$hwndForBar eax
 
     Call 'User32.ShowWindow' D$hwndForBar, &SW_SHOWNORMAL
@@ -3314,7 +3323,7 @@ _____________________________
 
     Call 'User32.CreateWindowExA' 0, ProgressClassName, 0, 050000000,
                                   D$PWindowX, D$PWindowY, D$PWindowW, D$PWindowH,
-                                  D$hwndForBar, 1, D$hInstance, 0
+                                  D$hwndForBar, 1, D$H.Instance, 0
     Mov D$ProgressInst eax
 
   ; Set steping and Title:
@@ -3331,9 +3340,9 @@ ret
       sub eax D$PBarWindowH | shr eax 1 | Mov D$PBarWindowY eax
 
   ; WindowExStyle > 084:    80 > tool  4 > no parent notify
-    Call 'User32.CreateWindowExA' D$ProgressWindowStyle, ClassName, &NULL, &WS_OVERLAPPEDWINDOW,
+    Call 'User32.CreateWindowExA' D$ProgressWindowStyle, STR.A.WindowClassMain, &NULL, &WS_OVERLAPPEDWINDOW,
                                   D$PBarWindowX, D$PBarWindowY, D$PBarWindowW, D$PBarWindowH,
-                                  D$H.MainWindow, 0, D$hInstance, 0
+                                  D$H.MainWindow, 0, D$H.Instance, 0
     Mov D$hwndForBar eax
 
     Call 'User32.ShowWindow' D$hwndForBar, &SW_SHOWNORMAL
@@ -3345,7 +3354,7 @@ _____________________________
 
     Call 'User32.CreateWindowExA' 0, ProgressClassName, 0, 050000000,
                                   D$PWindowX, D$PWindowY, D$PWindowW, D$PWindowH,
-                                  D$hwndForBar, 1, D$hInstance, 0
+                                  D$hwndForBar, 1, D$H.Instance, 0
     Mov D$ProgressInst eax
 
   ; Set steping and Title:
@@ -4445,10 +4454,12 @@ L1:                 While D$esi <> eax
         inc esi
     .End_While
 
-    Call 'USER32.MessageBoxA' D$H.MainWindow, {"WM_COMMAND not found:
+        Call MessageBox {B$ "MENU IDs SUBSTITUTION FAILURE" EOS},
+                        {B$ "WM_COMMAND not found:
   
-You cannot edit the Resources Main Menu, if any   ", 0},
-                                {'Menu IDs substitution failure', 0}, 0
+You cannot edit the resources main menu, if any   " EOS},
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
     ret
 
 L5: push esi
@@ -4481,8 +4492,11 @@ Code0401242: J8: | jne Code040142B
     While W$esi <> ' j' | inc esi | End_While | inc esi
 
     If D$esi <> 'jne '
-        Call 'USER32.MessageBoxA' D$H.MainWindow, {'Unexpected MainWindowProc Main Menu Messages Cases organisation', 0},
-                                {'Failure of Main Menu IDs substitutions', 0}, 0
+
+        Call MessageBox {B$ "FAILURE OF MAIN MENU IDS SUBSTITUTIONS" EOS},
+                        {B$ "Unexpected MainWindowProc Main Menu Messages Cases organisation" EOS},
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
         ret
     End_If
 

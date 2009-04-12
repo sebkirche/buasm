@@ -21,7 +21,7 @@ ret
 
 StringsResources:
     If D$StringsEditorHandle = 0
-        Call 'USER32.CreateDialogIndirectParamA' D$hinstance StringsDialog D$H.MainWindow StringsProc 0
+        Call 'USER32.CreateDialogIndirectParamA' D$H.Instance StringsDialog D$H.MainWindow StringsProc 0
     Else
         Beep
     End_If
@@ -100,8 +100,13 @@ CleanStrings:
     End_While
 
 L1: If B$esi <> '#'
-L8:     Call 'USER32.MessageBoxA' D$H.MainWindow, BadStringID, ErrorMessageTitle, &MB_SYSTEMMODAL
+
+L8:     Call MessageBox STR.A.ErrorMessageTitle,
+                        BadStringID,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
         Mov B$ErrorString &TRUE
+
     Else
         Mov D$TempoStringsTextPtr esi
     End_If
@@ -117,14 +122,12 @@ ________________________________________________________________________________
 Proc StringsProc:
     Arguments @hwnd, @msg, @wParam, @lParam
 
-    pushad
-
     ...If D@msg = &WM_INITDIALOG
         Mov B$StringEditFirstRun &TRUE
         move D$StringsEditorHandle D@hwnd
         Call 'USER32.GetDlgItem' D@hwnd ID_EDITSTRINGS | Mov D$StringsListHandle eax
         Call InitStringsList
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
 
     ...Else_If D@msg = &WM_CTLCOLOREDIT                           ; Un-selected text at first show:
         .If B$StringEditFirstRun = &TRUE
@@ -134,8 +137,8 @@ Proc StringsProc:
                 Mov B$StringEditFirstRun &FALSE
             End_If
         .End_If
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>>
+
+        Call WM_CTLCOLOREDIT | Return
 
     ...Else_If D@msg = &WM_COMMAND
         ..If D@wParam = &IDCANCEL
@@ -155,11 +158,11 @@ L1:         Mov D$StringsEditorHandle 0
         ..End_If
 
     ...Else
-L8:     popad | Mov eax &FALSE | jmp L9>
+L8:     Return &FALSE | jmp L9>
 
     ...End_If
 
-    popad | Mov eax &TRUE
+    Mov eax &TRUE
 
 L9: EndP
 
@@ -213,9 +216,9 @@ ret
 
 [OneStringBuffer: ?    IndexToStringsLines: ?    ErrorString: ?    NumberOfStrings: ?]
 
-[BadStringID: "Bad or missing ID number encounted    
+[BadStringID: B$ "Bad or missing ID number encounted    
                          or
-   missing space separator or String", 0]
+   missing space separator or String" EOS]
 
 StoreStringsList:
     Mov edi StringsList,  eax 0, ecx MAXSTRINGS | rep stosd
@@ -262,7 +265,10 @@ L2: sub esi 2 | Mov B$esi 0 | dec D$IndexToStringsLines
     While B$esi > ' '                   ; Compute #n:
         lodsb
         If al > '9'
-L8:         Call 'USER32.MessageBoxA' D$H.MainWindow, BadStringID, ErrorMessageTitle, &MB_SYSTEMMODAL
+L8:         Call MessageBox STR.A.ErrorMessageTitle,
+                            BadStringID,
+                            &MB_SYSTEMMODAL+&MB_USERICON
+
             Mov B$ErrorString &TRUE | ret
         Else_If al < '0'
             jmp L8<

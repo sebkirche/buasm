@@ -3593,9 +3593,9 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 ;DEBUG
 
-[TempSourceBuffer: ? #1024]
+[TempSourceBuffer: B$ ? # 4096]
 
-[ShowSourceTitle: 'SOURCE ' ]
+[ShowSourceTitle: B$ "SOURCE:" EOS]
 [ShowSourceTitle_ID: 0 0 0 ]                    ; [<ShowSourceTitle_ID: 0 0 0 ]  disables the breakpoints !!!!!
 [FirstEqualLine: &TRUE   LastEqualLine: 0]
 
@@ -3717,8 +3717,12 @@ L0:     lodsb
 
 L9:     Mov B$edi 0
 
-        ;Call 'USER32.DialogBoxParamA' D$hInstance 23000  &NULL EqualDebugProcProc  &NULL
-        Call 'USER32.MessageBoxA' D$H.MainWindow, TempSourceBuffer, ShowSourceTitle, &MB_ICONINFORMATION
+        ;Call 'USER32.DialogBoxParamA' D$H.Instance 23000  &NULL EqualDebugProcProc  &NULL
+
+        Call MessageBox ShowSourceTitle,
+                        TempSourceBuffer,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
     popad
 
 
@@ -3730,7 +3734,7 @@ Proc EqualDebugProcProc:
     pushad
 
     If D@msg = &WM_INITDIALOG
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Mov eax &TRUE
         Call 'User32.SetWindowTextA' D@hwnd ShowSourceTitle
         Call 'User32.SetDlgItemTextA' D@hwnd 101 TempSourceBuffer

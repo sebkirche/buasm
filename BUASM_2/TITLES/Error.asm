@@ -311,7 +311,7 @@ L1:             Mov W$edi 0
 
           ; Tag Dialog 10
 
-            Call 'USER32.DialogBoxIndirectParamW' D$hinstance, ErrorUnicodeDialog,
+            Call 'USER32.DialogBoxIndirectParamW' D$H.Instance, ErrorUnicodeDialog,
                                                   &NULL, ErrorMessageProcW, &NULL
 
         ...Else
@@ -339,7 +339,7 @@ L1:             Mov B$edi 0
             Mov al B$Trash1+2 | or al B$Trash2
           ; Tag Dialog 10
             On al <> 0,
-            Call 'USER32.DialogBoxParamA' D$hinstance, 10, D$H.MainWindow, ErrorMessageProcA, &NULL
+            Call 'USER32.DialogBoxParamA' D$H.Instance, 10, D$H.MainWindow, ErrorMessageProcA, &NULL
 
         ...End_If
 EndP
@@ -383,10 +383,9 @@ EndP
 Proc ErrorMessageProcW:
     Arguments @hwnd, @msg, @wParam, @lParam
 
-    pushad
 
     ...If D@msg = &WM_INITDIALOG
-        Call 'USER32.SetClassLongW' D@hwnd, &GCL_HICON, D$wc_hIcon
+        Call 'USER32.SetClassLongW' D@hwnd, &GCL_HICON, D$H.MainIcon
 
         Call 'User32.SendDlgItemMessageW' D@hwnd, 10, &WM_SETFONT,
                                               D$Font1Handle, &FALSE
@@ -401,7 +400,7 @@ Proc ErrorMessageProcW:
                                           &EC_LEFTMARGIN__&EC_RIGHTMARGIN, 10
 
         Call 'USER32.SendMessageW' D@hwnd, &WM_SETTEXT, &NULL, uError
-                                   ;D$ErrorMessageTitlePtr
+                                   ;D$STR.A.MessageWindowTitleError
 
         Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &WM_SETTEXT, 0, Trash1
 
@@ -415,7 +414,7 @@ Proc ErrorMessageProcW:
 ;;
     ...Else_If D@msg = &WM_SETFONT
         If D$NationalFontHandle <> 0
-            popad | Mov eax D$NationalFontHandle | ExitP
+            Return D$NationalFontHandle
         End_If
 ;;
     ...Else_If D@msg = &WM_COMMAND
@@ -430,32 +429,31 @@ Proc ErrorMessageProcW:
         End_If
 
     ...Else_If D@msg = &WM_CTLCOLOREDIT
-        Call 'USER32.SendMessageW' D@lParam, &EM_SETSEL, 0-1, 0
-        Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
+
+        Call WM_CTLCOLOREDIT | Return
 
     ...Else
-L8:     popad | Mov eax &FALSE | ExitP
+L8:
+        Return &FALSE
 
     ...End_If
 
-    popad | Mov eax &TRUE
+   Mov eax &TRUE
+
 EndP
 
 
 Proc ErrorMessageProcA:
     Arguments @hwnd, @msg, @wParam, @lParam
 
-    pushad
-
     ...If D@msg = &WM_INITDIALOG
-        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
+        Call SetIconDialog
 
         Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &EM_SETMARGINS,
                                         &EC_LEFTMARGIN__&EC_RIGHTMARGIN, 10
 
         Call 'USER32.SendMessageA' D@hwnd, &WM_SETTEXT, &NULL,
-                                   D$ErrorMessageTitlePtr
+                                   D$STR.A.MessageWindowTitleError
 
         Call 'USER32.SendDlgItemMessageA' D@hwnd, 20, &EM_SETMARGINS,
                                         &EC_LEFTMARGIN__&EC_RIGHTMARGIN, 10
@@ -487,16 +485,16 @@ Proc ErrorMessageProcA:
         End_If
 
     ...Else_If D@msg = &WM_CTLCOLOREDIT
-        Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0-1, 0
-        Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
+
+        Call WM_CTLCOLOREDIT | Return
 
     ...Else
-L8:     popad | Mov eax &FALSE | ExitP
+L8:
+        Return &FALSE
 
     ...End_If
 
-    popad | Mov eax &TRUE
+    Mov eax &TRUE
 EndP
 
 

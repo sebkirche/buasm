@@ -17,8 +17,8 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
-[ClipMessage: " Copy 'Clip.txt' in this directory
-or run [Config] menu option" 0]
+[ClipMessage: B$ " Copy 'Clip.txt' in this directory
+or run [Config] menu option" EOS]
 
 Templates:
     If D$ClipperHandle > 0
@@ -35,12 +35,20 @@ L1:     Call LoadClipFile
 
     If B$ClipFileReady = &TRUE
       ; Tag Dialog 2000
-        Call 'USER32.DialogBoxParamA' D$hInstance, 2000, &NULL, TemplateChoice, &NULL
+        Call 'USER32.DialogBoxParamA' D$H.Instance, 2000, &NULL, TemplateChoice, &NULL
         Call ReleaseClipFile
     Else_If B$ClipFileReady = &FALSE
-        Call 'User32.MessageBoxA' D$H.MainWindow, ClipMessage, FileNotFound, &MB_ICONINFORMATION+&MB_SYSTEMMODAL
+
+        Call MessageBox FileNotFound,
+                        ClipMessage,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
     Else_If B$ClipFileReady = 0-1
-        Call 'USER32.MessageBoxA' D$H.MainWindow, ClipTitleWanted, UnvalidClipTitle, &MB_SYSTEMMODAL
+
+        Call MessageBox UnvalidClipTitle,
+                        KillIcon,
+                        &MB_SYSTEMMODAL+&MB_ICONQUESTION+&MB_YESNO
+
         Call ReleaseClipFile
     End_If
 ret
@@ -334,19 +342,17 @@ ret
 Proc TemplateChoice:
     Arguments @hwnd, @msg, @wParam, @lParam
 
-    pushad
-
     ...If D@msg = &WM_COMMAND
          ..If D@wParam = &IDCANCEL
             Mov D$ClipperHandle 0
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
 
          ..Else_If D@wParam = &IDOK
              Call RetrieveGenericName
              Call SearchTheClip
              Call TemplateToClipBoard
              Mov D$ClipperHandle 0
-             Call 'User32.EndDialog' D@hwnd 0
+             Call WM_CLOSE
 
          ..Else_If D@wParam = &IDHELP
              Call Help, B_U_AsmName TempateHelp, ContextHlpMessage
@@ -398,7 +404,7 @@ Proc TemplateChoice:
     ...Else_If D@msg = &WM_INITDIALOG
         move D$ClipperHandle D@hwnd
         Mov B$ClipDialogIsExtended &FALSE
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Call 'USER32.GetDlgItem' D@hwnd 101 | Mov D$TemplateList1 eax
         Call 'USER32.GetDlgItem' D@hwnd 102 | Mov D$TemplateList2 eax
         Call 'USER32.GetDlgItem' D@hwnd 110 | Mov D$TemplateList3 eax
@@ -420,8 +426,7 @@ Proc TemplateChoice:
    ;     jmp L1>
 
     ...Else_If D@msg = &WM_CTLCOLORLISTBOX
-L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>>
+L1:     Call WM_CTLCOLOREDIT | Return
 
     ...Else
        ; Mov eax D$BlockEndTextPtr | sub eax D$BlockStartTextPtr
@@ -429,11 +434,11 @@ L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
        ; Mov ecx D$BlockInside | On eax >= ebx, Mov ecx &FALSE
        ; EnableControl D@hwnd, AD_TEMPLATE, ecx
 
-        popad | Mov eax &FALSE | jmp L9>
+        Return &FALSE
 
     ...End_If
 
-    popad | Mov eax &TRUE
+    Mov eax &TRUE
 
 L9: Endp
 
@@ -455,7 +460,7 @@ AddGroup: ; 'LoadClipFile'
 
     On D$GetNewGroupNameHandle <> 0,
         Call 'User32.EndDialog' D$GetNewGroupNameHandle, 0
-    Call 'USER32.DialogBoxParamA' D$hInstance 20001, &NULL, GetNewGroupName, &NULL
+    Call 'USER32.DialogBoxParamA' D$H.Instance 20001, &NULL, GetNewGroupName, &NULL
     On D$NewGroupName = 0, ret
 
     ...If B$GroupInsert = &TRUE
@@ -521,14 +526,14 @@ L1:             Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &WM_GETTEXTLENGTH,
                 Mov D$NewGroupNameLen eax
                 Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &WM_GETTEXT, 38,
                                                   NewGroupName
-                Call 'USER32.EndDialog' D@hwnd, 0 | popad | Mov eax &TRUE | ExitP
+                Call WM_CLOSE | popad | Mov eax &TRUE | ExitP
 
             Else_If D@wParam = 20       ; [Insert]
                 Mov D$GroupInsert &TRUE | jmp L1<
 
             Else_If D@wParam = &IDCANCEL
                 Mov D$GetNewGroupNameHandle 0
-                Call 'USER32.EndDialog' D@hwnd, 0 | popad | Mov eax &TRUE | ExitP
+                Call WM_CLOSE | popad | Mov eax &TRUE | ExitP
 
             End_If
 
@@ -549,7 +554,7 @@ EndP
 
 ; Deleting a Group name only.
 
-[SureDelGroupName: 'Delete "                                ', 0]
+[SureDelGroupName: B$ "Delete                                  " EOS]
 
 DeleteGroup:
     Call SaveClipSelections
@@ -563,11 +568,14 @@ L0: inc esi | cmp D$esi 02F2F0A0D | jne L0<     ; "CR LF //" = 02F2F0A0D
         add esi 4 | lea edi D$SureDelGroupName+8
         While B$esi > CR | movsb | End_While
         Mov D$edi '" ? ', B$edi+3 0
-        Call 'USER32.MessageBoxA' D$H.MainWindow, SureDelGroupName, SureDelTemplateTitle,
-                                  &MB_SYSTEMMODAL__&MB_YESNO__&MB_ICONEXCLAMATION
+
+        Call MessageBox Sure,
+                        SureDelGroupName,
+                        &MB_SYSTEMMODAL+&MB_YESNO+&MB_ICONEXCLAMATION
+
     pop esi
 
-    .If eax = &IDYES
+    .If D$FL.MsgBoxReturn = &IDYES
         Mov edx D$ClipFileMemoryPointer | add edx D$ClipFileSize
         add esi 2 | Mov edi esi | add esi 2 | sub D$ClipFileSize 2
       ; edi > '//'. esi > Name. Skip over Line:
@@ -593,11 +601,14 @@ L0: inc esi | cmp D$esi 02F2F0A0D | jne L0<     ; "CR LF //" = 02F2F0A0D
         add esi 4 | lea edi D$SureDelGroupName+8
         While B$esi > CR | movsb | End_While
         Mov D$edi '" ? ', B$edi+3 0
-        Call 'USER32.MessageBoxA' D$H.MainWindow, SureDelGroupName, SureDelTemplateTitle,
-                                  &MB_SYSTEMMODAL__&MB_YESNO__&MB_ICONHAND
+
+         Call MessageBox Sure,
+                        SureDelGroupName,
+                        &MB_SYSTEMMODAL+&MB_YESNO+&MB_ICONHAND
+
     pop esi
 
-    .If eax = &IDYES
+    .If D$FL.MsgBoxReturn = &IDYES
         Mov edx D$ClipFileMemoryPointer | add edx D$ClipFileSize
         Mov edi esi | add esi 4 | sub D$ClipFileSize 4
         While D$esi <> 02F2F0A0D
@@ -614,24 +625,37 @@ ret
 
 [GetNewTemplateNameHandle: ?]
 
-[NoClipSelection: B$ 'No selection found in the Source Editor  ', 0
- SelectionTooBig: B$ 'The Selection is too big  ', 0]
+[NoClipSelection: B$ "No selection found in the Source Editor" EOS]
+
+[SelectionTooBig: B$ "The Selection is too big" EOS]
 
 AddTemplate: ; 'LoadClipFile'
     Mov eax D$BlockEndTextPtr | sub eax D$BlockStartTextPtr
     Mov ebx D$ClipMemoryEnd | sub ebx D$ClipFileMemoryPointer
 
     If D$BlockInside = &FALSE
-        Call 'USER32.MessageBoxA' D$H.MainWindow, NoClipSelection, Argh, &MB_SYSTEMMODAL | ret
+
+        Call MessageBox Argh,
+                        NoClipSelection,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret
+
     Else_If eax >= ebx
-        Call 'USER32.MessageBoxA' D$H.MainWindow, SelectionTooBig, Argh, &MB_SYSTEMMODAL | ret
+
+        Call MessageBox Argh,
+                        SelectionTooBig,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret
+
     End_If
 
     Call SaveClipSelections
 
     On D$GetNewTemplateNameHandle <> 0,
         Call 'User32.EndDialog' D$GetNewTemplateNameHandle, 0
-    Call 'USER32.DialogBoxParamA' D$hInstance 20000, &NULL, GetNewTemplateName, &NULL
+    Call 'USER32.DialogBoxParamA' D$H.Instance 20000, &NULL, GetNewTemplateName, &NULL
 
     On D$NewTemplateName = 0, ret
 
@@ -717,8 +741,9 @@ ClipUpdate:
 ret
 ____________________________________________________________________________________________
 
-[UnvalidClipTitle: 'Unvalid Clip File', 0
- ClipTitleWanted: "A Clip File must contain some text before the first //Group", 0]
+[UnvalidClipTitle: B$ "Unvalid clip file" EOS]
+
+[ClipTitleWanted: B$ "A clip file must contain some text before the first //Group" EOS]
 
 ;;
   Ensure that all '/Name', '//Name' are preceeded and ended by 3 CRLF and than the
@@ -790,11 +815,11 @@ Proc GetNewTemplateName:
                 Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &WM_GETTEXT, eax,
                                                    NewTemplateName
 
-                Call 'User32.EndDialog' D@hwnd 0 | popad | Mov eax &TRUE | ExitP
+                Call WM_CLOSE | popad | Mov eax &TRUE | ExitP
 
             Else_If D@wParam = &IDCANCEL
                 Mov D$GetNewTemplateNameHandle 0
-                Call 'User32.EndDialog' D@hwnd 0 | popad | Mov eax &TRUE | ExitP
+                Call WM_CLOSE | popad | Mov eax &TRUE | ExitP
 
             Else_If D@wParam = 20
                 xor B$WithCustomisation &TRUE
@@ -812,9 +837,8 @@ Proc GetNewTemplateName:
 EndP
 
 
-[NoClipSelected: 'Select a Template in the second List Box, if you want to delete it', 0
- SureDelTemplateTitle: 'Sure?', 0
- SureDelTemplate: 'Delete "                                ']
+[NoClipSelected: B$ "Select a Template in the second List Box, if you want to delete it" EOS]
+[SureDelTemplate: B$ "Delete                                  " EOS]
 
 DeleteTemplate:
     Call SaveClipSelections
@@ -823,7 +847,10 @@ DeleteTemplate:
 
     .If D$TheClipLenght = 0
       ; No Item yet, or no Item selected:
-        Call 'USER32.MessageBoxA' D$H.MainWindow, NoClipSelected, Argh, &MB_SYSTEMMODAL
+
+        Call MessageBox Argh,
+                        NoClipSelected,
+                        &MB_SYSTEMMODAL+&MB_USERICON
 
     .Else
       ; Item selected >>> Delete:
@@ -836,11 +863,13 @@ DeleteTemplate:
             lea edi D$SureDelTemplate+8 | Mov esi D$ClipPointer | inc esi
             While B$esi <> CR | movsb | End_While | Mov D$edi '"  ?', B$edi+4 0
 
-            Call 'USER32.MessageBoxA' D$H.MainWindow, SureDelTemplate, SureDelTemplateTitle,
-                                      &MB_SYSTEMMODAL__&MB_YESNO__&MB_ICONEXCLAMATION
+            Call MessageBox Sure,
+                            SureDelTemplate,
+                            &MB_SYSTEMMODAL__&MB_YESNO__&MB_ICONEXCLAMATION
+
         pop edi, esi
 
-        .If eax = &IDYES
+        .If D$FL.MsgBoxReturn = &IDYES
             Mov edx D$ClipFileMemoryPointer | add edx D$ClipFileSize
             Mov esi D$ClipPointer | inc esi | dec D$ClipFileSize
             While B$esi <> '/'

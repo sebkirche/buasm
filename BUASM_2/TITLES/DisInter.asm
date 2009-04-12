@@ -43,12 +43,16 @@ ForcedFlags:
     Call GetOriginalDisFileNameFromSource
 
     If B$SaveFilter <> 0
-        Call 'USER32.DialogBoxParamA' D$hInstance, 2500, D$H.MainWindow, ForcedFlagsProc, &NULL
+        Call 'USER32.DialogBoxParamA' D$H.Instance, 2500, D$H.MainWindow, ForcedFlagsProc, &NULL
 
         On eax = &TRUE, Call ReRunDisassembler
     Else
-        Call 'USER32.MessageBoxA', D$H.MainWindow, {"The expected Original File Name was not found,
-at the Top of this Source" 0}, {'Failure of Edition', 0}, 0
+
+        Call MessageBox {B$ "FAILURE OF EDITION" EOS},
+                        {B$ "The expected Original File Name was not found,
+at the Top of this Source" EOS},
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
     End_If
 ret
 
@@ -60,8 +64,6 @@ ret
 Proc ForcedFlagsProc:
     Arguments @hwnd, @msg, @wParam, @lParam
 
-    pushad
-
     ..If D@msg = &WM_INITDIALOG
         move D$ForcedFlagsProcHandle D@hwnd
         Mov B$ForcedFlagsModified &FALSE
@@ -69,29 +71,33 @@ Proc ForcedFlagsProc:
         Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &EM_SETLIMITTEXT, 8, 0
         Call 'USER32.SendDlgItemMessageA' D@hwnd, 11, &EM_SETLIMITTEXT, 8, 0
 
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Mov eax &TRUE
 
         Call InitForcedFlagsDialog
 
         If D$ForcedRecordsTable = 0
-            Call 'USER32.MessageBoxA', D@hwnd,
-            {'The Forced Records File was not found', 0}, {'Failure of Edition', 0}, 0
-            Call 'User32.EndDialog' D@hwnd, &FALSE
+
+            Call MessageBox {B$ "FAILURE OF EDITION" EOS},
+                            {B$ "The Forced Records File was not found" EOS},
+                            &MB_SYSTEMMODAL+&MB_USERICON
+
+            Call WM_CLOSE
+
         End_If
 
     ..Else_If D@msg = &WM_CLOSE
-        Call 'User32.EndDialog' D@hwnd, &FALSE
+        Call WM_CLOSE
 
     ..Else_If D@msg = &WM_COMMAND
         .If D@wParam = &IDCANCEL
-            Call 'User32.EndDialog' D@hwnd, &FALSE
+            Call WM_CLOSE
 
         .Else_If D@wParam = &IDOK
             Call RegisterUserFlags
             If B$BadUserFlag = &FALSE
                 Call WriteForcedRecordsFile  ; ReadForcedRecordsFile
-                Call 'User32.EndDialog' D@hwnd, &TRUE
+                Call WM_CLOSE
             End_If
 
         .Else_If D@wparam = ID_HELP
@@ -160,7 +166,7 @@ Proc ForcedFlagsProc:
             Call DeleteForcedRecord
             If D$DisForcedRecordIndice = 0
                 Call WriteForcedRecordsFile
-                Call 'User32.EndDialog' D@hwnd 0
+                Call WM_CLOSE
             End_If
 
         .Else_If D@wparam < 30
@@ -178,16 +184,14 @@ Proc ForcedFlagsProc:
         .End_If
 
     ..Else_If D@msg = &WM_CTLCOLOREDIT
-        Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0-1, 0
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
+        Call WM_CTLCOLOREDIT | Return
 
     ..Else
-        popad | Mov eax &FALSE | jmp L9>
+        Return &FALSE
 
     ..End_If
 
-    popad | Mov eax &TRUE
+    Mov eax &TRUE
 
 L9: EndP
 ____________________________________________________________________________________________
@@ -534,7 +538,12 @@ L1:         pop ebx | Call InitForcedFlagsFromSelection | ret
         Mov D$ebx 'Rout', D$ebx+4 'ing.', D$ebx+8 'map'
         Call ReadMapFileByte D$DisAddressWas ; SectionsMap, EndOfSectionsMap
         .If D$DisassemblyMapHandle = &INVALID_HANDLE_VALUE
-            Mov eax {'Routing Map File not found', 0} | Call MessageBox | jmp L1<<
+
+            Call MessageBox argh,
+                            {B$ "Routing Map File not found" EOS},
+                            &MB_SYSTEMMODAL+&MB_USERICON
+
+            jmp L1<<
 
         .Else
             Call InitForcedRoutingDialog
@@ -547,7 +556,12 @@ L1:         pop ebx | Call InitForcedFlagsFromSelection | ret
         Call ReadMapFileByte D$DisAddressWas
 
         ..If D$DisassemblyMapHandle = &INVALID_HANDLE_VALUE
-            Mov eax {'Sizes Map File not found', 0} | Call MessageBox | jmp L1<<
+
+            Call MessageBox argh,
+                            {B$ "Sizes Map File not found" EOS},
+                            &MB_SYSTEMMODAL+&MB_USERICON
+
+            jmp L1<<
 
         ..Else
             Call InitForcedSizeDialog
@@ -1069,8 +1083,13 @@ GetForcedDialogFlags:
     Call GetHexaFromText ForcedStartAddressBuffer
 
     If B$GetHexaFromTextError = &TRUE
-        Mov eax {'The Address must be given in Hexa Format', 0} | Call MessageBox
+
+        Call MessageBox argh,
+                        {B$ "The Address must be given in Hexa Format" EOS},
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
         Mov B$BadUserFlag &TRUE | ret
+
     End_If
 
     Mov D$DisAddressWas eax
@@ -1176,20 +1195,25 @@ GetForcedEndAddress:
         Call 'USER32.SendDlgItemMessageA' D$ForcedFlagsProcHandle, 51, &WM_GETTEXT,
                                           10, ForcedStartAddressBuffer
         If eax = 0
-            Call 'USER32.MessageBoxA' D$ForcedFlagsProcHandle,
-            {'You must give the End Address of the String (Excluded Label)', 0},
-            {'Missing Address', 0}, &MB_OK
+
+            Call MessageBox {B$ "MISSING ADRESS" EOS},
+                            {B$ "You must give the End Address of the String (Excluded Label)" EOS},
+                            &MB_SYSTEMMODAL+&MB_USERICON
 
             Mov B$BadUserFlag &TRUE | jmp L2>
+
         End_If
 
         Call GetHexaFromText ForcedStartAddressBuffer
 
         If B$GetHexaFromTextError = &TRUE
-            Mov eax {'The Address must be given in Hexa Format', 0}
-            Call MessageBox
+
+            Call MessageBox Argh,
+                            {B$ "The address must be given in Hexa format" EOS},
+                            &MB_SYSTEMMODAL+&MB_USERICON
 
             Mov B$BadUserFlag &TRUE | jmp L2>
+
         End_If
       ; eax = Value of the End Label
 

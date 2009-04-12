@@ -9,21 +9,17 @@ TITLE Main
 [ListEditRect: ListERX: 0   ListERY: 0   ListERW: 0   ListERH: 0]
 [WindowStyle: &WS_OVERLAPPEDWINDOW
  WindowExStyle: &WS_EX_CLIENTEDGE]
-[MenuHandle: 0    ScrollBarWanted: &TRUE]
+
+
+[ScrollBarWanted: &TRUE]
 
 [FindString: 'commdlg_FindReplace' 0  FindStringMessage: 0]
 
-[RosAsmMutexName: B$ 'RosAsmIsRuning', 0   MultiInstance: &FALSE]
+[STR.A.BUAsmMutexName: B$ "BUAsmIsRuning" EOS]
 
-[ClassName: B$ 'RosAsmWindowClass' 0   EditClassName: 'EDIT' 0]
+[FL.MultiInstance: D$ ?]
 
-[WndClassEx:
- wc_Size: len         wc_style: 11      WndProc: MainWindowProc   wc_ClsExtra: 0
- wc_WndExtra: 0       wc_hInstance: 0   wc_hIcon: 0               wc_hCursor: 0
- wc_hbrBackground: &COLOR_SCROLLBAR+1 ; 6
- wc_MenuName: 0    wc_ClassName: ClassName   wc_hIconSm: 0]
-
-[Bp_hCursor: ?   ActualCursor: ?  WaitCursor: ?]
+[EditClassName: 'EDIT' 0]
  __________________________________________________________________________________
 
 ; First message structure is for the main loop (Get-Translate-DispatchMessage)
@@ -32,7 +28,6 @@ TITLE Main
 
 [FirstMsg: FAdressee: ?  FuMsg: ?  FWparam: ?  FLparam: ?  FTime: ?  FPoint: ? ?]
 
-[hInstance: ?  H.MainWindow: ?  hwndEdit: ?  FindHandle: ?]
 
 ; For mem tests:
 
@@ -69,161 +64,18 @@ ACCELNUMBER 2    FLAGLAST 080]
     &FVIRTKEY__&FCONTROL__&FNOINVERT+FLAGLAST    &VK_8     DRAWLINE]
 ;;
 
-[IncludesOK: ?  RichEditHandle: ?]
-
-Main:
-  ; For the Resurces Editor:
-    Call 'KERNEL32.LoadLibraryA' {'riched20.dll',0} | Mov D$RichEditHandle eax
-
-  ; Install exception handler
-    Call 'KERNEL32.SetUnhandledExceptionFilter' FinalExceptionHandler
-
-  ; Ensure mono-instance:
-    Call 'KERNEL32.CreateMutexA' &NULL &TRUE RosAsmMutexName
-    Call 'KERNEL32.GetLastError'
-    On eax = &ERROR_ALREADY_EXISTS, Mov B$MultiInstance &TRUE
-
-    Call 'Kernel32.GetModuleHandleA' 0
-      Mov D$hInstance eax, D$wc_hInstance eax, D$OSSInstance eax,
-          D$OPESInstance eax, D$BmOpenInstance eax
-
-    Call 'User32.LoadIconA' eax 1
-    Mov D$wc_hIcon eax, D$wc_hIconSm eax
-
-    Call 'User32.LoadCursorA' 0, &IDC_ARROW  | Mov D$Bp_hCursor eax
-    Call 'User32.LoadCursorA' 0, &IDC_IBEAM | Mov D$wc_hCursor eax
-    Mov D$ActualCursor eax
-    Call 'User32.LoadCursorA' 0, &IDC_WAIT | Mov D$WaitCursor eax
-
-    Call WineKey
-    Call WhateverConfig
-
-    Mov D$WriteCheckerWanted 0 ; Temporary locked. ('WriteChecker' ---> toDo as a Hook).
-
-    Call ResetBackGroundColors | move D$wc_hbrBackground D$BackGroundBrushHandle
-
-    Call 'User32.RegisterClassExA' WndClassEx
-
-    Call 'User32.LoadMenuA' D$hInstance M00_Menu | Mov D$MenuHandle eax
-
-    Call GetWheelInfo
-
-    Call AddUserMenu
-
-    Call NewBuildWin32Equates
-
-    If B$IncludesOK = &TRUE
-        On D$EquatesName = 'Equa', Call AppendToCurrentDirectory
-        Call PrepareStructuresFiles
-    End_If
-
-    Call 'User32.CreateWindowExA' D$WindowExStyle, ClassName, STR.A.AppName, D$WindowStyle,
-                                  D$WindowX, D$WindowY, D$WindowW, D$WindowH, 0,
-                                  D$MenuHandle, D$hInstance, 0
-
-   ; for a 'full screen 'window's user area (ex: screen-saver):
-   ;
-   ; Call 'User32.CreateWindowExA' 04030D0  ClassName  AppName  096000000,
-   ;                               D$WindowX  D$WindowY  D$WindowW  D$WindowH  0,
-   ;                               0  D$hInstance  0
-
-    Mov D$H.MainWindow eax, D$hwndFileOwner eax, D$hwndPEFileOwner eax,
-        D$PD_hWndOwner eax, D$BmhwndFileOwner eax
-
-    On D$StringsLanguage <> '.en', Call OpenStringsFile
-
-    Call EnableMenutems | Call EnableHelpMenutems
-    Call EnableVisualTutsMenu | Call EnableWizardsMenu
-    Call EnableClipMenu
-
-    Call CreateStatusBar
-    On B$ToolBarWanted = &TRUE, Call CreateToolBar
-    On B$ScrollBarWanted = &TRUE, Call CreateScrollBar
-    Call CreateEditWindow
-
-  ; (D$IsMaximizedFlag = &SW_SHOWNORMAL or &SW_MAXIMIZE):
-    Call 'USER32.ShowWindow'  D$H.MainWindow, D$IsMaximizedFlag
-
-    Call 'USER32.UpdateWindow' D$H.MainWindow
-
-    Call 'USER32.GetClipCursor' FullRECT
-
-    Call 'USER32.RegisterWindowMessageA' FindString | Mov D$FindStringMessage eax
-
-  ; Rotary table for moving inside text:
-    Call SetBackTableMemory | Call InitUndo
-
-    Call CreateFontForDialogEdition | Call LoadFont
-
-    On D$NATION_LOGFONT@lfWeight <> 0, Call LoadNationalFont
-
-    Call SetUndoDirectory
-    Call DeleteOldUndoFiles
-
-    Call CheckAllMRUFile | Call SetMRUmenu | On B$LoadMRU = &TRUE, Call LoadLastMRUFile
-
-
-  ; copying compilable version of icon in case user compiles vithout defining any icon:
-    Call StoreIcon
-
-    On B$BlinkingCaretWanted = &TRUE, Call InitBlinkCursor
-
-    Call InitExpressionBuffers
-
-;    Call 'USER32.CreateAcceleratorTableA' ACCELERATORS ACCELNUMBER
-;    Mov D$AccelHandle eax
-
-    jmp L1>>
-   ___________________________________________________________________________
-
-   ; Our main loop: when 'DispatchMessageA' called, Win calls upper CallBack:
-   ___________________________________________________________________________
-
-L0: Call 'User32.IsDialogMessageA' D$FindReplaceHandle Firstmsg  | On eax > 0, jmp L1>
-
-    If B$IsDebugging = &TRUE
-        Call 'User32.TranslateAcceleratorA' D$DebugDialogHandle, D$DbgAccelHandle, FirstMsg
-        cmp eax &TRUE | je L1>
-        Call 'User32.IsDialogMessageA' D$CurrentDataPageHandle, FirstMsg
-        cmp eax &TRUE | je L1>
-        Call 'User32.IsDialogMessageA' D$DebugDialogHandle, FirstMsg
-        cmp eax &TRUE | je L1>
-    End_If
-
-    Call 'User32.TranslateMessage' Firstmsg
-    Call 'User32.DispatchMessageA' Firstmsg
-
-L1: Call 'User32.GetMessageA' FirstMsg 0 0 0
-
-    cmp eax 0 | ja L0<<
-
-  ; Call ReleaseFonts
-    Call UpdateRegistry
-
-    Call 'KERNEL32.FreeLibrary' D$RichEditHandle
-
-  ; Call 'USER32.DestroyAcceleratorTable' D$AccelHandle
-
-    Call 'Kernel32.ExitProcess' D$FWparam
+[IncludesOK: D$ ?
+ H.RichEdit: D$ ?]
 ____________________________________________________________________________________________
 
-ResetBackGroundColors:
-    On D$BackGroundBrushHandle <> 0, Call 'KERNEL32.CloseHandle' D$BackGroundBrushHandle
-    Call 'GDI32.CreateSolidBrush' D$NormalBackColor
-    Mov D$BackGroundBrushHandle eax
+Main:
 
-    On D$DialogsBackGroundBrushHandle, <> 0, Call 'KERNEL32.CloseHandle' D$DialogsBackGroundBrushHandle
-    Call 'GDI32.CreateSolidBrush' D$DialogsBackColor
-    Mov D$DialogsBackGroundBrushHandle eax
+    Call INIT
 
-    On D$CaretBrushHandle, <> 0, Call 'KERNEL32.CloseHandle' D$CaretBrushHandle
-    Call 'GDI32.CreateSolidBrush' D$StatementColor
-    Mov D$CaretBrushHandle eax
+    Call MSG_PUMP
 
-    On D$RedBrushHandle, <> 0, Call 'KERNEL32.CloseHandle' D$RedBrushHandle
-    Call 'GDI32.CreateSolidBrush' D$BracketColor
-    Mov D$RedBrushHandle eax
-ret
+    Call 'KERNEL32.ExitProcess' D$STRUC.MSG@wParam
+____________________________________________________________________________________________
 
 [CaretTime: 600    ShowCaret: &TRUE    BlinkingCaretWanted: &FALSE]
 
@@ -272,21 +124,21 @@ ________________________________________________________________________________
 ; 'AllUndoFiles', used to search for Files to be deleted, looks like this:
 ; 'E:\RosAsm3\RosAsmUndo\Undo???.$$$'
 
-[UndoExist: "
-Block-Delete Undo-Files have been found in the
-Temporary Directory (...\RosAsmUndo\).
+[UndoExist: B$ "
+Block-delete Undo-files have been found in the
+temporary directory (...\BUAsmUndo\).
 
-The existing Undo-Files are going to be deleted and
-the previous instance of RosAsm will no more be able to
-UnDelete its saved Blocks.
+The existing undo-files are going to be deleted and
+the previous instance of BUAsm will no more be able to
+undelete its saved blocks.
 "
 
 MultiUndo: "
-You are runing several instances of RosAsm. Do not        
-Delete/UnDelete Blocks of text [Ctrl][X] / [Ctrl][Z]
-The results could be unwished.
+You are runing several instances of BUAsm. Do not        
+Delete/UnDelete blocks of text [Ctrl][X] / [Ctrl][Z]
+the results could be unwished.
 
-" 0]
+" EOS]
 
 SetUndoDirectory:
     Mov edi UndoDirectory, ecx &MAX_PATH, al 0 | rep stosb
@@ -300,7 +152,7 @@ SetUndoDirectory:
         Call 'KERNEL32.CreateDirectoryA' UndoDirectory &NULL | Mov ebx eax
     pop edi
 
-    If B$MultiInstance = &FALSE
+    If D$FL.MultiInstance = &FALSE
         push edi
             Mov D$edi '\Und', D$edi+4 'o*.$', W$edi+8 '$$', B$edi+9 0
             Call 'KERNEL32.DeleteFileA' UndoDirectory
@@ -319,17 +171,25 @@ SetUndoDirectory:
 
         Call 'KERNEL32.FindFirstFileA' AllUndoFiles2 FindFile
         .If eax <> &INVALID_HANDLE_VALUE
-            If B$MultiInstance = &TRUE
-                Call 'USER32.MessageBoxA' D$H.MainWindow, UndoExist, Argh, &MB_OKCANCEL__&MB_ICONHAND
-                On eax = &IDCANCEL, Call 'KERNEL32.ExitProcess' 0
+            If D$FL.MultiInstance = &TRUE
+
+                Call MessageBox Argh,
+                                UndoExist,
+                                &MB_SYSTEMMODAL+&MB_OKCANCEL+&MB_USERICON
+
+                On D$FL.MsgBoxReturn = &IDCANCEL, Call 'KERNEL32.ExitProcess' 0
             End_If
 
             Call DeleteOldUndoFiles
 
         .Else
             Call 'KERNEL32.FindClose' eax
-            If B$MultiInstance = &TRUE
-                Call 'USER32.MessageBoxA' D$H.MainWindow, MultiUndo, Argh, 0
+            If D$FL.MultiInstance = &TRUE
+
+                Call MessageBox Argh,
+                                MultiUndo,
+                                &MB_SYSTEMMODAL+&MB_USERICON
+
             End_If
 
         .End_If
@@ -462,8 +322,9 @@ ________________________________________________________________________________
 [ToolBarPixelsHight: ?    ToolBarLinesHight: ?]
 [ToolBarWanted: ?]
 
-[HelpToolBar: 'Sure you need some help???!!!!', 0
- HelpToolBarTitle: 'Poor you!' 0]
+[HelpToolBar: B$ "Sure you need some help ???!!!!" EOS]
+
+[HelpToolBarTitle: B$ "Poor you !:" EOS]
 
 [ToolBar_Registry:
  TB_hkr: &HKEY_CURRENT_USER
@@ -477,7 +338,7 @@ CreateToolBar:
  ;&TBSTYLE_TOOLTIPS__&TBSTYLE_ALTDRAG__&CCS_ADJUSTABLE,
     Call 'COMCTL32.CreateToolbarEx' D$H.MainWindow,
     &CCS_TOP__&TBSTYLE_TOOLTIPS__&WS_CHILD__&WS_VISIBLE__&TBSTYLE_ALTDRAG__&CCS_ADJUSTABLE__&WS_BORDER,
-    0300, TOOLBUTTONS_NUMBER, D$hInstance, 2, ToolBarButtons, 9, 0, 0, 20, 20, 20
+    0300, TOOLBUTTONS_NUMBER, D$H.Instance, 2, ToolBarButtons, 9, 0, 0, 20, 20, 20
 
 ; &WS_CHILD__&WS_VISIBLE__&WS_BORDER__&CCS_TOP__&TBSTYLE_ALTDRAG__&CCS_ADJUSTABLE,
 
@@ -536,7 +397,7 @@ CreateScrollBar:
     Call 'USER32.CreateWindowExA' 0, EditClassName, &NULL,
                                   &WS_CHILD__&WS_VISIBLE__&WS_VSCROLL,
                                   D$ScrollBarX, D$ScrollBarY, D$ScrollBarW, D$ScrollBarH,
-                                  D$H.MainWindow, &NULL, D$hInstance, 0
+                                  D$H.MainWindow, &NULL, D$H.Instance, 0
     Mov D$ScrollWindowHandle eax
 
     Call 'USER32.SetWindowLongA' D$ScrollWindowHandle, &GWL_WNDPROC, ScrollBarProc
@@ -567,20 +428,20 @@ CreateEditWindow:
     Mov eax D$StatusBarHight | sub D$EditWindowH eax
     Mov eax D$BpMarginWidth | sub D$EditWindowW eax
 
-    Call 'USER32.CreateWindowExA' 0, ClassName, &NULL,
+    Call 'USER32.CreateWindowExA' 0, STR.A.WindowClassMain, &NULL,
                                   &WS_CHILD__&WS_VISIBLE,
                                   D$EditWindowX, D$EditWindowY, D$EditWindowW, D$EditWindowH,
-                                  D$H.MainWindow, &NULL, D$hInstance, 0
+                                  D$H.MainWindow, &NULL, D$H.Instance, 0
     Mov D$EditWindowHandle eax
 
   ; Prepare the Client area for printing:
     ;Call 'USER32.GetClientRect' D$EditWindowHandle, EditWindowX
 
   ; Create the BP Margin Window:
-    Call 'USER32.CreateWindowExA' 0, ClassName, &NULL,
+    Call 'USER32.CreateWindowExA' 0, STR.A.WindowClassMain, &NULL,
                                   &WS_CHILD__&WS_VISIBLE,
                                   0, D$EditWindowY, D$EditWindowX, D$EditWindowH,
-                                  D$H.MainWindow, &NULL, D$hInstance, 0
+                                  D$H.MainWindow, &NULL, D$H.Instance, 0
     Mov D$BpWindowHandle eax
 ret
 ____________________________________________________________________________________________
@@ -590,7 +451,7 @@ ________________________________________________________________________________
 Proc AraseBackGround:
     Argument @hdc
     Call 'USER32.GetClientRect' D$EditWindowHandle, AraseBackEdit
-    Call 'USER32.FillRect' D@hdc, AraseBackEdit, D$BackGroundBrushHandle
+    Call 'USER32.FillRect' D@hdc, AraseBackEdit, D$H.BackGroundBrush
 
     Call AskForRedraw
 EndP

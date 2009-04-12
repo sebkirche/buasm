@@ -85,7 +85,9 @@ TagParser:
 
     ...End_If
 
-    Call 'USER32.MessageBoxA' D$H.MainWindow, {'Unknown Tag KeyWord', 0}, {'No such Tag', 0}, 0
+    Call MessageBox {B$ "NO SUCH TAG" EOS},
+                    {B$ 'Unknown Tag KeyWord' EOS},
+                    &MB_SYSTEMMODAL+&MB_USERICON
 ret
 
 
@@ -101,8 +103,10 @@ L0: lodsb
         lea ecx D$eax+ecx*2         ;     ecx = eax + old ecx * 10
     jmp L0<
 
-L8: Call 'USER32.MessageBoxA' D$H.MainWindow, {"Tags' Numbers are to be provided in Decimal notation", 0},
-                              {'Bad Number', 0}, 0
+L8: Call MessageBox {B$ "BAD NUMBER" EOS},
+                    {B$ "Tags' Numbers are to be provided in Decimal notation" EOS},
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
     Mov eax &FALSE | ret
 
 L9: Mov eax &TRUE | ret
@@ -168,8 +172,11 @@ L0: .If D$esi = eax
         Call ReInitDialogEdition
 
     .Else_If D$esi = 0
-        Call 'USER32.MessageBoxA' D$H.MainWindow, {'No Dialog found with matching ID Number', 0},
-                                  {'Bad ID', 0}, 0
+
+        Call MessageBox {B$ "BAD ID" EOS},
+                        {B$ "No Dialog found with matching ID Number" EOS},
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
     .Else
         add esi 12 | jmp L0<<
     .End_If
@@ -206,7 +213,7 @@ ________________________________________________________________________________
 ; esi points on the space after "; Tag wizard"
 WizardTag:
 
-    If D$DebugDialogHandle <> 0
+    If D$H.DebugDialog <> 0
           push esi | Call KillDebugger | pop esi | On eax = &IDNO, ret
     End_If
 
@@ -325,10 +332,12 @@ Proc CheckTagEndPos:
         inc esi
     End_While
 
-L2: Call 'USER32.MessageBoxA' D$H.MainWindow,
-{"Can't find '; Tag End' mark.
-Write it back and try again ;o)", 0},  {"Error", 0}, &MB_ICONERROR
-    Mov eax &FALSE
+L2: Call MessageBox STR.A.ErrorMessageTitle,
+                    {B$ "Can't find '; Tag end' mark.
+Write it back and try again ;o)" EOS},
+                    &MB_SYSTEMMODAL+&MB_ICONERROR
+
+   Mov eax &FALSE
     ExitP
 
 L1: Mov eax &TRUE
@@ -373,13 +382,13 @@ EndP
 ____________________________________________________________________________________________
 NewWizardForm:
 
-    .If D$DebugDialogHandle <> 0
+    .If D$H.DebugDialog <> 0
           Call KillDebugger | If eax = &IDNO | pop esi | ret | End_If
     .End_If
 
-    Call 'User32.MessageBoxA' &NULL {'Set the caret where you want the code to be pasted, and click OK.',0},
-                              {'Wait a minute...',0}    &MB_ICONEXCLAMATION+&MB_SYSTEMMODAL
-
+    Call MessageBox {B$ "WAIT A MINUTE" EOS},
+                    {B$ "Set the caret where you want the code to be pasted, and click OK." EOS},
+                    &MB_SYSTEMMODAL+&MB_ICONEXCLAMATION
 
     Call GetRosAsmFilesPath
     Mov esi RosAsmFilesPath | Mov edi WizardPath
@@ -456,8 +465,11 @@ Proc LoadWizardAndPasteCode:
 
     Call 'Kernel32.CreateProcessA' WizardPath WizardCommandLine 0 0  0  0 0 0  STARTUPINFO  ProcessInfos
     If eax = 0
-        Call 'User32.MessageBoxA' &NULL {"The Wizard cannot be loaded.",0},
-                                        ErrorMessageTitle   &MB_ICONEXCLAMATION+&MB_SYSTEMMODAL
+
+        Call MessageBox STR.A.ErrorMessageTitle,
+                        {B$ "The Wizard cannot be loaded." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONEXCLAMATION
+
         jmp L9>>
     End_If
     Call 'Kernel32.WaitForSingleObject' D$ProducedCode_BeginWrite &INFINITE  ; wait while the user uses the wizard
@@ -499,7 +511,7 @@ ________________________________________________________________________________
 
 UnicodeTag:
   ; esi points to 'MyUnicodeString', inside "; Tag Unicode MyUnicodeString":
-    Call 'USER32.DialogBoxParamW' D$hinstance, 600, &NULL, UnicodeEditorProc, esi
+    Call 'USER32.DialogBoxParamW' D$H.Instance, 600, &NULL, UnicodeEditorProc, esi
 ret
 
 
@@ -510,12 +522,10 @@ ret
 Proc UnicodeEditorProc:
     Arguments @hwnd, @msg, @wParam, @lParam
 
-    pushad
-
-    ...If D@msg = &WM_INITDIALOG
+      ...If D@msg = &WM_INITDIALOG
         move D$UnicodeEditorHandle D@hwnd, D$UnicodeDataPointer D@lParam
 
-        Call 'USER32.SetClassLongW' D@hwnd, &GCL_HICON, D$wc_hIcon
+        Call 'USER32.SetClassLongW' D@hwnd, &GCL_HICON, D$H.MainIcon
 
         Call LoadUnicodeEditorFont
 
@@ -555,7 +565,7 @@ Proc UnicodeEditorProc:
             If D$UnicodeEditorFontHandle <> 0
                 Call 'USER32.SendDlgItemMessageW' D@hwnd, 10, &WM_SETFONT,
                                               D$UnicodeEditorFontHandle, &TRUE
-                Call UpdateRegistry
+                Call WriteConfigFile
             End_If
 ;;
 ; Does not work, at all:
@@ -571,17 +581,15 @@ Proc UnicodeEditorProc:
         .End_If
 
     ...Else_If D@msg = &WM_CTLCOLOREDIT
-        Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0-1, 0
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
 
+        Call WM_CTLCOLOREDIT | Return
 
     ...Else
-L8:     popad | Mov eax &FALSE | ExitP
+L8:     Return &FALSE
 
     ...End_If
 
-    popad | Mov eax &TRUE
+   Mov eax &TRUE
 EndP
 
 

@@ -10346,7 +10346,7 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 ViewEncoding:
-    Call 'USER32.DialogBoxParamA' D$hinstance, 28000, &NULL, EncodingProc, &NULL
+    Call 'USER32.DialogBoxParamA' D$H.Instance, 28000, &NULL, EncodingProc, &NULL
 ret
 
 [EncodeEditHandle: ?    EncodingDialogHandle: ?] [ EncodeHelp: 'Code_Viewer' 0]
@@ -10376,11 +10376,9 @@ Label1:
 Proc EncodingProc:
     Arguments @hwnd, @msg, @wParam, @lParam
 
-    pushad
-
     ...If D@msg = &WM_INITDIALOG
         move D$EncodingDialogHandle D@hwnd
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Call 'USER32.GetDlgItem' D@hwnd 13 | Mov D$EncodeEditHandle eax
         Call 'USER32.SetFocus' eax
         jmp L8>>
@@ -10391,7 +10389,7 @@ Proc EncodingProc:
 
         ..Else_If D@wParam = &IDCANCEL
             Mov D$EncodingDialogHandle 0
-            Call 'USER32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
 
         ..Else_If D@wParam = &IDOK
             Call 'USER32.GetFocus' | Call 'USER32.GetDlgCtrlID' eax
@@ -10425,17 +10423,16 @@ L3:         Call 'USER32.GetDlgItemTextA' D@hwnd, 16, HexaCodeText, 80
         jmp L1>
 
     ...Else_If D@msg = &WM_CTLCOLORLISTBOX
-L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+L1:     Call WM_CTLCOLOREDIT | Return
 
     ...Else
-L8:     popad | Mov eax &FALSE | jmp L9>
+L8:     Return &FALSE
 
     ...End_If
 
-    popad | Mov eax &TRUE
+    Mov eax &TRUE
 
-L9: EndP
+EndP
 
 
 [WeAreInTheCodeBox: ?]
