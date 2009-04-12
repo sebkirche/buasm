@@ -388,14 +388,28 @@ GetuMenuID:
     TranslateAsciiToDword FirstMenuID
     Mov D$FirstMenuId 0                           ; just for abort tests in callers:
     If eax > 32000                                ; 'StoreMenuEdition' / 'MenuEditProc'
-      Mov eax D$IdTooBigPtr | Call MessageBox | Mov D$FirstMenuId 0 | ret
-    Else_If eax < 1   ;000
-      Mov eax D$IdTooSmallPtr | Call MessageBox | Mov D$FirstMenuId 0 | ret
-    End_If
-    Mov D$uMenu_ID eax
-    inc eax | Mov D$FirstMenuId eax
-ret
 
+        Call MessageBox D$STR.A.MessageWindowTitleError,
+                        D$IdTooBigPtr,
+                        &MB_USERICON+&MB_SYSTEMMODAL
+
+        Mov D$FirstMenuId 0 | ret
+
+    Else_If eax < 1   ;000
+
+        Call MessageBox D$STR.A.MessageWindowTitleError,
+                        D$IdTooSmallPtr,
+                        &MB_USERICON+&MB_SYSTEMMODAL
+
+        Mov D$FirstMenuId 0 | ret
+
+    End_If
+
+    Mov D$uMenu_ID eax
+
+    inc eax | Mov D$FirstMenuId eax
+
+ret
 ____________________________________________________________________________________________
 
 EM_GETLINE_Comment:
@@ -742,8 +756,6 @@ Call 'USER32.MessageBeep' &MB_ICONHAND
 Proc MenuEditProc:
     Arguments @hwnd, @msg, @wParam, @lParam
 
-    pushad
-
     Mov eax D@wParam | shr eax 16 | Mov D$ClickMessage eax
 
     If D@msg = &WM_CTLCOLOREDIT
@@ -761,18 +773,18 @@ Proc MenuEditProc:
 
         ..If D@wParam = &IDCANCEL
             Mov B$OnMenuEdition &FALSE, D$MenuEditorHandle 0
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
 
         ..Else_If D@wParam = &IDOK
             Call CleanMenuEnd
             If eax = &FALSE
-                Mov D$MenuEditorHandle 0 | Call 'User32.EndDialog' D@hwnd 0
+                Mov D$MenuEditorHandle 0 | Call WM_CLOSE
             End_If
             Call StoreMenuPopFlags | Call StoreMenuEdition
             If D$FirstMenuId <> 0
                 Call PackMenuInList
                 Mov B$OnMenuEdition &FALSE, D$MenuEditorHandle 0
-                Call 'User32.EndDialog' D@hwnd 0
+                Call WM_CLOSE
             End_If
 
       ..Else_If D@wParam = ID_EquToClip
@@ -814,7 +826,7 @@ Proc MenuEditProc:
         Mov D$NumberOfMenuLines eax
             Call MenuLinesControl
         move D$MenuEditorHandle D@hwnd
-        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
+        Call SetIconDialog
 
         If B$TagedEdition = &TRUE
             Call 'USER32.SendDlgItemMessageA' D@hwnd, ID_EquToClip,
@@ -822,15 +834,15 @@ Proc MenuEditProc:
         End_If
 
     ...Else_If D@msg = &WM_CTLCOLOREDIT
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+
+        Call WM_CTLCOLOREDIT | Return
 
     ...Else
-L8:   popad | Mov eax &FALSE | jmp L9>
+L8:    Return &FALSE | jmp L9>
 
     ...End_If
 
-    popad | Mov eax &TRUE
+    Mov eax &TRUE
 
 L9: EndP
 
@@ -888,7 +900,13 @@ SaveMenuBinaryFile:
                                &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
 
     If eax = &INVALID_HANDLE_VALUE
-        Mov eax D$BusyFilePtr | Call MessageBox | ret
+
+        Call MessageBox D$STR.A.MessageWindowTitleError,
+                        D$BusyFilePtr,
+                        &MB_USERICON+&MB_SYSTEMMODAL
+
+        ret
+
     End_If
 
     Mov D$DestinationHandle eax, D$NumberOfReadBytes 0
@@ -911,7 +929,7 @@ LoadMenuBinaryFile:
     Mov D$OtherFilesFilters BinMenuFilesFilters
     Mov D$OpenOtherFileTitle DialogFilesTitle
 
-    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$hInstance
+    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$H.Instance
 
     Mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
     Call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
@@ -922,7 +940,13 @@ LoadMenuBinaryFile:
                                 &FILE_SHARE_READ, 0,
                                 &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-      Mov eax D$BusyFilePtr | Call MessageBox | ret  ; return to caller of caller
+
+        Call MessageBox D$STR.A.MessageWindowTitleError,
+                        D$BusyFilePtr,
+                        &MB_USERICON+&MB_SYSTEMMODAL
+
+        ret  ; return to caller of caller
+
     Else
       Mov D$OtherSourceHandle eax
     End_If
@@ -962,7 +986,7 @@ ReplaceMenuBinaryFile:
     Mov D$OtherFilesFilters BinMenuFilesFilters
     Mov D$OpenOtherFileTitle DialogFilesTitle
 
-    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$hInstance
+    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$H.Instance
 
     Mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
     Call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
@@ -973,9 +997,17 @@ ReplaceMenuBinaryFile:
                                 &FILE_SHARE_READ, 0,
                                 &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-      Mov eax D$BusyFilePtr | Call MessageBox | ret  ; return to caller of caller
+
+        Call MessageBox D$STR.A.MessageWindowTitleError,
+                        D$BusyFilePtr,
+                        &MB_USERICON+&MB_SYSTEMMODAL
+
+        ret  ; return to caller of caller
+
     Else
+
       Mov D$OtherSourceHandle eax
+
     End_If
 
     Call 'KERNEL32.GetFileSize' eax, 0 | Mov D$BinMenuLength eax
@@ -1003,7 +1035,7 @@ ret
 
 MenuEditor:
     If D$MenuEditorHandle = 0
-        Call 'User32.DialogBoxIndirectParamA' D$hinstance, MenuDialogData, D$H.MainWindow,
+        Call 'User32.DialogBoxIndirectParamA' D$H.Instance, MenuDialogData, D$H.MainWindow,
                                               MenuEditProc, 0
     Else
         Beep
@@ -1011,14 +1043,17 @@ MenuEditor:
 ret
 
 
-[NoResourceMenu: '   There is no Menu in Resources    ', 0]
+[NoResourceMenu: B$ "   There is no Menu in Resources    " EOS]
 [UserTellWhatMenu: ?]
 
 ExistingMenu:
     Mov esi MenuList                                ; (ID / Ptr / Size)
     If D$esi = 0
-       Call 'User32.MessageBoxA' D$H.MainWindow, NoResourceMenu, Argh,
-                                 &MB_ICONINFORMATION+&MB_SYSTEMMODAL
+
+       Call MessageBox Argh,
+                       NoResourceMenu,
+                       &MB_SYSTEMMODAL+&MB_USERICON
+
        ret
     Else_If D$esi+12 = 0
       Mov D$MenuListPtr MenuList
@@ -1052,15 +1087,19 @@ L0:     Mov edx 0 | div ebx
 ret
 
 
-[DelteMenuQuestion: 'Suppress choosen Menu from resources?', 0
- Sure: 'Are you sure...', 0]
+[DelteMenuQuestion: B$ "Suppress choosen Menu from resources ?" EOS]
+
+[Sure: B$ "ARE YOU SURE ?:" EOS]
 
 DeleteMenu:
     Mov esi MenuList                                ; (ID / Ptr / Size)
 
     If D$esi = 0
-       Call 'User32.MessageBoxA' D$H.MainWindow, NoResourceMenu, Argh,
-                                 &MB_ICONINFORMATION+&MB_SYSTEMMODAL
+
+       Call MessageBox Argh,
+                       NoResourceMenu,
+                       &MB_SYSTEMMODAL+&MB_USERICON
+
        ret
     Else
         Mov D$MenuListPtr MenuList,  B$UserTellWhatMenu &FALSE
@@ -1071,9 +1110,11 @@ DeleteMenu:
         On D$MenuListPtr = 0, ret
     End_If
 
-    Call 'User32.MessageBoxA' D$H.MainWindow, DelteMenuQuestion, Sure,
-                             &MB_ICONQUESTION+&MB_SYSTEMMODAL+&MB_YESNO
-   .If eax = &IDYES
+    Call MessageBox Sure,
+                    DelteMenuQuestion,
+                    &MB_SYSTEMMODAL+&MB_ICONQUESTION+&MB_YESNO
+
+   .If D$FL.MsgBoxReturn = &IDYES
         Call VerifyNotDialogMenu
         If B$CancelDeleteMenu = &FALSE
             Mov esi D$MenuListPtr, edi esi | add esi 12
@@ -1101,7 +1142,7 @@ VerifyNotDialogMenu:
       .If ax = 0FFFF                             ; (see ex.: EditedDialogBoxData)
          Mov ax W$ebx+20                         ; Menu ID
          If ax = dx
-           Call 'User32.DialogBoxIndirectParamA' D$hinstance DelMenuDialog D$H.MainWindow,
+           Call 'User32.DialogBoxIndirectParamA' D$H.Instance DelMenuDialog D$H.MainWindow,
                                                 DelDialogMenuProc 0
            On B$CancelDeleteMenu = &TRUE, ret
          End_If
@@ -1120,7 +1161,7 @@ Proc DelDialogMenuProc:
     ...If D@msg = &WM_COMMAND
 
         .If D@wParam = &IDCANCEL
-            Mov D$CancelDeleteMenu &TRUE | Call 'User32.EndDialog' D@hwnd 0
+            Mov D$CancelDeleteMenu &TRUE | Call WM_CLOSE
 
         .Else_If D@wParam = &IDOK
             Mov edi D$DialogListPtr, edi D$edi, eax 0   ; scratch menu record in Dialog Data:
@@ -1155,11 +1196,11 @@ L2:         Mov eax D$DialogListPtr                     ; > List recorded lenght
             add eax 4 | Mov ecx D$eax                   ; lenght of data do NOT change
             sub ecx 26 | rep movsb                      ; 'about...'
 
-            Call 'User32.EndDialog' D@hwnd, 0
+            Call WM_CLOSE
         .End_If
 
     ...Else_If D@msg = &WM_INITDIALOG
-        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
+        Call SetIconDialog
 
     ...Else
         popad | Mov eax &FALSE | jmp L9>
@@ -1241,7 +1282,7 @@ ____________________________________________________________
 
 
 WhatMenu:
-    Call 'User32.DialogBoxParamA' D$hinstance, 500, D$H.MainWindow, WhatMenuProc, 0
+    Call 'User32.DialogBoxParamA' D$H.Instance, 500, D$H.MainWindow, WhatMenuProc, 0
 ret
 
 
@@ -1258,17 +1299,17 @@ Proc WhatMenuProc:
 
         .If D@wParam = &IDCANCEL
             Mov D$MenuListPtr 0, B$UserTellWhatMenu &TRUE
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
 
         .Else_If D@wParam = &IDOK
             Mov B$UserTellWhatMenu &TRUE
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
 
         .Else_If D@wParam = IDNextMenu
             Mov ebx D$MenuListPtr | add ebx 12
             If D$ebx > 0
                 Mov D$MenuListPtr ebx | Call SetTestMenu D@hwnd
-                Call 'User32.EndDialog' D@hwnd 0
+                Call WM_CLOSE
             End_If
 
         .Else_If D@wParam = IDPreviousMenu
@@ -1277,13 +1318,13 @@ Proc WhatMenuProc:
             Mov D$MenuListPtr ebx
             Call 'User32.DestroyMenu' D$ActualMenutestID
             Call SetTestMenu D@hwnd
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
             End_If
 
         .End_If
 
     ...Else_If D@msg = &WM_INITDIALOG
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Call SetTestMenu D@hwnd
 
     ...Else

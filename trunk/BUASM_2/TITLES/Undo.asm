@@ -318,7 +318,7 @@ ________________________________________________________________________________
 ControlZ:
     Mov B$BlockInside &FALSE
 
-    If D$DebugDialogHandle <> 0
+    If D$H.DebugDialog <> 0
         Call KillDebugger | On eax = &IDNO, jmp L9>>
     End_If
 
@@ -481,7 +481,7 @@ ________________________________________________________________________________
 [BACK 1, FORTH 0]
 
 ControlShiftZ: ; ControlZ
-    If D$DebugDialogHandle <> 0
+    If D$H.DebugDialog <> 0
         Call KillDebugger | On eax = &IDNO, jmp L9>>
     End_If
 

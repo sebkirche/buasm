@@ -44,7 +44,11 @@ ret
  AlertTitle: 'Internal Error!!!...', 0]
 
 AlertResources:
-    Call 'USER32.MessageBoxA' D$H.MainWindow, Alert, AlertTitle, &MB_OK
+
+    Call MessageBox AlertTitle,
+                    Alert,
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
 ret
 
 
@@ -223,7 +227,7 @@ L2: Call ExtendLocalSymbols
 
     If B$ShowStats = &TRUE
         Mov D$UnusedSymbolsDialogWanted &FALSE
-        Call 'USER32.DialogBoxParamA', D$hInstance, 2, D$H.MainWindow, Statistics, 0
+        Call 'USER32.DialogBoxParamA', D$H.Instance, 2, D$H.MainWindow, Statistics, 0
     Else
         Call WritePE | Call RecordMRU | On D$BookMarks > 0, Call SaveBookMarks
     End_If
@@ -232,7 +236,7 @@ L8:
     On B$CompletionWanted = &TRUE, Call BuildCompletionTable
 
     If D$UnusedSymbolsDialogWanted = &TRUE
-        Call DisplayUnusedSymbolsDialog D$hInstance
+        Call DisplayUnusedSymbolsDialog D$H.Instance
     End_If
 
     Call ReleaseAsmTables
@@ -283,8 +287,9 @@ L1:     Mov esi FindFile.cFileName, edi D$OneOfMultiplePathNamePointer
 
         Call DirectLoad
 
-        Call 'USER32.MessageBoxA' D$H.MainWindow, SaveFilter,
-                                  {'Ready to Compile...', 0}, &MB_SYSTEMMODAL
+       Call MessageBox {B$ "Ready to Compile:" EOS},
+                       SaveFilter,
+                       &MB_SYSTEMMODAL+&MB_USERICON
 
         Call AsmMain | Mov D$OldStackPointer 0
         On B$CompileErrorHappend = &TRUE, jmp L9>

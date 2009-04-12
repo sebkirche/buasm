@@ -39,10 +39,10 @@ InitProgressBar:
 
     Call 'USER32.ClientToScreen' D$EditWindowHandle, PBarWindow
 
-    Call 'USER32.CreateWindowExA' 0, ClassName, Cleaning,
+    Call 'USER32.CreateWindowExA' 0, STR.A.WindowClassMain, Cleaning,
                                   &WS_OVERLAPPED__&WS_CAPTION__&WS_THICKFRAME_&WS_VISIBLE,
                                   D$PBarWindowX, D$PBarWindowY, D$PBarWindowW, D$PBarWindowH,
-                                  0, 0, D$hInstance, 0
+                                  0, 0, D$H.Instance, 0
     Mov D$hwndForBar eax
 
     Call 'USER32.ShowWindow' D$hwndForBar, &SW_SHOW ;&SW_SHOWNORMAL
@@ -52,7 +52,7 @@ _____________________________
 
     Call 'USER32.CreateWindowExA' 0, ProgressClassName, 0, &WS_CHILD__&WS_VISIBLE,
                                   D$PWindowX, D$PWindowY, D$PWindowW, D$PWindowH,
-                                  D$hwndForBar, 0, D$hInstance, 0
+                                  D$hwndForBar, 0, D$H.Instance, 0
     Mov D$ProgressInst eax
 ret
 
@@ -138,17 +138,17 @@ Proc Statistics:
 
     ..If D@msg = &WM_COMMAND
         If D@wParam = &IDCANCEL
-            Call 'USER32.EndDialog' D@hwnd, 0
+            Call WM_CLOSE
         Else_If D@wParam = 3
             ;Call DisplayUnusedSymbolsDialog D@hwnd
-            Call 'USER32.EndDialog' D@hwnd, 0
+            Call WM_CLOSE
             Mov D$UnusedSymbolsDialogWanted &TRUE
         End_If
 
     ..Else_If D@msg = &WM_INITDIALOG
         move D$StatsHandle D@hwnd
 
-        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
+        Call SetIconDialog
 
       ; Number of Instructions:
         Call 'USER32.SetDlgItemInt' D@hwnd, 110, D$InstructionsCounter, 0
@@ -201,40 +201,26 @@ ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
-[AboutMessage: B$ "
-         RosAsm, the Specific Assembler
-
-            is free, open source, GPL.
-
-Main Author is René Tournois < betov@free.fr>        
-
-            Download last version at:
-
-        http://betov.free.fr/RosAsm.html
-
-", 0
-
-AboutTitle:  ' About:', 0]
-
-
 AboutBox:
-   Call 'USER32.MessageBoxA' D$H.MainWindow,                ; handle
-                            AboutMessage ,         ; Message
-                            AboutTitle,            ; Message-Window-Title
-                            &MB_ICONINFORMATION__&MB_SYSTEMMODAL         ; Style (0 to 4) 0 > 'OK'
+
+    Call MessageBox {B$ "BUASM:" EOS},
+                    {B$ "The Bottom-Up Assembler
+
+Download last version at:
+http://code.google.com/p/buasm/downloads/list" EOS},
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
 ret
 
 
 About_ToolBar:
-    Call 'USER32.MessageBoxA' D$H.MainWindow, {"
-    
-    Double-Click on the ToolBar for customization
-    
-    You can move the ToolBar Buttons by [Alt]+Drag             
-    ", 0}, {'ToolBar Info:', 0}, &MB_ICONINFORMATION__&MB_SYSTEMMODAL
+
+    Call MessageBox {B$ "TOOLBAR INFO:" EOS},
+                    {B$ "Double-Click on the ToolBar for customization
+You can Move the ToolBar Buttons by [Alt]+Drag" EOS},
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
 ret
-
-
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 

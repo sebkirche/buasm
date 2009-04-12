@@ -263,8 +263,12 @@ NewKillVirtualCRLF:
                         .If B$DisableWarning = &FALSE
                             SyntaxErrorInMacro1 D$BadSyntaxBeforeCommaPtr esi
                             pushad
-                            Call 'USER32.MessageBoxA' 0, {"Disable previous warning ?", 0}, {'Syntax Error Found', 0}, &MB_SYSTEMMODAL__&MB_ICONEXCLAMATION__&MB_YESNO
-                            If eax = &IDYES
+
+                            Call MessageBox {B$ "Syntax Error Found:" EOS},
+                                            {B$ "Disable previous warning ?" EOS},
+                                            &MB_SYSTEMMODAL+&MB_USERICON
+
+                            If D$FL.MsgBoxReturn = &IDYES
                                 Mov B$DisableWarning &TRUE
                             End_If
                             popad
@@ -828,8 +832,11 @@ NewCountStatements:
 
 L9: If D$LinesCounter = 0
         Call CloseProgressBar
-        Call 'USER32.MessageBoxA' 0, {"RosAsm can't compile empty files", 0},
-                                     {' Sorry', 0}, 0
+
+        Call MessageBox {B$ "Sorry:" EOS},
+                        {"BUAsm can't compile empty files" EOS},
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
         Mov B$CompileErrorHappend &TRUE
         Mov esp D$OldStackPointer | ret ; direct error
        ; pop eax | ret                  ; Abort, pop caller and return to Message Loop

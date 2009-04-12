@@ -42,7 +42,7 @@ ret
 
 
 DeleteMRUmenu:
-    Call 'USER32.GetSubMenu' D$MenuHandle 0 | Mov D$FilePopUpHandle eax
+    Call 'USER32.GetSubMenu' D$H.Menu 0 | Mov D$FilePopUpHandle eax
     While D$AddedMRUitems > 0
         Call 'USER32.DeleteMenu' D$FilePopUpHandle, 16, &MF_BYPOSITION
         dec D$AddedMRUitems
@@ -196,7 +196,12 @@ LoadRMUfile:
 
     push esi
         Mov edi SelectedMRUFileName, ecx 260 | rep cmpsb | je L1>
-            Mov eax MRUfileHasBeenDeleted | Call MessageBox | pop esi | Mov eax &FALSE | ret
+
+            Call MessageBox D$STR.A.MessageWindowTitleError,
+                            MRUfileHasBeenDeleted,
+                            &MB_USERICON+&MB_SYSTEMMODAL
+
+         pop esi | Mov eax &FALSE | ret
 L1: pop esi
 
     Mov edi SaveFilter, ecx 260 | rep movsb

@@ -966,5 +966,7 @@ Main Implementations to be entirely done:
   and so on. May be, simply the existing Tree-View, but with the concerned Routines 
   written in Red, or something like this.
 
-
+
+w
+krn
 

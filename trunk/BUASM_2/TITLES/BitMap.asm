@@ -50,7 +50,13 @@ LoadBitMap:
                                 &FILE_SHARE_READ, 0, &OPEN_EXISTING,
                                 &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-        Mov eax D$BusyFilePtr | Call MessageBox | ret
+
+        Call MessageBox argh,
+                        D$BusyFilePtr,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret
+
     Else
         Mov D$BmFileHandle eax
     End_If
@@ -89,7 +95,7 @@ LoadBitMap:
     End_If
 
   ; Ask user for what BitMap ID number:
-L1: Call 'USER32.DialogBoxIndirectParamA' D$hinstance  BMIDDialog  0  BMIDDialogProc  0
+L1: Call 'USER32.DialogBoxIndirectParamA' D$H.Instance  BMIDDialog  0  BMIDDialogProc  0
 
     If B$UserValidateBitMap = &TRUE
         Call ReOrderBitMapList
@@ -99,7 +105,8 @@ L1: Call 'USER32.DialogBoxIndirectParamA' D$hinstance  BMIDDialog  0  BMIDDialog
 ret
 
 
-[ConflictIDs: B$ 'This ID number is already in Use', 0  ReorderFlag: 0]
+[ConflictIDs: B$ "This ID number is already in use" EOS]
+[ReorderFlag: 0]
 
 ReOrderBitMapList:
     Mov B$ReorderFlag &FALSE
@@ -126,10 +133,14 @@ SearchEmptyBitMapListRecord:
 ret
 
 
-[BadBitMapFile: 'Bad BitMap file header', 0]
+[BadBitMapFile: B$ "Bad BitMap file header" EOS]
 
 BadBitMapFileHeader:
-    Call 'USER32.MessageBoxA' D$H.MainWindow, BadBitMapFile, Argh, &MB_SYSTEMMODAL
+
+    Call MessageBox Argh,
+                    BadBitMapFile,
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
 L8: Mov edi D$BitMapListPtr, eax 0, ecx 3 | rep stosd
 ret
 
@@ -176,7 +187,7 @@ Proc BMIDDialogProc:
 
     ...If D@msg = &WM_COMMAND
        ..If D@wParam = &IDCANCEL
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
 
        ..Else_If D@wParam = &IDOK
            Call 'User32.GetDlgItem' D@hwnd 3 | Mov D$BMIDeditHandle eax
@@ -185,9 +196,17 @@ Proc BMIDDialogProc:
            TranslateAsciiToDword uBitMapID
            Mov D$uBitMapID 0                         ; just for abort tests in callers:
            .If eax > 0FFFF    ; 32000                 ; 'StoreMenuEdition' / 'MenuEditProc'
-             Mov eax D$IdTooBigPtr | Call MessageBox
-           .Else_If eax < 1   ; 000
-             Mov eax D$IdTooSmallPtr | Call MessageBox
+
+             Call MessageBox argh,
+                             D$IdTooBigPtr,
+                             &MB_SYSTEMMODAL+&MB_USERICON
+
+            .Else_If eax < 1   ; 000
+
+                Call MessageBox argh,
+                                D$IdTooSmallPtr,
+                                &MB_SYSTEMMODAL+&MB_USERICON
+
            .Else
                 Mov esi BitMapList
                 While D$esi > 0
@@ -195,18 +214,22 @@ Proc BMIDDialogProc:
                     add esi 12
                 End_While
                 If eax = 0
-                    Call 'USER32.MessageBoxA' D$H.MainWindow, ConflictIDs, Argh, &MB_SYSTEMMODAL
+
+                   Call MessageBox Argh,
+                                   ConflictIDs,
+                                   &MB_SYSTEMMODAL+&MB_USERICON
+
                 Else
                     Mov edi D$BitMapListPtr, D$edi eax
                     Mov B$UserValidateBitMap &TRUE
-                    Call 'User32.EndDialog' D@hwnd 0
+                    Call WM_CLOSE
                 End_If
            .End_If
 
        ..End_If
 
     ...Else_If D@msg = &WM_INITDIALOG
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Mov B$UserValidateBitMap &FALSE
         Call 'User32.GetDlgItem' D@hwnd 3
         Call 'User32.SendMessageA' eax &EM_SETLIMITTEXT 5  0
@@ -237,7 +260,7 @@ L9: EndP
 BitMapViewer:
     .If D$BitMapListPtr > BitMapList
         Mov W$BitMapDialogControlsNumber 2
-        Call 'USER32.DialogBoxIndirectParamA' D$hinstance BitMapDialog  0  BitMapProc  0
+        Call 'USER32.DialogBoxIndirectParamA' D$H.Instance BitMapDialog  0  BitMapProc  0
         If B$UserValidateBitMap = &FALSE
             Mov edi D$BitMapListPtr, eax 0 | stosd | stosd | stosd
         End_If
@@ -245,7 +268,7 @@ BitMapViewer:
 ret
 
 
-[NoBitMap: B$ 'No BitMap in This file', 0]
+[NoBitMap: B$ "No BitMap in This file" EOS]
 
 [DeleteBitMapTitle: U$ 'Delete'  ShowBitMapTitle: 'Exit  ']
 
@@ -273,9 +296,13 @@ BitMapView:
 
     If D$eax = 0
         Mov B$UserValidateBitMap &FALSE
-        Call 'USER32.MessageBoxA' D$H.MainWindow, NoBitMap, Argh, &MB_SYSTEMMODAL
+
+        Call MessageBox Argh,
+                        NoBitMap,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
     Else
-        Call 'USER32.DialogBoxIndirectParamA' D$hinstance, BitMapDialog, 0, BitMapProc, 0
+        Call 'USER32.DialogBoxIndirectParamA' D$H.Instance, BitMapDialog, 0, BitMapProc, 0
     End_If
 ret
 
@@ -290,11 +317,11 @@ Proc BitMapProc:
     ...If D@msg = &WM_COMMAND
          ..If D@wParam = &IDOK
              Mov B$UserValidateBitMap &TRUE
-             Call 'User32.EndDialog' D@hwnd 0
+             Call WM_CLOSE
 
          ..Else_If D@wParam = &IDCANCEL
              Mov B$UserValidateBitMap &FALSE
-             Call 'User32.EndDialog' D@hwnd 0
+             Call WM_CLOSE
 
          ..Else_If D@wParam = 3                        ; >>>>
              Mov eax D$BitMapListPtr | add eax 12
@@ -339,7 +366,7 @@ Proc BitMapProc:
 
     ...Else_If D@msg = &WM_INITDIALOG
         Mov D$BitMapListPtr BitMapList
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
 
     ...Else
        popad | Mov eax &FALSE | jmp L9>

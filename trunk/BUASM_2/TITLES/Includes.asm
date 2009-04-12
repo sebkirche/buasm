@@ -139,11 +139,11 @@ PrepareStructuresFiles:
 
 
 
-            Call 'USER32.InsertMenuA' D$MenuHandle, M00_Structures,
+            Call 'USER32.InsertMenuA' D$H.Menu, M00_Structures,
                                   &MF_BYCOMMAND__&MF_POPUP__&MF_STRING,
                                   D$StructPopUpHandle, StructuresItem
 
-            Call 'USER32.DeleteMenu' D$MenuHandle, M00_Structures, &MF_BYCOMMAND
+            Call 'USER32.DeleteMenu' D$H.Menu, M00_Structures, &MF_BYCOMMAND
 
 
           ;  Call 'USER32.DeleteMenu' D$MenuHandle 8 &MF_BYPOSITION
@@ -445,23 +445,28 @@ ret
 
 ____________________________________________________________________________________________
 
-[BadEquatesFileTitle: 'Bad Equates File', 0]
-[BadEquatesFileMessage: ? #10]
-[BadEquatesFileEndMessage: 'The Equates File must be ended by *one* CR/FL', 0]
+[BadEquatesFileTitle: B$ "Bad equates file" EOS]
+[BadEquatesFileMessage: ? # 10]
+[BadEquatesFileEndMessage: B$ "The equates file must be ended by *one* CR/FL" EOS]
 
 BadEquatesFile:
     Mov esi ebx, edi BadEquatesFileMessage
     While B$esi > ' ' | movsb | End_While
     Mov D$edi '...', B$edi+4 0
 
+   Call MessageBox BadEquatesFileTitle,
+                   BadEquatesFileMessage,
+                   &MB_SYSTEMMODAL+&MB_USERICON
 
-    Call 'USER32.MessageBoxA' 0, BadEquatesFileMessage, BadEquatesFileTitle, 0
     Call 'KERNEL32.ExitProcess', 0
 
 
 BadEquatesFileEnd:
 
-    Call 'USER32.MessageBoxA' 0, BadEquatesFileEndMessage, BadEquatesFileTitle, 0
+    Call MessageBox BadEquatesFileTitle,
+                    BadEquatesFileEndMessage,
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
     Call 'KERNEL32.ExitProcess', 0
 
 

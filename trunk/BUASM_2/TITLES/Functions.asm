@@ -6823,7 +6823,7 @@ L5:         lodsb | stosb | inc D$ApiComment
             End_If
             cmp al ')' | jne L5<
             Mov B$edi 0, B$edi-1 ' '
-L8:         Call 'USER32.DialogBoxParamA' D$hInstance 1000  &NULL ShowApiInfo &NULL
+L8:         Call 'USER32.DialogBoxParamA' D$H.Instance 1000  &NULL ShowApiInfo &NULL
             ret
         ..End_If
     ...Else_If B$esi-1 = '"'
@@ -6887,7 +6887,7 @@ ViewApiList:
     Call OpenApiFunctionsFile
 
     If B$ApiFileOK = &TRUE
-        Call 'USER32.DialogBoxParamA' D$hInstance, 30_000, &NULL, ApiChoice, &NULL
+        Call 'USER32.DialogBoxParamA' D$H.Instance, 30_000, &NULL, ApiChoice, &NULL
     End_If
 ret
 
@@ -6912,7 +6912,7 @@ Proc ApiChoice:
 
     .Else_If D@msg = &WM_INITDIALOG
         move D$ShowApiDialogHandle D@hwnd
-        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
+        Call SetIconDialog
 
         Call InitApiList
 
@@ -6921,8 +6921,8 @@ Proc ApiChoice:
             Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0, 0
             Mov B$FirstCTLCOLOREDIT &FALSE
         End_If
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+        Call 'GDI32.SetBkColor' D@wParam D$RVBA.DialogsBackgnd
+        popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     .Else
         popad | Mov eax &FALSE | jmp L9>

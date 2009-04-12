@@ -31,14 +31,14 @@ ________________________________________________________________________________
 
 OutputFormat:
     If D$OutputHandle = 0
-        Call 'USER32.DialogBoxParamA' D$hinstance, 19000,  D$H.MainWindow, OutputFormatProc, 0
+        Call 'USER32.DialogBoxParamA' D$H.Instance, 19000,  D$H.MainWindow, OutputFormatProc, 0
     Else
         Beep | ret
     End_If
 
     .If D$TempoSavingExtension  = '.DLL'
         If D$OutputHandle = 0
-            Call 'USER32.DialogBoxParamA' D$hinstance, 21000,  D$H.MainWindow, DLLFormatProc, 0
+            Call 'USER32.DialogBoxParamA' D$H.Instance, 21000,  D$H.MainWindow, DLLFormatProc, 0
         Else
             Beep | ret
         End_If
@@ -46,7 +46,7 @@ OutputFormat:
 ;;
     .If D$TempoSavingExtension  = '.SYS'
         If D$OutputHandle = 0
-            Call 'USER32.DialogBoxParamA' D$hinstance, 21001,  D$H.MainWindow, SYSFormatProc, 0
+            Call 'USER32.DialogBoxParamA' D$H.Instance, 21001,  D$H.MainWindow, SYSFormatProc, 0
         Else
             Beep | ret
         End_If
@@ -72,7 +72,7 @@ Proc OutputFormatProc:
 
         .Else_If D@wParam = &IDOK
             Call SaveOutputFormat
-L1:         Mov D$OutputHandle 0 | Call 'User32.EndDialog' D@hwnd 0
+L1:         Mov D$OutputHandle 0 | Call WM_CLOSE
 
         .Else_If D@wParam = 10
           ; GUI:
@@ -120,7 +120,7 @@ L1:         Mov D$OutputHandle 0 | Call 'User32.EndDialog' D@hwnd 0
 
     ...Else_If D@msg = &WM_INITDIALOG
         move D$OutputHandle D@hwnd
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
 
         Call InitOutputDialog
 
@@ -147,7 +147,7 @@ Proc DLLFormatProc:
     ...If D@msg = &WM_COMMAND
         ..If D@wParam = &IDCANCEL
 L1:         Mov D$OutputHandle 0
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
 
         ..Else_If D@wParam = &IDOK
             Mov ax W$DllAttachDetach, W$DllCharacteristics ax
@@ -184,7 +184,7 @@ L1:         Mov D$OutputHandle 0
 
     ...Else_If D@msg = &WM_INITDIALOG
         move D$OutputHandle D@hwnd
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Mov edi LinkerDllDefaultString, ecx 10 al ' ' | rep stosb
         Mov eax D$LinkerDllDefault, ebx eax | Mov edi LinkerDllDefaultString | add edi 10
         std
@@ -226,7 +226,7 @@ Proc SYSFormatProc:
     ...If D@msg = &WM_COMMAND
         ..If D@wParam = &IDCANCEL
 L1:         Mov D$OutputHandle 0
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
 
         ..Else_If D@wParam = &IDOK
             jmp L1<
@@ -241,7 +241,7 @@ L1:         Mov D$OutputHandle 0
 
     ...Else_If D@msg = &WM_INITDIALOG
         move D$OutputHandle D@hwnd
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
 
     ...Else
 L8:     popad | Mov eax &FALSE | jmp L9>
@@ -254,10 +254,11 @@ L9: EndP
 ____________________________________________________________________________________________
 
 
-[DllAdressRange: "
+[DllAdressRange: B$ "
  Smaller than: 0_8000_0000
- Bigger  than:    040_0000     ", 0
- DllAdressRangeTitle: 'Dll Load Adress range is:', 0]
+ Bigger  than:    040_0000     " EOS]
+
+[DllAdressRangeTitle: B$ "DLL LOAD ADRESS RANGE IS:" EOS]
 
 SaveDLLLinkerDefault:
     Call 'USER32.GetDlgItem' D$OutputHandle 100
@@ -277,7 +278,11 @@ L8: Mov eax ebx | Align_On 01000 eax
     If eax < 0_40_0000
         jmp L2>
     Else_If eax >= 0_8000_0000
-L2:     Call 'USER32.MessageBoxA' D$H.MainWindow, DllAdressRange, DllAdressRangeTitle, &MB_SYSTEMMODAL
+
+L2:     Call MessageBox DllAdressRangeTitle,
+                        DllAdressRange,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
         Mov eax 0
     Else
         Mov D$LinkerDllDefault eax

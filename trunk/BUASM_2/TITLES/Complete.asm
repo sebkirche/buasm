@@ -516,7 +516,7 @@ ApiCompletion:
         Call 'USER32.DestroyWindow' D$CompletionListHandle
     End_If
 
-    Call 'USER32.CreateDialogParamA' D$hinstance, 1200, D$H.MainWindow, CompletionListProc, 0
+    Call 'USER32.CreateDialogParamA' D$H.Instance, 1200, D$H.MainWindow, CompletionListProc, 0
 
     Call 'USER32.SetFocus' D$H.MainWindow
 
@@ -819,7 +819,7 @@ EquatesCompletion:
     If B$IncludesOK = &TRUE
         Call GetEquFilesMemory
         Call ReadEquatesEqu
-        Call 'USER32.CreateDialogParamA' D$hinstance, 1200, D$H.MainWindow, CompletionListProc, 0
+        Call 'USER32.CreateDialogParamA' D$H.Instance, 1200, D$H.MainWindow, CompletionListProc, 0
         Call 'USER32.SetFocus' D$H.MainWindow
     End_If
 
@@ -879,12 +879,14 @@ ret
 ; No matching Equate found > propose the full List:
 
 ListAllEquates:
-    Call 'USER32.MessageBoxA', D$H.MainWindow, {"Do you want the complete List?
 
-(This may take some time to build the list)", 0}, {'No such OS Equate', 0},
-&MB_YESNO__&MB_SYSTEMMODAL
+    Call MessageBox {B$ "NO SUCH OS EQUATE" EOS},
+                    {B$ "Do you want the complete List ?
 
-    If eax = &IDNO
+(This may take some time to build the list)" EOS},
+                    &MB_SYSTEMMODAL+&MB_USERICON+&MB_YESNO
+
+    If D$FL.MsgBoxReturn = &IDNO
         Mov ecx 0-1 | ret
     End_If
 

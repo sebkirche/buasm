@@ -1,6 +1,6 @@
 TITLE Debug
 
-[DebuggerVersion: 'RosAsm Debugger V2.2b' 0]
+[DebuggerVersion: B$ "BUAsm debugger V 0.00.000" EOS]
 
 ;;
 _____________________________________________________________________________________________
@@ -225,18 +225,18 @@ Good luck!
 
 Ludwig Hähne <wkx@gmx.li>" 0]
 
-[DebugThreadHangs:
+[DebugThreadHangs: B$
 "The debugger thread does not respond. 
-This should not happen! The thread is now terminated!" 0]
+This should not happen! The thread is now terminated!" EOS]
 
-[CriticalError: "Critical error" 0]
+[CriticalError: B$ "Critical error" EOS]
 
-[MessageKillDebugger:
+[MessageKillDebugger: B$
 "You cannot modify the Source in a Debug Session    
     
-                     Close the Debugger?" 0]
+                     Close the Debugger?" EOS]
 
-[DebuggerRunning: "Debugger running ..." 0]
+[DebuggerRunning: B$ "DEBUGGER RUNNING:" EOS]
 ____________________________________________________________________________________________
 
 ________________________________________________________________________________________
@@ -250,13 +250,14 @@ ________________________________________________________________________________
 
 ; Main Routine of the Debugger.
 
-[IsDebugging: &FALSE  Compiling: &FALSE]
+[FL.IsDebugging: D$ ?
+  Compiling: D$ ?]
 
 
 [DebugRsrcManagerThreadId: ?]
 
 Proc Debugger:
-    On D$IsDebugging = &TRUE, ExitP
+    On D$FL.IsDebugging = &TRUE, ExitP
 
     Call TestCPUFeatures
 
@@ -289,12 +290,14 @@ ________________________________________________________________________________
 ;;
 
 KillDebugger:
-    Call 'USER32.MessageBoxA', D$H.MainWindow, MessageKillDebugger, DebuggerRunning,
-        &MB_SYSTEMMODAL__&MB_YESNO
 
-    push eax
-        On eax = &IDYES,
-            Call 'USER32.SendMessageA', D$DebugDialogHandle, &WM_CLOSE, 0, 0
+    Call MessageBox DebuggerRunning,
+                    MessageKillDebugger,
+                    &MB_SYSTEMMODAL+&MB_YESNO
+
+    push D$FL.MsgBoxReturn
+        On D$FL.MsgBoxReturn = &IDYES,
+            Call 'USER32.SendMessageA', D$H.DebugDialog, &WM_CLOSE, 0, 0
     pop eax
 ret
 ____________________________________________________________________________________________
@@ -389,7 +392,7 @@ DebugRsrcManagerThread:
     Call DestroyBPTable
 
   ; we post a close signal no matter if the dialog still exists or not
-    Call 'User32.PostMessageA' D$DebugDialogHandle, &WM_CLOSE, &NULL, &NULL
+    Call 'User32.PostMessageA' D$H.DebugDialog, &WM_CLOSE, &NULL, &NULL
 
     Call 'Kernel32.CloseHandle' D$UserInputEvent
     Mov D$UserInputEvent 0
@@ -516,8 +519,12 @@ L0: Mov B$edi 0
     Mov D@Success eax
     If eax = &FALSE
         Call ReportWinError {'Debugger: CreateProcess' 0}
+
         On eax = &ERROR_DIRECTORY,
-            Call 'User32.MessageBoxA' 0, DebuggeePath, {'Directory is:' 0}, &MB_OK
+           Call MessageBox {B$ "DIRECTORY IS:" EOS},
+                           DebuggeePath,
+                           &MB_SYSTEMMODAL+&MB_USERICON
+
     EndIf
 
     ; Allocated by SetupCommandLine (dirty, but necessary if param-string is static [/S])
@@ -551,7 +558,7 @@ Proc DebugThread:
     EndIf
 
     Mov D$BreakpointsEnabled &TRUE
-    Mov D$IsDebugging &TRUE
+    Mov D$FL.IsDebugging &TRUE
     Mov D$IsDebugEvent &FALSE
     Mov B$DebugStart &FALSE
     Mov B$ExceptionFlags 0
@@ -648,7 +655,7 @@ L0:     Call 'KERNEL32.WaitForDebugEvent' DEBUG_EVENT, 100
 
     .End_While
 
-L9: Mov B$IsDebugging &FALSE
+L9: Mov D$FL.IsDebugging &FALSE
     Call 'Kernel32.ExitThread' 0
 EndP
 ____________________________________________________________________________________________
@@ -662,7 +669,7 @@ Debugger_OnCreateThread:
     inc D$NumThreads
 
     FormatString DebugLogString, {'Thread ID=%d created' 0}, D$DE.dwThreadId
-    Call 'User32.PostMessageA' D$DebugDialogHandle, WM_LOG, DebugLogString, ecx
+    Call 'User32.PostMessageA' D$H.DebugDialog, WM_LOG, DebugLogString, ecx
 ret
 ____________________________________________________________________________________________
 
@@ -679,7 +686,7 @@ Debugger_OnExitThread:
     move D$esi+edx*8+4 D$esi+ecx*8+4
 
     FormatString DebugLogString, {'Thread ID=%d terminated' 0}, D$DE.dwThreadId
-    Call 'User32.PostMessageA' D$DebugDialogHandle, WM_LOG, DebugLogString, ecx
+    Call 'User32.PostMessageA' D$H.DebugDialog, WM_LOG, DebugLogString, ecx
 ret
 ____________________________________________________________________________________________
 
@@ -700,7 +707,7 @@ Debugger_OnCreateProcess:
 
     Call GetModuleName D$CPDI.lpBaseOfImage
     FormatString DebugLogString, {'%s ID=%d mapped at 0x%x' 0}, eax, D$DE.dwProcessId, D$CPDI.lpBaseOfImage
-    Call 'User32.PostMessageA' D$DebugDialogHandle, WM_LOG, DebugLogString, ecx
+    Call 'User32.PostMessageA' D$H.DebugDialog, WM_LOG, DebugLogString, ecx
 ret
 ____________________________________________________________________________________________
 
@@ -855,7 +862,7 @@ Proc Debugger_OnException:
         If D$E.ExceptionCode = &EXCEPTION_BREAKPOINT
             Mov B$DebugStart &TRUE
             Call ClearBPAnteroom
-            Call 'User32.PostMessageA' D$DebugDialogHandle, WM_BEGIN_DEBUG, 0, 0
+            Call 'User32.PostMessageA' D$H.DebugDialog, WM_BEGIN_DEBUG, 0, 0
         EndIf
 
     ..End_If
@@ -1026,7 +1033,7 @@ Proc Debugger_OnLoadDll:
 
         Call GetModuleName D@BaseAddress
         FormatString DebugLogString, {'%s mapped at 0x%x' 0}, eax, D@BaseAddress
-        Call 'User32.PostMessageA' D$DebugDialogHandle, WM_LOG, DebugLogString, ecx
+        Call 'User32.PostMessageA' D$H.DebugDialog, WM_LOG, DebugLogString, ecx
 
 EndP
 ____________________________________________________________________________________________
@@ -1037,7 +1044,7 @@ Proc Debugger_OnUnloadDll:
 
         Call GetModuleName D@BaseAddress
         FormatString DebugLogString, {'%s unmapped' 0}, eax
-        Call 'User32.PostMessageA' D$DebugDialogHandle, WM_LOG, DebugLogString, ecx
+        Call 'User32.PostMessageA' D$H.DebugDialog, WM_LOG, DebugLogString, ecx
 
         ; Search module in table
         Mov edi D$ModuleList, ecx 0, eax D@BaseAddress
@@ -1119,7 +1126,7 @@ Proc HandleDebugString:
   ; Read the debug string
     Call ReadProcessMem D$ODS.DebugString, D$DebugStringBuffer, D@Size
 
-    Call 'User32.SendMessageA' D$DebugDialogHandle, WM_LOG, D$DebugStringBuffer, D@Size
+    Call 'User32.SendMessageA' D$H.DebugDialog, WM_LOG, D$DebugStringBuffer, D@Size
 
     .If D$DebugLogFile = 0
 
@@ -1371,9 +1378,9 @@ ________________________________________________________________________________
     are due to dynamic stack allocation (e.g. sub esp ecx). 
 ;;
 
-[BufferOverrun:
+[BufferOverrun: B$
 "Detected buffer-overrun. 
-Contact RosAsm dev team if this happens regularly." 0]
+Contact BUAsm dev team if this happens regularly." EOS]
 
 [CallStackDesc: ? CallStackEntries: ? FirstCallStackEntry: ?]
 [MAX_CALLSTACK_ENTRIES 512]
@@ -1533,7 +1540,11 @@ Proc Callstack.Pass1:
 
           ; Prevent buffer overrun
             If D$CallStackEntries >= MAX_CALLSTACK_ENTRIES
-                Call 'User32.MessageBoxA' D$DebugDialogHandle, BufferOverrun, {'Callstack generation' 0}, &MB_OK+&MB_ICONEXCLAMATION
+
+                Call MessageBox {B$ "CALLSTACK GENERATION" EOS},
+                                BufferOverrun,
+                                &MB_SYSTEMMODAL+&MB_USERICON
+
                 Mov eax &FALSE
                 ExitP
             EndIf
@@ -2470,7 +2481,7 @@ ________________________________________________________________________________
 
 SignalDebugEvent:
     Mov B$IsDebugEvent &TRUE
-    Call 'User32.PostMessageA' D$DebugDialogHandle, WM_DEBUGEVENT, 0, 0
+    Call 'User32.PostMessageA' D$H.DebugDialog, WM_DEBUGEVENT, 0, 0
     Call 'Kernel32.WaitForSingleObject' D$UserInputEvent, &INFINITE
     Mov B$IsDebugEvent &FALSE
 ret
@@ -2736,8 +2747,10 @@ Proc DeleteProcessBreakpoint:
         ;Call 'Kernel32.OutputDebugStringA' {'BP manager: BP deleted' 0}
         ExitP
 
-L9:     Call 'User32.MessageBoxA' D$H.MainWindow, {'Tried to delete non-existing breakpoint!' 0},
-                                  {'Debugger error' 0}, &MB_ICONERROR
+L9:     Call MessageBox {B$ "DEBUGGER ERROR:" EOS},
+                        {B$ "Tried to delete non-existing breakpoint !" EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONERROR
+
 EndP
 ____________________________________________________________________________________________
 

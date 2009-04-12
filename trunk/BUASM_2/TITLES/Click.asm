@@ -28,9 +28,9 @@ L9:     pop edi, esi, ecx
 ret
 
 
-[ShowEquateTitle: 'Win Equate Value', 0]
+[ShowEquateTitle: B$ "WIN EQUATE VALUE:" EOS]
 
-[ShowEquateHexa: ? #40]
+[ShowEquateHexa: B$ ? # 160]
 
 ShowEquate:
      Mov ebx, eax
@@ -62,7 +62,10 @@ L1:         If ecx = 5
 
      Mov D$edi ']   ', B$edi+4 0
 
-     Call 'USER32.MessageBoxA' D$H.MainWindow, ShowEquateHexa, ShowEquateTitle, &MB_SYSTEMMODAL
+     Call MessageBox ShowEquateTitle,
+                     ShowEquateHexa,
+                     &MB_SYSTEMMODAL+&MB_USERICON
+
 ret
 
 ;;
@@ -601,7 +604,7 @@ L0:     Call 'USER32.AppendMenuA' D$FloatHandle, &MF_SEPARATOR, &NULL, &NUll
                                   Float_UnBookMark_String
     End_If
 
-    .If D$IsDebugging = &FALSE
+    .If D$FL.IsDebugging = &FALSE
         Mov ecx D$BlockEndTextPtr | sub ecx D$BlockStartTextPtr
         If ecx > 50
             Call 'USER32.AppendMenuA' D$FloatHandle, &MF_SEPARATOR, &NULL, &NUll
@@ -959,7 +962,7 @@ ________________________________________________________________________________
 
 
 
-[ClickedNumberText: ClickedHexa: "
+[ClickedNumberText: ClickedHexa: B$ "
 
                                     
 
@@ -969,9 +972,9 @@ ________________________________________________________________________________
 
 
 
-", 0
+" EOS]
 
-ClickedNumberTitle: 'Bases forms', 0]
+[ClickedNumberTitle: B$ "BASE FORMS" EOS]
 
 
 ViewClickedNumber:
@@ -1023,7 +1026,10 @@ L0: shl ebx 1 | Mov al '0' | adc al 0 | stosb | loop L0<
     Mov al '_' | stosb | Mov ecx 4
 L0: shl ebx 1 | Mov al '0' | adc al 0 | stosb | loop L0<
 
-    Call 'USER32.MessageBoxA' D$H.MainWindow, ClickedNumberText, ClickedNumberTitle, &MB_SYSTEMMODAL
+    Call MessageBox ClickedNumberTitle,
+                    ClickedNumberText,
+                    &MB_SYSTEMMODAL+&MB_USERICON
+
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -1033,7 +1039,7 @@ ________________________________________________________________________________
 ; Tag Dialog 1050
 
 BlockReplaceAll:
-    Call 'USER32.DialogBoxParamA' D$hinstance, 1050, D$H.MainWindow, BlockReplaceAllProc, &NULL
+    Call 'USER32.DialogBoxParamA' D$H.Instance, 1050, D$H.MainWindow, BlockReplaceAllProc, &NULL
 ret
 
 
@@ -1059,7 +1065,7 @@ Proc BlockReplaceAllProc:
         Mov eax D@wParam | and D@wParam 0FFFF | shr eax 16
 
         ..If D@wParam = &IDCANCEL
-            Call 'USER32.EndDialog' D@hwnd, 0
+            Call WM_CLOSE
 
         ..Else_If D@wParam = &IDOK
             Call 'USER32.SendDlgItemMessageA' D@hwnd, 50, &BM_GETCHECK, 0, 0
@@ -1104,7 +1110,7 @@ L1:                 Mov B$OnReplaceAll &FALSE, B$Disassembling &FALSE, B$BlockIn
                 Call AskForRedraw
             .End_If
 
-            Call 'USER32.EndDialog' D@hwnd, 0
+            Call WM_CLOSE
         ..End_If
 
     ...Else
@@ -1323,9 +1329,9 @@ L7: Mov eax 0
 ret
 
 
-[FullBookMarks: 'No more room to store BookMarks', 0
- BookMarksTitle: '               ----------- BookMarks -----------', 0
- EndBookMarks:   '                 ------------- Tree --------------', 0]
+[FullBookMarks: B$ "No more room to store BookMarks" EOS]
+[BookMarksTitle: "               ----------- BookMarks -----------" EOS]
+[EndBookMarks:   "                 ------------- Tree --------------" EOS]
 [NumberOfBookMarks: 0]
 
 StoreBookMark:
@@ -1344,7 +1350,11 @@ L0: repne scasb | cmp B$edi 0 | jne L0<
         While B$eax <> 0 | inc eax | End_While
         sub eax ToBeBookMarked
         If ecx <= eax
-            Call 'USER32.MessageBoxA' D$H.MainWindow, FullBookMarks, Argh, &MB_SYSTEMMODAL
+
+            Call MessageBox Argh,
+                            FullBookMarks,
+                            &MB_SYSTEMMODAL+&MB_USERICON
+
             pop edi | jmp L9>
         End_If
         Mov ecx eax, esi ToBeBookMarked
@@ -1432,13 +1442,13 @@ ________________________________________________________________________________
 [ShowUnfoldDialogHandle: ?]
 
 ShowUnfoldMacro:
-    If D$DebugDialogHandle <> 0
+    If D$H.DebugDialog <> 0
         Call KillDebugger | On eax = &IDNO, ret
     End_If
 
     .If D$ShowUnfoldDialogHandle = 0
         Mov B$CompileErrorHappend &FALSE
-        Call 'USER32.DialogBoxParamA' D$hInstance, 23000, &NULL, ShowUnfoldDialog, &NULL
+        Call 'USER32.DialogBoxParamA' D$H.Instance, 23000, &NULL, ShowUnfoldDialog, &NULL
 
     .Else
         Beep
@@ -1459,7 +1469,7 @@ Proc ShowUnfoldDialog:
     .If D@msg = &WM_COMMAND
          If W@wParam = &IDCANCEL
 L0:         Mov D$ShowUnfoldDialogHandle 0
-            Call 'USER32.EndDialog' D@hwnd, 0
+            Call WM_CLOSE
 
          Else_If W@wParam = &IDOK
             jmp L0<
@@ -1471,7 +1481,7 @@ L0:         Mov D$ShowUnfoldDialogHandle 0
 
     .Else_If D@msg = &WM_INITDIALOG
         move D$ShowUnfoldDialogHandle D@hwnd
-        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
+        Call SetIconDialog
 
         Call UnfoldMacro
 
@@ -1487,12 +1497,12 @@ L0:         Mov D$ShowUnfoldDialogHandle 0
             Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0, 0
             Mov B$FirstCTLCOLOREDIT &FALSE
         End_If
-        Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+        Call 'GDI32.SetBkColor' D@wParam, D$RVBA.DialogsBackgnd
+        popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     .Else_If B$CompileErrorHappend = &TRUE
         Mov D$ShowUnfoldDialogHandle 0
-        Call 'USER32.EndDialog' D@hwnd, 0
+        Call WM_CLOSE
 
     .Else
         popad | Mov eax &FALSE | jmp L9>
@@ -1521,7 +1531,7 @@ ________________________________________________________________________________
 [UnfoldEqual: ?  UnfoldCompleted: ?]
 
 UnfoldMacro:
-    Call 'USER32.SetCursor', D$WaitCursor | Call AskForRedrawNow
+    Call 'USER32.SetCursor' D$H.CursorWAIT | Call AskForRedrawNow
 
     Mov B$WeAreUnfolding &TRUE, B$UnfoldStepIndice '0'
     Mov D$TrashPointer Trash3

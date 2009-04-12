@@ -2,6 +2,64 @@ TITLE START_CODE     ; Version A.Bvvv DD.MM.YY maintainer email and version numb
 ____________________________________________________________________________________________
 
 @TopOffCode:
+____________________________________________________________________________________________
+
+MSG_PUMP:
+    __________________________________________________
+
+    ; Msg pump général en attente de son optimisation
+    __________________________________________________
+
+    [STRUC.MSG:  ; En attendant les structures C-Like sur la (pile) stack ;))
+     @hwnd: D$ ?
+     @message: D$ ?
+     @wParam: D$ ?
+     @lParam: D$ ?
+     @time: D$ ?
+     @STRUC.pt: D$ ? ?]
+
+    jmp S2>
+
+L1: Call 'USER32.IsDialogMessageA' D$H.FindReplace,
+                                   STRUC.MSG
+
+    Test eax eax NOT_ZERO S2>
+
+    Test D$FL.IsDebugging &TRUE FALSE S1>
+
+        Call 'USER32.TranslateAcceleratorA' D$H.DebugDialog,
+                                            D$H.DebbugAccel,
+                                            STRUC.MSG
+
+        Test eax eax NOT_ZERO S2>
+
+        Call 'USER32.IsDialogMessageA' D$H.CurrentDataPage,
+                                       STRUC.MSG
+
+        Test eax eax NOT_ZERO S2>
+
+        Call 'USER32.IsDialogMessageA' D$H.DebugDialog,
+                                       STRUC.MSG
+
+        Test eax eax NOT_ZERO S2>
+
+S1: Call 'USER32.TranslateMessage' STRUC.MSG
+
+    Call 'USER32.DispatchMessageA' STRUC.MSG
+
+S2: Call 'USER32.GetMessageA' STRUC.MSG,
+                              &NULL,
+                              &WM_NULL,
+                              &WM_NULL
+
+    Test eax eax NOT_ZERO L1<<
+
+    Call WriteConfigFile
+
+    Call 'KERNEL32.FreeLibrary' D$H.RichEdit
+
+ret
+____________________________________________________________________________________________
 
 ;;
 
@@ -136,14 +194,14 @@ ________________________________________________________________________________
 _____________________________________________________________________________________________
 ; Colors:
 
-[DialogsBackColor: 0_FF_FC_F2]         ; For Edit Controls, List Boxes (Default: Light Blue)
+[RVBA.DialogsBackgnd: B$ 0_F0 0_F0 0_FF 0_00] ; Fond des dialogues et des diverse RSC
 
                                        ; Source Editor colors:
-[NormalBackColor:  0_FF_FF_FF          ; white BackGround color (Default: light yellow)
- StatementColor: 0                     ; black for instructions
- BracketColor: 0A0                     ; [red] for Data / Equates / Macros
- TextColor: 0_64_00                    ; 'green' for text
- CommentColor: 0_82_00_00 ]            ; blue for comments
+[NormalBackColor:  D$ 0_FF_FF_FF       ; white BackGround color (Default: light yellow)
+ RVBA.Normal: B$ 0_00 0_00 0_00 0_00   ; Couleur par défaut
+ BracketColor: D$ 0A0                  ; for Data / Equates / Macros
+ TextColor: D$ 0_64_00                 ; 'green' for text
+ CommentColor: D$ 0_82_00_00 ]         ; blue for comments
 
 
 [DRAWLINELEN 92]    ; This is the number of '_' in a Line drawn by [Ctrl][_]
@@ -206,8 +264,6 @@ ________________________________________________________________________________
 
 [inc | inc #1 | #+1]    [dec | dec #1 | #+1]
 
-[On | cmp #1 #3 | jn#2 M1> | #4>L | M1: ]
-
 [If | #=3 | cmp #1 #3 | jn#2 I1>]
 [Else_if | #=3 | jmp I9> | I1: | cmp #1 #3 | jn#2 I1>]
 [Else | Jmp I9> | I1: ]
@@ -259,18 +315,6 @@ ________________________________________________________________________________
 
  ________________________________________________________________________________________
 
-; Messages:
-
-; in: eax = string adress
-
-MessageBox:
-    Call 'USER32.MessageBoxA' D$H.MainWindow,               ; hwin
-                             eax,                   ; Message
-                             D$ErrorMessageTitlePtr,     ; Message-Window-Title
-                             &MB_SYSTEMMODAL        ; Style (0 to 4) 0 > 'OK'
-ret
- ________________________________________________________________________________________
-
 [HexprintString: '        h', 0]
 
 HexPrn:
@@ -280,11 +324,15 @@ HexPrn:
 L1:     Mov al bl | and al 0F | On al >= 0A, add al 7
         add al, '0' | stosb | shr ebx, 4 | loop L1
     cld
-    Call 'USER32.MessageBoxA' D$H.MainWindow, HexPrintString, ErrorMessageTitle, &MB_SYSTEMMODAL
+
+    Call MessageBox STR.A.ErrorMessageTitle,
+                    HexPrintString,
+                    &MB_USERICON+&MB_SYSTEMMODAL
+
 ret
+[ShowMe | pushad  | Call 'USER32.MessageBoxA' D$H.MainWindow, #1, argh, &MB_SYSTEMMODAL | popad]
 
 [HexPrint | pushad | push #1 | pop eax | Call hexprn | popad | #+1]
-[ShowMe | pushad  | Call 'USER32.MessageBoxA' D$H.MainWindow, #1, argh, &MB_SYSTEMMODAL | popad]
 
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -499,9 +547,13 @@ Proc GetHexaFromText:
             sub al '0' | On al > 9, sub al 7
 
             If al > 0F
-                Mov eax {'The Number should be HexaDecimal', 0}
-                Call MessageBox
+
+                Call MessageBox D$STR.A.MessageWindowTitleError,
+                                {B$ "The Number should be HexaDecimal" EOS},
+                                &MB_USERICON+&MB_SYSTEMMODAL
+
                 Mov B$GetHexaFromTextError &TRUE | ExitP
+
             End_If
             shl edx 4 | or dl al
         End_While

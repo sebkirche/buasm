@@ -51,7 +51,7 @@ ________________________________________________________________________________
 [NotReadyToRun L7>>    NoClient L8>>]
 
 [CloseDebuggerOrIgnore
-    If D$DebugDialogHandle <> 0
+    If D$H.DebugDialog <> 0
         Call KillDebugger | On eax = &IDNO, jmp L9>>
     End_If]
 
@@ -61,30 +61,40 @@ ________________________________________________________________________________
 ; size of buffer for filename:
 [cch: D$ &MAXPATH]
 
-[STR.A.AppName: "  BUAsm, The Bottom-Up Assembler -V.0.00.001-" EOS]
+[STR.A.AppName: "  BUAsm, The Bottom-Up Assembler -V.0.00.002-" EOS]
 
 Proc MainWindowProc:
+
 ;;
     TODO Double left-clic -> Search from Top
 
     [TopOffCode] -> Right-clic
     
     [MAIN]
+  
+    ErrorMessageTitlePtr -> STR.A.MessageWindowTitleError
+    ErrorMessageTitle -> STR.A.ErrorMessageTitle
+
+    TITLE COMMUN:
+    (en prévision de l'automate général)
+    [WM_CLOSE] pour la fermeture des dialogs
+    [WM_CTLCOLOREDIT] pour la gestion des couleur de fond et des fontes
+    [SetIconDialog] pour l'attribution de l'icône de BUAsm aux rsc
     
-    AppName -> STR.A.AppName
-    H.MainWindow -> H.MainWindow
-    @Adressee -> @hwnd
-    @Handle -> @hwnd
-    @Message -> @msg
-    
-    call -> Call
-    Mov -> Mov
-    
-    Call 'MODULE.ApiName' selon convention
-    
-    Implémentation d'une partie des nouvelles Macros conventionées
-    
-    implémentation des Equates HLL et [D$HWND] etc pour éviter les transmissions via arguments 
+    [MessageBox] routine universelle pour tous les MsgBox (pour faciliter l'internationalisation et l'habillage)
+    (les chaînes utilisée sont mise au format de la convention:
+    [Label: 'Blabla',0] -> [Label: B$ "Blabla" EOS] les ' ' sont réservés aux API et " " aux chaînes
+    la forme STR.A/B sera implémentée par les divers mainteneurs..)
+
+    Commencement de la MAJ de la GUI 
+    Création du TITLE INIT:
+    [INIT]
+    [INIT_Instance]
+    [INIT_Colors]
+    [INIT_MainWindow]
+    [INIT_Cursors]  
+
+    Création du premier [MSG_PUMP]
 ;;
 
 ;;
@@ -134,7 +144,7 @@ Proc MainWindowProc:
     .If eax = D$H.MainWindow
         ; OK
     .Else_If eax = D$EditWindowHandle
-        Mov eax D$wc_hCursor
+        Mov eax D$H.CursorIBEAM
         If D$ActualCursor <> eax
             Mov D$ActualCursor eax
             Call 'USER32.SetClassLongA' D$EditWindowHandle, &GCL_HCURSOR, eax
@@ -142,7 +152,7 @@ Proc MainWindowProc:
     .Else_If eax = D$ScrollWindowHandle
         ; OK
     .Else_If eax = D$BpWindowHandle
-        Mov eax D$Bp_hCursor
+        Mov eax D$H.CursorARROW
         If D$ActualCursor <> eax
             Mov D$ActualCursor eax
             Call 'USER32.SetClassLongA' D$BpWindowHandle, &GCL_HCURSOR, eax
@@ -199,7 +209,7 @@ Proc MainWindowProc:
             Call 'USER32.GetWindowRect' D$H.MainWindow, WindowX
             Mov eax D$WindowX | sub D$WindowW eax
             Mov eax D$WindowY | sub D$WindowH eax
-            Call UpdateRegistry
+            Call WriteConfigFile
         End_If
 
         On B$ToolBarChange = &TRUE, Call SaveToolBar
@@ -288,8 +298,11 @@ Proc MainWindowProc:
                                     TOOLBAR_REGISTRY        ; FALSE > restore
 
         .Else_If D$ebx+TOOLTIPTEXT_NMHDR_code = &TBN_CUSTHELP
-            Call 'USER32.MessageBoxA' D$H.MainWindow, HelpToolBar, HelpToolBarTitle,
-                                    &MB_OK__&MB_SYSTEMMODAL
+
+            Call MessageBox HelpToolBarTitle,
+                            HelpToolBar,
+                            &MB_SYSTEMMODAL+&MB_USERICON
+
         .End_If
 
 
@@ -735,7 +748,7 @@ L5: If B$SourceReady = &FALSE
        ; ..Else_If eax = M00_Profile | Call Profiler
 
         ..Else_If eax = M00_Paste_at_Pos
-            On D$IsDebugging = &TRUE, jmp L9>>
+            On D$FL.IsDebugging = &TRUE, jmp L9>>
             Call RestoreRealSource | Call IncludeSource | Call SetPartialEditionFromPos
             Mov B$SourceHasChanged &TRUE, B$FirstBlockDraw &FALSE
             Call SetCaret D$CurrentWritingPos
@@ -744,7 +757,7 @@ L5: If B$SourceReady = &FALSE
             Mov D$NextSearchPos 0 | Call SetSimpleSearchBox
 
         ..Else_If eax = M00_Replace
-            Mov D$NextSearchPos 0 | On D$IsDebugging = &FALSE, Call SetFindReplaceBox
+            Mov D$NextSearchPos 0 | On D$FL.IsDebugging = &FALSE Call SetFindReplaceBox
 
         ..Else_If eax = M00_Undo
             Call ControlZ
@@ -768,7 +781,7 @@ L5: If B$SourceReady = &FALSE
             Call ControlS
 
         ..Else_If eax = M00_Replace_Source_Only
-            On D$IsDebugging = &TRUE, jmp L9>>
+            On D$FL.IsDebugging = &TRUE, jmp L9>>
             Call ReInitUndoOnly
             Call ReplaceSourceOnly
             Call UpdateTitlesFromIncludeFiles
@@ -969,7 +982,7 @@ ________________________________________________________________________________
 Compile:
         If D$UnusedCodeAndDataDialogHandle = &FALSE
             On B$Compiling = &TRUE, ret
-            On D$IsDebugging = &TRUE, ret
+            On D$FL.IsDebugging = &TRUE, ret
         Else
             Mov D$ShowStats &FALSE
         End_If
@@ -1002,7 +1015,7 @@ Run:
     End_If
 
     On B$Compiling = &TRUE, ret
-    On D$IsDebugging = &TRUE, ret
+    On D$FL.IsDebugging = &TRUE, ret
 
     Mov B$ShowStats &FALSE, B$Compiling &TRUE, B$RecompileWanted &FALSE
 
@@ -1045,9 +1058,12 @@ Optimize:
 
     .If B$ReadyToRun = &TRUE
         If B$AlignFound = &TRUE
-            Call 'USER32.MessageBoxA' &NULL, NoptimizeMessage,
-                                      NoptimizeTitle, &MB_SYSTEMMODAL
-        Else
+
+            Call MessageBox NoptimizeTitle,
+                            NoptimizeMessage,
+                            &MB_SYSTEMMODAL+&MB_USERICON
+
+       Else
             Mov B$ShortenJumpsWanted &TRUE
             Mov D$ShowStats &TRUE
             Call Compile
@@ -1056,11 +1072,11 @@ Optimize:
     .End_If
 ret
 
-[NoptimizeTitle: 'Optimizer', 0
- NoptimizeMessage: "The Assembler can not yet optimize the Jump Sizes  
- on a Source making use of the Align Statement:
+[NoptimizeTitle: B$ "OPTIMIZER:" EOS]
+[NoptimizeMessage: B$ "The Assembler can not yet optimize the jump sizes  
+ on a source making use of the align statement:
  
- The Alignments would be broken.", 0]
+ The alignments would be broken." EOS]
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
@@ -1116,8 +1132,8 @@ EndP
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
-[QuitTitle: 'Sure?', 0
-QuitMessage: 'Source has changed. Save/Compile now?', 0]
+[QuitTitle: B$ "SURE ? :" EOS]
+[QuitMessage: "Source has changed. Save/Compile now ?" EOS]
 
 Security:
     Mov eax &IDNO
@@ -1126,8 +1142,12 @@ Security:
 
     ...If B$SecurityWanted = &TRUE
         ..If B$SourceHasChanged = &TRUE
-            Call 'MessageBoxA' D$H.MainWindow, QuitMessage, QuitTitle, &MB_YESNOCANCEL
-            .If eax = &IDYES
+
+            Call MessageBox QuitTitle,
+                            QuitMessage,
+                            &MB_SYSTEMMODAL+&MB_USERICON+&MB_YESNOCANCEL
+
+            .If D$FL.MsgBoxReturn = &IDYES
                 Call RestoreRealSource
                 Call AsmMain | Mov D$OldStackPointer 0
                 If B$CompileErrorHappend = &FALSE
@@ -1151,7 +1171,7 @@ Proc CharMessage:
 
     On B$keys+&VK_CONTROL = &TRUE, jmp L2>>
 
-    .If D$DebugDialogHandle <> 0
+    .If D$H.DebugDialog <> 0
         push eax
         Call KillDebugger
             If eax = &IDNO
@@ -1550,15 +1570,15 @@ KeyMessage:
             Mov B$keys+&VK_UP &FALSE
 
         .Else_If B$keys+&VK_DELETE = &TRUE
-            On D$DebugDialogHandle <> 0, ret
+            On D$H.DebugDialog <> 0, ret
             Call ControlD | Mov B$keys+&VK_DELETE &FALSE, B$KeyHasModifedSource &TRUE
 
         .Else_If B$keys+&VK_INSERT = &TRUE
-            On D$DebugDialogHandle <> 0, ret
+            On D$H.DebugDialog <> 0, ret
             Call ControlC | Mov B$keys+&VK_INSERT &FALSE, B$KeyHasModifedSource &TRUE
 
         .Else_If B$keys+&VK_BACK = &TRUE
-            On D$DebugDialogHandle <> 0, ret
+            On D$H.DebugDialog <> 0, ret
             Call ControlX | Mov B$keys+&VK_BACK &FALSE, B$KeyHasModifedSource &TRUE
             Mov B$RedrawFlag &TRUE
           ; This 'RedrawFlag' is to kill the next coming WM_CHAR holding
@@ -1654,11 +1674,11 @@ L1:     .If B$keys+&VK_LEFT = &TRUE
             Mov B$KeyHasMovedCaret &TRUE
 
         .Else_If B$keys+&VK_INSERT = &TRUE
-            On D$DebugDialogHandle <> 0, ret
+            On D$H.DebugDialog <> 0, ret
             Call ControlV | Mov B$keys+&VK_INSERT &FALSE, B$KeyHasModifedSource &TRUE
 
         .Else_If B$keys+&VK_DELETE = &TRUE
-            On D$DebugDialogHandle <> 0, ret
+            On D$H.DebugDialog <> 0, ret
             Call ControlX | Mov B$keys+&VK_DELETE &FALSE, B$KeyHasModifedSource &TRUE
 
         .Else_If B$keys+&VK_F4 = &TRUE
@@ -1714,7 +1734,7 @@ L1:     .If B$keys+&VK_LEFT = &TRUE
             Call KeyInsert | Mov B$BlockInside &FALSE
 
         ..Else_If eax = &VK_DELETE
-            .If D$DebugDialogHandle <> 0
+            .If D$H.DebugDialog <> 0
                 Mov B$Keys+eax 0
                 Call KillDebugger | On eax = &IDNO, ret
             .End_If
@@ -1757,14 +1777,14 @@ L1:     .If B$keys+&VK_LEFT = &TRUE
         ..Else_If eax = &VK_F6
             Mov B$keys+&VK_F6 &FALSE
 
-            If D$DebugDialogHandle <> 0
+            If D$H.DebugDialog <> 0
                 ret
             Else
                 Call Run
             End_If
 
         ..Else_If eax = &VK_F8
-            If D$DebugDialogHandle <> 0
+            If D$H.DebugDialog <> 0
                 Mov B$keys+&VK_F2 &FALSE
                 Call KillDebugger | On eax = &IDNO, ret
             End_If
@@ -1821,149 +1841,149 @@ EnableMenutems:
    ; Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Profile, &MF_GRAYED
 
     .If B$SourceReady = &FALSE
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Tree, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Paste_at_Pos, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Change_Compile_Name, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_Source_Only, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Source_Only, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Output, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Print, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Find, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Undo, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Redo, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Copy, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Paste, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Cut, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Compile, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Run, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Import, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Export, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_GUIDs, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Tree, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Paste_at_Pos, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Change_Compile_Name, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Replace_Source_Only, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_Source_Only, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Output, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Print, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Find, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Replace, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Replace, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Undo, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Redo, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Copy, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Paste, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Cut, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Compile, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Run, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Import, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Export, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_GUIDs, &MF_GRAYED
 
     .Else
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Tree, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Paste_at_Pos, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Change_Compile_Name, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_Source_Only, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Source_Only, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Output, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Print, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Find, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Undo, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Redo, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Copy, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Paste, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Cut, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Compile, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Run, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Import, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Export, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_GUIDs, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Tree, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Paste_at_Pos, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Change_Compile_Name, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Replace_Source_Only, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_Source_Only, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Output, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Print, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Find, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Replace, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Replace, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Undo, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Redo, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Copy, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Paste, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Cut, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Compile, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Run, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Import, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Export, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_GUIDs, &MF_ENABLED
 
     .End_If
 
     If D$SavingExtension = '.SYS'
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Run, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Run, &MF_GRAYED
     Else_If B$SourceReady = &TRUE
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Run, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Run, &MF_ENABLED
     End_If
 
     If D$IconList = 0
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Icon, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Icon_IDs, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Icon, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_Icon, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Icon_IDs, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_Icon, &MF_GRAYED
     Else
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Icon, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Icon_IDs, &MF_GRAYED ; &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Icon, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_Icon, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Icon_IDs, &MF_GRAYED ; &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_Icon, &MF_GRAYED ;&MF_ENABLED
     End_If
 
     If D$BitMapList = 0
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_BitMap, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_BitMaps_IDs, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_BitMap, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_BitMap, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_BitMaps_IDs, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_BitMap, &MF_GRAYED
     Else
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_BitMap, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_BitMaps_IDs, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_BitMap, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_BitMap, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_BitMaps_IDs, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_BitMap, &MF_GRAYED ;&MF_ENABLED
     End_If
 
     If D$CursorList = 0
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Cursor, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Cursors_IDs, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Cursor, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_Cursor, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Cursors_IDs, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_Cursor, &MF_GRAYED
     Else
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Cursor, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Cursors_IDs, &MF_GRAYED ;&MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Cursor, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_Cursor, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Cursors_IDs, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_Cursor, &MF_GRAYED ;&MF_ENABLED
     End_If
 
     If D$WaveList = 0
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Wave, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Waves_IDs, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Wave, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_Wave, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Waves_IDs, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_Wave, &MF_GRAYED
     Else
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Wave, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Waves_IDs, &MF_GRAYED ;&MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Wave, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_Wave, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Waves_IDs, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_Wave, &MF_GRAYED ;&MF_ENABLED
     End_If
 
     If D$AviList = 0
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Avi, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Avi_IDs, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Avi, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_Avi, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Avi_IDs, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_Avi, &MF_GRAYED
     Else
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Avi, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Avi_IDs, &MF_GRAYED ;&MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_Avi, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_Avi, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Avi_IDs, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_Avi, &MF_GRAYED ;&MF_ENABLED
     End_If
 
     If D$RCDataList = 0
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_RC, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_RCs_IDs, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_RC, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_RC, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_RCs_IDs, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_RC, &MF_GRAYED
     Else
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_RC, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_RCs_IDs, &MF_GRAYED ;&MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_RC, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_RC, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_RCs_IDs, &MF_GRAYED ;&MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_RC, &MF_ENABLED
     End_If
 
     If D$DialogList = 0
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_from_Resources, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Resources_Dialog, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_to_Binary_File, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_from_Binary_File, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Load_from_Resources, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_Resources_Dialog, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_to_Binary_File, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Replace_from_Binary_File, &MF_GRAYED
     Else
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_from_Resources, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_Resources_Dialog, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_to_Binary_File, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_from_Binary_File, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Load_from_Resources, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_Resources_Dialog, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_to_Binary_File, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Replace_from_Binary_File, &MF_ENABLED
     End_If
 
     If B$SourceReady = &FALSE
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_from_Binary_File, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Load_from_Binary_File, &MF_GRAYED
     Else
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_from_Binary_File, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Load_from_Binary_File, &MF_ENABLED
     End_If
 
     If D$MenuList = 0
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Existing_Menu, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_a_Menu, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_to_Binary_Menu_File, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_Binary_Menu_File, &MF_GRAYED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_from_Binary_Menu_File, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Existing_Menu, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_a_Menu, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_to_Binary_Menu_File, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Load_Binary_Menu_File, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Replace_from_Binary_Menu_File, &MF_GRAYED
     Else
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Existing_Menu, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Delete_a_Menu, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Save_to_Binary_Menu_File, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Load_Binary_Menu_File, &MF_ENABLED
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Replace_from_Binary_Menu_File, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Existing_Menu, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Delete_a_Menu, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Save_to_Binary_Menu_File, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Load_Binary_Menu_File, &MF_ENABLED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Replace_from_Binary_Menu_File, &MF_ENABLED
     End_If
 
     Call 'USER32.DrawMenuBar' D$H.MainWindow
@@ -2002,7 +2022,7 @@ EnableVisualTutsMenu:
     Call 'KERNEL32.FindFirstFileA' VisualTutPath, FindFile
 
     .If eax = &INVALID_HANDLE_VALUE
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Visual_Tuts, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Visual_Tuts, &MF_GRAYED
 
     .Else
         Mov D$VisualTutsFindHandle eax
@@ -2049,11 +2069,11 @@ L1:     add esi 6
             inc D$VisualTutMenuID | jmp L1<
         End_If
 
-        Call 'USER32.InsertMenuA' D$MenuHandle, M00_Visual_Tuts,
+        Call 'USER32.InsertMenuA' D$H.Menu, M00_Visual_Tuts,
                                   &MF_BYCOMMAND__&MF_POPUP__&MF_STRING,
                                   D$VisualTutsMenuHandle, VisualTutsItem
 
-        Call 'USER32.DeleteMenu' D$MenuHandle, M00_Visual_Tuts, &MF_BYCOMMAND
+        Call 'USER32.DeleteMenu' D$H.Menu, M00_Visual_Tuts, &MF_BYCOMMAND
 
         Call 'KERNEL32.FindClose' D$VisualTutsFindHandle
     .End_If
@@ -2062,7 +2082,7 @@ ret
 
 VisualTuts:
     push eax
-        .If D$DebugDialogHandle <> 0
+        .If D$H.DebugDialog <> 0
             Call KillDebugger
             If eax = &IDNO
                 pop eax | ret
@@ -2072,9 +2092,12 @@ VisualTuts:
         ...If B$SourceReady = &TRUE
             ..If B$ReadyToRun = &FALSE
                 .If B$SecurityWanted = &TRUE
-                    Call 'USER32.MessageBoxA' D$H.MainWindow, {'Close the Actual File ?', 0},
-                                              {'Visual Tutorial', 0}, &MB_YESNO
-                    If eax = &IDNO
+
+                    Call MessageBox {B$ "VISUAL TUTORIAL:" EOS},
+                                    {B$ "Close the actual file ?" EOS},
+                                    &MB_SYSTEMMODAL+&MB_USERICON+&MB_YESNO
+
+                    If D$FL.MsgBoxReturn = &IDNO
                         pop eax | ret
                     End_If
                 .End_If
@@ -2084,7 +2107,7 @@ VisualTuts:
 
     Mov esi VisualTutPath | While D$esi <> '\IVT' | inc esi | End_While
     add esi 4 | Mov D$esi '???' | add esi 3
-    Call 'USER32.GetMenuStringA' D$MenuHandle, eax, esi, 100, &MF_BYCOMMAND
+    Call 'USER32.GetMenuStringA' D$H.Menu, eax, esi, 100, &MF_BYCOMMAND
 
     Call 'KERNEL32.FindFirstFileA' VisualTutPath, FindFile
 
@@ -2116,7 +2139,7 @@ Proc EnableHelpMenutem:
             Mov eax &MF_ENABLED
         End_If
 
-        Call 'USER32.EnableMenuItem' D$MenuHandle, D@Item, eax
+        Call 'USER32.EnableMenuItem' D$H.Menu, D@Item, eax
     pop eax
     Call 'KERNEL32.FindClose' eax
 EndP
@@ -2141,7 +2164,7 @@ EnableWizardsMenu:
     Call 'KERNEL32.FindFirstFileA' WizardPath, FindFile
 
     .If eax = &INVALID_HANDLE_VALUE
-        Call 'USER32.EnableMenuItem' D$MenuHandle, M00_Wizards, &MF_GRAYED
+        Call 'USER32.EnableMenuItem' D$H.Menu, M00_Wizards, &MF_GRAYED
 
     .Else
         Mov D$WizardsFindHandle eax
@@ -2189,11 +2212,11 @@ L1:     add esi 4
             inc D$VisualTutMenuID | jmp L1<
         End_If
 
-        Call 'USER32.InsertMenuA' D$MenuHandle, M00_Wizards,
+        Call 'USER32.InsertMenuA' D$H.Menu, M00_Wizards,
                                   &MF_BYCOMMAND__&MF_POPUP__&MF_STRING,
                                   D$WizardsMenuHandle, WizardsItem
 
-        Call 'USER32.DeleteMenu' D$MenuHandle, M00_Wizards, &MF_BYCOMMAND
+        Call 'USER32.DeleteMenu' D$H.Menu, M00_Wizards, &MF_BYCOMMAND
 
         Call 'KERNEL32.FindClose' D$WizardsFindHandle
     .End_If
@@ -2274,11 +2297,11 @@ L1:         If D$ClipFilePopUpMenuHandle = 0
 
             .If D$ClipFilePopUpMenuHandle <> 0
                 If D$NumberOfClipFiles > 1
-                    Call 'USER32.InsertMenuA' D$MenuHandle, M00_ClipFile,
+                    Call 'USER32.InsertMenuA' D$H.Menu, M00_ClipFile,
                                               &MF_BYCOMMAND__&MF_POPUP__&MF_STRING,
                                               D$ClipFilePopUpMenuHandle, ClipFilesItem
 
-                    Call 'USER32.DeleteMenu' D$MenuHandle, M00_ClipFile, &MF_BYCOMMAND
+                    Call 'USER32.DeleteMenu' D$H.Menu, M00_ClipFile, &MF_BYCOMMAND
                 End_If
             .End_If
 
@@ -2332,7 +2355,7 @@ SplashScreen:
     shr D$RECTright 1 | shr D$RECTbottom 1
     sub D$RECTright 75 | sub D$RECTbottom 75
 
-    Call 'USER32.LoadBitmapA' D$hInstance, 5 | Mov D$BitMapHandle eax
+    Call 'USER32.LoadBitmapA' D$H.Instance, 5 | Mov D$BitMapHandle eax
 
     Call 'GDI32.CreateCompatibleDC' D$hdc | Mov D$hMemDC eax
 

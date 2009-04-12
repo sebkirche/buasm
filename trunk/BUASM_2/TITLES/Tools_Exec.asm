@@ -59,7 +59,7 @@ TITLE Tools_Exec
 ;;
 
 
-[CalcMessage: "
+[CalcMessage: B$ "
 
     Copy your prefered Calc in this directory
 
@@ -68,9 +68,9 @@ TITLE Tools_Exec
     or have a search for 'Calc.exe' in RosAsm source    
     and read the header comment...
 
-     "  0
+     " EOS]
 
- FileNotFound: 'Requested file not found', 0]
+[FileNotFound: B$ "Requested file not found" EOS]
 
 
 [ProcessInfos: ? #4]
@@ -97,8 +97,11 @@ Calc:
       Call 'KERNEL32.CreateProcessA'  CalcLinkName  0 0 0  0  0 0 0  STARTUPINFO  ProcessInfos
 
     If eax = 0
-      Call 'User32.MessageBoxA' D$H.MainWindow, CalcMessage, FileNotFound,
-                                &MB_ICONINFORMATION+&MB_SYSTEMMODAL
+
+      Call MessageBox FileNotFound,
+                      CalcMessage,
+                      &MB_SYSTEMMODAL+&MB_USERICON
+
     Else
       Call 'KERNEL32.GetExitCodeProcess' D$ProcessInfos CalcExitCode
       Mov B$OnCalc &TRUE
@@ -248,14 +251,15 @@ ret
 LicenseView:
     Call Help, B_U_AsmName, RosAsmLicenceHelp, ContextHlpMessage
 
-    Call 'USER32.MessageBoxA' D$H.MainWindow,
-        {"
+    Call MessageBox {B$ "LICENSE" EOS},
+                    {B$ "
         RosAsm License viewed       
         
-                   Accept?", 0},
-        {'License', 0}, &MB_SYSTEMMODAL__&MB_YESNO
+                   Accept ?" EOS},
+                    &MB_SYSTEMMODAL+&MB_USERICON+&MB_YESNO
 
-    On eax = &IDNO, Call 'KERNEL32.ExitProcess' 0
+
+    On D$FL.MsgBoxReturn = &IDNO, Call 'KERNEL32.ExitProcess' 0
 ret
 
 
@@ -301,8 +305,11 @@ Proc ContextHelp:
                                      &SW_SHOWNORMAL
 
         If eax <= 32
-            Call 'User32.MessageBoxA' D$H.MainWindow, D@ErrorMessage, FileNotFound,
-                                      &MB_ICONINFORMATION+&MB_SYSTEMMODAL
+
+            Call MessageBox FileNotFound,
+                            D@ErrorMessage,
+                            &MB_SYSTEMMODAL+&MB_USERICON
+
         End_If
 EndP
 
@@ -313,10 +320,11 @@ Proc Help:
         Call 'Shell32.ShellExecuteA' D$H.MainWindow, open, D@HelpFile, D@Page, &NULL,
                                      &SW_SHOWNORMAL
         If eax <= 32
-            push eax
-                Call 'User32.MessageBoxA' D$H.MainWindow, D@ErrorMessage, FileNotFound,
-                                          &MB_ICONINFORMATION+&MB_SYSTEMMODAL
-            pop eax
+
+            Call MessageBox FileNotFound,
+                            D@ErrorMessage,
+                            &MB_SYSTEMMODAL+&MB_USERICON
+
         End_If
 EndP
 
@@ -395,7 +403,7 @@ L3:         inc ebp
 
         Mov eax 0 | stosd
        ; Show resulting box:
-        Call 'User32.DialogBoxIndirectParamA' D$hinstance, AsciiDialog, 0, AsciiProc, 0
+        Call 'User32.DialogBoxIndirectParamA' D$H.Instance, AsciiDialog, 0, AsciiProc, 0
     pop ebp
 ret
 
@@ -410,7 +418,7 @@ Proc AsciiProc:
     .If D@msg = &WM_COMMAND
         If D@wParam = &IDCANCEL
             Mov D$AsciiDialogHandle 0
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
         Else
             Call 'User32.GetDlgItem' D@hwnd 0100
             Call 'User32.SendMessageA' eax &EM_SETSEL  0-1 0
@@ -418,7 +426,7 @@ Proc AsciiProc:
 
     .Else_If D@msg = &WM_INITDIALOG
         move D$AsciiDialogHandle D@hwnd
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Call 'User32.GetDlgItem' D@hwnd 0100
         Call 'User32.SendMessageA' eax &EM_SETTABSTOPS 1 TabDimPtr
         Call 'User32.SetDlgItemTextA' D@hwnd 0100 AsciiData
@@ -525,7 +533,7 @@ Print:
     Call 'GDI32.CreateFontIndirectA' cbbuffer
         Mov D$UserChoosenPrinterFont eax
 
-    Call UpdateRegistry                                 ; To save last used Printer Font.
+    Call WriteConfigFile                                ; To save last used Printer Font.
 
 StartControlP:
     Call 'GDI32.GetDeviceCaps' D$PD_hDC &VERTRES | Mov D$PageHight eax   ; we set the sizes:
@@ -588,7 +596,7 @@ ________________________________________________________________________________
 
 ViewSysResources:
     If D$ViewSysResourcesHandle = 0
-        Call 'USER32.DialogBoxParamA' D$hinstance 29000 &NULL ViewSysResourcesProc &NULL
+        Call 'USER32.DialogBoxParamA' D$H.Instance 29000 &NULL ViewSysResourcesProc &NULL
     Else
         Beep
     End_If
@@ -600,11 +608,9 @@ ret
 Proc ViewSysResourcesProc:
     Arguments @hwnd, @msg, @wParam, @lParam
 
-    pushad
-
     ...If D@msg = &WM_INITDIALOG
         move D$ViewSysResourcesHandle D@hwnd
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Call 'USER32.GetDlgItem' D@hwnd 10 | Mov D$SysBitMapsHandle eax
         Call 'USER32.GetDlgItem' D@hwnd 11 | Mov D$SysIconsHandle eax
         Call 'USER32.GetDlgItem' D@hwnd 12 | Mov D$SysCursorsHandle eax
@@ -658,7 +664,7 @@ Proc ViewSysResourcesProc:
             End_If
 
 L1:         Mov D$ViewSysResourcesHandle 0
-            Call 'USER32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
 
         ..End_If
 
@@ -666,15 +672,14 @@ L1:         Mov D$ViewSysResourcesHandle 0
         jmp L1>
 
     ...Else_If D@msg = &WM_CTLCOLORLISTBOX
-L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+L1:     Call WM_CTLCOLOREDIT | Return
 
     ...Else
-L8:     popad | Mov eax &FALSE | jmp L9>
+L8:     Return &FALSE
 
     ...End_If
 
-    popad | Mov eax &TRUE
+    Mov eax &TRUE
 
 L9: EndP
 
@@ -793,7 +798,7 @@ ________________________________________________________________________________
 
 ShowSourceImports:
     If D$ImportDialogHandle = 0
-        Call 'USER32.DialogBoxParamA' D$hinstance, 1100, &NULL,
+        Call 'USER32.DialogBoxParamA' D$H.Instance, 1100, &NULL,
                                       ViewSourceImportsProc, &NULL
     End_If
 ret
@@ -801,7 +806,7 @@ ret
 
 ShowSourceExports:
     If D$ExportDialogHandle = 0
-        Call 'USER32.DialogBoxParamA' D$hinstance, 1101, &NULL,
+        Call 'USER32.DialogBoxParamA' D$H.Instance, 1101, &NULL,
                                       ViewSourceExportsProc, &NULL
     End_If
 ret
@@ -837,7 +842,7 @@ Proc ViewSourceImportsProc:
         Mov eax D@wParam | and eax 0FFFF
         ..If eax = &IDCANCEL
             Mov D$ImportDialogHandle 0
-            Call 'User32.EndDialog' D@hwnd, 0
+            Call WM_CLOSE
 
         ..Else
             .If W@wParam = 10
@@ -883,7 +888,7 @@ Proc ViewSourceImportsProc:
     ...Else_If D@msg = &WM_INITDIALOG
         move D$ImportDialogHandle D@hwnd
 
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
 
         Call 'USER32.GetDlgItem' D@hwnd, 10 | Mov D$DLLsProcListHandle eax
         Call 'USER32.GetDlgItem' D@hwnd, 11 | Mov D$DLLsProcFunctionsListHandle eax
@@ -896,9 +901,12 @@ Proc ViewSourceImportsProc:
         Call SetPartialEditionFromPos
 
         If B$DLLsFoundInSource = &FALSE
-            Call 'USER32.MessageBoxA' D$H.MainWindow, {'No Import Function found in this Source', 0},
-                                     {'Failure:', 0}, 0
-            Call 'USER32.EndDialog' D@hwnd, 0
+
+            Call MessageBox {B$ "FAILURE" EOS},
+                            {B$ "No Import Function found in this Source" EOS},
+                            &MB_SYSTEMMODAL+&MB_USERICON
+
+            Call WM_CLOSE
         End_If
 
         popad | Mov eax &FALSE | ExitP
@@ -1254,7 +1262,7 @@ Proc ViewSourceExportsProc:
 
         ..If eax = &IDCANCEL
             Mov D$ExportDialogHandle 0
-            Call 'User32.EndDialog' D@hwnd, 0
+            Call WM_CLOSE
 
         ..Else
             .If W@wParam = 10
@@ -1269,7 +1277,7 @@ Proc ViewSourceExportsProc:
     ...Else_If D@msg = &WM_INITDIALOG
         move D$ExportDialogHandle D@hwnd
 
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
 
         Call 'USER32.GetDlgItem' D@hwnd, 10 | Mov D$DLLsProcListHandle eax
 
@@ -1278,9 +1286,12 @@ Proc ViewSourceExportsProc:
         Call SetPartialEditionFromPos
 
         If B$DLLsFoundInSource = &FALSE
-            Call 'USER32.MessageBoxA' D$H.MainWindow, {'No Export Function found in this Source', 0},
-                                     {'Failure:', 0}, 0
-            Call 'USER32.EndDialog' D@hwnd, 0
+
+            Call MessageBox {B$ "FAILURE" EOS},
+                            {B$ "No Import Function found in this Source" EOS},
+                            &MB_SYSTEMMODAL+&MB_USERICON
+
+            Call WM_CLOSE
         End_If
 
         popad | Mov eax &FALSE | ExitP
@@ -1311,7 +1322,7 @@ ExportScanner:
                 Call ReAlignPE | Call GetExportDirPointer
 
                 If D$NumberOfDisExportedFunctions <> 0
-                    Call 'USER32.DialogBoxParamA' D$hInstance, 30500, &NULL,
+                    Call 'USER32.DialogBoxParamA' D$H.Instance, 30500, &NULL,
                                                   ViewExport, &NULL
 
                 Else
@@ -1319,7 +1330,10 @@ ExportScanner:
 
                 End_If
             .Else
-L7:             Call 'USER32.MessageBoxA' D$H.MainWindow, {'No Export found in this File', 0}, SfFile, 0
+
+L7:             Call MessageBox SfFile,
+                                {B$ "No Export found in this File" EOS},
+                                &MB_SYSTEMMODAL+&MB_USERICON
 
             .End_If
 
@@ -1416,13 +1430,13 @@ ret
  SF.lpfnHook: D$ 0
  SF.lpTemplateName: D$ 0]
 
-[SfFilter: B$ 'Module Name', 0, '*.*', 0, 0]
-[SfFile: B$ ? #&MAXPATH]
+[SfFilter: B$ 'Module Name' EOS '*.*' EOS 0]
+[SfFile: B$ ? # &MAXPATH]
 [SfFileHandle: ?    SfFileLen: ?    SfFileMemory: ?   SfFileMemoryEnd: ?]
 
 GetExportScannerFile:
     Mov D$SfFile 0, D$SfFileMemory 0
-    move D$SF.hwndOwner D$H.MainWindow ;, D$SF.hInstance D$hInstance
+    move D$SF.hwndOwner D$H.MainWindow ;, D$SF.hInstance D$H.Instance
     Call 'Comdlg32.GetOpenFileNameA' SF
 
     ..If D$SfFile <> 0
@@ -1431,7 +1445,12 @@ GetExportScannerFile:
                                     0, &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, &NULL
 
         .If eax = &INVALID_HANDLE_VALUE
-            Mov eax D$BusyFilePtr | Call MessageBox | ret
+
+            Call MessageBox D$STR.A.MessageWindowTitleError,
+                            D$BusyFilePtr,
+                            &MB_USERICON+&MB_SYSTEMMODAL
+
+            ret
 
         .Else
             Mov D$SfFileHandle eax
@@ -1457,7 +1476,11 @@ GetExportScannerFile:
 ret
 
 L7: VirtualFree D$SfFileMemory
-    Mov eax D$NotPeExePtr | Call MessageBox
+
+    Call MessageBox D$STR.A.MessageWindowTitleError,
+                    D$NotPeExePtr,
+                    &MB_USERICON+&MB_SYSTEMMODAL
+
 ret
 
 
@@ -1498,7 +1521,7 @@ Proc ViewExport:
     ...If D@msg = &WM_COMMAND
         Mov eax D@wParam | and eax 0FFFF
         ..If eax = &IDCANCEL
-            Call 'User32.EndDialog' D@hwnd, 0
+            Call WM_CLOSE
 
         ..Else
             Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &EM_SETSEL, 0-1, 0
@@ -1626,7 +1649,7 @@ ________________________________________________________________________________
 
 ViewGUIDs:
     If D$ShowGUIDsHandle = 0
-        Call 'USER32.CreateDialogParamA' D$hInstance, 35, D$H.MainWindow, ShowGUIDsProc, &NULL
+        Call 'USER32.CreateDialogParamA' D$H.Instance, 35, D$H.MainWindow, ShowGUIDsProc, &NULL
     End_If
 ret
 
@@ -1644,7 +1667,7 @@ Proc ShowGUIDsProc:
         .If D@wParam = &IDCANCEL
 L7:        Mov D$ShowGUIDsHandle 0
            VirtualFree D$GUIDsFileMemory
-           Call 'User32.EndDialog' D@hwnd, 0
+           Call WM_CLOSE
 
         .Else_If D@wParam = &IDOK
 L8:         Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &LB_GETCURSEL, 0, 0
@@ -1696,8 +1719,8 @@ L8:         Call 'USER32.SendDlgItemMessageA' D@hwnd, 10, &LB_GETCURSEL, 0, 0
             End_If
 
     ..Else_If D@msg = &WM_CTLCOLORLISTBOX
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+        Call 'GDI32.SetBkColor' D@wParam D$RVBA.DialogsBackgnd
+        popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     ..Else
         popad | Mov eax &FALSE | jmp L9>
@@ -1714,11 +1737,11 @@ ________________________________________________________________________________
  GUIDsFileMemory: ?  GUIDsInit: ?]
 
 [MissingGUIDsFile: B$ "
-Before using this Tool,
-you have to save the GUIDs File(s)
-in the RosAsmFiles Directory
+Before using this tool,
+you have to save the GUIDs file(s)
+in the BUAsmFiles directory
 (aside Equates.equ)
-", 0]
+" EOS]
 
 Proc InitGUIDsView:
     Argument @hwnd
@@ -1774,7 +1797,10 @@ Proc InitGUIDsView:
         Mov B$GUIDsInit &TRUE
 
     ...Else
-        Call 'USER32.MessageBoxA', 0, MissingGUIDsFile, {'File not found', 0}, 0
+
+        Call MessageBox {B$ "FILE NO FOUND" EOS},
+                        MissingGUIDsFile,
+                        &MB_SYSTEMMODAL+&MB_USERICON
 
     ...End_If
 EndP

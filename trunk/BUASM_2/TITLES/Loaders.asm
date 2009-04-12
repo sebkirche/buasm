@@ -133,20 +133,26 @@ ret
 
 SaveRcData:
     If D$RCDataList = 0
-        Call 'USER32.MessageBoxA' D$H.MainWindow, NoRcData, Argh, &MB_OK+&MB_SYSTEMMODAL | ret
+
+        Call MessageBox  Argh,
+                         NoRcData,
+                         &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret
+
     End_If
 
     Mov D$WhatDialogListPtr RcDataList,  D$OkDialogFlag &FALSE
     add D$WhatDialogListPtr 4
 
-    Call 'USER32.CreateDialogParamA' D$hInstance, 1000, &NULL, EmptyProc, &NULL
+    Call 'USER32.CreateDialogParamA' D$H.Instance, 1000, &NULL, EmptyProc, &NULL
     Mov D$EmptyDialogHandle eax
 
 
     .While B$OkDialogFlag = &FALSE
         Call SetRcDataTitle | Call ShowHexa
         Call SetNextChoiceID
-        Call 'User32.DialogBoxIndirectParamA' D$hinstance, ChoiceBar, D$H.MainWindow,
+        Call 'User32.DialogBoxIndirectParamA' D$H.Instance, ChoiceBar, D$H.MainWindow,
                                               ChoiceDialogBoxProc, RcDataList
         .If D$OkDialogFlag = &VK_ESCAPE
             jmp L9>>
@@ -162,9 +168,11 @@ SaveRcData:
         .End_If
    .End_While
 
-    Call 'USER32.MessageBoxA' D$H.MainWindow, SaveRc, Sure, &MB_ICONQUESTION+&MB_YESNO+&MB_SYSTEMMODAL
+    Call MessageBox  Sure,
+                     SaveRc,
+                     &MB_SYSTEMMODAL+&MB_ICONQUESTION+&MB_YESNO
 
-    push eax
+    push D$FL.MsgBoxReturn
         Call 'User32.EndDialog' D$EmptyDialogHandle &NULL
     pop eax
 
@@ -179,7 +187,13 @@ SaveRcData:
                                 &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
 
         If eax = &INVALID_HANDLE_VALUE
-            Mov eax D$BusyFilePtr | Call MessageBox | ret
+
+            Call MessageBox argh,
+                            D$BusyFilePtr,
+                            &MB_SYSTEMMODAL+&MB_USERICON
+
+            ret
+
         End_If
 
         Mov D$DestinationHandle eax, D$NumberOfReadBytes 0
@@ -193,10 +207,10 @@ SaveRcData:
 L9: ret
 
 
-[NoRcData: 'No RC Data Resources in this PE', 0]
-[KillRc: 'Delete this Rc Data Resource?', 0]
-[SaveRc: 'Save this RC Resource to Disk?', 0]
-[IdTitle: 'RC Data ID: ' IdTitleID: '       ', 0]
+[NoRcData: B$ "No RC data resources in this PE" EOS]
+[KillRc: B$ "Delete this RC data resource ?" EOS]
+[SaveRc: B$ "Save this RC resource to disk ?" EOS]
+[IdTitle: B$ "RC data ID: " IdTitleID: B$ "       " EOS]
 
 SetRcDataTitle:
     Mov eax D$WhatDialogListPtr, eax D$eax-4, edi IdTitleID
@@ -234,19 +248,25 @@ ret
 
 DeleteRcData:
     If D$RCDataList = 0
-        Call 'USER32.MessageBoxA' D$H.MainWindow, NoRcData, Argh, &MB_OK+&MB_SYSTEMMODAL | ret
+
+        Call MessageBox Argh,
+                        NoRcData,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret
+
     End_If
 
     Mov D$WhatDialogListPtr RcDataList,  D$OkDialogFlag &FALSE
     add D$WhatDialogListPtr 4
 ; Tag Dialog 1000
-    Call 'USER32.CreateDialogParamA' D$hInstance, 1000, &NULL, EmptyProc, &NULL
+    Call 'USER32.CreateDialogParamA' D$H.Instance, 1000, &NULL, EmptyProc, &NULL
     Mov D$EmptyDialogHandle eax
 
     .While B$OkDialogFlag = &FALSE
         Call SetRcDataTitle | Call ShowHexa
         Call SetNextChoiceID
-        Call 'User32.DialogBoxIndirectParamA' D$hinstance, ChoiceBar, D$H.MainWindow, ChoiceDialogBoxProc, RcDataList
+        Call 'User32.DialogBoxIndirectParamA' D$H.Instance, ChoiceBar, D$H.MainWindow, ChoiceDialogBoxProc, RcDataList
 
         .If D$OkDialogFlag = &VK_ESCAPE
             jmp L9>>
@@ -262,8 +282,11 @@ DeleteRcData:
         .End_If
    .End_While
 
-   Call 'USER32.MessageBoxA' D$H.MainWindow, KillRc, Sure, &MB_ICONQUESTION+&MB_YESNO+&MB_SYSTEMMODAL
-   If eax = &IDYES
+   Call MessageBox Sure,
+                   KillRc,
+                   &MB_SYSTEMMODAL+&MB_ICONQUESTION+&MB_YESNO
+
+   If D$FL.MsgBoxReturn = &IDYES
         sub D$WhatDialogListPtr 4
         Mov esi D$WhatDialogListPtr, edi esi | add esi 12
         Mov eax D$WhatDialogListPtr | sub eax RCDataList | shr eax 2 | Mov ecx 300 | sub ecx eax
@@ -288,13 +311,20 @@ ReadWaveFile:
 ret
 
 
-[KillWave: 'Delete this Wave Resource?', 0
- NoWave: 'No Wave Resources in this PE', 0]
-[TempoWaveFileHandle: 0  TempoWaveFile: 'Wave$$$.Wav' 0]
+[KillWave: B$ "Delete this Wave Resource ?" EOS]
+[NoWave: B$ "No Wave Resources in this PE" EOS]
+[TempoWaveFileHandle: D$ ? ]
+[TempoWaveFile: B$ "Wave$$$.Wav" EOS]
 
 DeleteWave:
     If D$WaveList = 0
-        Call 'USER32.MessageBoxA' D$H.MainWindow, NoWave, Argh, &MB_OK+&MB_SYSTEMMODAL | ret
+
+        Call MessageBox Argh,
+                        NoWave,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret
+
     End_If
 
     Mov D$WhatDialogListPtr WaveList,  D$OkDialogFlag &FALSE
@@ -309,7 +339,7 @@ DeleteWave:
         Call 'Kernel32.CloseHandle' D$TempoWaveFileHandle
         Call 'WINMM.PlaySound' TempoWaveFile &NULL  &SND_ASYNC__&SND_FILENAME
         Call SetNextChoiceID
-        Call 'User32.DialogBoxIndirectParamA' D$hinstance, ChoiceBar, D$H.MainWindow, ChoiceDialogBoxProc, WaveList
+        Call 'User32.DialogBoxIndirectParamA' D$H.Instance, ChoiceBar, D$H.MainWindow, ChoiceDialogBoxProc, WaveList
         Call 'WINMM.PlaySound' &NULL &NULL &NULL
         .If D$OkDialogFlag = &VK_ESCAPE
             jmp L9>>
@@ -325,8 +355,11 @@ DeleteWave:
         .End_If
    .End_While
 
-    Call 'USER32.MessageBoxA' D$H.MainWindow, KillWave, Sure, &MB_ICONQUESTION+&MB_YESNO+&MB_SYSTEMMODAL
-    If eax = &IDYES
+    Call MessageBox Sure,
+                    KillWave,
+                    &MB_SYSTEMMODAL+&MB_ICONQUESTION+&MB_YESNO
+
+    If D$FL.MsgBoxReturn = &IDYES
         sub D$WhatDialogListPtr 4
         Mov esi D$WhatDialogListPtr, edi esi | add esi 12
         Mov eax D$WhatDialogListPtr | sub eax WaveList | shr eax 2 | Mov ecx 300 | sub ecx eax
@@ -353,15 +386,15 @@ ret
 
 
 [TempoCursorMem: ?    CursorHotSpot: ?]
-[BadCurFile: 'Bad or multiple Cursor(s) file', 0
- BadIcoFile: 'Bad or multiple Icon(s) file', 0]
+[BadCurFile: B$ "Bad or multiple cursor(s) file" EOS]
+[BadIcoFile: B$ "Bad or multiple icon(s) file" EOS]
 
 ReadCursor:
     Mov D$OtherFilesFilters CursorFilesFilters
     Mov D$OpenOtherFileTitle CursorFilesTitle
     Mov D$OtherList CursorList | move D$OtherListPtr D$CursorListPtr
 
-    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$hInstance
+    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$H.Instance
 
     Mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
     Call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
@@ -373,7 +406,13 @@ ReadCursor:
                                 &FILE_SHARE_READ, 0,
                                 &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-      Mov eax D$BusyFilePtr | Call MessageBox | ret  ; return to caller of caller
+
+        Call MessageBox argh,
+                        D$BusyFilePtr,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret  ; return to caller of caller
+
     Else
       Mov D$OtherSourceHandle eax
     End_If
@@ -388,9 +427,13 @@ ReadCursor:
 
     Mov eax D$OtherFilePtr
     If D$eax+2 <> 010002
-        Call 'USER32.MessageBoxA' D$H.MainWindow, BadCurFile, Argh, &MB_OK+&MB_SYSTEMMODAL
+
+        Call MessageBox Argh,
+                        BadCurFile,
+                        &MB_SYSTEMMODAL+&MB_USERICON
 
         VirtualFree D$OtherFilePtr | ret
+
     End_If
 
   ; We write both the RT_CURSOR and the RT_GROUP_CURSOR:
@@ -434,7 +477,7 @@ ReadIcon:
     Mov D$OpenOtherFileTitle IconFilesTitle
     Mov D$OtherList IconList | move D$OtherListPtr D$IconListPtr
 
-    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$hInstance
+    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$H.Instance
 
     Mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
     Call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
@@ -445,8 +488,15 @@ ReadIcon:
     Call 'KERNEL32.CreateFileA' OtherSaveFilter &GENERIC_READ,
                                 &FILE_SHARE_READ, 0,
                                 &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
+
     If eax = &INVALID_HANDLE_VALUE
-      Mov eax D$BusyFilePtr | Call MessageBox | ret  ; return to caller of caller
+
+        Call MessageBox argh,
+                        D$BusyFilePtr,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret  ; return to caller of caller
+
     Else
       Mov D$OtherSourceHandle eax
     End_If
@@ -461,7 +511,10 @@ ReadIcon:
 
     Mov eax D$OtherFilePtr
     If D$eax+2 <> 010001
-        Call 'USER32.MessageBoxA' D$H.MainWindow, BadIcoFile, Argh, &MB_OK+&MB_SYSTEMMODAL
+
+        Call MessageBox Argh,
+                        BadIcoFile,
+                        &MB_SYSTEMMODAL+&MB_USERICON
 
         VirtualFree D$OtherFilePtr | ret
 
@@ -501,10 +554,12 @@ ReadIcon:
 ret
 
 
-[AnimateHandle: 0    TempoAviFileHandle: 0
- AnimateClass: 'SysAnimate32' 0    TempoAviFile: 'Avi$$$.avi', 0]
-[KillAvi: 'Delete this Avi Resource?', 0
- NoAvi: 'No Avi Resources in this PE', 0]
+[AnimateHandle: 0    TempoAviFileHandle: 0]
+
+[AnimateClass: B$ "SysAnimate32" EOS]
+[TempoAviFile: B$ "Avi$$$.avi" EOS]
+[KillAvi: B$ "Delete this Avi Resource ?" EOS]
+[NoAvi: B$ "No Avi Resources in this PE"  EOS]
 
 [EmptyDialog: D$ 0900408C2 0    ; Style
  U$ 0 0 0 0DC 0C8              ; Dim
@@ -521,7 +576,7 @@ Proc EmptyProc:
     pushad
 
     If D@msg = &WM_INITDIALOG
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Mov eax &TRUE
 
     Else_If D@msg = &WM_CLOSE
@@ -541,16 +596,22 @@ L9: EndP
 
 DeleteAviFile:
     If D$AviList = 0
-        Call 'USER32.MessageBoxA' D$H.MainWindow, NoAvi, Argh, &MB_OK+&MB_SYSTEMMODAL | ret
+
+        Call MessageBox Argh,
+                        NoAvi,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret
+
     End_If
 
-    Call 'USER32.CreateDialogIndirectParamA' D$hinstance EmptyDialog &NULL Emptyproc 0
+    Call 'USER32.CreateDialogIndirectParamA' D$H.Instance EmptyDialog &NULL Emptyproc 0
     Mov D$EmptyDialogHandle eax
 
     Call 'USER32.CreateWindowExA' &WS_SIZEBOX__&WS_DLGFRAME  AnimateClass &NULL,  ; &WS_Border  &WS_BORDER
                                  &ACS_AUTOPLAY__&WS_VISIBLE__&WS_CHILD__&ACS_CENTER,
                                  4 4 200 100 D$EmptyDialogHandle,
-                                 0 D$hInstance 0
+                                 0 D$H.Instance 0
     Mov D$AnimateHandle eax
 
     Mov D$WhatDialogListPtr AviList,  D$OkDialogFlag &FALSE
@@ -566,7 +627,7 @@ DeleteAviFile:
         Call 'Kernel32.CloseHandle' D$TempoAviFileHandle
         Call 'USER32.SendMessageA' D$AnimateHandle &ACM_OPEN  &NULL TempoAviFile
         Call SetNextChoiceID
-        Call 'User32.DialogBoxIndirectParamA' D$hinstance, ChoiceBar, D$H.MainWindow, ChoiceDialogBoxProc, AviList
+        Call 'User32.DialogBoxIndirectParamA' D$H.Instance, ChoiceBar, D$H.MainWindow, ChoiceDialogBoxProc, AviList
         Call 'USER32.SendMessageA' D$AnimateHandle &ACM_STOP  &NULL &NULL
         .If D$OkDialogFlag = &VK_ESCAPE
             jmp L9>>
@@ -582,8 +643,11 @@ DeleteAviFile:
         .End_If
     .End_While
 
-    Call 'USER32.MessageBoxA' D$H.MainWindow, KillAvi, Sure, &MB_ICONQUESTION+&MB_YESNO+&MB_SYSTEMMODAL
-    If eax = &IDYES
+    Call MessageBox Sure,
+                    KillAvi,
+                    &MB_SYSTEMMODAL+&MB_ICONQUESTION+&MB_YESNO
+
+    If D$FL.MsgBoxReturn = &IDYES
         sub D$WhatDialogListPtr 4
         Mov esi D$WhatDialogListPtr, edi esi | add esi 12
         Mov eax D$WhatDialogListPtr | sub eax AviList | shr eax 2 | Mov ecx 300 | sub ecx eax
@@ -597,17 +661,23 @@ L9: Call 'USER32.DestroyWindow' D$AnimateHandle
 ret
 
 
-[NoCursor: 'No Cursor Resources in this PE' 0
- KillCursor: 'Delete this Cursor?' 0
- KillIcon: 'Delete this Icon?' 0
- TempoCursorFile: 'Cursor.$$$' 0
- CurDataPtr: W$ 0   D$ 016]
+[NoCursor: B$ "No Cursor Resources in this PE" EOS]
+[KillCursor: B$ "Delete this Cursor ?" EOS]
+[KillIcon: B$ "Delete this Icon ?" EOS]
+[TempoCursorFile: B$ "Cursor.$$$" EOS]
+[CurDataPtr: W$ 0 D$ 016]
 
 [UserCursorHandle: ?    TempoCursorFileHandle: ?]
 
 DeleteCursor:
     If D$CursorList = 0
-        Call 'USER32.MessageBoxA' D$H.MainWindow, NoCursor, Argh, &MB_OK+&MB_SYSTEMMODAL | ret
+
+        Call MessageBox Argh,
+                        NoCursor,
+                        &MB_SYSTEMMODAL&MB_USERICON
+
+        ret
+
     End_If
 
     Mov D$WhatDialogListPtr CursorList,  D$OkDialogFlag &FALSE, D$EmptyDialogHandle 0
@@ -615,7 +685,7 @@ DeleteCursor:
 
     .While B$OkDialogFlag = &FALSE
         On D$EmptyDialogHandle <> 0, Call 'User32.EndDialog' D$EmptyDialogHandle &NULL
-        Call 'USER32.CreateDialogIndirectParamA' D$hinstance EmptyDialog &NULL Emptyproc 0
+        Call 'USER32.CreateDialogIndirectParamA' D$H.Instance EmptyDialog &NULL Emptyproc 0
             Mov D$EmptyDialogHandle eax
         Call 'KERNEL32.CreateFileA' TempoCursorFile &GENERIC_WRITE, 0, 0,
                                     &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
@@ -643,7 +713,7 @@ DeleteCursor:
             pop eax
             Call 'USER32.ReleaseDC' D$EmptyDialogHandle eax
             Call SetNextChoiceID
-        Call 'User32.DialogBoxIndirectParamA' D$hinstance, ChoiceBar,
+        Call 'User32.DialogBoxIndirectParamA' D$H.Instance, ChoiceBar,
                                              D$H.MainWindow, ChoiceDialogBoxProc, CursorList
 
         .If D$OkDialogFlag = &VK_ESCAPE
@@ -660,8 +730,12 @@ DeleteCursor:
         .End_If
    .End_While
 
-   Call 'USER32.MessageBoxA' D$H.MainWindow, KillCursor, Sure, &MB_ICONQUESTION+&MB_YESNO+&MB_SYSTEMMODAL
-   If eax = &IDYES
+   Call MessageBox Sure,
+                   KillCursor,
+                   &MB_SYSTEMMODAL+&MB_ICONQUESTION+&MB_YESNO
+
+
+   If D$FL.MsgBoxReturn = &IDYES
        sub D$WhatDialogListPtr 4
        Mov esi D$WhatDialogListPtr, edi esi | add esi 12
        Mov ebx D$edi                                                ; ebx = ID
@@ -694,7 +768,13 @@ ret
 
 DeleteIcon:
     If D$IconList = 0
-        Call 'USER32.MessageBoxA' D$H.MainWindow, NoIcon, Argh, &MB_OK+&MB_SYSTEMMODAL | ret
+
+       Call MessageBox Argh,
+                       NoIcon,
+                       &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret
+
     End_If
 
     Mov D$WhatDialogListPtr IconList,  D$OkDialogFlag &FALSE, D$EmptyDialogHandle 0
@@ -704,7 +784,7 @@ DeleteIcon:
 
     .While B$OkDialogFlag = &FALSE
         On D$EmptyDialogHandle <> 0, Call 'User32.EndDialog' D$EmptyDialogHandle &NULL
-        Call 'USER32.CreateDialogIndirectParamA' D$hinstance EmptyDialog &NULL Emptyproc 0
+        Call 'USER32.CreateDialogIndirectParamA' D$H.Instance EmptyDialog &NULL Emptyproc 0
             Mov D$EmptyDialogHandle eax
         Call 'KERNEL32.CreateFileA' TempoCursorFile &GENERIC_WRITE, 0, 0,
                                     &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
@@ -736,7 +816,7 @@ DeleteIcon:
             Call 'USER32.ReleaseDC' D$EmptyDialogHandle eax
             Call SetNextChoiceID
 
-        Call 'User32.DialogBoxIndirectParamA' D$hinstance, ChoiceBar,
+        Call 'User32.DialogBoxIndirectParamA' D$H.Instance, ChoiceBar,
                                              D$H.MainWindow, ChoiceDialogBoxProc, IconList
 
         .If D$OkDialogFlag = &VK_ESCAPE
@@ -753,8 +833,11 @@ DeleteIcon:
         .End_If
    .End_While
 
-    Call 'USER32.MessageBoxA' D$H.MainWindow, KillIcon, Sure, &MB_ICONQUESTION+&MB_YESNO+&MB_SYSTEMMODAL
-    If eax = &IDYES
+    Call MessageBox Sure,
+                    KillIcon,
+                    &MB_SYSTEMMODAL+&MB_ICONQUESTION+&MB_YESNO
+
+    If D$FL.MsgBoxReturn = &IDYES
         sub D$WhatDialogListPtr 4
         Mov esi D$WhatDialogListPtr, edi esi | add esi 12
         Mov ebx D$edi                                                ; ebx = ID
@@ -776,7 +859,7 @@ ret
 
 
 ReadOtherFile:
-    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$hInstance
+    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$H.Instance
 
     Mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
     Call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
@@ -790,7 +873,13 @@ ReadOtherFile:
                                 &FILE_SHARE_READ, 0,
                                 &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-      Mov eax D$BusyFilePtr | Call MessageBox | ret  ; return to caller of caller
+
+        Call MessageBox argh,
+                        D$BusyFilePtr,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
+        ret  ; return to caller of caller
+
     Else
         Mov D$OtherSourceHandle eax
     End_If
@@ -813,7 +902,7 @@ ret
 
 
 AskForResID:
-    Call 'USER32.DialogBoxIndirectParamA' D$hinstance, OtherIdTemplate, 0, OtherIDProc, 0
+    Call 'USER32.DialogBoxIndirectParamA' D$H.Instance, OtherIdTemplate, 0, OtherIDProc, 0
 ret
 
 
@@ -828,26 +917,34 @@ Proc OtherIDProc:
 
     .If D@msg = &WM_COMMAND
        ..If D@wParam = &IDCANCEL
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
        ..Else_If D@wParam = &IDOK
            Call 'User32.GetDlgItem' D@hwnd 3 | Mov D$OtherEditHandle eax
            Call 'User32.SendMessageA' D$OtherEditHandle &WM_GETTEXTLENGTH 0 0 | inc eax
            Call 'User32.SendMessageA' D$OtherEditHandle &WM_GETTEXT eax OtherID
            TranslateAsciiToDword OtherID
            If eax > 0FFFF
-             Mov eax D$IdTooBigPtr | Call MessageBox
-           Else_If eax < 1
-             Mov eax D$IdTooSmallPtr | Call MessageBox
+
+                Call MessageBox argh,
+                                D$IdTooBigPtr,
+                                &MB_SYSTEMMODAL+&MB_USERICON
+
+            Else_If eax < 1
+
+                Call MessageBox argh,
+                                D$IdTooSmallPtr,
+                                &MB_SYSTEMMODAL+&MB_USERICON
+
            Else
              Mov edi D$OtherListPtr | stosd
              Mov eax D$OtherFilePtr | stosd
              Mov eax D$OtherFileLen | stosd
-             Call 'User32.EndDialog' D@hwnd 0
+             Call WM_CLOSE
            End_If
        ..End_If
 
     .Else_If D@msg = &WM_INITDIALOG
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Call 'User32.GetDlgItem' D@hwnd 3
         Call 'User32.SendMessageA' eax &EM_SETLIMITTEXT 5  0
            Mov esi D$OtherListPtr | On esi > D$OtherList, sub esi 12

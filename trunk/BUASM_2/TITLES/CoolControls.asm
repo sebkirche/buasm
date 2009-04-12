@@ -26,13 +26,13 @@ Proc CoolControlTB_CreateImageList:
     move D@TempBuff D$edi
 
   ; Create the images
-    Call 'User32.LoadImageA' D$hInstance, D@EnabledImage, &IMAGE_BITMAP, 0, 0, 0
+    Call 'User32.LoadImageA' D$H.Instance, D@EnabledImage, &IMAGE_BITMAP, 0, 0, 0
     If eax = 0
         Call ReportWinError {'CoolControl ToolBar CreateImageList: LoadImage (1 - Enabled)' 0}
     EndIf
     Mov D@Image eax
 
-    Call 'User32.LoadImageA' D$hInstance, D@DisabledImage, &IMAGE_BITMAP, 0, 0, 0
+    Call 'User32.LoadImageA' D$H.Instance, D@DisabledImage, &IMAGE_BITMAP, 0, 0, 0
     If eax = 0
         Call ReportWinError {'CoolControl ToolBar CreateImageList: LoadImage (2 - Disabled)' 0}
     EndIf
@@ -203,7 +203,7 @@ Proc CoolControlWin_CreateCommandTB:
         mul D@TBWidth
 
         Call 'User32.CreateWindowExA' 0, {'ToolbarWindow32' 0}, 0, D$esi+TBWIN_CMD.dwStyleDis,
-                                      0, 0, eax, 0, D@Addresse, D$esi+TBWIN_CMD.hMenuDis, D$hInstance, 0
+                                      0, 0, eax, 0, D@Addresse, D$esi+TBWIN_CMD.hMenuDis, D$H.Instance, 0
 
     pop ecx
 

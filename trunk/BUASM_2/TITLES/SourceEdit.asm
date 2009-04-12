@@ -176,7 +176,7 @@ ________________________________________________________________________________
 
 [BlankLine: B$ 32 #200, 0] [TRANSPARENT 1]
 
-[BackGroundBrushHandle: ?   DialogsBackGroundBrushHandle: ?]
+[H.DialogsBackGroundBrush: D$ ?]
 
 [Font1Handle: ?]
 ____________________________________________________________________________________________
@@ -244,14 +244,14 @@ BlankRemainders:
         Call 'USER32.GetClientRect' D$EditWindowHandle, AraseBackEdit
         move D$AraseBackEdit D$AraseBackEdit+8
         Mov eax D$XRemainder | sub D$AraseBackEdit eax
-        Call 'USER32.FillRect' D$hdc, AraseBackEdit, D$BackGroundBrushHandle
+        Call 'USER32.FillRect' D$hdc, AraseBackEdit, D$H.BackGroundBrush
     End_If
 
     If D$YRemainder <> 0
         Call 'USER32.GetClientRect' D$EditWindowHandle, AraseBackEdit
         move D$AraseBackEdit+4 D$AraseBackEdit+12
         Mov eax D$YRemainder | sub D$AraseBackEdit+4 eax
-        Call 'USER32.FillRect' D$hdc, AraseBackEdit, D$BackGroundBrushHandle
+        Call 'USER32.FillRect' D$hdc, AraseBackEdit, D$H.BackGroundBrush
     End_If
 ret
 ____________________________________________________________________________________________
@@ -278,7 +278,7 @@ InitPrintText:
 
     dec D$LineNumber | dec D$ColNumber
 
-    Mov B$TextGoingOn &FALSE | move D$NormalTextColor D$StatementColor
+    Mov B$TextGoingOn &FALSE | move D$NormalTextColor D$RVBA.Normal
     Mov B$SourceEndReached &FALSE
 ret
 
@@ -297,12 +297,12 @@ ret
 
 RemoveCaretAndUnderline:
     If D$CaretRectangle+8 <> 0
-        Call 'USER32.FillRect'  D$hdc CaretRectangle D$BackGroundBrushHandle
+        Call 'USER32.FillRect'  D$hdc CaretRectangle D$H.BackGroundBrush
         Mov D$CaretRectangle+8 0
     End_If
 
     If D$UnderLineRectangle+8 <> 0
-        Call 'USER32.FillRect' D$hdc, UnderLineRectangle, D$BackGroundBrushHandle
+        Call 'USER32.FillRect' D$hdc, UnderLineRectangle, D$H.BackGroundBrush
     End_If
 ret
 
@@ -603,7 +603,7 @@ TextOutput:
       ; Set the Color for a Chunk of Text:
 L0:     movzx eax B$ebx
         If al <> 5
-            Mov eax D$StatementColor+eax*4-4
+            Mov eax D$RVBA.Normal+eax*4-4
             push esi, ebx
                 push eax
                     Call 'GDI32.SetBkColor' D$hdc D$NormalBackColor
@@ -710,7 +710,7 @@ CharOutput:
 
     pushad
         If B$edx <> 5
-            Mov eax D$StatementColor+eax*4-4
+            Mov eax D$RVBA.Normal+eax*4-4
             push eax
                 Call 'GDI32.SetBkColor' D$hdc D$NormalBackColor
             pop eax
@@ -1726,7 +1726,7 @@ L9: ret
 
 
 ControlY:
-    If D$DebugDialogHandle <> 0
+    If D$H.DebugDialog <> 0
         Call KillDebugger | On eax = &IDNO, jmp L9>>
     End_If
 
@@ -1757,7 +1757,7 @@ ControlX:
     cmp B$BlockInside &FALSE | je L9>>
     Call ControlC
 
-L0: If D$DebugDialogHandle <> 0
+L0: If D$H.DebugDialog <> 0
         Call KillDebugger | On eax = &IDNO, jmp L9>>
     End_If
 
@@ -1901,7 +1901,7 @@ CloseToMemoryEnd: "
 ControlV:
     Call OpenClipBoard | On D$ClipBoardLen = 0, jmp L7>>
 
-    If D$DebugDialogHandle <> 0
+    If D$H.DebugDialog <> 0
         Call KillDebugger | On eax = &IDNO, jmp L9>>
     End_If
 
@@ -1968,8 +1968,12 @@ Proc ReMapSourceMemoryIfNeeded:
         add eax D$SourceLen | add eax D@Added | add eax 400
 
         ...If eax >= D$EndOfSourceMemory
-            Call 'USER32.MessageBoxA' D$H.MainWindow, ExtendMemoryString, Argh, &MB_YESNO
-            .If eax = &IDYES
+
+            Call MessageBox Argh,
+                            ExtendMemoryString,
+                            &MB_SYSTEMMODAL+&MB_USERICON+&MB_YESNO
+
+            .If D$FL.MsgBoxReturn = &IDYES
                 Call RestoreRealSource
 
               ; New User PE Memory size:

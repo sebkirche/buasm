@@ -11,7 +11,7 @@ ________________________________________________________________________________
 
 ShowTypes:
     If D$ShowTypesDialogHandle = 0
-        Call 'USER32.DialogBoxParamA' D$hInstance, 1000, &NULL, ShowTypesInfo, &NULL
+        Call 'USER32.DialogBoxParamA' D$H.Instance, 1000, &NULL, ShowTypesInfo, &NULL
     Else
         Beep
     End_If
@@ -36,12 +36,12 @@ Proc ShowTypesInfo:
     .If D@msg = &WM_COMMAND
          If D@wParam = &IDCANCEL
             Mov D$ShowTypesDialogHandle 0
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
          End_If
 
     .Else_If D@msg = &WM_INITDIALOG
         move D$ShowTypesDialogHandle D@hwnd
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Call 'USER32.SetDlgItemTextA' D@hwnd 100 Win32Types
         Call 'USER32.SendMessageA' D@hwnd &WM_SETTEXT &NULL TypesTitle
         Mov B$FirstCTLCOLOREDIT &TRUE
@@ -51,8 +51,8 @@ Proc ShowTypesInfo:
             Call 'USER32.SendMessageA' D@lParam &EM_SETSEL 0 0
             Mov B$FirstCTLCOLOREDIT &FALSE
         End_If
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+        Call 'GDI32.SetBkColor' D@wParam D$RVBA.DialogsBackgnd
+        popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     .Else
         popad | Mov eax &FALSE | jmp L9>
@@ -149,7 +149,7 @@ L0:             lodsb | Mov ah B$edi | inc edi | or ah 020 | xor ah 020 ; Source
 L1:             popad | jne L3>
                 If B$esi+ebx = ' '
                     On D$ShowMnemonicHandle > 0, Call 'USER32.EndDialog' D$ShowMnemonicHandle 0
-                    Call 'USER32.DialogBoxParamA' D$hInstance 1000  &NULL ShowMnemonicInfo  &NULL
+                    Call 'USER32.DialogBoxParamA' D$H.Instance 1000  &NULL ShowMnemonicInfo  &NULL
                     Mov B$MnemonicHelpFound &TRUE | jmp L9>
                 End_If
 L3:
@@ -231,12 +231,12 @@ Proc ShowMnemonicInfo:
 
     .If D@msg = &WM_COMMAND
          If D@wParam = &IDCANCEL
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
          End_If
 
     .Else_If D@msg = &WM_INITDIALOG
         move D$ShowMnemonicHandle D@hwnd
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Call 'USER32.SetDlgItemTextA' D@hwnd 100 OpcodesListTitle
         Call 'USER32.GetDlgItem' D@hwnd 100
         Call 'USER32.SendMessageA' eax &EM_LINESCROLL 0  D$MnemonicIndex
@@ -248,8 +248,8 @@ Proc ShowMnemonicInfo:
             Call 'USER32.SendMessageA' D@lParam &EM_SETSEL 0 0
             Mov B$FirstCTLCOLOREDIT &FALSE
         End_If
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+        Call 'GDI32.SetBkColor' D@wParam D$RVBA.DialogsBackgnd
+        popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     .Else
         popad | Mov eax &FALSE | jmp L9>
@@ -275,11 +275,11 @@ Proc ShowApiInfo:
 
     .If D@msg = &WM_COMMAND
          If D@wParam = &IDCANCEL
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
          End_If
 
     .Else_If D@msg = &WM_INITDIALOG
-        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call SetIconDialog
         Call 'USER32.SetDlgItemTextA' D@hwnd 100  OneApiInfo
         Call 'USER32.SendMessageA' D@hwnd &WM_SETTEXT 0 ApiTitle
         Mov B$FirstCTLCOLOREDIT &TRUE
@@ -289,8 +289,8 @@ Proc ShowApiInfo:
             Call 'USER32.SendMessageA' D@lParam &EM_SETSEL 0 0
             Mov B$FirstCTLCOLOREDIT &FALSE
         End_If
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+        Call 'GDI32.SetBkColor' D@wParam D$RVBA.DialogsBackgnd
+        popad | Mov eax D$H.DialogsBackGroundBrush | jmp L9>
 
     .Else
         popad | Mov eax &FALSE | jmp L9>
@@ -1341,7 +1341,7 @@ DataToStructure:
     If D$DataToStructureHandle > 0
         Beep
     Else
-        Call 'USER32.DialogBoxParamA' D$hInstance, 32500, &NULL, DataToStructureProc, &NULL
+        Call 'USER32.DialogBoxParamA' D$H.Instance, 32500, &NULL, DataToStructureProc, &NULL
     End_If
 ret
 
@@ -1359,7 +1359,7 @@ Proc DataToStructureProc:
         Mov eax D@wParam | and eax 0FFFF
         If eax = &IDCANCEL
 L5:         VirtualFree D$DataTextTable, D$StructureTextTable
-            Call 'User32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
         Else_If eax = &IDOK
             Call SaveStructureToClipBoard | jmp L5<
         Else_If eax = &IDHELP

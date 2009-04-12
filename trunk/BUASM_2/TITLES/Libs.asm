@@ -120,8 +120,11 @@ Proc OpenLibFile:
 
     If eax = 0
         Call LibScanDialog_EnableContinueMenu &FALSE
-        Call 'USER32.MessageBoxA' 0, {B$ "Dumping process aborted !!!", D$ CRLF2, B$ "The file you are trying to load is empty (The size of the file is Zero).", 0}, {'LibScan', 0},
-                                  &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
+
+        Call MessageBox {B$ "LIBSCAN:" EOS},
+                        {B$ "Dumping process aborted !!!" D$ CRLF2 B$ "The file you are trying to load is empty (The size of the file is Zero)." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
+
     Else
         add eax 10
 
@@ -295,85 +298,109 @@ Proc ParseIdentifiedLibs:
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
         Call LibScanDialog_EnableContinueMenu &FALSE
         Call WriteObjectTypeinTitle D@hwnd, {"Delphi Kilyx 1", 0}
-        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi Kilyx 1 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
-                                  &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
 
-    .Else_If D$ValidLib = DCU2_KILYX_OBJ_FILE
+        Call MessageBox {B$ "LIBSCAN" EOS},
+                        {B$ "Delphi Kilyx 1 (DCU) Signature was Found.." D$ CRLF2 B$ "Sorry, but delphi objects are not handled by this dumper yet." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
+
+      .Else_If D$ValidLib = DCU2_KILYX_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
         Call LibScanDialog_EnableContinueMenu &FALSE
         Call WriteObjectTypeinTitle D@hwnd, {"Delphi Kilyx 2", 0}
-        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi Kilyx2 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
-                                  &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
+
+        Call MessageBox {B$ "LIBSCAN" EOS},
+                        {B$ "Delphi Kilyx2 (DCU) Signature was Found.." D$ CRLF2 B$ "Sorry, but delphi objects are not handled by this dumper yet." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
 
     .Else_If D$ValidLib = DCU3_KILYX_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
         Call LibScanDialog_EnableContinueMenu &FALSE
         Call WriteObjectTypeinTitle D@hwnd, {"Delphi Kilyx 3", 0}
-        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi Kilyx3 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
-                                  &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
+
+        Call MessageBox {B$ "LIBSCAN" EOS},
+                        {B$ "Delphi Kilyx3 (DCU) Signature was Found.." D$ CRLF2 B$ "Sorry, but delphi objects are not handled by this dumper yet." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
 
     .Else_If D$ValidLib = DCU2_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
         Call LibScanDialog_EnableContinueMenu &FALSE
         Call WriteObjectTypeinTitle D@hwnd, {"Delphi 2", 0}
-        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi 2 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
-                                  &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
+
+        Call MessageBox {B$ "LIBSCAN" EOS},
+                        {B$ "Delphi 2 (DCU) Signature was Found.." D$ CRLF2 B$ "Sorry, but delphi objects are not handled by this dumper yet." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
 
     .Else_If D$ValidLib = DCU3_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
         Call LibScanDialog_EnableContinueMenu &FALSE
         Call WriteObjectTypeinTitle D@hwnd, {"Delphi 3", 0}
-        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi 3 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
-                                  &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
+
+        Call MessageBox {B$ "LIBSCAN" EOS},
+                        {B$ "Delphi 3 (DCU) Signature was Found.." D$ CRLF2 B$ "Sorry, but delphi objects are not handled by this dumper yet." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
 
     .Else_If D$ValidLib = DCU4_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
         Call LibScanDialog_EnableContinueMenu &FALSE
         Call WriteObjectTypeinTitle D@hwnd, {"Delphi 4", 0}
-        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi 4 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
-                                  &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
+
+        Call MessageBox {B$ "LIBSCAN" EOS},
+                        {B$ "Delphi 4 (DCU) Signature was Found.." D$ CRLF2 B$ "Sorry, but delphi objects are not handled by this dumper yet." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
 
     .Else_If D$ValidLib = DCU5_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
         Call LibScanDialog_EnableContinueMenu &FALSE
         Call WriteObjectTypeinTitle D@hwnd, {"Delphi 5", 0}
-        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi 5 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
-                                  &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
+
+        Call MessageBox {B$ "LIBSCAN" EOS},
+                        {B$ "Delphi 5 (DCU) Signature was Found.." D$ CRLF2 B$ "Sorry, but delphi objects are not handled by this dumper yet." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
 
     .Else_If D$ValidLib = DCU6_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
         Call LibScanDialog_EnableContinueMenu &FALSE
         Call WriteObjectTypeinTitle D@hwnd, {"Delphi 6", 0}
-        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi 6 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
-                                  &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
+
+        Call MessageBox {B$ "LIBSCAN" EOS},
+                        {B$ "Delphi 6 (DCU) Signature was Found.." D$ CRLF2 B$ "Sorry, but delphi objects are not handled by this dumper yet." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
 
     .Else_If D$ValidLib = DCU7_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
         Call LibScanDialog_EnableContinueMenu &FALSE
         Call WriteObjectTypeinTitle D@hwnd, {"Delphi 7", 0}
-        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi 7 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
-                                  &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
+
+        Call MessageBox {B$ "LIBSCAN" EOS},
+                        {B$ "Delphi 7 (DCU) Signature was Found.." D$ CRLF2 B$ "Sorry, but delphi objects are not handled by this dumper yet." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
 
     .Else_If D$ValidLib = OMF_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
         Call LibScanDialog_EnableContinueMenu &FALSE
         Call WriteObjectTypeinTitle D@hwnd, {"OMF Object", 0}
-        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Object Module Format (OMF) Signature was Found..", D$ CRLF2, B$ "Sorry, but OMF objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
-                                  &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
+
+        Call MessageBox {B$ "LIBSCAN" EOS},
+                        {B$ "Object Module Format (OMF) Signature was Found.." D$ CRLF2 B$ "Sorry, but OMF objects are not handled by this dumper yet." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
 
     .Else_If D$ValidLib = PDB_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
         Call LibScanDialog_EnableContinueMenu &FALSE
         Call WriteObjectTypeinTitle D@hwnd, {"Pdb File", 0}
-        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Program DataBase (Pdb) Signature was Found..", D$ CRLF2, B$ "Sorry, but PDB files are not handled by this dumper yet.", 0}, {'LibScan', 0},
-                                  &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
+
+        Call MessageBox {B$ "LIBSCAN" EOS},
+                        {B$ "Program DataBase (Pdb) Signature was Found.." D$ CRLF2 B$ "Sorry, but PDB files are not handled by this dumper yet." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
 
     .Else_If D$ValidLib = DBG_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
         Call LibScanDialog_EnableContinueMenu &FALSE
         Call WriteObjectTypeinTitle D@hwnd, {"Dbg File", 0}
-        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Degug Format (dbg) Signature was Found..", D$ CRLF2, B$ "Sorry, but dbg files are not handled by this dumper yet.", 0}, {'LibScan', 0},
-                                  &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
+
+        Call MessageBox {B$ "LIBSCAN" EOS},
+                        {B$ "Degug Format (dbg) Signature was Found.." D$ CRLF2 B$ "Sorry, but dbg files are not handled by this dumper yet." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
 
     .End_If
     popad
@@ -10788,15 +10815,30 @@ Proc WriteRawDataDebugSThunkStart1632:
 
     ; Below are some members that i have no files to check, but accordying to the documentation, it seems correct.
     .If D@OrdinalValue = &CV4_THUNK32_ADJUSTOR
-        push edi | push esi | Call 'USER32.MessageBoxA' 0, {"CV4 - S_THUNK32 / Variant. Please, send this file to us to we check if the CV4 structure is correct", 0}, {"Attention !!!!", 0}, &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL | pop esi | pop edi
+
+        Call MessageBox {B$ "ATTENTION !:" EOS},
+                        {B$ "CV4 - S_THUNK32 / Variant. Please, send this file to us to we check if the CV4 structure is correct" EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
+
         Call WriteRawDataDebugSThunkStart1632VariantItem CVThunkStart1632VariantAdjustorDelta, {': W$ ', 0}
         Call WriteRawDataDebugSThunkStart1632VariantItem CVThunkStart1632VariantAdjustorTargetFunctionNameLen, {': B$ ', 0}
         Call WriteRawDataDebugSThunkStart1632VariantItem CVThunkStart1632VariantAdjustorTargetFunctionName, {': B$ ', 0}
+
     .Else_If D@OrdinalValue = &CV4_THUNK32_VCALL
-        push edi | push esi | Call 'USER32.MessageBoxA' 0, {"CV4 - S_THUNK32 / Variant. Please, send this file to us to we check if the CV4 structure is correct", 0}, {"Attention !!!!", 0}, &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL | pop esi | pop edi
+
+        Call MessageBox {B$ "ATTENTION !:" EOS},
+                        {B$ "CV4 - S_THUNK32 / Variant. Please, send this file to us to we check if the CV4 structure is correct" EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONWARNING
+
         Call WriteRawDataDebugSThunkStart1632VariantItem CVThunkStart1632VariantVCallVTableDisplacement, {': W$ ', 0}
+
     .Else_If D@OrdinalValue = &CV4_THUNK32_PCODE
-        push edi | push esi | Call 'USER32.MessageBoxA' 0, {"CV4 - S_THUNK32 / Variant. Please, send this file to us to we check if the CV4 structure is correct", 0}, {"Attention !!!!", 0}, &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL | pop esi | pop edi
+
+       Call MessageBox {B$ "ATTENTION !:" EOS},
+                       {B$ "CV4 - S_THUNK32 / Variant. Please, send this file to us to we check if the CV4 structure is correct" EOS},
+                       &MB_SYSTEMMODAL+&MB_ICONWARNING
+
+
         Call WriteRawDataDebugSThunkStart1632VariantItem CVThunkStart1632VariantPCodeSegment, {': W$ ', 0}
         Call WriteRawDataDebugSThunkStart1632VariantItem CVThunkStart1632VariantPCodeOffset, {': D$ ', 0}
     .End_If
@@ -13810,51 +13852,40 @@ Proc LibScan_ErrManager:
 
     .If eax = IMP_OBJ_RESBIT_ERR
 
+        Call MessageBox {B$ "CORRUPTED LIBRARY:" EOS},
+                        {B$ "The reserved bits for the ImpObjHdr.Type member of the structure IMPORT_OBJECT_HEADER
+on this library are not zero.
 
-        Call 'USER32.MessageBoxA' 0, {"CORRUPTED LIBRARY !!!
-
-The reserved Bits for the ImpObjHdr.Type member of the structure IMPORT_OBJECT_HEADER
-on this Library are not Zero.
-
-RosAsm can continue loading this file, but we will set the reserved Bits to ZERO to you be able to load this safelly.
+BUAsm can continue loading this file, but we will set the reserved bits to ZERO to you be able to load this safelly.
 
 * Press the YES button to set the necessary bits to Zero.
 * Press the NO button to end analysing this file.
   
-If after the automatically fix, this file still have errors, please, report this error to the author at:
-  Betov@free.fr
+If after the automatically fix, this file still have errors, please,
+report this error to the Development Team.  
+" EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONEXCLAMATION+&MB_YESNO
 
-Or report this error to the Development Team at the main RosAsm Forum.
-
-Many thanks in advance. Betov.
-  
-", 0}, {'Corrupted Library', 0}, &MB_SYSTEMMODAL__&MB_ICONEXCLAMATION__&MB_YESNO
-
-            If eax = &IDNO
+            If D$FL.MsgBoxReturn = &IDNO
                 Mov eax &FALSE
-            Else_If eax = &IDYES
+            Else_If D$FL.MsgBoxReturn = &IDYES
                 Mov eax &TRUE
             End_If
 
     .Else_If eax = IMP_OBJ_UNKTYPE_ERR
 
-          Call 'USER32.MessageBoxA' D$H.MainWindow {"UNKNOWN TYPE !!!.
+            Call MessageBox {B$ "UNKNOWN TYPE !:" EOS},
+                            {B$ "The reserved Bits for the ImpObjHdr.Type member of the structure IMPORT_OBJECT_HEADER
+on this library are of a Unknown Type.
 
-The reserved Bits for the ImpObjHdr.Type member of the structure IMPORT_OBJECT_HEADER
-on this Library are of a Unknown Type.
-
-The regular Type values of this member can not be 3, 7, 11, 15 to 31.
+The regular type values of this member can not be 3, 7, 11, 15 to 31.
 
 Your file have one of those unknown types.
 
-RosAsm can't continue loading this file.
+BUAsm can't continue loading this file.
 
-Please, report this error to the author, and send this file to the author at:
-  Betov@free.fr
-
-Or report this error to the Development Team at the main RosAsm Forum.
-
-Many thanks in advance. Betov." 0} {"Unknown Type" 0} &MB_SYSTEMMODAL__&MB_ICONEXCLAMATION
+Please, report this error to the Development Team." EOS},
+             &MB_SYSTEMMODAL+&MB_ICONEXCLAMATION
 
             Mov eax &FALSE
 
@@ -15792,22 +15823,19 @@ ________________________________________________________________________________
 Proc Tab2Proc:
     Arguments @hWin, @uMsg, @wParam, @lParam
 
-    pushad
-
     If D@uMsg = &WM_INITDIALOG
         Call 'USER32.SendMessageW' D@lParam, &EM_SETSEL, 0-1, 0
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
+        Call 'GDI32.SetBkColor' D@wParam D$RVBA.DialogsBackgnd
+        popad | Mov eax D$H.DialogsBackGroundBrush | ExitP
     Else_If D@uMsg = &WM_NOTIFY
         Call LibScanDialog_OnNotify D@hWin, D@lParam
     Else_If D@uMsg = &WM_CTLCOLOREDIT
-        Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
+        Call WM_CTLCOLOREDIT | Return
     Else
-        popad | Mov eax &FALSE | ExitP
+        Return &FALSE
     End_If
 
-    popad | Mov eax &TRUE
+    Mov eax &TRUE
 EndP
 
 
@@ -15818,24 +15846,25 @@ EndP
 
 
 Proc Tab1Proc:
+
     Arguments @hWin, @uMsg, @wParam, @lParam
 
-    pushad
+    If D@uMsg = &WM_NOTIFY
 
-    .If D@uMsg = &WM_INITDIALOG
-        Call 'USER32.SendMessageW' D@lParam, &EM_SETSEL, 0-1, 0
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
-    .Else_If D@uMsg = &WM_NOTIFY
         Call LibScanDialog_OnNotify D@hWin, D@lParam
-    .Else_If D@uMsg = &WM_CTLCOLOREDIT
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
-    .Else
-        popad | Mov eax &FALSE | ExitP
-    .End_If
 
-    popad | Mov eax &TRUE
+    Else_If D@uMsg = &WM_CTLCOLOREDIT
+
+        Call WM_CTLCOLOREDIT | Return
+
+    Else
+
+        Return &FALSE
+
+    End_If
+
+    Mov eax &TRUE
+
 EndP
 
 
@@ -15906,15 +15935,13 @@ ________________________________________________________________________________
 Proc ScanLibFile:
     Arguments @hwnd, @msg, @wParam, @lParam
 
-     pushad
-
-    ...If D@msg = &WM_COMMAND                  ; User action
+     ...If D@msg = &WM_COMMAND                  ; User action
 
         ..If_Or D@wParam = &IDCANCEL, D@wParam = M03_Exit  ; User clicks on upper right [X] or Exited through the menu
             Call LibScanCleanUp D@hwnd
             Call 'COMCTL32.ImageList_Destroy' D$LibScanDialog_ImageList
             Call 'COMCTL32.ImageList_Destroy' D$LibScanTab_ImageList
-            Call 'USER32.EndDialog' D@hwnd 0
+            Call WM_CLOSE
             Mov D$LibScanToolbarHandle 0
             Mov B$LibScanIsFileOpen &FALSE
 
@@ -16028,7 +16055,7 @@ L5:
 
             Mov D$ChoosenLibFile 0
             move D$OPENLIB@hwndOwner D@hwnd
-            move D$OPENLIB@hInstance D$hInstance
+            move D$OPENLIB@hInstance D$H.Instance
             move D$OPENLIB@lpstrFilter LibsFileFilter
             Call 'COMDLG32.GetOpenFileNameA' OPENLIB
 
@@ -16043,15 +16070,15 @@ L5:
                 Call 'USER32.SendMessageA', D$hlist, &LVM_DELETEALLITEMS, 0, lvi
 
                 Call OpenLibFile D@hwnd
-                On D$LibFileLength = 0, jmp L9>> ; Exit when the file size is 0.
+                On D$LibFileLength = 0 Return ; Exit when the file size is 0.
 
                 Call LibSignatureCheck
 
                 If D$ValidLib = UNKNOWN_LIB_FILE
                     ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
                     Call LibScanDialog_EnableContinueMenu &FALSE
-                    Call 'USER32.DialogBoxParamA' D$hinstance, IDD_LIBSCANWARNINGMSG, D@hwnd, LibScanWarning, &NULL
-                    jmp L9>>
+                    Call 'USER32.DialogBoxParamA' D$H.Instance, IDD_LIBSCANWARNINGMSG, D@hwnd, LibScanWarning, &NULL
+                    Return
                 End_If
 
                 Call ParseIdentifiedLibs D@hwnd
@@ -16064,7 +16091,7 @@ L5:
                       D$ValidLib = DCU5_OBJ_FILE, D$ValidLib = DCU6_OBJ_FILE,
                       D$ValidLib = DCU7_OBJ_FILE, D$ValidLib = OMF_OBJ_FILE,
                       D$ValidLib = PDB_OBJ_FILE, D$ValidLib = DBG_OBJ_FILE
-                    jmp L9>>
+                    Return
                 End_If
             .End_If
 
@@ -16106,10 +16133,10 @@ L5:
         Call CoolControlDlg_CreateTab D@hwnd, IDC_TABCTRL, hTab, LibScanTabControl
 
         ;Create the tab dialogs
-        Call 'user32.CreateDialogParamA' D$hInstance IDD_TAB1 D$hTab Tab1Proc 0
+        Call 'user32.CreateDialogParamA' D$H.Instance IDD_TAB1 D$hTab Tab1Proc 0
         Mov D$hTabDlg1 eax
 
-        Call 'user32.CreateDialogParamA' D$hInstance IDD_TAB2 D$hTab Tab2Proc 0
+        Call 'user32.CreateDialogParamA' D$H.Instance IDD_TAB2 D$hTab Tab2Proc 0
         Mov D$hTabDlg2 eax
 
 
@@ -16131,9 +16158,9 @@ L5:
         Call SetupListview, D$hList
         Call CoolControl_LVBeginSort ListViewLibSort, SortDecimal, D$hlist, 1
 ;;
-        Call 'user32.CreateDialogParamA' D$hInstance IDD_TAB3 D$hTab Tab3Proc 0
+        Call 'user32.CreateDialogParamA' D$H.Instance IDD_TAB3 D$hTab Tab3Proc 0
         Mov D$hTabDlg3 eax
-        Call 'user32.CreateDialogParamA' D$hInstance IDD_TAB4 D$hTab Tab4Proc 0
+        Call 'user32.CreateDialogParamA' D$H.Instance IDD_TAB4 D$hTab Tab4Proc 0
         Mov D$hTabDlg4 eax
 ;;
 
@@ -16142,20 +16169,22 @@ L5:
         Call LibScanCleanUp D@hwnd
         Call 'COMCTL32.ImageList_Destroy' D$LibScanDialog_ImageList
         Call 'COMCTL32.ImageList_Destroy' D$LibScanTab_ImageList
-        Call 'USER32.EndDialog' D@hwnd &NULL
+        Call WM_CLOSE
         Mov D$LibScanToolbarHandle 0
         Mov B$LibScanIsFileOpen &FALSE
 
     ...Else_If D@msg = &WM_CTLCOLOREDIT
-        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
+
+        Call WM_CTLCOLOREDIT | Return
 
     ...Else
-        popad | Mov eax &FALSE | ExitP
+
+        Return &FALSE
 
     ...End_If
 
-L9: popad | Mov eax &TRUE
+    Mov eax &TRUE
+
 EndP
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -16207,7 +16236,11 @@ Proc SaveOneObjectFile:
     If eax <> 0-1
         Call SaveSingleObjectFileAs D@hwnd, eax
     Else
-        Call 'user32.MessageBoxA' D@hwnd, {B$ "No field selected or empty fields.", D$ CRLF2, B$ "You must select one field in the ListControl to allow exporting the Selected Object file.", 0}, {"Attention !", 0}, &MB_ICONEXCLAMATION
+
+        Call MessageBox {B$ "ATTENTION !:" EOS},
+                        {B$ "No field selected or empty fields." D$ CRLF2 B$ "You must select one field in the ListControl to allow exporting the Selected Object file." EOS},
+                        &MB_SYSTEMMODAL+&MB_ICONEXCLAMATION
+
     End_If
 
     popad
@@ -16237,7 +16270,7 @@ Proc SaveSingleObjectFileAs:
     Mov D$ChoosenLibFile 0
     move D$SAVELIB.lpstrFile ObjSaveFilter
     move D$SAVELIB.hwndOwner D@hwnd
-    move D$SAVELIB.hInstance D$hInstance
+    move D$SAVELIB.hInstance D$H.Instance
     move D$SAVELIB.lpstrFilter ObjSaveFileFilter
     Call 'Comdlg32.GetSaveFileNameA' SAVELIB
 
@@ -16429,7 +16462,7 @@ Proc SaveLibFileAs:
     Mov D$ChoosenLibFile 0
     move D$SAVELIB.lpstrFile LibSaveFilter
     move D$SAVELIB.hwndOwner D@hwnd
-    move D$SAVELIB.hInstance D$hInstance
+    move D$SAVELIB.hInstance D$H.Instance
     move D$SAVELIB.lpstrFilter LibSaveFileFilter
     Call 'Comdlg32.GetSaveFileNameA' SAVELIB
 
@@ -16480,9 +16513,10 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 Proc SaveLibFile:
-    Arguments @OutPut, @OutPutSize, @FileFilter
 
-    pushad
+    Arguments @OutPut,
+              @OutPutSize,
+              @FileFilter
 
     Call 'KERNEL32.CreateFileA' D@FileFilter, &GENERIC_WRITE,
                                 &FILE_SHARE_READ, &NULL, &CREATE_ALWAYS,
@@ -16491,15 +16525,19 @@ Proc SaveLibFile:
     Mov D$LibFileHandle eax
 
     If eax = &INVALID_HANDLE_VALUE
-        Mov eax D$BusyFilePtr | Call MessageBox | popad | ret
+
+        Call MessageBox argh,
+                        D$BusyFilePtr,
+                        &MB_SYSTEMMODAL+&MB_USERICON
+
+        Return
+
     End_If
 
     Mov D$DestinationHandle eax, D$NumberOfReadBytes 0
 
     Call 'KERNEL32.WriteFile' D$DestinationHandle, D@OutPut, D@OutPutSize, NumberOfReadBytes  0
     Call 'KERNEL32.CloseHandle' D$DestinationHandle | Mov D$DestinationHandle 0
-
-    popad
 
 EndP
 ____________________________________________________________________________________________
@@ -16863,7 +16901,7 @@ ________________________________________________________________________________
 ; Tag Dialog 20
 
 LibScanner:
-    Call 'USER32.DialogBoxParamA' D$hinstance, IDD_MAINLIB, &NULL, ScanLibFile, &NULL
+    Call 'USER32.DialogBoxParamA' D$H.Instance, IDD_MAINLIB, &NULL, ScanLibFile, &NULL
 ret
 
 ____________________________________________________________________________________________
@@ -16894,7 +16932,7 @@ Proc LibScanWarning:
 
         Call 'user32.GetDlgItem' D@hwnd IDC_LIBWARNING_SHOWICON ; Get the handle of the Static Image
         Mov D$LibWarningStaticImage eax
-        Call 'USER32.LoadBitmapA' D$hInstance, IDB_LIBWARNING_BITMAP
+        Call 'USER32.LoadBitmapA' D$H.Instance, IDB_LIBWARNING_BITMAP
         Mov D$LibScanhIcon eax
 
         Call 'user32.SendMessageA' D$LibWarningStaticImage, &STM_SETIMAGE, &IMAGE_BITMAP, D$LibScanhIcon
@@ -16930,12 +16968,12 @@ Proc LibScanWarning:
 
     ..Else_If D@msg = &WM_CLOSE
         Call ClearBuffer LibScanHexaMsg, 256
-        Call 'User32.EndDialog' D@hwnd &NULL
+        Call WM_CLOSE
 
     ..Else_If D@msg = &WM_COMMAND
         .If D@wParam = &IDOK
             Call ClearBuffer LibScanHexaMsg, 256
-            Call 'User32.EndDialog' D@hwnd &NULL
+            Call WM_CLOSE
          .End_If
 
     ..Else

@@ -223,9 +223,13 @@ L1: repne scasb | jne L9>>
                 add ebx 4
                 inc D$NumberOfTitles
                 If ebx = TitleTableEnd
-                    Call 'USER32.MessageBoxA', 0, {'Too many TITLEs', 0},
-                                                  {'BuildTitleTable', 0}, 0
+
+                    Call MessageBox {B$ "BUILD TITLE TABLE:" EOS},
+                                    {B$ "Too many TITLEs" EOS},
+                                    &MB_SYSTEMMODAL+&MB_USERICON
+
                     sub ebx 4
+
                 End_If
 
 L2:             On ecx > 0, jmp L0<<
@@ -483,7 +487,7 @@ ret
 CreateTitleTab:
     Call 'USER32.CreateWindowExA' 0, TitleTabWindowTitle, &NULL,
                                   TITLEWINDOWSTYLE, 0, 0, 0, 0,
-                                  D$H.MainWindow, &NULL, D$hInstance, &NULL
+                                  D$H.MainWindow, &NULL, D$H.Instance, &NULL
 
     Mov D$TitleWindowHandle eax
 
