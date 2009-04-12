@@ -29,7 +29,7 @@ ________________________________________________________________________________
 [WaveTypeStrLen: 5    WaveTypeStr: B$ 'WAVE', 0]
 
 ClearCustomList:
-    mov edi CustomList, eax 0, ecx MAXRESOURCE | rep stosd
+    Mov edi CustomList, eax 0, ecx MAXRESOURCE | rep stosd
 ret
 
 ;;
@@ -53,10 +53,10 @@ ret
 Proc ReadRosAsmResources:
 
     pushad
-        call ClearCustomList
-        mov D$RsrcType 0
-        call FillCustomListFromResourceTree D$UserPEStartOfResources, CustomList
-        call CopyStandarTypeResources
+        Call ClearCustomList
+        Mov D$RsrcType 0
+        Call FillCustomListFromResourceTree D$UserPEStartOfResources, CustomList
+        Call CopyStandarTypeResources
     popad
 
 EndP
@@ -66,13 +66,13 @@ Proc FillCustomListFromResourceTree: ; 'ResourcesStub' For infos.
     Local @Array
     Uses esi, ebx, eax
 
-    mov esi D@Pointer, eax 0, edi D@Output
+    Mov esi D@Pointer, eax 0, edi D@Output
 
     push esi
       ; add ImgResDir.NumberOfNamedEntries to ImgResDir.NumberOfIdEntries
       ; and copy the result to N:
         add esi ImgResDir.NumberOfNamedEntriesDis
-        lodsw | mov D@Array eax
+        lodsw | Mov D@Array eax
         lodsw | add D@Array eax
     pop esi
 
@@ -83,20 +83,20 @@ Proc FillCustomListFromResourceTree: ; 'ResourcesStub' For infos.
           ; We need to see if we have a Unicode String Name or a ID
 L0:
             lodsd ; load the name ID to eax
-            mov D$RsrcTypeStringLen 0
-            mov edx eax
+            Mov D$RsrcTypeStringLen 0
+            Mov edx eax
 
-            mov D$edi+CustomList.TypeDis edx
+            Mov D$edi+CustomList.TypeDis edx
             If D$RsrcType = 0
-                mov D$RsrcType edx
+                Mov D$RsrcType edx
             End_If
 
             add edi 4
 
             Test_If eax 08000_0000 ; If it is a named ID, load th resource strings
                 push esi, edi
-                    mov esi eax, edi RsrcTypeString, ebx RsrcTypeStringLen
-                    call LoadRsrcIDString
+                    Mov esi eax, edi RsrcTypeString, ebx RsrcTypeStringLen
+                    Call LoadRsrcIDString
                 pop edi, esi
 
             Test_End
@@ -106,7 +106,7 @@ L0:
 
             .Test_If eax 08000_0000 ; If the high bit (0x80000000) is set this is a node
                 xor eax 08000_0000 | add eax D$UserPEStartOfResources
-                call FillCustomListFromResourceTree eax edi
+                Call FillCustomListFromResourceTree eax edi
 
                 .If D@Array > 1
                   ; let´s search from the rest of the array IMAGE_RESOURCE_DIRECTORY_ENTRY.
@@ -122,20 +122,20 @@ L0:
                     End_If
                     jmp L0<<
                 .Else_If D@Array = 1
-                    mov D$RsrcType 0
+                    Mov D$RsrcType 0
                 .End_If
 
             .Test_Else ; If the high bit (0x80000000) is not set this is a leaf
                 ; Get the size and address of the data
                 add eax D$UserPEStartOfResources
-                mov esi eax
+                Mov esi eax
                 lodsd | sub eax D$ResourcesRVA| add eax D$UserPEStartOfResources
                 add edi 4
-                mov ecx D$esi
-                mov D$edi ecx ; copy it to CustomList.SizeDis
+                Mov ecx D$esi
+                Mov D$edi ecx ; copy it to CustomList.SizeDis
                 pushad
-                    call ReadResource
-                    mov D$edi-4 eax ; copy the read address to CustomList.PointerDis
+                    Call ReadResource
+                    Mov D$edi-4 eax ; copy the read address to CustomList.PointerDis
                 popad
             .Test_End
 
@@ -149,19 +149,19 @@ ________________________________________________________________________________
 
 Proc CopyStandarTypeResources:
 
-    mov esi CustomList, edi esi, D$AviTypeDir 0, D$WaveTypeDir 0
+    Mov esi CustomList, edi esi, D$AviTypeDir 0, D$WaveTypeDir 0
 L1: cmp D$esi 0 | je l5>>
     lodsd
-    mov D$RsrcTypeStringLen 0
+    Mov D$RsrcTypeStringLen 0
     test eax 08000_0000 | jz L4>
     push esi, edi
-        mov esi eax, edi RsrcTypeString, ebx RsrcTypeStringLen
-        call LoadRsrcIDString
+        Mov esi eax, edi RsrcTypeString, ebx RsrcTypeStringLen
+        Call LoadRsrcIDString
     pop edi, esi
 
     if D$AviTypeDir = 0
         push esi, edi, ecx
-            mov esi AviTypeStr, edi RsrcTypeString, ecx D$AviTypeStrLen
+            Mov esi AviTypeStr, edi RsrcTypeString, ecx D$AviTypeStrLen
             repe cmpsb
         pop ecx, edi, esi
         je L2>
@@ -169,47 +169,47 @@ L1: cmp D$esi 0 | je l5>>
 
     if D$WaveTypeDir = 0
         push esi, edi, ecx
-            mov esi WaveTypeStr, edi RsrcTypeString, ecx D$WaveTypeStrLen
+            Mov esi WaveTypeStr, edi RsrcTypeString, ecx D$WaveTypeStrLen
             repe cmpsb
         pop ecx, edi, esi
         je L3>
     endif
 
 L4: add esi 16 | jmp L1<
-L2: mov D$AviTypeDir eax | jmp L4<
-L3: mov D$WaveTypeDir eax | jmp L4<
+L2: Mov D$AviTypeDir eax | jmp L4<
+L3: Mov D$WaveTypeDir eax | jmp L4<
 L5:
 
-    call FillResourceTypeList CustomList, AviList, AviListPtr, D$AviTypeDir, MAXAVI
-    call FillResourceTypeList CustomList, WaveList, WaveListPtr, D$WaveTypeDir, MAXWAVE
-    call FillResourceTypeList CustomList, CursorList, CursorListPtr, &RT_CURSOR, MAXCURSOR
-    call FillResourceTypeList CustomList, BitmapList, BitmapListPtr, &RT_BITMAP, MAXBITMAP
-    call FillResourceTypeList CustomList, MenuList, MenuListPtr, &RT_MENU, MAXMENU
-    call FillResourceTypeList CustomList, DialogList, DialogListPtr, &RT_DIALOG, MAXDIALOG
-    call FillResourceTypeList CustomList, StringsList, StringsListPtr, &RT_STRING, MAXSTRINGS
-    call FillResourceTypeList CustomList, RCdataList, RCdataListPtr, &RT_RCDATA, MAXRCDATA
-    call FillResourceTypeList CustomList, GroupCursorList, GroupCursorListPtr, &RT_GROUP_CURSOR, MAXCURSOR
-    call FillResourceTypeList CustomList, IconList, IconListPtr, &RT_ICON, MAXICON
+    Call FillResourceTypeList CustomList, AviList, AviListPtr, D$AviTypeDir, MAXAVI
+    Call FillResourceTypeList CustomList, WaveList, WaveListPtr, D$WaveTypeDir, MAXWAVE
+    Call FillResourceTypeList CustomList, CursorList, CursorListPtr, &RT_CURSOR, MAXCURSOR
+    Call FillResourceTypeList CustomList, BitmapList, BitmapListPtr, &RT_BITMAP, MAXBITMAP
+    Call FillResourceTypeList CustomList, MenuList, MenuListPtr, &RT_MENU, MAXMENU
+    Call FillResourceTypeList CustomList, DialogList, DialogListPtr, &RT_DIALOG, MAXDIALOG
+    Call FillResourceTypeList CustomList, StringsList, StringsListPtr, &RT_STRING, MAXSTRINGS
+    Call FillResourceTypeList CustomList, RCdataList, RCdataListPtr, &RT_RCDATA, MAXRCDATA
+    Call FillResourceTypeList CustomList, GroupCursorList, GroupCursorListPtr, &RT_GROUP_CURSOR, MAXCURSOR
+    Call FillResourceTypeList CustomList, IconList, IconListPtr, &RT_ICON, MAXICON
     ; Erase the First Icon, Which is the Main One (elsewhere...)
     If D$IconList = 1
         VirtualFree D$IconList+4
-        mov esi IconList, edi esi, ecx MAXICON-3 | add esi 12 | rep movsd
+        Mov esi IconList, edi esi, ecx MAXICON-3 | add esi 12 | rep movsd
         On D$IconListPtr > IconList, sub D$IconListPtr 12
     End_If
-    call FillResourceTypeList CustomList, GroupIconList, GroupIconListPtr, &RT_GROUP_ICON, MAXICON
+    Call FillResourceTypeList CustomList, GroupIconList, GroupIconListPtr, &RT_GROUP_ICON, MAXICON
     ; Erase the First GroupIcon, Which is the Main One (elsewhere...)
     If D$GroupIconList = 1
         VirtualFree D$GroupIconList+4
-        mov esi GroupIconList, edi esi, ecx MAXICON-3 | add esi 12 | rep movsd
+        Mov esi GroupIconList, edi esi, ecx MAXICON-3 | add esi 12 | rep movsd
         On D$GroupIconListPtr > GroupIconList, sub D$GroupIconListPtr 12
     End_If
 
 ____________________________________________________________________________________________
 ; Remove "standard" resources from CustomList:
-    mov esi CustomList, edi esi
+    Mov esi CustomList, edi esi
 L1: cmp D$esi 0 | je L5>>
     lodsd
-    mov D$RsrcTypeStringLen 0
+    Mov D$RsrcTypeStringLen 0
     cmp eax 16 | jg L2>
     test eax 08000_0000 | jz L3>
 
@@ -228,7 +228,7 @@ L3: cmp eax &RT_FONTDIR | je L2<
 
 L4: add esi 16 | jmp L1<<
 
-L5: mov eax 0, ecx 5 | rep stosd
+L5: Mov eax 0, ecx 5 | rep stosd
 
 EndP
 ____________________________________________________________________________________________
@@ -239,11 +239,11 @@ Proc FillResourceTypeList:
     pushad
     ; Clear the output list
     xor eax eax
-    mov edi D@OutputList, ecx D@MaxResource | rep stosd
+    Mov edi D@OutputList, ecx D@MaxResource | rep stosd
 
-    mov esi D@InputList, edi D@OutputList
+    Mov esi D@InputList, edi D@OutputList
     While D$esi <> 0
-        mov edx D@ResType
+        Mov edx D@ResType
         If D$esi+CustomList.TypeDis = edx
             move D$edi D$esi+CustomList.NameDis ; copy Name only
             move D$edi+4 D$esi+CustomList.PointerDis ; copy Pointer only
@@ -253,8 +253,8 @@ Proc FillResourceTypeList:
         add esi Size_Of_CustomList
     End_While
 
-    mov edx D@OutputListPtr
-    mov D$edx edi
+    Mov edx D@OutputListPtr
+    Mov D$edx edi
 
     popad
 
@@ -268,14 +268,14 @@ LoadRsrcIDString:
 
     push eax, ecx
         and esi 07ff_ffff | add esi D$UserPEStartOfResources
-        mov eax 0
+        Mov eax 0
         lodsw
-        mov ecx eax, D$ebx eax | inc D$ebx
+        Mov ecx eax, D$ebx eax | inc D$ebx
 L1:     cmp ecx 0 | je L2>
             lodsw | stosb
             dec ecx
         jmp L1<
-L2: mov eax &NULL | stosb
+L2: Mov eax &NULL | stosb
     pop ecx, eax
 
 ret
@@ -289,7 +289,7 @@ ReadResource:
 ; In ecx: size of data
 ; Out eax: Pointer to loaded data
 
-    mov B$MissingResource &FALSE
+    Mov B$MissingResource &FALSE
 
 
     If eax < D$UserPeStart
@@ -311,14 +311,14 @@ ReadResource:
         pop esi
 
       ; Copy data
-        mov edi D$TempoMemPointer
+        Mov edi D$TempoMemPointer
         push edi, ecx
             rep movsb
         pop ecx, eax
 
       ; Copy strings
-        mov esi RsrcTypeString, ecx D$RsrcTypeStringLen | rep movsb
-        mov esi RsrcNameString, ecx D$RsrcNameStringLen | rep movsb
+        Mov esi RsrcTypeString, ecx D$RsrcTypeStringLen | rep movsb
+        Mov esi RsrcNameString, ecx D$RsrcNameStringLen | rep movsb
     pop edi, esi
 
 ret
@@ -331,131 +331,131 @@ NewTemporaryFillRsrcList:
   ; Now, we will fill uRsrcList with format Type/Name/Lang/Pointer/Size
   ; and then will sort it.
 
-    mov edi uRsrcList, D$TypeByName 0
+    Mov edi uRsrcList, D$TypeByName 0
 
-    mov esi CustomList
+    Mov esi CustomList
     If D$esi > 0
         While D$esi > 0
-        mov ecx 5 | rep movsd
+        Mov ecx 5 | rep movsd
         End_While
     End_If
 
-    mov esi AviList
+    Mov esi AviList
     If D$esi > 0
         While D$esi > 0
-            mov eax RT_AVI | stosd | movsd | mov eax Language | stosd
+            Mov eax RT_AVI | stosd | movsd | Mov eax Language | stosd
             movsd | movsd
         End_While
     End_If
 
-    mov esi WaveList
+    Mov esi WaveList
     If D$esi > 0
         While D$esi > 0
-            mov eax RT_WAVE | stosd | movsd | mov eax Language | stosd
+            Mov eax RT_WAVE | stosd | movsd | Mov eax Language | stosd
             movsd | movsd
         End_While
     End_If
 
-    mov esi CursorList
+    Mov esi CursorList
     If D$esi > 0
         While D$esi > 0
-            mov eax &RT_CURSOR | stosd | movsd | mov eax Language | stosd
+            Mov eax &RT_CURSOR | stosd | movsd | Mov eax Language | stosd
             movsd | movsd
         End_While
     End_If
 
-    mov esi BitMapList
+    Mov esi BitMapList
     If D$esi > 0
         While D$esi > 0
-            mov eax &RT_BITMAP | stosd | movsd | mov eax Language | stosd
+            Mov eax &RT_BITMAP | stosd | movsd | Mov eax Language | stosd
             movsd | movsd
         End_While
     End_If
 
   ; Store default icon if user didn't edit any (or user defined if any):
     If B$NoMainIcon = &FALSE
-        mov eax &RT_ICON | stosd | mov eax ID_Icon | stosd | mov eax Language | stosd
-        mov eax uIcon | stosd | mov eax uIconEnd | sub eax uIcon | stosd
+        Mov eax &RT_ICON | stosd | Mov eax ID_Icon | stosd | Mov eax Language | stosd
+        Mov eax uIcon | stosd | Mov eax uIconEnd | sub eax uIcon | stosd
     End_If
 
-    mov esi IconList
+    Mov esi IconList
     If D$esi > 0
         While D$esi > 0
-            mov eax &RT_ICON | stosd | movsd | mov eax Language | stosd
+            Mov eax &RT_ICON | stosd | movsd | Mov eax Language | stosd
             movsd | movsd
         End_While
     End_If
 
-    mov esi MenuList
+    Mov esi MenuList
     If D$esi > 0
         While D$esi > 0
-            mov eax &RT_MENU | stosd | movsd | mov eax Language | stosd
+            Mov eax &RT_MENU | stosd | movsd | Mov eax Language | stosd
             movsd | movsd
         End_While
     End_If
 
-    mov esi DialogList
+    Mov esi DialogList
     If D$esi > 0
         While D$esi > 0
-            mov eax &RT_DIALOG | stosd | movsd | mov eax Language | stosd
+            Mov eax &RT_DIALOG | stosd | movsd | Mov eax Language | stosd
             movsd | movsd
         End_While
     End_If
 
-    mov esi StringsList
+    Mov esi StringsList
     If D$esi > 0
         While D$esi > 0
-            mov eax &RT_STRING | stosd | movsd | mov eax Language | stosd
+            Mov eax &RT_STRING | stosd | movsd | Mov eax Language | stosd
             movsd | movsd
         End_While
     End_If
 
-    mov esi RcDataList
+    Mov esi RcDataList
     If D$esi > 0
         While D$esi > 0
-            mov eax &RT_RCDATA | stosd | movsd | mov eax Language | stosd
+            Mov eax &RT_RCDATA | stosd | movsd | Mov eax Language | stosd
             movsd | movsd
         End_While
     End_If
 
-    mov esi GroupCursorList
+    Mov esi GroupCursorList
     If D$esi > 0
         While D$esi > 0
-            mov eax &RT_GROUP_CURSOR | stosd | movsd | mov eax Language | stosd
+            Mov eax &RT_GROUP_CURSOR | stosd | movsd | Mov eax Language | stosd
             movsd | movsd
         End_While
     End_If
 
     If B$NoMainIcon = &FALSE
-        mov eax &RT_GROUP_ICON | stosd | mov eax ID_Group_Icon | stosd
-        mov eax Language | stosd
-        mov eax uGroupIcon | stosd
-        mov eax uGroupIconEnd | sub eax uGroupIcon | stosd
+        Mov eax &RT_GROUP_ICON | stosd | Mov eax ID_Group_Icon | stosd
+        Mov eax Language | stosd
+        Mov eax uGroupIcon | stosd
+        Mov eax uGroupIconEnd | sub eax uGroupIcon | stosd
     End_If
 
-    mov esi GroupIconList
+    Mov esi GroupIconList
     If D$esi > 0
         While D$esi > 0
-            mov eax &RT_GROUP_ICON | stosd | movsd | mov eax Language | stosd
+            Mov eax &RT_GROUP_ICON | stosd | movsd | Mov eax Language | stosd
             movsd | movsd
         End_While
     End_If
 
   ; Close this List, because, in case user would have deleted some Resources, there
   ; could be old Records here, from a previous [Compile]:
-    mov eax 0, ecx 5 | rep stosd | sub edi (5*4)
+    Mov eax 0, ecx 5 | rep stosd | sub edi (5*4)
 
   ; -4 > ready for backward read
-    sub edi 4 | mov D$uRsrcListPtr edi
+    sub edi 4 | Mov D$uRsrcListPtr edi
 ____________________________________________________________________________________________
 ; Sort uRsrcList Table by Type, then by name and then by lang:
-    mov esi uRsrcList
+    Mov esi uRsrcList
     push edi, esi
 
 ; First, sort by Type:
-L0:     mov edx &FALSE
+L0:     Mov edx &FALSE
         .While D$esi > 0
-            mov eax D$esi | cmp eax D$esi+20 | je L4>>
+            Mov eax D$esi | cmp eax D$esi+20 | je L4>>
             test eax BIT31 | jnz L2>
 L1:       ; Type's Id by number:
             cmp eax D$esi+20 | jle L4>>
@@ -463,31 +463,31 @@ L1:       ; Type's Id by number:
 L2:       ; Type's Id by string:
             test D$esi+20 BIT31 | jz L4>>
             push esi
-                mov eax esi
+                Mov eax esi
                 if D$eax = RT_AVI
-                    mov esi AviTypeStr
+                    Mov esi AviTypeStr
                 elseif D$eax = RT_WAVE
-                    mov esi WaveTypeStr
+                    Mov esi WaveTypeStr
                 else
-                    mov esi D$eax+12 | add esi D$eax+16
+                    Mov esi D$eax+12 | add esi D$eax+16
                 endif
                 add eax 20
                 if D$eax = RT_AVI
-                    mov edi AviTypeStr
+                    Mov edi AviTypeStr
                 elseif D$eax = RT_WAVE
-                    mov edi WaveTypeStr
+                    Mov edi WaveTypeStr
                 else
-                    mov edi D$eax+12 | add edi D$eax+16
+                    Mov edi D$eax+12 | add edi D$eax+16
                 endif
-                mov ecx 32 | repe cmpsb
-                mov al B$esi-1
+                Mov ecx 32 | repe cmpsb
+                Mov al B$esi-1
             pop esi
             cmp al B$edi-1 | jbe L4>
 L3:       ; Exchage Resource
             if D$esi+20 <> 0
                 Exchange D$esi D$esi+20, D$esi+4 D$esi+24, D$esi+8 D$esi+28,
                     D$esi+12 D$esi+32, D$esi+16 D$esi+36
-                mov edx &TRUE
+                Mov edx &TRUE
             endif
 L4:       ; Next Resource
             add esi 20
@@ -496,10 +496,10 @@ L4:       ; Next Resource
         cmp edx &TRUE | je L0<<
 
 ; Then sort by name:
-L0:     mov edx &FALSE
+L0:     Mov edx &FALSE
         .While D$esi > 0
-            mov eax D$esi | cmp eax D$esi+20 | jne L4>>
-            mov eax D$esi+4 | cmp eax D$esi+24 | je L4>>
+            Mov eax D$esi | cmp eax D$esi+20 | jne L4>>
+            Mov eax D$esi+4 | cmp eax D$esi+24 | je L4>>
             test eax BIT31 | jnz L2>
 L1:       ; Name's Id by number:
             cmp eax D$esi+24 | jle L4>>
@@ -507,21 +507,21 @@ L1:       ; Name's Id by number:
 L2:       ; Name's Id by string:
             test D$esi+24 BIT31 | jz L4>>
             push esi
-                mov ebx esi, eax 0
-                mov esi D$ebx+12 | add esi D$ebx+16
-                mov edi D$ebx+32 | add edi D$ebx+36
+                Mov ebx esi, eax 0
+                Mov esi D$ebx+12 | add esi D$ebx+16
+                Mov edi D$ebx+32 | add edi D$ebx+36
                 if D$ebx+20 <s 0
-                    mov ecx 32 | repne scasb | add esi 32 | sub esi ecx
+                    Mov ecx 32 | repne scasb | add esi 32 | sub esi ecx
                 endif
-                mov ecx 32 | repe cmpsb
-                mov al B$esi-1
+                Mov ecx 32 | repe cmpsb
+                Mov al B$esi-1
             pop esi
             cmp al B$edi-1 | jbe L4>
 L3:       ; Exchage Resource
             if D$esi+20 <> 0
                 Exchange D$esi D$esi+20, D$esi+4 D$esi+24, D$esi+8 D$esi+28,
                     D$esi+12 D$esi+32, D$esi+16 D$esi+36
-                mov edx &TRUE
+                Mov edx &TRUE
             endif
 L4:       ; Next Resource
             add esi 20
@@ -530,17 +530,17 @@ L4:       ; Next Resource
         cmp edx &TRUE | je L0<<
 
 ; And finally, sort by lang:
-L0:     mov edx &FALSE
+L0:     Mov edx &FALSE
         .While D$esi > 0
-            mov eax D$esi | cmp eax D$esi+20 | jne L1>
-            mov eax D$esi+4 | cmp eax D$esi+24 | jne L1>
+            Mov eax D$esi | cmp eax D$esi+20 | jne L1>
+            Mov eax D$esi+4 | cmp eax D$esi+24 | jne L1>
           ; Lang's Id are always by number, so:
-            mov eax d$esi+8 | cmp eax D$esi+28 | jbe L1>
+            Mov eax d$esi+8 | cmp eax D$esi+28 | jbe L1>
           ; Exchage Resource
             if D$esi+20 <> 0
                 Exchange D$esi D$esi+20, D$esi+4 D$esi+24, D$esi+8 D$esi+28,
                     D$esi+12 D$esi+32, D$esi+16 D$esi+36
-                mov edx &TRUE
+                Mov edx &TRUE
             endif
 L1:       ; Next Resource
             add esi 20
@@ -556,26 +556,26 @@ ret
 ____________________________________________________________________________________________
 [BIT31 0_8000_0000]
 ; Resources Head Line Macro. In: #1: Entries by ID, #2: Entries by name
-[RsrcHeadLine | add edi 2 | mov eax #1 | stosw | mov eax #2 | stosw
-    sub edi 2 | mov eax 0 | stosd | stosd | stosd]
+[RsrcHeadLine | add edi 2 | Mov eax #1 | stosw | Mov eax #2 | stosw
+    sub edi 2 | Mov eax 0 | stosd | stosd | stosd]
 
 NewBuildResourceTree:
   ; Initialisation of tree pointers:
-    mov eax D$CodeListPtr, D$RsrcHeadPtr eax, D$RsrcTypePtr eax,
+    Mov eax D$CodeListPtr, D$RsrcHeadPtr eax, D$RsrcTypePtr eax,
       D$RsrcLangPtr eax, D$RsrcPtrPtr eax, D$RsrcSectionPtr eax,
       D$RsrcSectionOrigine eax
 
   ; Search for the tree size (evaluation begins at second record):
-    mov ecx 1                            ; how many resources in ecx
-    mov edx 1                            ; how many different resources types in edx
-    mov ebx 1                            ; how many langage in ebx
-    mov esi uRsrcList+20                 ; start comparisons at second record
-L0: mov eax D$esi | cmp eax 0 | je L3>
+    Mov ecx 1                            ; how many resources in ecx
+    Mov edx 1                            ; how many different resources types in edx
+    Mov ebx 1                            ; how many langage in ebx
+    Mov esi uRsrcList+20                 ; start comparisons at second record
+L0: Mov eax D$esi | cmp eax 0 | je L3>
         inc ecx                          ; count resources
         cmp eax D$esi-20 | je L1>
             inc edx                      ; count different types
             inc ebx | jmp L2>            ; if new type >>> count language
-L1: mov eax D$esi+4
+L1: Mov eax D$esi+4
       On eax <> D$esi-16, inc ebx        ; same type: different name?>>> count language
 L2: add esi 20 | jmp L0<
 ;;
@@ -588,15 +588,15 @@ L2: add esi 20 | jmp L0<
     >>>  (ecx * (16+8)) + (ebx * (16+8)) + (edx * (16+8)) + 16
     >>>  ((ecx+ebx+edx) * (16+8)) + 16
 ;;
-L3: add ecx ebx | add ecx edx | mov eax ecx | shl eax 4 | shl ecx 3
+L3: add ecx ebx | add ecx edx | Mov eax ecx | shl eax 4 | shl ecx 3
     add eax ecx | add eax 16
 
 ____________________________________________________________________________________________
 
-    mov ebx uRsrcList | add ebx 12 | mov edi D$CodeListPtr
+    Mov ebx uRsrcList | add ebx 12 | Mov edi D$CodeListPtr
 
   ; Clear the header (may bee corrupt by previous use of same memory)
-    mov ecx eax, al 0 | rep stosb
+    Mov ecx eax, al 0 | rep stosb
 
    push edi
 
@@ -606,7 +606,7 @@ ________________________________________________________________________________
     push ebx
       ; Type ID in uRsrcList
         sub ebx 12
-        mov edx 0
+        Mov edx 0
         .While D$ebx > 0
           ; If bit 31 = 0 skip resource
             test D$ebx BIT31 | jz L4>>
@@ -615,28 +615,28 @@ ________________________________________________________________________________
                     move D$ebx D$ebx-20 | jmp L4>>
 
 L1:       ; New type by name
-            mov edx D$ebx
+            Mov edx D$ebx
 
           ; Avi Type
             cmp D$ebx RT_AVI | jne L2>
-                mov eax edi, esi RsrcAVIString, ecx 8 | rep movsb
+                Mov eax edi, esi RsrcAVIString, ecx 8 | rep movsb
               ; Change ID in uRsrcList to RVA and set the 'ID by name' flag:
-                sub eax D$RsrcSectionOrigine | or eax BIT31 | mov D$ebx eax
+                sub eax D$RsrcSectionOrigine | or eax BIT31 | Mov D$ebx eax
                 jmp L4>
 
           ; Wave Type
 L2:         cmp D$ebx RT_WAVE | jne L3>
-                mov eax edi, esi RsrcWAVEString, ecx 10 | rep movsb
+                Mov eax edi, esi RsrcWAVEString, ecx 10 | rep movsb
               ; Change ID in uRsrcList to RVA and set the 'ID by name' flag:
-                sub eax D$RsrcSectionOrigine | or eax BIT31 | mov D$ebx eax
+                sub eax D$RsrcSectionOrigine | or eax BIT31 | Mov D$ebx eax
                 jmp L4>
 
           ; Custom Type
           ; esi points String in uRsrcList
-L3:         mov esi D$ebx+12 | add esi D$ebx+16
+L3:         Mov esi D$ebx+12 | add esi D$ebx+16
           ; skip 'String Size' for now
             push edi | add edi 2
-                mov eax 0, ecx 0
+                Mov eax 0, ecx 0
               ; Put String in Unicode format
                 While B$esi <> 0
                     movsb | stosb
@@ -644,9 +644,9 @@ L3:         mov esi D$ebx+12 | add esi D$ebx+16
                 End_While
             pop eax
           ; now put 'String Size'
-            mov W$eax cx
+            Mov W$eax cx
           ; Change ID in uRsrcList to RVA and set the 'ID by name' flag:
-            sub eax D$RsrcSectionOrigine | or eax BIT31 | mov D$ebx eax
+            sub eax D$RsrcSectionOrigine | or eax BIT31 | Mov D$ebx eax
 
 L4:         add ebx 20
         .End_While
@@ -655,28 +655,28 @@ L4:         add ebx 20
   ; Strings for Name ID's by Name
     push ebx
         sub ebx 8 ; Name ID in uRsrcList
-        mov edx 0
+        Mov edx 0
         .While D$ebx > 0
             test D$ebx BIT31 | jnz L1>
               ; bit 31 = 0, skip this resource
-                mov edx 0 | jmp L4>
+                Mov edx 0 | jmp L4>
           ; Last Type
-L1:         mov eax D$ebx-24
+L1:         Mov eax D$ebx-24
           ; If not same Type that last one jump
             cmp D$ebx-4 eax | jne L2>
                 cmp edx D$ebx | jne L2>
                   ; If same ID by name that last one, Copy RVA
                     move D$ebx D$ebx-20 | jmp L4>
 L2:       ; New id by name
-            mov edx D$ebx
+            Mov edx D$ebx
           ; esi points String in uRsrcList
-            mov esi D$ebx+8 | add esi D$ebx+12
+            Mov esi D$ebx+8 | add esi D$ebx+12
             test D$ebx-4 BIT31 | jz L3>
               ; Type by name, skip Type string:
-                xchg edi esi | mov ecx 32 | mov al 0 | repne scasb | xchg edi esi
+                xchg edi esi | Mov ecx 32 | Mov al 0 | repne scasb | xchg edi esi
           ; skip 'String Size' for now
 L3:         push edi | add edi 2
-                mov eax 0, ecx 0
+                Mov eax 0, ecx 0
               ; Put String in Unicode format
                 While B$esi <> 0
                     movsb | stosb
@@ -684,9 +684,9 @@ L3:         push edi | add edi 2
                 End_While
             pop eax
           ; Now put 'String Size'
-            mov W$eax cx
+            Mov W$eax cx
           ; Change ID in uRsrcList to RVA and set the 'ID by name' flag:
-            sub eax D$RsrcSectionOrigine | or eax BIT31 | mov D$ebx eax
+            sub eax D$RsrcSectionOrigine | or eax BIT31 | Mov D$ebx eax
 L4:     add ebx 20
         .End_While
     pop ebx
@@ -698,21 +698,21 @@ ________________________________________________________________________________
   ; After action, same pointers point to each resource in .rsrc section:
     While D$ebx > 0
       ; This is the ptr
-        mov esi D$ebx
-        mov eax edi | sub eax D$RsrcSectionOrigine
+        Mov esi D$ebx
+        Mov eax edi | sub eax D$RsrcSectionOrigine
       ; change Ptrs in uRsrcList to RVA
-        add eax D$uBaseOfRsrc | mov D$ebx eax
+        add eax D$uBaseOfRsrc | Mov D$ebx eax
       ; Size
-        mov ecx D$ebx+4
+        Mov ecx D$ebx+4
         rep movsb
-        mov eax edi | Align_on 010 eax | mov edi eax
+        Mov eax edi | Align_on 010 eax | Mov edi eax
         add ebx 20
     End_While
 
-    mov eax edi | sub eax D$RsrcSectionOrigine | mov D$uRsrcSize eax
+    Mov eax edi | sub eax D$RsrcSectionOrigine | Mov D$uRsrcSize eax
 
-    mov eax edi | Align_on 0200 eax
-    mov D$CodeListPtr eax
+    Mov eax edi | Align_on 0200 eax
+    Mov D$CodeListPtr eax
     pop edi | sub edi 4
 
 ____________________________________________________________________________________________
@@ -722,50 +722,50 @@ ________________________________________________________________________________
   ; Pointers directory:
 
   ; end of uRsrcList (> size)
-    mov esi D$uRsrcListPtr
+    Mov esi D$uRsrcListPtr
   ; BackWard
     std
     Do
       ; write ptrs records
-        mov eax 0 | stosd | stosd
+        Mov eax 0 | stosd | stosd
       ; size / RVA ptr to true data
         movsd | movsd
       ; adress of record start
-        mov eax edi | add eax 4
+        Mov eax edi | add eax 4
       ; displacement from start of .rsrc
         sub eax D$RsrcSectionOrigine
       ; ptrs-dir pointer in next level up
-        mov D$esi+4 eax
+        Mov D$esi+4 eax
         sub esi 12
     Loop_until D$esi = 0
 
 ____________________________________________________________________________________________
   ; Language directory
 
-    mov esi D$uRsrcListPtr
+    Mov esi D$uRsrcListPtr
   ; Write Languages dirs
-    sub esi 4 | mov ecx 0
+    sub esi 4 | Mov ecx 0
 
     Do
       ; pointers to data Ptrs / Lang
         movsd | movsd
       ; Name
-        mov ebx D$esi
+        Mov ebx D$esi
       ; records counter for lang header
         inc ecx
       ; Check if there are more languages (same type and name that next resource):
       ; Compare Names
-        mov eax D$esi | cmp eax D$esi-20 | jne L1>
+        Mov eax D$esi | cmp eax D$esi-20 | jne L1>
       ; Compare Types
-        mov eax D$esi-4 | cmp eax D$esi-24 | je L2>
+        Mov eax D$esi-4 | cmp eax D$esi-24 | je L2>
       ; If not equal write headLine
-L1:     RsrcHeadLine ecx, 0 | mov ecx 0
-        mov eax edi | add eax 4
+L1:     RsrcHeadLine ecx, 0 | Mov ecx 0
+        Mov eax edi | add eax 4
         sub eax D$RsrcSectionOrigine
       ; node flag
         or eax BIT31
       ; ptrs-dir pointer in next level up
-        mov D$esi+8 eax
+        Mov D$esi+8 eax
       ; next ptr record in uRsrcList
 L2:     sub esi 12
      Loop_until D$esi = 0
@@ -775,31 +775,31 @@ ________________________________________________________________________________
   ; records for Languages. So, we rewrite uRsrcList:
     cld
     push edi
-        mov esi uRsrcList, edi uRsrcList
+        Mov esi uRsrcList, edi uRsrcList
         Do
           ; keep Type / keep ID / skip Lang / keep Ptr / skip size
             movsd | movsd | lodsd | movsd | lodsd
         Loop_Until D$esi = 0
-        mov D$edi 0, esi uRsrcList, edi esi
+        Mov D$edi 0, esi uRsrcList, edi esi
       ; type / ID??? / ptr
 L0:     movsd | Lodsd | stosd | movsd
       ; Compare Names
-L1:     mov eax D$esi-8 | cmp eax D$esi+4 | jne L2>
+L1:     Mov eax D$esi-8 | cmp eax D$esi+4 | jne L2>
       ; Compare Types
-        mov eax D$esi-12 | cmp eax D$esi | jne L2>
+        Mov eax D$esi-12 | cmp eax D$esi | jne L2>
       ; Skip if equal
         add esi 12 | jmp L1<
 L2:
         cmp D$esi 0 | jne L0<
       ; > last record ptr
-        mov esi edi | sub esi 4
-        mov eax 0 | stosd | stosd | stosd
+        Mov esi edi | sub esi 4
+        Mov eax 0 | stosd | stosd | stosd
     pop edi
 
 ____________________________________________________________________________________________
   ; Types directory
     std
-        mov ecx 0, edx 0
+        Mov ecx 0, edx 0
       ; Pointer
 L1:     movsd
         lodsd
@@ -812,36 +812,36 @@ L2:         inc ecx
 L3:     stosd | lodsd
         cmp eax D$esi-8 | je L4>
 
-        RsrcHeadLine ecx edx | mov ecx 0, edx 0
-        mov eax edi | add eax 4
+        RsrcHeadLine ecx edx | Mov ecx 0, edx 0
+        Mov eax edi | add eax 4
         sub eax D$RsrcSectionOrigine
       ; node flag
         or eax BIT31
       ; ptrs-dir pointer in next level up
-        mov D$esi+12 eax
+        Mov D$esi+12 eax
 L4:     cmp D$esi 0 | jne L1<
 
   ; We do not need any more ID. So, we rewrite uRsrcList:
     cld
     push edi
-        mov esi uRsrcList, edi uRsrcList
+        Mov esi uRsrcList, edi uRsrcList
       ; keep Type / skip ID / keep Ptr
 L0:     movsd | lodsd | movsd
         cmp D$esi 0 | jne L0<
-            mov D$edi 0, esi uRsrcList, edi esi
+            Mov D$edi 0, esi uRsrcList, edi esi
       ; type??? / ptr
 L0:     Lodsd | stosd | movsd
 L1:     cmp D$esi eax | jne L2>
             add esi 8 | jmp L1<
 L2:     cmp D$esi 0 | jne L0<
-        mov esi edi | sub esi 4
-        mov eax 0 | stosd | stosd
+        Mov esi edi | sub esi 4
+        Mov eax 0 | stosd | stosd
     pop edi
 
 ____________________________________________________________________________________________
   ; Root Directory:
     std
-        mov ecx 0, edx 0
+        Mov ecx 0, edx 0
       ; Ptr
 L1:     movsd
         lodsd
@@ -862,28 +862,28 @@ ________________________________________________________________________________
 ;[NoResources: ?    NoMainIcon: ?]
 
 BuildRsrc:
-    mov B$NoResources &FALSE, B$NoMainIcon &FALSE
+    Mov B$NoResources &FALSE, B$NoMainIcon &FALSE
 
     .If D$SavingExtension = '.DLL'
-        mov B$NoMainIcon &TRUE
+        Mov B$NoMainIcon &TRUE
     .Else_If D$SavingExtension = '.SYS'
-        mov B$NoMainIcon &TRUE
+        Mov B$NoMainIcon &TRUE
     .Else_If W$SubSystem = 3             ; Console > no Main Icon
-        mov B$NoMainIcon &TRUE
+        Mov B$NoMainIcon &TRUE
     .End_If
 
 
   ; THIS LINE SHOULD BE COMMENTED FOR TESTING WITH RsrcSTUB:
-    call NewTemporaryFillRsrcList
+    Call NewTemporaryFillRsrcList
 
   ; THIS LINE SHOULD BE UNCOMMENTED FOR TESTING WITH RsrcSTUB:
-  ;  mov esi RsrcStub, edi uRsrcList, ecx D$RsrcStubLen | rep movsd | sub edi 4 | mov D$uRsrcListPtr edi
+  ;  Mov esi RsrcStub, edi uRsrcList, ecx D$RsrcStubLen | rep movsd | sub edi 4 | Mov D$uRsrcListPtr edi
 
 
     If D$uRsrcList = 0
-        mov B$NoResources &TRUE
+        Mov B$NoResources &TRUE
     Else
-        call NewBuildResourceTree
+        Call NewBuildResourceTree
     End_If
 ret
 

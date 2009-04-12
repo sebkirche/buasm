@@ -53,7 +53,7 @@ ________________________________________________________________________________
 [ShortenJmpsTable: ?   CodeListOrigine: ?]
 
 InitShortenJmpsTable:
-    On D$ShortenJmpsTable <> 0, call ReleaseShortenJmpsTable
+    On D$ShortenJmpsTable <> 0, Call ReleaseShortenJmpsTable
 
     VirtualAlloc ShortenJmpsTable, D$SourceLen
 
@@ -82,7 +82,7 @@ ________________________________________________________________________________
 SetShortenJmpFlag:
     push edi
         sub edi D$CodeListOrigine | add edi D$ShortenJmpsTable | add edi 2
-        mov B$edi LONG_Jcc, D$EndOfShortenJmpsTable edi
+        Mov B$edi LONG_Jcc, D$EndOfShortenJmpsTable edi
     pop edi
     inc D$NumberOfLongToShort
 ret
@@ -91,7 +91,7 @@ ret
 SetJMPShortenJmpFlag:
     push edi
         sub edi D$CodeListOrigine | add edi D$ShortenJmpsTable | add edi 1
-        mov B$edi LONG_JMP, D$EndOfShortenJmpsTable edi
+        Mov B$edi LONG_JMP, D$EndOfShortenJmpsTable edi
     pop edi
     inc D$NumberOfLongToShort
 ret
@@ -100,13 +100,13 @@ ret
 [AlignFound: ?]
 
 SetAlignFlag:
-    mov B$AlignFound &TRUE
+    Mov B$AlignFound &TRUE
 ret
     push edi
         sub edi D$CodeListOrigine | add edi D$ShortenJmpsTable
-        mov B$edi ALIGN_FLAG, D$EndOfShortenJmpsTable edi
+        Mov B$edi ALIGN_FLAG, D$EndOfShortenJmpsTable edi
 
-        mov ecx D$imm32
+        Mov ecx D$imm32
     pop edi
 ret
 ____________________________________________________________________________________________
@@ -119,24 +119,24 @@ ________________________________________________________________________________
 ;;
 
 JmpsOptimize:
-    mov eax D$CodeListPtr | dec eax
+    Mov eax D$CodeListPtr | dec eax
 
-    call ScanShortenJmpsTable
-    mov eax D$NumberOfLongToShort, D$JumpSizeStat eax
+    Call ScanShortenJmpsTable
+    Mov eax D$NumberOfLongToShort, D$JumpSizeStat eax
 
     While D$NumberOfLongToShort <> 0
-L1:     call CompactLabelListAndCodeRef
+L1:     Call CompactLabelListAndCodeRef
 
-        call CompactCodeList
+        Call CompactCodeList
 
-        call CompactShortenJmpsTable
+        Call CompactShortenJmpsTable
 
-        call ScanShortenJmpsTable
-        mov eax D$NumberOfLongToShort | add D$JumpSizeStat eax
+        Call ScanShortenJmpsTable
+        Mov eax D$NumberOfLongToShort | add D$JumpSizeStat eax
     End_While
 
-    call ScanCouples
-    mov eax D$NumberOfLongToShort | add D$JumpSizeStat eax
+    Call ScanCouples
+    Mov eax D$NumberOfLongToShort | add D$JumpSizeStat eax
     On D$NumberOfLongToShort <> 0, jmp L1<
 ret
 ____________________________________________________________________________________________
@@ -144,24 +144,24 @@ ________________________________________________________________________________
 [LongInstruction: ?] ; will be either 'LONG_JMP' or 'LONG_Jcc'
 
 InitScanShortenJmpsTable:
-    mov ebx D$CodeRef | add ebx 5
+    Mov ebx D$CodeRef | add ebx 5
 
   ; Case of Api Calls: ...|0FF dWordCodeAddress|:
   ;                   ....|.....|
     While B$ebx = 0FF | add ebx 6 | End_While
 
-    mov D$CodeRefName ebx
+    Mov D$CodeRefName ebx
 
     While B$ebx > EOI | inc ebx | End_While | inc ebx
 
-    mov D$CodeRefScan ebx
+    Mov D$CodeRefScan ebx
   ; 'CodeRefScan' points to the first Char of a LabelName, in 'CodeRef'.
 
-    mov D$NumberOfLongToShort 0
+    Mov D$NumberOfLongToShort 0
 
-    call InitLabelListScanDwordPointer
+    Call InitLabelListScanDwordPointer
 
-    mov esi D$ShortenJmpsTable
+    Mov esi D$ShortenJmpsTable
 ret
 ____________________________________________________________________________________________
 
@@ -176,41 +176,41 @@ ScanShortenJmpsTable:
   Calls for: 'TryToShortenLong' >>> 'ShortenLongDown' and 'ShortenLongUp'
 ;;
 
-    call InitScanShortenJmpsTable
+    Call InitScanShortenJmpsTable
 
   ; Scanning 'ShortenJmpsTable' 0 and 1 (esi ---> 'ShortenJmpsTable'):
-L0: mov edx D$EndOfShortenJmpsTable
+L0: Mov edx D$EndOfShortenJmpsTable
 
     While B$esi = 0
         inc esi | cmp esi edx | ja L9>>
     End_While
 
   ; Here we have a Long Displacement that will be computed in 'FillCodeSymbols'.
-    mov al B$esi, B$LongInstruction al ; Either 'LONG_JMP' or 'LONG_Jcc'
+    Mov al B$esi, B$LongInstruction al ; Either 'LONG_JMP' or 'LONG_Jcc'
 
   ; Translate into a 'CodeList' Pointer:
-    mov eax esi | sub eax D$ShortenJmpsTable | add eax D$CodeListOrigine
+    Mov eax esi | sub eax D$ShortenJmpsTable | add eax D$CodeListOrigine
 
   ; Scan CodeRef:
 
   ; >>> Two Pointers (One in CodeList -eax-, and one in CodeRef -ecx-):
-L1: mov ecx D$ebx | and ecx (not relativeFlag)
+L1: Mov ecx D$ebx | and ecx (not relativeFlag)
 
     ..If ecx = eax
       ; Found matching Record, in CodeRef. Take a copy of the Name in 'CodeRefName':
-        mov eax ebx | sub eax 5 | move D$CodeRefName D$eax
+        Mov eax ebx | sub eax 5 | move D$CodeRefName D$eax
 
-            call TryToShortenLong
+            Call TryToShortenLong
 
             .If B$CanBeShorten = &TRUE
                 If B$LongInstruction = LONG_JMP
-                    mov B$esi SHORTEN_LONG_JMP
+                    Mov B$esi SHORTEN_LONG_JMP
                 Else_If B$LongInstruction = LONG_Jcc
-                    mov B$esi SHORTEN_LONG_Jcc
+                    Mov B$esi SHORTEN_LONG_Jcc
                 End_If
 
               ; For the lasting 'FillCodeSymbols' to know it is a special "Short":
-                mov B$ebx-2 '.'
+                Mov B$ebx-2 '.'
             .End_If
 
           ; Next CodeRef Record:
@@ -240,35 +240,35 @@ ________________________________________________________________________________
 [FirstDownShortenJmp: ?  SecondUpShortenJmp: ?]
 
 ScanCouples:
-    call InitScanShortenJmpsTable
+    Call InitScanShortenJmpsTable
   ; >>> ebx ---> 'CodeRefScan' ---> 'CodeRef'.
   ; >>> esi ---> 'ShortenJmpsTable'.
-    mov edx D$EndOfShortenJmpsTable
+    Mov edx D$EndOfShortenJmpsTable
 
     .While esi <= edx
         ...If B$esi <> 0
             push esi, edx
-            call IsJumpDownOrUp
+            Call IsJumpDownOrUp
 
             ..If B$JumpIs = DOWN
-                mov D$CodeRefScan eax
-                mov D$FirstDownCodeRefScan eax, D$FirstDownShortenJmp esi
+                Mov D$CodeRefScan eax
+                Mov D$FirstDownCodeRefScan eax, D$FirstDownShortenJmp esi
                 move W$CodeRefName1 W$eax-5
-                mov ebx esi | add esi 4
+                Mov ebx esi | add esi 4
                 push esi, edx
-                    mov eax esi | add eax 133-4 | On eax < edx, mov edx eax
+                    Mov eax esi | add eax 133-4 | On eax < edx, Mov edx eax
 
                     While esi <= edx
                         .If B$esi <> 0
-                            call IsJumpDownOrUp ; >>> eax ---> 'CodeRefScan'
+                            Call IsJumpDownOrUp ; >>> eax ---> 'CodeRefScan'
 
                             If B$JumpIs = UP
-                                mov D$SecondUpCodeRefScan eax
+                                Mov D$SecondUpCodeRefScan eax
                                 move W$CodeRefName2 W$eax-5
-                                mov D$SecondUpShortenJmp esi
-                                call CouldBothBeShorten
+                                Mov D$SecondUpShortenJmp esi
+                                Call CouldBothBeShorten
                                 On eax = &FALSE, jmp L2>
-                                call SetBothShort | jmp L4>
+                                Call SetBothShort | jmp L4>
                             End_If
 
                         .End_If
@@ -292,28 +292,28 @@ ________________________________________________________________________________
 
 IsJumpDownOrUp:
     push ebx, ecx
-        mov eax esi | sub eax D$ShortenJmpsTable | add eax D$CodeListOrigine
-        mov ebx D$CodeRefScan
+        Mov eax esi | sub eax D$ShortenJmpsTable | add eax D$CodeListOrigine
+        Mov ebx D$CodeRefScan
 
     ; >>> Two Pointers (One to CodeList -eax-, and one to CodeRef -ecx-):
-L1:     mov ecx D$ebx | and ecx (not relativeFlag)
+L1:     Mov ecx D$ebx | and ecx (not relativeFlag)
 
         .If ecx = eax
             If W$ebx-3 = '>>'
-                mov B$JumpIs DOWN
-                mov eax ebx
+                Mov B$JumpIs DOWN
+                Mov eax ebx
 
             Else_If W$ebx-3 = '<<'
-                mov B$JumpIs UP
-                mov eax ebx
+                Mov B$JumpIs UP
+                Mov eax ebx
 
             Else
-                mov B$JumpIs 0
+                Mov B$JumpIs 0
 
             End_If
 
         .Else_If ecx = 0
-            mov B$JumpIs 0
+            Mov B$JumpIs 0
 
         .Else
           ; Next Record in 'CodeRef':
@@ -343,38 +343,38 @@ CouldBothBeShorten:
 
   ; In between Distance, in the 'ShortenJmpsTable' Table:
     push ebx, ecx, edx
-        mov ebx D$FirstDownShortenJmp, edx D$SecondUpShortenJmp
-        mov ecx edx | sub ecx ebx
+        Mov ebx D$FirstDownShortenJmp, edx D$SecondUpShortenJmp
+        Mov ecx edx | sub ecx ebx
 
-        mov eax &FALSE
+        Mov eax &FALSE
 
         If B$ebx = LONG_Jcc
-            mov ecx 135 | On B$edx = LONG_JMP, dec ecx
+            Mov ecx 135 | On B$edx = LONG_JMP, dec ecx
         Else
-            mov ecx 134 | On B$edx = LONG_Jcc, inc ecx
+            Mov ecx 134 | On B$edx = LONG_Jcc, inc ecx
         End_If
         inc ecx
 
-        call GetDisplacementDown
+        Call GetDisplacementDown
 
         .If B$CanBeShorten = &TRUE
             If B$edx = LONG_Jcc
-                mov ecx 132 | On B$ebx = LONG_JMP, dec ecx
+                Mov ecx 132 | On B$ebx = LONG_JMP, dec ecx
             Else
-                mov ecx 130 | On B$ebx = LONG_Jcc, inc ecx
+                Mov ecx 130 | On B$ebx = LONG_Jcc, inc ecx
             End_If
             inc ecx
 
-            call GetDisplacementUp
+            Call GetDisplacementUp
 
             If B$CanBeShorten = &TRUE
-                mov eax &TRUE
+                Mov eax &TRUE
             Else
-                mov eax &FALSE
+                Mov eax &FALSE
             End_If
 
         .Else
-            mov eax &FALSE
+            Mov eax &FALSE
 
         .End_If
 
@@ -383,24 +383,24 @@ ret
 ____________________________________________________________________________________________
 
 SetBothShort:
-    mov eax D$FirstDownShortenJmp
+    Mov eax D$FirstDownShortenJmp
 
     If B$eax = LONG_JMP
-        mov B$eax SHORTEN_LONG_JMP
+        Mov B$eax SHORTEN_LONG_JMP
     Else
-        mov B$eax SHORTEN_LONG_Jcc
+        Mov B$eax SHORTEN_LONG_Jcc
     End_If
 
-    mov eax D$SecondUpShortenJmp
+    Mov eax D$SecondUpShortenJmp
 
     If B$eax = LONG_JMP
-        mov B$eax SHORTEN_LONG_JMP
+        Mov B$eax SHORTEN_LONG_JMP
     Else
-        mov B$eax SHORTEN_LONG_Jcc
+        Mov B$eax SHORTEN_LONG_Jcc
     End_If
 
-    mov eax D$FirstDownCodeRefScan, B$eax-2, '.'
-    mov eax D$SecondUpCodeRefScan,  B$eax-2, '.'
+    Mov eax D$FirstDownCodeRefScan, B$eax-2, '.'
+    Mov eax D$SecondUpCodeRefScan,  B$eax-2, '.'
 
     add D$NumberOfLongToShort 2
 ret
@@ -415,24 +415,24 @@ TryToShortenLong:
   
   1) Is it Long Up or Long Down? >>> Read the '<<' or '>>', at D$CodeRefScan
 ;;
-        mov B$CanBeShorten &FALSE
+        Mov B$CanBeShorten &FALSE
 
         If W$CodeRefName+2 = '>>'
-            mov D$ScanSize (07F+4+1)
+            Mov D$ScanSize (07F+4+1)
 ;;
   '+4' is the size of the long jump Displacement (We are pointing to the first Byte ot it).
   Either B$LongInstruction = LONG_Jcc, or LONG_JMP do not change a thing:
   Just moving it all upward 1 Byte, later, if LONG_Jcc.
   Why '+1'? Because the Processor will start from the Byte after the jump.
 ;;
-            call ShortenLongDown
+            Call ShortenLongDown
 
         Else_If W$CodeRefName+2 = '<<'
-            mov D$ScanSize 080
+            Mov D$ScanSize 080
           ; If an Instruction is a Jcc the Opcode length will switch from 2 to 1:
             On B$LongInstruction = LONG_Jcc, inc D$ScanSize
 
-            call ShortenLongUp
+            Call ShortenLongUp
 
         End_If
     popad
@@ -447,7 +447,7 @@ ShortenLongDown:
   ; Search a Label Declaration Pointer bigger that the CodeRef Evocation Pointer:
   ; eax = 'LabelList' Pointer to 'CodeList' // ecx = 'CodeRef' Pointer to 'CodeList'
   ; We search for a Pointer, in Label List, such as "ecx < D$esi < edx":
-    mov esi D$LabelListScanPointer
+    Mov esi D$LabelListScanPointer
 
     While D$esi > ecx
         PreviousLabelListPointer esi
@@ -457,13 +457,13 @@ ShortenLongDown:
         NextLabelListPointer esi
     End_While
 
-    mov D$LabelListScanPointer esi
+    Mov D$LabelListScanPointer esi
 
   ; Search the next same Label, in LabelList, as the one pointed by ebx.
   ; Store, for example 'K9', of "K9>>", in ebx:
-    mov bx W$CodeRefName
+    Mov bx W$CodeRefName
   ; Scan-Down Limit (07F (127) is the limit for positive signed bytes):
-    mov edx ecx | add edx D$ScanSize
+    Mov edx ecx | add edx D$ScanSize
 
   ; Search for the matching Label in the matching range, if any:
     While D$esi < edx
@@ -473,7 +473,7 @@ ShortenLongDown:
             cmp B$esi-4 EOI | jne L5>
             cmp B$esi-1 EOI | jne L5>
               ; Found a matching Label, that is Long, and that can be made Short:
-                mov B$CanBeShorten &TRUE
+                Mov B$CanBeShorten &TRUE
                 inc D$NumberOfLongToShort | jmp L9>
 
         .Else
@@ -483,7 +483,7 @@ L5:         NextLabelListPointer esi
 
     End_While
 
-    mov B$CanBeShorten &FALSE
+    Mov B$CanBeShorten &FALSE
 L9: ret
 ____________________________________________________________________________________________
 
@@ -499,8 +499,8 @@ GetDisplacementDown:
 ;;
     pushad
       ; Go to the first Label closer to 'FirstDownShortenJmp'
-        mov esi D$LabelListScanPointer
-        mov eax D$FirstDownCodeRefScan, eax D$eax | and eax (not relativeFlag)
+        Mov esi D$LabelListScanPointer
+        Mov eax D$FirstDownCodeRefScan, eax D$eax | and eax (not relativeFlag)
 
         While D$esi > eax
             PreviousLabelListPointer esi ; 'LabelList'
@@ -510,13 +510,13 @@ GetDisplacementDown:
             NextLabelListPointer esi ; 'LabelList'
         End_While
         PreviousLabelListPointer esi
-        mov D$LabelListScanPointer esi
+        Mov D$LabelListScanPointer esi
 
       ; Search the next same Label, in LabelList, as the one pointed by ebx.
       ; Store, for example 'K9', of "K9>>", in ebx:
-        mov bx W$CodeRefName1
+        Mov bx W$CodeRefName1
       ; Scan-Down Limit:
-        mov edx eax | add edx ecx
+        Mov edx eax | add edx ecx
 
       ; Search for the matching Label in the matching range, if any:
         While D$esi < edx
@@ -524,7 +524,7 @@ GetDisplacementDown:
                 cmp B$esi-4 EOI | jne L5>
                 cmp B$esi-1 EOI | jne L5>
                   ; Found a matching Label, that is Long, and that could be made Short:
-                    mov B$CanBeShorten &TRUE | jmp L9>
+                    Mov B$CanBeShorten &TRUE | jmp L9>
 
             .Else
 L5:             NextLabelListPointer esi
@@ -533,7 +533,7 @@ L5:             NextLabelListPointer esi
 
         End_While
 
-        mov B$CanBeShorten &FALSE
+        Mov B$CanBeShorten &FALSE
 L9: popad
 ret
 ____________________________________________________________________________________________
@@ -545,13 +545,13 @@ ShortenLongUp:
 
   ; Search the next same Label, in LabelList, as the one pointed by ebx.
   ; Store, for example 'K9', of "K9>>", in ebx:
-    mov bx W$CodeRefName
-    mov edx ecx | sub edx D$ScanSize
+    Mov bx W$CodeRefName
+    Mov edx ecx | sub edx D$ScanSize
 
   ; Search a Label Declaration Pointer smaller that the CodeRef Evocation Pointer:
   ; eax = 'LabelList' Pointer to 'CodeList' // ecx = 'CodeRef' Pointer to 'CodeList'
   ; We search for a Pointer, in Label List, such as "ecx < D$esi < edx":
-    mov esi D$LabelListScanPointer
+    Mov esi D$LabelListScanPointer
 
     While D$esi > ecx
         PreviousLabelListPointer esi
@@ -563,7 +563,7 @@ ShortenLongUp:
     End_While
 
 L7: PreviousLabelListPointer esi
-    mov D$LabelListScanPointer esi
+    Mov D$LabelListScanPointer esi
 
   ; Search for the matching Label in the matching range, if any:
     While D$esi > edx
@@ -573,7 +573,7 @@ L7: PreviousLabelListPointer esi
             cmp B$esi-4 EOI | jne L5>
             cmp B$esi-1 EOI | jne L5>
           ; Found a matching Label, that is Long, and that can be made Short:
-                mov B$CanBeShorten &TRUE
+                Mov B$CanBeShorten &TRUE
                 inc D$NumberOfLongToShort | jmp L9>
 
         .Else
@@ -583,7 +583,7 @@ L5:         PreviousLabelListPointer esi
 
     End_While
 
-    mov B$CanBeShorten &FALSE
+    Mov B$CanBeShorten &FALSE
 L9: ret
 ____________________________________________________________________________________________
 
@@ -597,8 +597,8 @@ GetDisplacementUp:
 ;;
     pushad
       ; Go to the first Label closer to 'FirstDownShortenJmp'
-        mov esi D$LabelListScanPointer
-        mov eax D$SecondUpCodeRefScan, eax D$eax | and eax (not relativeFlag)
+        Mov esi D$LabelListScanPointer
+        Mov eax D$SecondUpCodeRefScan, eax D$eax | and eax (not relativeFlag)
 
         While D$esi < eax
             nextLabelListPointer esi
@@ -609,23 +609,23 @@ GetDisplacementUp:
         End_While
         NextLabelListPointer esi
 
-        mov D$LabelListScanPointer esi
+        Mov D$LabelListScanPointer esi
 
       ; Search the next same Label, in LabelList, as the one pointed by ebx.
       ; Store, for example 'K9', of "K9>>", in ebx:
-        mov bx W$CodeRefName2
+        Mov bx W$CodeRefName2
       ; Scan-Down Limit:
-        mov edx eax | sub edx ecx
+        Mov edx eax | sub edx ecx
 
       ; Search for the matching Label in the matching range, if any:
-        mov eax D$FirstDownCodeRefScan
+        Mov eax D$FirstDownCodeRefScan
         While D$esi > edx
             If W$esi-3 = bx
                 ;On D$esi > eax, jmp L8>
                 cmp B$esi-4 EOI | jne L5>
                 cmp B$esi-1 EOI | jne L5>
                   ; Found a matching Label, that is Long, and that could be made Short:
-                    mov B$CanBeShorten &TRUE | jmp L9>
+                    Mov B$CanBeShorten &TRUE | jmp L9>
 
             Else
 L5:             PreviousLabelListPointer esi
@@ -633,7 +633,7 @@ L5:             PreviousLabelListPointer esi
             End_If
         End_While
 
-L8:     mov B$CanBeShorten &FALSE
+L8:     Mov B$CanBeShorten &FALSE
 L9: popad
 ret
 ____________________________________________________________________________________________
@@ -645,14 +645,14 @@ ________________________________________________________________________________
 InitLabelListScanDwordPointer:
   ; Dword | ... // ...| Name | Dword1 Byte | // ....  ;;; 'StoreDataLabel'
   ;    ...|LabelName|....f|LabelName|....f|
-    mov esi D$LabelList | add esi 5
+    Mov esi D$LabelList | add esi 5
 L0: While B$esi > EOI | inc esi | End_While | inc esi
 
     While B$esi+4 < CodeLabelFlag
         NextLabelListPointer esi
     End_While
 
-    mov D$LabelListScanPointer esi
+    Mov D$LabelListScanPointer esi
   ; >>> D$LabelListScanPointer points to the dWord (Pointer to CodeList)
 ret
 
@@ -681,13 +681,13 @@ ________________________________________________________________________________
 ;;
 
 CompactLabelListAndCodeRef:
-    mov ebx D$ShortenJmpsTable, edx D$EndOfShortenJmpsTable
+    Mov ebx D$ShortenJmpsTable, edx D$EndOfShortenJmpsTable
 
-    call InitLabelListScanDwordPointer
+    Call InitLabelListScanDwordPointer
   ; >>> esi ---> D$LabelListScanPointer
 
   ; Edi = Will point to the dWord1 of 'CodeRef':
-    mov edi D$CodeRef | add edi 5
+    Mov edi D$CodeRef | add edi 5
 
   ; Case of Api Calls: ...|0FF dWordCodeAddress|:
   ;                   ....|.....|
@@ -696,19 +696,19 @@ CompactLabelListAndCodeRef:
   ; Pointing to the 'CodeRef' Pointer to 'CodeList';
     While B$edi <> EOI | inc edi | End_While | inc edi
 
-    mov eax 0
+    Mov eax 0
 
     While ebx <= edx
         If B$ebx > SHORTEN
-            mov cl B$ebx, B$LongInstruction cl
-            call AdjustAboveListPointers
+            Mov cl B$ebx, B$LongInstruction cl
+            Call AdjustAboveListPointers
             add eax 3
         End_If
 
         inc ebx
     End_While
 
-    call AdjustLastListPointers
+    Call AdjustLastListPointers
 ret
 ____________________________________________________________________________________________
 
@@ -719,7 +719,7 @@ AdjustAboveListPointers:
       ; esi ---> LabelList / edi ---> CodeRef.
 
       ; ecx = Offset matching the actual Shorten Jump Displacement, in 'CodeList':
-        mov ecx ebx | sub ecx D$ShortenJmpsTable | add ecx D$CodeListOrigine
+        Mov ecx ebx | sub ecx D$ShortenJmpsTable | add ecx D$CodeListOrigine
 
       ; LabelList adjustments of the Pointers to Code:
       ; ("<" because the Label is necessary _before_ the Instruction).
@@ -737,7 +737,7 @@ AdjustAboveListPointers:
   
   2) The Pointer to 'CodeList', in 'CodeRef' (dWord1) the 'RelativeFlag' is [On].
 ;;
-L1:     mov ebx D$edi | and ebx (not RelativeFlag)
+L1:     Mov ebx D$edi | and ebx (not RelativeFlag)
       ; "<=", because the Evocation Reference and the Shorten Jump match exactly:
         .While ebx <= ecx
             .If ebx = ecx
@@ -748,7 +748,7 @@ L1:     mov ebx D$edi | and ebx (not RelativeFlag)
             sub ebx eax
             test D$edi RelativeFlag | jz L2>
                 or ebx RelativeFlag
-L2:         mov D$edi ebx
+L2:         Mov D$edi ebx
 
           ; Next CodeRef Record:
             add edi 9
@@ -758,7 +758,7 @@ L2:         mov D$edi ebx
                 On D$edi = 0, jmp L9>
             End_While
             inc edi
-            mov ebx D$edi | and ebx (not RelativeFlag)
+            Mov ebx D$edi | and ebx (not RelativeFlag)
         .End_While
 
 L9: pop ebx
@@ -776,11 +776,11 @@ AdjustLastListPointers:
 
   ; CodeRef adjustments:
     .While D$edi <> 0
-        mov ebx D$edi | and ebx (not RelativeFlag)
+        Mov ebx D$edi | and ebx (not RelativeFlag)
         sub ebx eax | Test D$edi RelativeFlag | jz L1>
             or ebx RelativeFlag
 
-L1:     mov D$edi ebx
+L1:     Mov D$edi ebx
       ; Next CodeRef Record:
         add edi 9
       ; Cases of Api calls. Comments in 'FillCodeSymbols'. We just skip over:
@@ -793,18 +793,18 @@ L9: ret
 ____________________________________________________________________________________________
 
 CompactCodeList:
-    mov ebx D$ShortenJmpsTable, edx D$EndOfShortenJmpsTable
-    mov esi D$CodeListOrigine, edi esi
+    Mov ebx D$ShortenJmpsTable, edx D$EndOfShortenJmpsTable
+    Mov esi D$CodeListOrigine, edi esi
 
     While ebx <= edx
         If B$ebx = SHORTEN_LONG_JMP
           ; jmp Long = 0E9 >>> jmp short = 0EB
-            mov B$edi-1 0EB, B$edi 0
+            Mov B$edi-1 0EB, B$edi 0
             add esi 4 | add ebx 4 | inc edi
 
         Else_If B$ebx = SHORTEN_LONG_Jcc
           ; Example: B$esi-2 >>> 0F, 084 (JE long) >>> 074 (JE short), 0:
-            mov al B$esi-1 | sub al 010 | mov B$edi-2 al, B$edi-1 0
+            Mov al B$esi-1 | sub al 010 | Mov B$edi-2 al, B$edi-1 0
             add esi 4 | add ebx 4
 
         Else
@@ -819,22 +819,22 @@ CompactCodeList:
 
   ; Cosmetic clean-up of the trailing Bytes in CodeList:
     push edi
-        mov al 0 | While edi < D$CodeListPtr | stosb | End_While
+        Mov al 0 | While edi < D$CodeListPtr | stosb | End_While
     pop edi
-    mov D$CodeListPtr edi
+    Mov D$CodeListPtr edi
 ret
 ____________________________________________________________________________________________
 
 CompactShortenJmpsTable:
-    mov esi D$ShortenJmpsTable, edx D$EndOfShortenJmpsTable
-    mov edi esi, eax 0
+    Mov esi D$ShortenJmpsTable, edx D$EndOfShortenJmpsTable
+    Mov edi esi, eax 0
 
     While esi <= edx
         If B$esi = SHORTEN_LONG_JMP
-            mov B$esi 0 | add esi 3
+            Mov B$esi 0 | add esi 3
 
         Else_If B$esi = SHORTEN_LONG_Jcc
-            mov B$esi 0 | add esi 4
+            Mov B$esi 0 | add esi 4
 
         Else
             movsb
@@ -843,7 +843,7 @@ CompactShortenJmpsTable:
 
     End_While
 
-    mov D$EndOfShortenJmpsTable edi
+    Mov D$EndOfShortenJmpsTable edi
 ret
 ____________________________________________________________________________________________
 

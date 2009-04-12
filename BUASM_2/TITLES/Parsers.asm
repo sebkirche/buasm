@@ -37,51 +37,51 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 ; NewCopyToCodeSourceA replaces CopyToCodeSourceA which always used CodeSource as the <Source>.
-; usage: call NewCopyToCodeSourceA <Source> <SourceLength>
+; usage: Call NewCopyToCodeSourceA <Source> <SourceLength>
 
 Proc NewCopyToCodeSourceA:
     Arguments @Pointer, @Length
 
-        mov esi D@Pointer, ecx D@Length, edi D$CodeSourceA, D$StripLen ecx
+        Mov esi D@Pointer, ecx D@Length, edi D$CodeSourceA, D$StripLen ecx
         rep movsb
 EndP
 
 Proc InjectedCopyToCodeSourceA:
     Arguments @Pointer, @Length
 
-        mov esi InjectedTIME_COUNT, edi D$CodeSourceA, ecx D$InjectedTIME_COUNT_Len
-        mov D$StripLen ecx | rep movsb
+        Mov esi InjectedTIME_COUNT, edi D$CodeSourceA, ecx D$InjectedTIME_COUNT_Len
+        Mov D$StripLen ecx | rep movsb
 
-        mov esi D@Pointer, ecx D@Length | add D$StripLen ecx | rep movsb
+        Mov esi D@Pointer, ecx D@Length | add D$StripLen ecx | rep movsb
 EndP
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 ; CoolParsers are all parsers that do not change the position of statements in the source.
 
 CoolParsers:
-    call CheckTextDelimitersPairing
-    call KillMultiLineComments ; and Comments
-   ; call KillSingleLineComments
-    call NewKillVirtualCRLF
-    call KillMeaninglessCommas
-    call CheckandKillPreParsers
-        On B$ParseIncInclude = &TRUE, call ClearIncludeStateMentsFromSource ;call IncParser
-        On B$ParseAlternates = &TRUE, call AlternatesPreparsers
+    Call CheckTextDelimitersPairing
+    Call KillMultiLineComments ; and Comments
+   ; Call KillSingleLineComments
+    Call NewKillVirtualCRLF
+    Call KillMeaninglessCommas
+    Call CheckandKillPreParsers
+        On B$ParseIncInclude = &TRUE, Call ClearIncludeStateMentsFromSource ;Call IncParser
+        On B$ParseAlternates = &TRUE, Call AlternatesPreparsers
       ; +0.2 seconds (2.850 >>> 3.650) on RosAsm 4 Megas, with a Celeron 1.3.
-    call KillTitles ; + Old 'ConvertTextSigns'
-   ; call CheckBracketsPairing
-    ;call CheckNestedBracketsPairing
-    call CheckPairings
-    call ReplaceParaMacrosBrackets
-   ; call CheckOpenCloseSignPairing
+    Call KillTitles ; + Old 'ConvertTextSigns'
+   ; Call CheckBracketsPairing
+    ;Call CheckNestedBracketsPairing
+    Call CheckPairings
+    Call ReplaceParaMacrosBrackets
+   ; Call CheckOpenCloseSignPairing
 ret
 ;;
 CoolParsersOnInc:
-        call CheckTextDelimitersPairing
-        call KillMultiLineComments ; and Comments
-       ; call KillSingleLineComments
-        call NewKillVirtualCRLF
-        call KillMeaninglessCommas
+        Call CheckTextDelimitersPairing
+        Call KillMultiLineComments ; and Comments
+       ; Call KillSingleLineComments
+        Call NewKillVirtualCRLF
+        Call KillMeaninglessCommas
 ;;
 
 CoolParsersOnInc: ; CoolParsers
@@ -89,11 +89,11 @@ CoolParsersOnInc: ; CoolParsers
 
         move D$CodeSourceA D$bininc.mem, D$StripLen D$bininc.filesize
 
-        call CheckTextDelimitersPairing
-        call KillMultiLineComments ; and Comments
-       ; call KillSingleLineComments
-        call NewKillVirtualCRLF
-        call KillMeaninglessCommas
+        Call CheckTextDelimitersPairing
+        Call KillMultiLineComments ; and Comments
+       ; Call KillSingleLineComments
+        Call NewKillVirtualCRLF
+        Call KillMeaninglessCommas
 
     pop D$StripLen, D$CodeSourceA
 ret
@@ -102,35 +102,35 @@ ________________________________________________________________________________
 ; HotParsers are parsers that can change the position of statements in the source.
 
 HotParsers:
-    call TranslateAsciiToMyAscii
+    Call TranslateAsciiToMyAscii
 
-    call StripUnderscore
-    On B$ProfilerFlag = &TRUE, call InjectDashLines
+    Call StripUnderscore
+    On B$ProfilerFlag = &TRUE, Call InjectDashLines
 
-    call StripUnneededSpaces
-    call ConvertCommasToSpace
-    call StripUnneededEOI
-    call ConvertEOIinBracketsTOmeEOI
-   ; call ConvertTextSigns    ; This one 'needs' to be done sooner. Would simplify earlier routines
-    call ExtendLocalSymbols
-    call IdentifyVirtualData
-    call ReorderSource
+    Call StripUnneededSpaces
+    Call ConvertCommasToSpace
+    Call StripUnneededEOI
+    Call ConvertEOIinBracketsTOmeEOI
+   ; Call ConvertTextSigns    ; This one 'needs' to be done sooner. Would simplify earlier routines
+    Call ExtendLocalSymbols
+    Call IdentifyVirtualData
+    Call ReorderSource
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 CheckTextDelimitersPairing:
-    mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
 
-    mov B$esi-1 LF      ; for MultiLineComment starting on the first line
+    Mov B$esi-1 LF      ; for MultiLineComment starting on the first line
 
     .While esi < ecx
         .If B$esi = '"'
-            mov edx esi
+            Mov edx esi
             Do
                 inc esi | cmp esi ecx | je L9>  ; Error: no closing delimiter found inside source.
             Loop_Until B$esi = '"'
         .Else_If B$esi = "'"
-            mov edx esi
+            Mov edx esi
             Do
                 inc esi
                 cmp esi ecx | je L9>        ; Error: no closing delimiter found inside source.
@@ -153,23 +153,23 @@ CheckTextDelimitersPairing:
 L8: ret
 
 L9: ;ERROR! Unpaired textdelimiter.
-    mov esi edx
+    Mov esi edx
     While B$esi > LF | dec esi | End_While
-    mov edi CookedErrorMessage
+    Mov edi CookedErrorMessage
     While B$esi <> CR
         movsb | On edi = EndOfCookedErrorMessage, jmp L2>
     End_While
-L2: mov B$edi 0
+L2: Mov B$edi 0
 
-    mov B$Errorlevel 9 | error D$OpenTextPtr
+    Mov B$Errorlevel 9 | error D$OpenTextPtr
 ret
 ____________________________________________________________________________________________
 ; Multiline comments are converted to spaces.
 
 KillMultiLineComments:
-    mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
 
-    mov B$esi-1 LF      ; for MultiLineComment starting on the first line
+    Mov B$esi-1 LF      ; for MultiLineComment starting on the first line
 
     .While esi < ecx
         ..If B$esi = '"'
@@ -179,20 +179,20 @@ KillMultiLineComments:
         ..Else_If B$esi = ';'
             .If D$esi-1 = MLC
                 Do
-                    mov B$esi ' '
+                    Mov B$esi ' '
                     inc esi | On esi >= ecx, ret
                 Loop_Until D$esi = MLC
-                mov D$esi 0D202020  ; Replace 'LF ; ; CR' with 'Space Space Space CR'.
+                Mov D$esi 0D202020  ; Replace 'LF ; ; CR' with 'Space Space Space CR'.
                 add esi 3
             .Else
-                ;On D$esi+1 = ' Tag', call AssemblyTag
-                Do | mov B$esi ' ' | inc esi | Loop_Until B$esi < ' '
+                ;On D$esi+1 = ' Tag', Call AssemblyTag
+                Do | Mov B$esi ' ' | inc esi | Loop_Until B$esi < ' '
             .End_If
         ..End_If
         inc esi
     .End_While
 L8: ; KillMultiLineComments might have killed the closing CRLF, thus it is restored.
-    mov W$esi-2 0A0D
+    Mov W$esi-2 0A0D
 ret
 ________________________________________________________________________________________________
 ; Singleline comments are converted to spaces.
@@ -200,7 +200,7 @@ ________________________________________________________________________________
 ; then you can be pretty sure, you won't be able to strip MultiLineComments correctly.
 
 KillSingleLineComments:
-    mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
 
     .While esi < ecx
         .If B$esi = '"'
@@ -208,7 +208,7 @@ KillSingleLineComments:
         .Else_If B$esi = "'"
             Do | inc esi | Loop_Until B$esi = "'"
         .Else_If B$esi = ';'
-            Do | mov B$esi ' ' | inc esi | Loop_Until B$esi < ' '
+            Do | Mov B$esi ' ' | inc esi | Loop_Until B$esi < ' '
         .End_If
         inc esi
     .End_While
@@ -217,21 +217,21 @@ ________________________________________________________________________________
 ; Titles are converted to spaces.
 
 KillTitles: ; ConvertTextSigns
-    mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
 
     .While esi < ecx
         .If B$esi = '"'
-            mov B$esi TextSign
+            Mov B$esi TextSign
             Do | inc esi | Loop_Until B$esi = '"'
-            mov B$esi TextSign
+            Mov B$esi TextSign
         .Else_If B$esi = "'"
-            mov B$esi TextSign
+            Mov B$esi TextSign
             Do | inc esi | Loop_Until B$esi = "'"
-            mov B$esi TextSign
+            Mov B$esi TextSign
         .Else_If D$esi = 'TITL'
             If B$esi-1 = LF
                 On W$esi+4 <> 'E ', jmp L0>
-                    Do | mov B$esi ' ' | inc esi | Loop_Until B$esi < ' '
+                    Do | Mov B$esi ' ' | inc esi | Loop_Until B$esi < ' '
 L0:
             End_If
         .End_If
@@ -248,7 +248,7 @@ ________________________________________________________________________________
 [DisableWarning: B$ 0]
 
 NewKillVirtualCRLF:
-    mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
 
     ..While esi < ecx
         ...If B$esi = '"'
@@ -263,14 +263,14 @@ NewKillVirtualCRLF:
                         .If B$DisableWarning = &FALSE
                             SyntaxErrorInMacro1 D$BadSyntaxBeforeCommaPtr esi
                             pushad
-                            call 'USER32.MessageBoxA' 0, {"Disable previous warning ?", 0}, {'Syntax Error Found', 0}, &MB_SYSTEMMODAL__&MB_ICONEXCLAMATION__&MB_YESNO
+                            Call 'USER32.MessageBoxA' 0, {"Disable previous warning ?", 0}, {'Syntax Error Found', 0}, &MB_SYSTEMMODAL__&MB_ICONEXCLAMATION__&MB_YESNO
                             If eax = &IDYES
-                                mov B$DisableWarning &TRUE
+                                Mov B$DisableWarning &TRUE
                             End_If
                             popad
 
                         .End_If
-                        mov B$esi ' '
+                        Mov B$esi ' '
                     ..Else_If B$esi = ' '
                     ..Else ; any other char, exit
                         jmp L5>
@@ -278,7 +278,7 @@ NewKillVirtualCRLF:
             .End_While
          L5: | pop esi
         ...Else_If B$esi = CR
-            mov edi esi, al ' '
+            Mov edi esi, al ' '
             While B$edi <= ' '
                 dec edi | On edi < D$CodeSourceA, jmp L7>
             End_While
@@ -298,7 +298,7 @@ ________________________________________________________________________________
 ; Note: This routine will probably move to HotParsers in the future.
 
 KillMeaninglessCommas:
-    mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
 
     .While esi < ecx
         .If B$esi = '"'
@@ -306,17 +306,17 @@ KillMeaninglessCommas:
         .Else_If B$esi = "'"
             Do | inc esi | Loop_Until B$esi = "'"
         .Else_If B$esi = ','
-            mov edi esi
+            Mov edi esi
             Do
                 inc edi
             Loop_Until B$edi <> ' '
 
             If B$edi = '+'
-                mov esi edi
+                Mov esi edi
             Else_If B$edi = '-'
-                mov esi edi
+                Mov esi edi
             Else
-                mov B$esi ' '
+                Mov B$esi ' '
             End_If
         .End_If
 
@@ -332,9 +332,9 @@ ________________________________________________________________________________
  ParseBinInclude: ?       ParseIncInclude: ?]
 
 CheckandKillPreParsers:
-    mov B$ParseAlternates &FALSE, B$ParseEqual &FALSE, B$ParseOOA &FALSE, B$Dynamic &FALSE
+    Mov B$ParseAlternates &FALSE, B$ParseEqual &FALSE, B$ParseOOA &FALSE, B$Dynamic &FALSE
 
-    mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
 
     .While esi < ecx
         .If B$esi = '"'
@@ -345,9 +345,9 @@ CheckandKillPreParsers:
             ..If D$esi+4 = 'ARSE'
                 If B$esi-1 = LF
                     On B$esi+8 <> ' ', jmp L6>
-                    call NewCheckPreparser
+                    Call NewCheckPreparser
                     Do
-                        mov B$esi ' '
+                        Mov B$esi ' '
                         inc esi
                     Loop_Until B$esi < ' '
 L6:
@@ -366,89 +366,89 @@ ________________________________________________________________________________
 [Dynamic: ?  MemReservation: ?]
 
 NewCheckPreparser:
-    mov D$MemReservation 0
+    Mov D$MemReservation 0
 
-    mov edi esi
+    Mov edi esi
     add edi 9
 
 L1: While B$edi = ' ' | inc edi | End_While
 
-    mov eax D$edi | and eax (not 020202020)     ; Convert to uppercase.
+    Mov eax D$edi | and eax (not 020202020)     ; Convert to uppercase.
     ...If eax = 'ALTE'                          ; ALTERNATES
-        mov eax D$edi+4 | and eax (not 020202020)
+        Mov eax D$edi+4 | and eax (not 020202020)
         ..If eax = 'RNAT'
-            mov ax W$edi+8 | and eax (not 02020)
+            Mov ax W$edi+8 | and eax (not 02020)
             .If ax = 'ES'
                 If B$edi+10 <= ' '
-                    mov B$ParseAlternates &TRUE | add edi 11 | jmp L8>>
+                    Mov B$ParseAlternates &TRUE | add edi 11 | jmp L8>>
                 End_If
             .End_If
     ...Else_If eax = 'EQUA'                     ; EQUAL
-        mov al B$edi+4 | and eax (not 020)
+        Mov al B$edi+4 | and eax (not 020)
         .If al = 'L'
             If B$edi+5 <= ' '
-                mov B$ParseEqual &TRUE | add edi 6 | jmp L8>>
+                Mov B$ParseEqual &TRUE | add edi 6 | jmp L8>>
             End_If
         .End_If
     ...Else_If eax = 'BINI'                     ; BinIncluder
-        mov eax D$edi+4 | and eax (not 020202020)
+        Mov eax D$edi+4 | and eax (not 020202020)
         .If eax = 'NCLU'
-            mov eax D$edi+7 | and eax (not 020202020)
+            Mov eax D$edi+7 | and eax (not 020202020)
             If eax = 'UDER'
-                mov B$ParseBinInclude &TRUE | add edi 12 | jmp L8>>
+                Mov B$ParseBinInclude &TRUE | add edi 12 | jmp L8>>
             End_If
         .End_If
     ...Else_If eax = 'INCI'                     ; IncIncluder
-        mov eax D$edi+4 | and eax (not 020202020)
+        Mov eax D$edi+4 | and eax (not 020202020)
         .If eax = 'NCLU'
-            mov eax D$edi+7 | and eax (not 020202020)
+            Mov eax D$edi+7 | and eax (not 020202020)
             If eax = 'UDER'
-                mov B$ParseIncInclude &TRUE | add edi 12 | jmp L8>>
+                Mov B$ParseIncInclude &TRUE | add edi 12 | jmp L8>>
             End_If
         .End_If
     ...Else_If ax = 'OO'                        ; OOA
-        mov al B$edi+2 | and eax (not 020)
+        Mov al B$edi+2 | and eax (not 020)
         .If al = 'A'
             If B$edi+3 <= ' '
-                mov B$ParseOOA &TRUE | add edi 4 | jmp L8>>
+                Mov B$ParseOOA &TRUE | add edi 4 | jmp L8>>
             End_If
         .End_If
     ...Else_If ax = 'NE'                        ; Prepare New
-        mov al B$edi+2 | and eax (not 020)
+        Mov al B$edi+2 | and eax (not 020)
         .If al = 'W'
             If B$edi+3 <= ' '
-                mov B$ParseNew &TRUE | add edi 4 | jmp L8>>
+                Mov B$ParseNew &TRUE | add edi 4 | jmp L8>>
             End_If
         .End_If
     ...Else_If ax = 'EN'                        ; Preparse EntryPoint
-        mov eax D$edi+2 | and eax (not 020202020)
+        Mov eax D$edi+2 | and eax (not 020202020)
         .If eax = 'TRYP'
-            mov eax D$edi+6 | and eax (not 020202020)
+            Mov eax D$edi+6 | and eax (not 020202020)
             If eax = 'OINT'
-                call TakeNewEntryPoint | ret   ; Must be separated on one line
+                Call TakeNewEntryPoint | ret   ; Must be separated on one line
             End_If
         .End_If
     ...Else_If eax = 'DYNA'                        ; Preparse Dynamic
-        mov eax D$edi+3 | and eax (not 020202020)
+        Mov eax D$edi+3 | and eax (not 020202020)
         If eax = 'AMIC'
-            mov B$Dynamic &TRUE | add edi 8 | jmp L8>
+            Mov B$Dynamic &TRUE | add edi 8 | jmp L8>
         End_If
 ;;
   ; Must be run before this time...
   
     ...Else_If eax = 'RESE'                        ; Preparse Reserve
-        mov eax D$edi+3 | and eax (not 020202020)
+        Mov eax D$edi+3 | and eax (not 020202020)
         If eax = 'ERVE'
-            call ReadMemoryReservation
+            Call ReadMemoryReservation
             add edi 8 | jmp L8>
         End_If
 ;;
 
     ...End_If
 
-    mov B$edi-1 0, esi edi
-    While B$edi > ' ' | inc edi | End_While | mov B$edi 0
-    mov B$ErrorLevel 9 | error D$BadPreParsePtr, esi
+    Mov B$edi-1 0, esi edi
+    While B$edi > ' ' | inc edi | End_While | Mov B$edi 0
+    Mov B$ErrorLevel 9 | error D$BadPreParsePtr, esi
 
 L8:  On B$edi >= ' ', jmp L1<<
 
@@ -458,16 +458,16 @@ ret
 
 ReadMemoryReservation:
     push esi
-        mov esi edi
+        Mov esi edi
         While B$esi > ' ' | inc esi | End_While
         While B$esi = ' ' | inc esi | End_While
         If B$esi = '0'
-            call TranslateHexa
+            Call TranslateHexa
         Else
-            call TranslateDecimal
+            Call TranslateDecimal
         End_If
 
-        mov D$MemReservation eax
+        Mov D$MemReservation eax
     pop esi
 ret
 
@@ -476,24 +476,24 @@ ret
 
 TakeNewEntryPoint: ; Preparse EntryPoint Name
     push esi, edi, ecx
-        mov esi edi | add esi 11 | mov edi EntryPointLabel, ecx 0
+        Mov esi edi | add esi 11 | Mov edi EntryPointLabel, ecx 0
 
         While B$esi > ' '
             lodsb | and eax (not 020) | stosb | inc ecx
         End_While
-        mov B$edi 0
+        Mov B$edi 0
 
-        mov B$ErrorLevel 9
-        mov D$EntryPointLabelLen ecx | On ecx = 0, error BadEntryDef
+        Mov B$ErrorLevel 9
+        Mov D$EntryPointLabelLen ecx | On ecx = 0, error BadEntryDef
     pop ecx, edi, esi
 ret
 ________________________________________________________________________________________________
 [InsideBrackets: B$ ?]
 
 CheckBracketsPairing:
-    mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
 
-    mov B$InsideBrackets &FALSE
+    Mov B$InsideBrackets &FALSE
 
     .While esi < ecx
         .If B$esi = '"'
@@ -504,14 +504,14 @@ CheckBracketsPairing:
             If B$InsideBrackets = &TRUE
                 jmp L9>
             Else
-                mov edx esi
-                mov B$InsideBrackets &TRUE
+                Mov edx esi
+                Mov B$InsideBrackets &TRUE
             End_If
         .Else_If B$esi = ']'
             If B$InsideBrackets = &TRUE
-                mov B$InsideBrackets &FALSE
+                Mov B$InsideBrackets &FALSE
             Else
-                mov edx esi
+                Mov edx esi
                 jmp L9>
             End_If
         .End_If
@@ -523,28 +523,28 @@ CheckBracketsPairing:
 L8: ret
 
 L9: ;ERROR! Unpaired bracket
-    mov esi edx
+    Mov esi edx
     While B$esi > LF | dec esi | End_While
-    mov edi CookedErrorMessage
+    Mov edi CookedErrorMessage
     While B$esi <> CR
         movsb | On edi = EndOfCookedErrorMessage, jmp L2>
     End_While
-L2: mov B$edi 0
+L2: Mov B$edi 0
 
-    mov B$Errorlevel 9 | error D$OrphanBracketPtr
+    Mov B$Errorlevel 9 | error D$OrphanBracketPtr
 ret
 
 
 L8: ;ERROR! Unpaired open/close-sign
-    mov esi edx
+    Mov esi edx
     While B$esi > LF | dec esi | End_While
-    mov edi CookedErrorMessage
+    Mov edi CookedErrorMessage
     While B$esi <> CR
         movsb | On edi = EndOfCookedErrorMessage, jmp L2>
     End_While
-L2: mov B$edi 0
+L2: Mov B$edi 0
 
-    mov B$Errorlevel 9 | error D$ParenthesisPtr
+    Mov B$Errorlevel 9 | error D$ParenthesisPtr
 ret
 ________________________________________________________________________________________________
 
@@ -554,13 +554,13 @@ ________________________________________________________________________________
  FirstParenthesis: ?     LastParenthesis: ?]
 
 CheckPairings:
-    mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
 
-    mov B$InsideBrackets &FALSE, edx esi
-    mov D$OpenSignsCount 0, D$VirtualBracketsCount 0
+    Mov B$InsideBrackets &FALSE, edx esi
+    Mov D$OpenSignsCount 0, D$VirtualBracketsCount 0
 
     .While esi < ecx
-        mov al B$esi
+        Mov al B$esi
 
         .If al = TextSign
             Do | inc esi | Loop_Until B$esi = TextSign
@@ -573,11 +573,11 @@ CheckPairings:
             Else_If D$OpenSignsCount <> 0
                 jmp L9>>
             Else
-                mov B$InsideBrackets &TRUE, D$FirstBracket esi
+                Mov B$InsideBrackets &TRUE, D$FirstBracket esi
             End_If
 
         .Else_If al = ']'
-            mov D$LastBracket esi
+            Mov D$LastBracket esi
             If D$VirtualBracketsCount <> 0
                 jmp L9>>
             Else_If B$OpenSignsCount <> 0
@@ -585,25 +585,25 @@ CheckPairings:
             Else_If B$InsideBrackets = &FALSE
                 jmp L9>>
             End_If
-            mov B$InsideBrackets &FALSE
+            Mov B$InsideBrackets &FALSE
 
         .Else_If al = '{'
-            mov D$FirstVirtualBracket esi
+            Mov D$FirstVirtualBracket esi
             If B$InsideBrackets = &FALSE
                 On D$VirtualBracketsCount > 0, jmp L9>> ; <<<<<<<<<<<<<<<<<<<<
             End_If
             inc D$VirtualBracketsCount
 
         .Else_If al = '}'
-            mov D$LastVirtualBracket esi
+            Mov D$LastVirtualBracket esi
             dec D$VirtualBracketsCount | On D$VirtualBracketsCount = 0-1, jmp L9>>
 
         .Else_If al = '('
-            On B$OpenSignsCount = 0, mov D$FirstParenthesis esi
+            On B$OpenSignsCount = 0, Mov D$FirstParenthesis esi
             inc B$OpenSignsCount
 
         .Else_If al = ')'
-            mov D$LastParenthesis esi
+            Mov D$LastParenthesis esi
             dec D$OpenSignsCount | On D$OpenSignsCount = 0-1, jmp L9>>
         .End_If
 
@@ -611,11 +611,11 @@ CheckPairings:
     .End_While
 
     If B$InsideBrackets = &TRUE
-        mov B$esi '[' | jmp L9>
+        Mov B$esi '[' | jmp L9>
     Else_If D$VirtualBracketsCount <> 0
-        mov B$esi '{' | jmp L9>
+        Mov B$esi '{' | jmp L9>
     Else_If B$OpenSignsCount <> 0
-        mov B$esi ')' | jmp L9>
+        Mov B$esi ')' | jmp L9>
     End_If
 ret
 
@@ -623,94 +623,94 @@ L9: ; Pointing the unpairing error:
     push esi
         .If B$esi = '['
             If D$VirtualBracketsCount <> 0
-                mov esi D$FirstVirtualBracket
+                Mov esi D$FirstVirtualBracket
             Else_If D$OpenSignsCount <> 0
-                mov esi D$FirstParenthesis
+                Mov esi D$FirstParenthesis
             Else
-                mov esi D$FirstBracket
+                Mov esi D$FirstBracket
             End_If
 
         .Else_If B$esi = ']'
             If D$VirtualBracketsCount <> 0
-                mov esi D$FirstVirtualBracket
+                Mov esi D$FirstVirtualBracket
             Else_If D$OpenSignsCount <> 0
-                mov esi D$FirstParenthesis
+                Mov esi D$FirstParenthesis
             Else
                 ;
             End_If
 
         .Else_If B$esi = '{'
-            mov esi D$FirstVirtualBracket
+            Mov esi D$FirstVirtualBracket
         .Else_If B$esi = '}'
             ;
         .Else_If B$esi = '('
-            mov esi D$FirstParenthesis
+            Mov esi D$FirstParenthesis
         .Else_If B$esi = ')'
             ;
         .End_If
 
         sub esi D$CodeSourceA | add esi D$CodeSource
-        mov eax esi
+        Mov eax esi
         While B$esi > LF | dec esi | End_While | inc esi
         While B$eax > LF | inc eax | End_While | dec eax
-        mov D$BlockStartTextPtr esi, D$BlockEndTextPtr eax, B$BlockInside &TRUE
-        mov D$UpperLine esi
-        call UpOneLine | call UpOneLine | call UpOneLine
+        Mov D$BlockStartTextPtr esi, D$BlockEndTextPtr eax, B$BlockInside &TRUE
+        Mov D$UpperLine esi
+        Call UpOneLine | Call UpOneLine | Call UpOneLine
     pop esi
 
   ; Set the Error Message Text:
     .If B$esi = '['
         If D$VirtualBracketsCount <> 0
-            mov eax UnPairedNestedBrackets
+            Mov eax UnPairedNestedBrackets
         Else_If D$OpenSignsCount <> 0
-            mov eax D$ParenthesisPtr
+            Mov eax D$ParenthesisPtr
         Else
-            mov eax D$OrphanBracketPtr
+            Mov eax D$OrphanBracketPtr
         End_If
 
     .Else_If B$esi = ']'
         If D$VirtualBracketsCount <> 0
-            mov eax D$UnPairedNestedBracketsPtr
+            Mov eax D$UnPairedNestedBracketsPtr
         Else_If D$OpenSignsCount <> 0
-            mov eax D$ParenthesisPtr
+            Mov eax D$ParenthesisPtr
         Else
-            mov eax D$OrphanBracketPtr
+            Mov eax D$OrphanBracketPtr
         End_If
 
     .Else_If B$esi = '{'
-        mov eax D$UnPairedNestedBracketsPtr
+        Mov eax D$UnPairedNestedBracketsPtr
 
     .Else_If B$esi = '}'
-        mov eax D$UnPairedNestedBracketsPtr
+        Mov eax D$UnPairedNestedBracketsPtr
 
     .Else_If B$esi = '('
-        mov eax D$ParenthesisPtr
+        Mov eax D$ParenthesisPtr
 
     .Else_If B$esi = ')'
-        mov eax D$ParenthesisPtr
+        Mov eax D$ParenthesisPtr
 
     .Else
-        mov eax D$unknownPtr
+        Mov eax D$unknownPtr
 
     .End_If
 
-    mov edi CookedErrorMessage, esi D$BlockStartTextPtr
+    Mov edi CookedErrorMessage, esi D$BlockStartTextPtr
     While esi < D$BlockEndTextPtr
         movsb | On edi = EndOfCookedErrorMessage, jmp L2>
     End_While
 
-L2: mov B$edi 0
+L2: Mov B$edi 0
 
-    mov B$Errorlevel 9 | error eax
+    Mov B$Errorlevel 9 | error eax
 ret
 ____________________________________________________________________________________________
 
 [InsideParaMacro: ?]
 
 ReplaceParaMacrosBrackets:
-    mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
 
-    mov B$InsideBrackets &FALSE, B$InsideParaMacro &FALSE, ebx 0, edx 0
+    Mov B$InsideBrackets &FALSE, B$InsideParaMacro &FALSE, ebx 0, edx 0
 
     .While esi < ecx
         lodsb
@@ -718,30 +718,30 @@ ReplaceParaMacrosBrackets:
         ..If al = TextSign
             While B$esi <> TextSign | inc esi | End_While | inc esi
         ..Else_If al = '['
-            mov B$InsideBrackets &TRUE
+            Mov B$InsideBrackets &TRUE
         ..Else_If al = ']'
-            mov B$InsideBrackets &FALSE
+            Mov B$InsideBrackets &FALSE
         ..Else_If al = '{'
             .If B$InsideBrackets = &FALSE
-                mov B$esi-1 OpenParaMacro
-                mov B$InsideParaMacro &TRUE
+                Mov B$esi-1 OpenParaMacro
+                Mov B$InsideParaMacro &TRUE
             .Else
-                mov ebx esi | dec ebx
+                Mov ebx esi | dec ebx
                 While B$ebx <> '['
                     dec ebx
                     On B$ebx = '|', jmp L2>
                     On B$ebx = LF, jmp L2>
                     If B$ebx > ' '
-                        mov B$esi-1 OpenParaMacro
-                        mov B$InsideParaMacro &TRUE | jmp L2>
+                        Mov B$esi-1 OpenParaMacro
+                        Mov B$InsideParaMacro &TRUE | jmp L2>
                     End_If
                 End_While
             .End_If
 
         ..Else_If al = '}'
             If B$InsideParaMacro = &TRUE
-                mov B$esi-1 CloseParaMacro
-                mov B$InsideParaMacro &FALSE
+                Mov B$esi-1 CloseParaMacro
+                Mov B$InsideParaMacro &FALSE
             End_If
 
         ..End_If
@@ -752,9 +752,9 @@ ________________________________________________________________________________
 [OpenSignsCount: B$ ?]
 
 CheckOpenCloseSignPairing:
-    mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
 
-    mov B$OpenSignsCount 0
+    Mov B$OpenSignsCount 0
 
     .While esi < ecx
         .If B$esi = '"'
@@ -763,7 +763,7 @@ CheckOpenCloseSignPairing:
             Do | inc esi | Loop_Until B$esi = "'"
         .Else_If B$esi = '('
             If B$OpenSignsCount = 0
-                mov edx esi
+                Mov edx esi
             End_If
             inc B$OpenSignsCount
         .Else_If B$esi = ')'
@@ -777,32 +777,32 @@ CheckOpenCloseSignPairing:
 L8: ret
 
 L9: ;ERROR! Unpaired open/close-sign
-    mov esi edx
+    Mov esi edx
     While B$esi > LF | dec esi | End_While
-    mov edi CookedErrorMessage
+    Mov edi CookedErrorMessage
     While B$esi <> CR
         movsb | On edi = EndOfCookedErrorMessage, jmp L2>
     End_While
-L2: mov B$edi 0
+L2: Mov B$edi 0
 
-    mov B$Errorlevel 9 | error D$ParenthesisPtr
+    Mov B$Errorlevel 9 | error D$ParenthesisPtr
 ret
 ____________________________________________________________________________________________
 ________________________________________________________________________________________________
 NewCountStatements:
   ; How many statements:
-    mov B$ErrorLevel 0
-    mov esi D$CodeSourceA, D$StatementsCounter 0, D$LinesCounter 0
-    mov B$DontCountNext &FALSE
-    mov ebx esi | add ebx D$StripLen
+    Mov B$ErrorLevel 0
+    Mov esi D$CodeSourceA, D$StatementsCounter 0, D$LinesCounter 0
+    Mov B$DontCountNext &FALSE
+    Mov ebx esi | add ebx D$StripLen
 
     .While esi < ebx
         .If B$esi = TextSign
             Do | inc esi | Loop_Until B$esi = TextSign
         .Else_If B$esi = LF
-            mov B$DontCountNext &FALSE
+            Mov B$DontCountNext &FALSE
         .Else_If B$esi = '|'
-            mov B$DontCountNext &FALSE
+            Mov B$DontCountNext &FALSE
         .Else_If B$esi = '['
             inc D$LinesCounter
             .Do
@@ -811,12 +811,12 @@ NewCountStatements:
                 End_If
                 inc esi
             .Loop_Until B$esi = ']'
-            mov B$DontCountNext &FALSE
+            Mov B$DontCountNext &FALSE
         .Else_If B$esi > ' '
             ..If B$esi <> '_'
                 If B$DontCountNext = &FALSE
                     inc D$LinesCounter
-                    mov B$DontCountNext &TRUE
+                    Mov B$DontCountNext &TRUE
                 End_If
             ..End_If
         .End_If
@@ -827,15 +827,15 @@ NewCountStatements:
 ; set mem tables:
 
 L9: If D$LinesCounter = 0
-        call CloseProgressBar
-        call 'USER32.MessageBoxA' 0, {"RosAsm can't compile empty files", 0},
+        Call CloseProgressBar
+        Call 'USER32.MessageBoxA' 0, {"RosAsm can't compile empty files", 0},
                                      {' Sorry', 0}, 0
-        mov B$CompileErrorHappend &TRUE
-        mov esp D$OldStackPointer | ret ; direct error
+        Mov B$CompileErrorHappend &TRUE
+        Mov esp D$OldStackPointer | ret ; direct error
        ; pop eax | ret                  ; Abort, pop caller and return to Message Loop
     End_If
 
-    mov eax D$LinesCounter | add eax 20 | shl eax 3  ; 2 > dword +1 > security
+    Mov eax D$LinesCounter | add eax 20 | shl eax 3  ; 2 > dword +1 > security
     push eax
         VirtualAlloc StatementsTable eax
     pop eax
@@ -843,22 +843,22 @@ L9: If D$LinesCounter = 0
 
 ;StoreStatements:
 
-    mov ecx D$CodeSource | sub ecx D$CodeSourceA    ; Ajust from CodeSource to CodeSourceA.
-    mov esi D$CodeSourceA, edi D$StatementsTable
-    mov B$DontCountNext &FALSE
+    Mov ecx D$CodeSource | sub ecx D$CodeSourceA    ; Ajust from CodeSource to CodeSourceA.
+    Mov esi D$CodeSourceA, edi D$StatementsTable
+    Mov B$DontCountNext &FALSE
     move D$StatementsPtr D$StatementsTable | move D$edi esi | add D$edi ecx
-    mov ebx esi | add ebx D$StripLen
+    Mov ebx esi | add ebx D$StripLen
 
     .While esi < ebx
         .If B$esi = TextSign
             Do | inc esi | Loop_Until B$esi = TextSign
         .Else_If B$esi = LF
-            mov B$DontCountNext &FALSE
+            Mov B$DontCountNext &FALSE
         .Else_If B$esi = '|'
-            mov B$DontCountNext &FALSE
+            Mov B$DontCountNext &FALSE
         .Else_If B$esi = '['
 
-            mov eax esi | add eax ecx | stosd | add D$StatementsPtr 4
+            Mov eax esi | add eax ecx | stosd | add D$StatementsPtr 4
 
             .Do
                 If B$esi = TextSign
@@ -868,13 +868,13 @@ L9: If D$LinesCounter = 0
                 inc esi
             .Loop_Until B$esi = ']'
 
-            mov B$DontCountNext &FALSE
+            Mov B$DontCountNext &FALSE
 
         .Else_If B$esi > ' '
             ..If B$esi <> '_'
                 If B$DontCountNext = &FALSE
-                    mov eax esi | add eax ecx | stosd | add D$StatementsPtr 4
-                    mov B$DontCountNext &TRUE
+                    Mov eax esi | add eax ecx | stosd | add D$StatementsPtr 4
+                    Mov B$DontCountNext &TRUE
                 End_If
             ..End_If
         .End_If
@@ -882,7 +882,7 @@ L9: If D$LinesCounter = 0
         inc esi
     .End_While
 
-    mov eax 0 | stosd
+    Mov eax 0 | stosd
 ret
 ________________________________________________________________________________________________
 ________________________________________________________________________________________________
@@ -890,7 +890,7 @@ ________________________________________________________________________________
 ; RosAsm help.
 
 StripUnderscore:
-    mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen | add ecx D$CodeSourceA
 
     .While esi < ecx
         .If B$esi = TextSign
@@ -905,9 +905,9 @@ StripUnderscore:
         movsb
     .End_While
 
-    mov ecx edi
+    Mov ecx edi
     sub ecx D$CodeSourceB
-    mov D$StripLen ecx
+    Mov D$StripLen ecx
 
     Exchange D$CodeSourceA D$CodeSourceB
 ret
@@ -933,7 +933,7 @@ ________________________________________________________________________________
     CloseBracket        19   ; ]   013
 ; 18, 17 >>> NewOpenBracket / NewCloseBracket
   PartEnds            16
-    memMarker           15   ; $ or $  exemple: MOV B$MYVALUE 1
+    memMarker           15   ; $ or $  exemple: Mov B$MYVALUE 1
     colonSign           14   ; :
     openSign            13   ; (
     closeSign           12   ; )
@@ -969,7 +969,7 @@ ________________________________________________________________________________
  247,248,249,250,251,252,253,254,255]
 
 TranslateAsciiToMyAscii:
-    mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen, ebx 0
+    Mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen, ebx 0
     add ecx D$CodeSourceA
 
     .While esi < ecx
@@ -977,9 +977,9 @@ TranslateAsciiToMyAscii:
             Do | inc esi | Loop_Until B$esi = TextSign
 
         Else
-            mov bl B$esi
-            mov al B$ebx+MyAsciiTable
-            mov B$esi al
+            Mov bl B$esi
+            Mov al B$ebx+MyAsciiTable
+            Mov B$esi al
 
         End_If
 
@@ -989,7 +989,7 @@ ret
 ________________________________________________________________________________________________
 
 StripUnneededSpaces:
-    mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen | add ecx D$CodeSourceA
 
     .While esi < ecx
         .If B$esi = TextSign
@@ -1027,7 +1027,7 @@ StripUnneededSpaces:
         .End_If
     .End_While
 
-    mov ecx edi | sub ecx D$CodeSourceB | mov D$StripLen ecx
+    Mov ecx edi | sub ecx D$CodeSourceB | Mov D$StripLen ecx
 
     Exchange D$CodeSourceA D$CodeSourceB
 ret
@@ -1036,20 +1036,20 @@ ________________________________________________________________________________
 ; Remaining some valid Comma. Example "mov eax, -1".
 
 ConvertCommasToSpace:
-    mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
 
     While esi < ecx
-        On B$esi = CommaSign, mov B$esi Space
+        On B$esi = CommaSign, Mov B$esi Space
         inc esi
     End_While
 ret
 ________________________________________________________________________________________________
 StripUnneededEOI:
-    mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen | add ecx D$CodeSourceA
 
 ; Ensure that the source starts with an EOI
     If B$esi <> EOI
-        mov B$edi EOI
+        Mov B$edi EOI
         inc edi
     End_If
 
@@ -1075,31 +1075,31 @@ StripUnneededEOI:
         .End_If
     .End_While
 
-    mov ecx edi
+    Mov ecx edi
     sub ecx D$CodeSourceB
-    mov D$StripLen ecx
+    Mov D$StripLen ecx
 
-    mov B$edi EOI,  B$edi+1 EOI | add D$Striplen 2          ; write end mark '||'
+    Mov B$edi EOI,  B$edi+1 EOI | add D$Striplen 2          ; write end mark '||'
 
     Exchange D$CodeSourceA D$CodeSourceB
 ret
 ____________________________________________________________________________________________
 
 ConvertEOIinBracketsTOmeEOI:
-    mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen, ebx 0 | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen, ebx 0 | add ecx D$CodeSourceA
 
-    mov B$InsideBrackets &FALSE
+    Mov B$InsideBrackets &FALSE
 
     .While esi < ecx
         .If B$esi = TextSign
             Do | inc esi | Loop_Until B$esi = TextSign
         .Else_if B$esi = OpenBracket
-            mov B$InsideBrackets &TRUE
+            Mov B$InsideBrackets &TRUE
         .Else_if B$esi = CloseBracket
-            mov B$InsideBrackets &FALSE
+            Mov B$InsideBrackets &FALSE
         .Else_if B$esi = EOI
             If B$InsideBrackets = &TRUE
-                mov B$esi meEOI
+                Mov B$esi meEOI
             End_If
         .End_If
         inc esi
@@ -1107,17 +1107,17 @@ ConvertEOIinBracketsTOmeEOI:
 ret
 ________________________________________________________________________________________________
 ConvertTextSigns:
-    mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen | add ecx D$CodeSourceA
 
     .While esi < ecx
         .If B$esi = '"'
-            mov B$esi TextSign
+            Mov B$esi TextSign
             Do | inc esi | Loop_Until B$esi = '"'
-            mov B$esi TextSign
+            Mov B$esi TextSign
         .ElseIf B$esi = "'"
-            mov B$esi TextSign
+            Mov B$esi TextSign
             Do | inc esi | Loop_Until B$esi = "'"
-            mov B$esi TextSign
+            Mov B$esi TextSign
         .End_If
         inc esi
     .End_While
@@ -1133,7 +1133,7 @@ ________________________________________________________________________________
 ;;
 
 NoAutomaticLabel:
-    mov esi D$CodeSourceA, edx esi | add edx D$Striplen
+    Mov esi D$CodeSourceA, edx esi | add edx D$Striplen
 
     .While esi < edx
         If B$esi = TextSign
@@ -1152,7 +1152,7 @@ NoAutomaticLabel:
                     cmp B$esi+5 LowSigns | jb L2>
                     cmp B$esi+4 LowSigns | jb L2>
 
-                        mov B$esi+9 0, B$Errorlevel 9 | error ZZZZreserved, esi
+                        Mov B$esi+9 0, B$Errorlevel 9 | error ZZZZreserved, esi
 
                 End_If
             .End_If
@@ -1175,9 +1175,9 @@ ________________________________________________________________________________
   @Locals inserted by Macros Evocations.
 ;;
 ExtendLocalSymbols:
-    mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen | add ecx D$CodeSourceA
 
-    mov B$LastFoundLabel 0
+    Mov B$LastFoundLabel 0
 
     .While esi < ecx
         ...If B$esi = TextSign
@@ -1192,24 +1192,24 @@ ExtendLocalSymbols:
               ; nonlocal label, as local labels are always 2 characters:
                 .If B$esi-3 > LowSigns
                     push esi
-                    mov al 0
-                    Do | dec esi | On B$esi = '@', mov al 1 | Loop_Until B$esi < LowSigns
+                    Mov al 0
+                    Do | dec esi | On B$esi = '@', Mov al 1 | Loop_Until B$esi < LowSigns
                     If al = 1
                         pop esi
 
                     Else
                         pop eax
                         inc esi
-                        mov ebx LastFoundLabel
-                        Do | lodsb | mov B$ebx al | inc ebx | Loop_Until B$esi = ColonSign
-                        mov B$ebx 0
+                        Mov ebx LastFoundLabel
+                        Do | lodsb | Mov B$ebx al | inc ebx | Loop_Until B$esi = ColonSign
+                        Mov B$ebx 0
                     End_If
 
                 .End_If
             ..End_If
 
         ...Else_If B$esi = OpenBracket
-            mov ebx esi | inc ebx
+            Mov ebx esi | inc ebx
             While B$ebx > LowSigns | inc ebx | End_While
             If B$ebx = meEOI
                 While B$esi <> CloseBracket | movsb | End_While
@@ -1217,15 +1217,15 @@ ExtendLocalSymbols:
 
         ...Else_If B$esi = '@'
             If B$esi-1 < LowSigns
-                mov ebx LastFoundLabel
+                Mov ebx LastFoundLabel
                 While B$ebx <> 0
-                    mov al B$ebx | inc ebx | stosb
+                    Mov al B$ebx | inc ebx | stosb
                 End_While
             Else_if B$esi-2 < LowSigns
-                mov al memMarker | stosb
-                mov ebx LastFoundLabel
+                Mov al memMarker | stosb
+                Mov ebx LastFoundLabel
                 While B$ebx <> 0
-                    mov al B$ebx | inc ebx | stosb
+                    Mov al B$ebx | inc ebx | stosb
                 End_While
             End_If
 
@@ -1235,7 +1235,7 @@ ExtendLocalSymbols:
         movsb
     .End_While
 
-    mov ecx edi | sub ecx D$CodeSourceB | mov D$StripLen ecx
+    Mov ecx edi | sub ecx D$CodeSourceB | Mov D$StripLen ecx
 
     Exchange D$CodeSourceA D$CodeSourceB
 ret
@@ -1243,13 +1243,13 @@ ________________________________________________________________________________
 [VirtualDataFlag: B$ ?]
 
 IdentifyVirtualData:
-    mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, ecx D$StripLen | add ecx D$CodeSourceA
 
     .While esi < ecx
         .If B$esi = TextSign
             Do | inc esi | Loop_Until B$esi = TextSign
         .Else_If B$esi = OpenBracket
-            mov edx esi, B$VirtualDataFlag &FALSE
+            Mov edx esi, B$VirtualDataFlag &FALSE
             .Do
                 inc esi
                 If B$esi = TextSign
@@ -1257,12 +1257,12 @@ IdentifyVirtualData:
                 Else_If B$esi = '{'
                     Do | inc esi | Loop_Until B$esi = '}'
                 Else_If B$esi = '?'
-                    mov B$VirtualDataFlag &TRUE
+                    Mov B$VirtualDataFlag &TRUE
                 End_If
             .Loop_Until B$esi = CloseBracket
 
             If B$VirtualDataFlag = &TRUE
-                mov B$edx OpenVirtual, B$esi CloseVirtual
+                Mov B$edx OpenVirtual, B$esi CloseVirtual
             End_If
         .End_If
         inc esi
@@ -1272,7 +1272,7 @@ ________________________________________________________________________________
 ; The source in CodeSourceA is reorders to: Data/Equates/Macro, Virtual Data, Code..
 
 ReorderSource:
-    mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen | add ecx D$CodeSourceA
 
     move D$StatementsPtr D$StatementsTable, D$StatementsPtr2  D$StatementsTable2
 
@@ -1297,8 +1297,8 @@ ReorderSource:
             .Loop_Until B$esi = CloseBracket
             movsb
 
-            mov eax D$StatementsPtr, eax D$eax
-            mov ebx D$StatementsPtr2, D$ebx eax
+            Mov eax D$StatementsPtr, eax D$eax
+            Mov ebx D$StatementsPtr2, D$ebx eax
             add D$StatementsPtr2 4 | On D$edx <> 'ZZZZ', add D$StatementsPtr 4
 
         .Else_If B$esi = OpenVirtual
@@ -1328,7 +1328,7 @@ ReorderSource:
         .End_If
     .End_While
 
-    mov esi D$CodeSourceA
+    Mov esi D$CodeSourceA
 
   ; Copy Virtual to CodeSourceB.
   ; this might be needed to skip first EOI if present.
@@ -1364,8 +1364,8 @@ ReorderSource:
             .Loop_Until B$esi = CloseVirtual
             movsb
 
-            mov eax D$StatementsPtr, eax D$eax
-            mov ebx D$StatementsPtr2, D$ebx eax
+            Mov eax D$StatementsPtr, eax D$eax
+            Mov ebx D$StatementsPtr2, D$ebx eax
             add D$StatementsPtr2 4 | On D$edx <> 'ZZZZ', add D$StatementsPtr 4
 
         .Else_If B$esi = EOI
@@ -1387,10 +1387,10 @@ ReorderSource:
     .End_While
 
 
-    mov B$edi EOI
+    Mov B$edi EOI
     inc edi
 
-    mov esi D$CodeSourceA
+    Mov esi D$CodeSourceA
 
   ; Copy the other statements to CodeSourceB.
   ; this might be needed to skip first EOI if present.
@@ -1432,9 +1432,9 @@ ReorderSource:
             Else_If B$esi-1 = EOI
                 ; nop
             Else
-                mov eax D$StatementsPtr, eax D$eax
-                mov ebx D$StatementsPtr2
-                mov D$ebx eax
+                Mov eax D$StatementsPtr, eax D$eax
+                Mov ebx D$StatementsPtr2
+                Mov D$ebx eax
 
                 add D$StatementsPtr 4
                 add D$StatementsPtr2 4
@@ -1447,16 +1447,16 @@ ReorderSource:
         .End_If
     .End_While
 
-    mov ecx edi
+    Mov ecx edi
     sub ecx D$CodeSourceB
-    mov D$StripLen ecx
+    Mov D$StripLen ecx
 
-    mov eax D$StatementsPtr2, D$eax 0
+    Mov eax D$StatementsPtr2, D$eax 0
 
     Exchange D$CodeSourceA D$CodeSourceB
     Exchange D$StatementsTable D$StatementsTable2
 
-    call StripNewlyAddedUnneededEOI
+    Call StripNewlyAddedUnneededEOI
 ret
 ____________________________________________________________________________________________
 
@@ -1464,7 +1464,7 @@ ________________________________________________________________________________
 
 StripNewlyAddedUnneededEOI:
 
-    mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen | add ecx D$CodeSourceA
+    Mov esi D$CodeSourceA, edi D$CodeSourceB, ecx D$StripLen | add ecx D$CodeSourceA
 
     .While esi < ecx
         .If B$esi = TextSign
@@ -1483,12 +1483,12 @@ StripNewlyAddedUnneededEOI:
         .End_If
     .End_While
 
-    mov ecx edi | sub ecx D$CodeSourceB | mov D$StripLen ecx
+    Mov ecx edi | sub ecx D$CodeSourceB | Mov D$StripLen ecx
 
   ; Write the end mark '||':
-    mov B$edi EOI | inc D$Striplen
+    Mov B$edi EOI | inc D$Striplen
     If B$edi-1 <> EOI
-        mov B$edi+1 EOI | inc D$Striplen
+        Mov B$edi+1 EOI | inc D$Striplen
     End_If
 
     Exchange D$CodeSourceA D$CodeSourceB
@@ -1499,33 +1499,33 @@ ________________________________________________________________________________
 NewPrepareExport:
     VirtualFree D$ExportListAPtr, D$ExportListBPtr, D$ExpOrdArray ;D$ExportListPointers
 ;int3
-    call NewHowManyExport
+    Call NewHowManyExport
 
     If B$ExportsectionWanted = &TRUE
-        call NewStoreToExportListA
+        Call NewStoreToExportListA
     End_If
 
     If D$NumberOfExportedFunctions = 0
-        mov B$ExportsectionWanted &FALSE
+        Mov B$ExportsectionWanted &FALSE
         VirtualFree D$ExportListAPtr, D$ExportListBPtr, D$ExpOrdArray ;, D$ExportListPointers
     End_If
 ret
 
 
 NewHowManyExport:
-    mov B$ExportsectionWanted &FALSE
-    mov B$ErrorLevel 0
-    mov esi D$CodeSourceA, ecx esi, ebx 0, edx 0 | add ecx D$StripLen
+    Mov B$ExportsectionWanted &FALSE
+    Mov B$ErrorLevel 0
+    Mov esi D$CodeSourceA, ecx esi, ebx 0, edx 0 | add ecx D$StripLen
 
     .While esi < ecx
         .If B$esi = TextSign
             Do | inc esi | Loop_Until B$esi = TextSign
         .Else_If W$esi = '::'
             If_Or  B$esi-1 = '|', B$esi-1 <= ' '
-                mov B$esi+2 EOI | jmp OnNoSpaceBeforeColonError
+                Mov B$esi+2 EOI | jmp OnNoSpaceBeforeColonError
             End_If
             If B$esi+2 > ' '
-                mov B$esi+3 EOI | jmp OnNeedSpaceAfterColonError
+                Mov B$esi+3 EOI | jmp OnNeedSpaceAfterColonError
             End_If
             cmp B$esi-2 '|' | je L0> ; case A:
             cmp B$esi-2 ' ' | jbe L0>
@@ -1533,7 +1533,7 @@ NewHowManyExport:
             cmp B$esi-3 '[' | je L2>
             cmp B$esi-3 ']' | je L2>
             cmp B$esi-3 ' ' | ja L0>
-L2:         mov ax W$esi-2
+L2:         Mov ax W$esi-2
             cmp ah '9' | ja L2> | cmp ah '0' | jae E1>
 L2:         or eax 02020 | cmp ah 's' | jne L0>
             cmp al 'c' | je E1> | cmp al 'd' | je E1> | cmp al 'e' | je E1>
@@ -1559,7 +1559,7 @@ L1:
 
         .Else_If B$esi = ':'
             If_Or  B$esi-1 = '|', B$esi-1 <= ' '
-                mov B$esi+1 EOI | jmp OnNoSpaceBeforeColonError
+                Mov B$esi+1 EOI | jmp OnNoSpaceBeforeColonError
             End_If
             cmp B$esi-2 '|' | je L0> ; case A:
             cmp B$esi-2 ' ' | jbe L0>
@@ -1568,7 +1568,7 @@ L1:
             cmp B$esi-3 '|' | je L8> ; case L9
             cmp B$esi-3 '$' | je L8> ; case D$FS:
 L0:         If B$esi+1 > ' '
-E0:             mov B$esi+2 EOI | jmp OnNeedSpaceAfterColonError
+E0:             Mov B$esi+2 EOI | jmp OnNeedSpaceAfterColonError
             End_If
             cmp B$ExportALL 0 | je L8>
 ;            While B$esi-1 > ' ' | dec esi | End_While
@@ -1580,7 +1580,7 @@ L0:         cmp B$esi-1 ' ' | jbe L1>
             cmp B$esi-1 ':' | je E0< ; prevents loop in case A:B:
             dec esi | jmp L0<
 L1:
-            mov eax D$esi | or eax 0202020 | cmp eax 'ord0' | je OnBadExportOrdinal
+            Mov eax D$esi | or eax 0202020 | cmp eax 'ord0' | je OnBadExportOrdinal
             While B$esi <> ':' | inc esi | inc ebx | End_While
             add ebx 2 | inc edx
 L8:
@@ -1589,9 +1589,9 @@ L8:
     .End_While
 
     If edx > 0
-        mov B$ExportsectionWanted &TRUE
-        mov D$NumberOfExportedFunctions edx
-        mov D$ExportSectionLen ebx
+        Mov B$ExportsectionWanted &TRUE
+        Mov D$NumberOfExportedFunctions edx
+        Mov D$ExportSectionLen ebx
         shl edx 2 | VirtualAlloc ExpOrdArray edx
         VirtualAlloc ExportListAPtr D$ExportSectionLen
     End_If
@@ -1600,31 +1600,31 @@ ret
 
 OnNoSpaceBeforeColonError:
 L0: cmp B$esi-1 ' ' | jbe L1> | cmp B$esi-1 '|' | je L1> | dec esi | jmp L0<
-L1: mov B$esi-1, EOI
-    mov eax esi | sub eax D$CodeSourceA | add eax D$CodeSource
-    mov ecx D$StatementsPtr | mov D$ecx eax
+L1: Mov B$esi-1, EOI
+    Mov eax esi | sub eax D$CodeSourceA | add eax D$CodeSource
+    Mov ecx D$StatementsPtr | Mov D$ecx eax
     Error D$NoSpaceBeforeColonPtr, esi
 
 OnNeedSpaceAfterColonError:
 L0: cmp B$esi-1 ' ' | jbe L1> | cmp B$esi-1 '|' | je L1> | dec esi | jmp L0<
-L1: mov B$esi-1, EOI
-    mov eax esi | sub eax D$CodeSourceA | add eax D$CodeSource
-    mov ecx D$StatementsPtr | mov D$ecx eax
+L1: Mov B$esi-1, EOI
+    Mov eax esi | sub eax D$CodeSourceA | add eax D$CodeSource
+    Mov ecx D$StatementsPtr | Mov D$ecx eax
     Error D$NeedSpaceAfterColonPtr, esi
 
 OnLocalExpotingError:
-    mov B$esi-1 EOI
-    mov eax esi | sub eax D$CodeSourceA | add eax D$CodeSource
-    mov ecx D$StatementsPtr | mov D$ecx eax
-    While B$esi <> ':' | inc esi | End_While | mov B$esi+2 EOI
+    Mov B$esi-1 EOI
+    Mov eax esi | sub eax D$CodeSourceA | add eax D$CodeSource
+    Mov ecx D$StatementsPtr | Mov D$ecx eax
+    While B$esi <> ':' | inc esi | End_While | Mov B$esi+2 EOI
     Error BadLabel, esi
 
 
 NewStoreToExportListA:
-    mov esi D$CodeSourceA, edi D$ExportListAPtr;, ebx D$ExportListPointers
-    mov ecx esi | add ecx D$StripLen
+    Mov esi D$CodeSourceA, edi D$ExportListAPtr;, ebx D$ExportListPointers
+    Mov ecx esi | add ecx D$StripLen
     and D$NumberOfJunkBytes 0 | and D$NumberOfExportedFunctions 0; count again accepted ones
-    and D$OnlyOrdinalExport 0 | and D$OrdinalExport 0 | mov B$ErrorLevel 0
+    and D$OnlyOrdinalExport 0 | and D$OrdinalExport 0 | Mov B$ErrorLevel 0
 
     ..While esi < ecx
         ..If B$esi = TextSign
@@ -1639,17 +1639,17 @@ L1:
             If B$esi = '@'
                 jmp OnLocalExpotingError
             End_If
-            mov ebx edi ; mov D$ebx edi | add ebx 4 ; store Pointer jE!
-            mov eax D$esi | or eax 0202020 | cmp eax 'ord0' | jne L0>
-            call CheckExportOrdinal | add D$NumberOfJunkBytes eax
+            Mov ebx edi ; Mov D$ebx edi | add ebx 4 ; store Pointer jE!
+            Mov eax D$esi | or eax 0202020 | cmp eax 'ord0' | jne L0>
+            Call CheckExportOrdinal | add D$NumberOfJunkBytes eax
 L0:         While B$esi <> ':' | movsb | End_While | inc esi
-            mov al EOI | stosb
+            Mov al EOI | stosb
            ; if full Export-Name, append it
             If B$esi+1 = TextSign
-               mov eax edi | sub eax ebx | inc eax ; D$ebx-4
+               Mov eax edi | sub eax ebx | inc eax ; D$ebx-4
                add D$NumberOfJunkBytes eax | inc esi
-               Do | movsb | mov B$esi-1 ' ' | Loop_Until B$esi = TextSign
-               movsb | mov B$esi-1 ' ' | dec esi
+               Do | movsb | Mov B$esi-1 ' ' | Loop_Until B$esi = TextSign
+               movsb | Mov B$esi-1 ' ' | dec esi
             End_If
             inc D$NumberOfExportedFunctions
         ..Else_If B$esi = ':'
@@ -1670,7 +1670,7 @@ L1:
             End_If
             ;mov D$ebx edi | add ebx 4 ; store Pointer jE!
             While B$esi <> ':' | movsb | End_While
-            mov al EOI | stosb
+            Mov al EOI | stosb
             inc D$NumberOfExportedFunctions
 L8:
         ..Else_If B$esi = '['
@@ -1689,19 +1689,19 @@ L1:
                     If B$esi = '@'
                         jmp OnLocalExpotingError
                     End_If
-                    mov ebx edi ;mov D$ebx edi | add ebx 4 ; store Pointer jE!
-                    mov eax D$esi | or eax 0202020 | cmp eax 'ord0' | jne L0>
-                    call CheckExportOrdinal | add D$NumberOfJunkBytes eax
+                    Mov ebx edi ;mov D$ebx edi | add ebx 4 ; store Pointer jE!
+                    Mov eax D$esi | or eax 0202020 | cmp eax 'ord0' | jne L0>
+                    Call CheckExportOrdinal | add D$NumberOfJunkBytes eax
 L0:                 While B$esi <> ':' | movsb | End_While | inc esi
-                    mov al colonSign ; mark DataLABEL
-                    mov ah EOI | stosw
-                    mov B$esi Space
+                    Mov al colonSign ; mark DataLABEL
+                    Mov ah EOI | stosw
+                    Mov B$esi Space
                   ; if full Export-Name, append it
                     If B$esi+1 = TextSign
-                       mov eax edi | sub eax ebx ;inc eax ;D$ebx-4
+                       Mov eax edi | sub eax ebx ;inc eax ;D$ebx-4
                        add D$NumberOfJunkBytes eax | inc esi
-                       Do | movsb | mov B$esi-1 ' ' | Loop_Until B$esi = TextSign
-                       movsb | mov B$esi-1 ' ' | dec esi
+                       Do | movsb | Mov B$esi-1 ' ' | Loop_Until B$esi = TextSign
+                       movsb | Mov B$esi-1 ' ' | dec esi
                     End_If
                     inc D$NumberOfExportedFunctions, D$NumberOfJunkBytes ; for SUB markers
                 .Else_If B$esi = ':'
@@ -1723,8 +1723,8 @@ L1:
                     End_If
                     ;mov D$ebx edi | add ebx 4 ; store Pointer jE!
                     While B$esi <> ':' | movsb | End_While
-                    mov al colonSign ; mark DataLABEL
-                    mov ah EOI | stosw
+                    Mov al colonSign ; mark DataLABEL
+                    Mov ah EOI | stosw
                     inc D$NumberOfExportedFunctions, D$NumberOfJunkBytes
 L8:
                 .End_If
@@ -1737,71 +1737,71 @@ L8:
 ;int3
     ON D$NumberOfExportedFunctions = 0, ret
     cmp D$NumberOfExportedFunctions 010000 | jb L4>
-    mov eax D$TooManyExportsPtr | jmp OutOnError
+    Mov eax D$TooManyExportsPtr | jmp OutOnError
 L4: ; calculate Export size
-    sub edi D$ExportListAPtr ;| mov ecx edi
-    sub edi D$NumberOfJunkBytes | mov D$ExportSectionLen edi
+    sub edi D$ExportListAPtr ;| Mov ecx edi
+    sub edi D$NumberOfJunkBytes | Mov D$ExportSectionLen edi
 
-    mov ecx 1 | mov eax D$NumberOfExportedFunctions | cmp D$OrdinalExport 0 | je L4>>
+    Mov ecx 1 | Mov eax D$NumberOfExportedFunctions | cmp D$OrdinalExport 0 | je L4>>
 
-    mov edx D$ExpOrdArray, ecx D$OrdinalExport | shl ecx 2 | call BubbleSort edx, ecx
-    sub ebx ebx | mov ecx D$OrdinalExport
+    Mov edx D$ExpOrdArray, ecx D$OrdinalExport | shl ecx 2 | Call BubbleSort edx, ecx
+    sub ebx ebx | Mov ecx D$OrdinalExport
 
-    mov edi D$edx+ecx*4-4 | mov ecx D$edx
+    Mov edi D$edx+ecx*4-4 | Mov ecx D$edx
 ; can other Exports fit up   from Lo-Ord >> 0FFFF?
-L1: mov edx D$NumberOfExportedFunctions | dec edx | add edx ecx | cmp edx 010000 | jae L1>
-    mov eax D$NumberOfExportedFunctions | mov edx edi | sub edx ecx | inc edx
-    cmp eax edx | jae L4> | mov eax edx | jmp L4>
+L1: Mov edx D$NumberOfExportedFunctions | dec edx | add edx ecx | cmp edx 010000 | jae L1>
+    Mov eax D$NumberOfExportedFunctions | Mov edx edi | sub edx ecx | inc edx
+    cmp eax edx | jae L4> | Mov eax edx | jmp L4>
 ; fit down from Hi-Ord >> 1?
-L1: mov edx edi | inc edx | sub edx D$NumberOfExportedFunctions | jbe L1>
-    cmp edx ecx | jae L0> | mov ecx edx
-L0: mov eax edi | sub eax ecx | inc eax | jmp L4>
+L1: Mov edx edi | inc edx | sub edx D$NumberOfExportedFunctions | jbe L1>
+    cmp edx ecx | jae L0> | Mov ecx edx
+L0: Mov eax edi | sub eax ecx | inc eax | jmp L4>
 ; at last, start from 1..
-L1: mov ecx 1 | mov eax D$NumberOfExportedFunctions
-    cmp eax edi | jae L4> | mov eax edi | jmp L4>
+L1: Mov ecx 1 | Mov eax D$NumberOfExportedFunctions
+    cmp eax edi | jae L4> | Mov eax edi | jmp L4>
 
 L4: ; eax=full_exp_num - ecx=Ordinal_Base
-    mov ebx D$ExportSectionLen | add ebx 40 ; strings_len+headers
+    Mov ebx D$ExportSectionLen | add ebx 40 ; strings_len+headers
     lea ebx D$ebx+eax*4 ; + full-num of exports*4
-    mov edx D$NumberOfExportedFunctions  | sub edx D$OnlyOrdinalExport
+    Mov edx D$NumberOfExportedFunctions  | sub edx D$OnlyOrdinalExport
     lea edx D$edx+edx*2 | lea ebx D$ebx+edx*2 ; + num of export-names*6
     pushad
-    mov edi ChoosenFile | sub eax eax | or ecx 0-1 | repne scasb | not ecx
+    Mov edi ChoosenFile | sub eax eax | or ecx 0-1 | repne scasb | not ecx
     add ebx ecx | add ebx 4 ; +possible_extension
-    mov D$ExportSectionLen ebx
+    Mov D$ExportSectionLen ebx
     VirtualAlloc ExportListBPtr ebx
     popad
-    mov edi D$ExportListBPtr | mov D$edi+EXPnBase ecx | mov D$edi+EXPNumberOfFunctions eax
-    mov eax D$NumberOfExportedFunctions | sub eax D$OnlyOrdinalExport
-    mov D$edi+EXPNumberOfNames eax
-    add edi 40 | mov esi D$ExpOrdArray | mov edx ecx | mov ecx D$OrdinalExport
+    Mov edi D$ExportListBPtr | Mov D$edi+EXPnBase ecx | Mov D$edi+EXPNumberOfFunctions eax
+    Mov eax D$NumberOfExportedFunctions | sub eax D$OnlyOrdinalExport
+    Mov D$edi+EXPNumberOfNames eax
+    add edi 40 | Mov esi D$ExpOrdArray | Mov edx ecx | Mov ecx D$OrdinalExport
 ; Reserve in ExportFunctionList ORD_own place by ORD_num
-L0: dec ecx | js L0> | lodsd | mov ebx eax | sub ebx edx | mov D$edi+ebx*4 eax | jmp L0<
+L0: dec ecx | js L0> | lodsd | Mov ebx eax | sub ebx edx | Mov D$edi+ebx*4 eax | jmp L0<
 L0: VirtualFree D$ExpOrdArray
 ret
 
 
 CheckExportOrdinal:
     push ecx, edi
-    lea edi D$esi+4 | mov al ':' | mov ecx 5 | repne scasb | jne E0> ; no-more 4HEX
+    lea edi D$esi+4 | Mov al ':' | Mov ecx 5 | repne scasb | jne E0> ; no-more 4HEX
     lea edi D$esi+4 | sub edx edx
 L1:
-    mov al B$edi | inc edi | cmp al ':' | je L4> | or al 020
+    Mov al B$edi | inc edi | cmp al ':' | je L4> | or al 020
     cmp al 'f' | ja E0>  | cmp al '0' | jb E0>
     cmp al '9' | jbe L3> | cmp al 'a' | jb E0> | sub al 027
 L3: sub al 030 | shl edx 4 | or dl al | jmp L1<
 L4: test edx edx | je E0> | sub eax eax | cmp B$edi+1 TextSign | je L0>
-    sub edi esi | mov eax edi | inc D$OnlyOrdinalExport | jmp L0>
+    sub edi esi | Mov eax edi | inc D$OnlyOrdinalExport | jmp L0>
 OnBadExportOrdinal:
-E0: mov edx D$BadExportOrdinalPtr
-E1: mov B$esi-1 EOI
-    mov eax esi | sub eax D$CodeSourceA | add eax D$CodeSource
-    mov ecx D$StatementsPtr | mov D$ecx eax
-    While B$esi <> ':' | inc esi | End_While | mov B$esi+2 EOI
+E0: Mov edx D$BadExportOrdinalPtr
+E1: Mov B$esi-1 EOI
+    Mov eax esi | sub eax D$CodeSourceA | add eax D$CodeSource
+    Mov ecx D$StatementsPtr | Mov D$ecx eax
+    While B$esi <> ':' | inc esi | End_While | Mov B$esi+2 EOI
     Error edx, esi
 L0:
-    xchg eax edx | mov edi D$ExpOrdArray | mov ecx D$OrdinalExport | mov D$edi+ecx*4 eax
-    jecxz L0> | repne scasd | jne L0> | mov edx D$SameExportOrdinalPtr | jmp E1<
+    xchg eax edx | Mov edi D$ExpOrdArray | Mov ecx D$OrdinalExport | Mov D$edi+ecx*4 eax
+    jecxz L0> | repne scasd | jne L0> | Mov edx D$SameExportOrdinalPtr | jmp E1<
 L0: xchg eax edx
     inc D$OrdinalExport
     pop edi, ecx
@@ -1812,85 +1812,85 @@ ________________________________________________________________________________
 ; This shouldn't be here, but is now for development purposes.
 
 FromDataToStructure:
-    mov D$DisScale 4, D$EquateValue 0
+    Mov D$DisScale 4, D$EquateValue 0
 
-    call 'User32.GetDlgItemTextA' D$DataToStructureDialogHandle, 10, D$DataTextTable, 01000
+    Call 'User32.GetDlgItemTextA' D$DataToStructureDialogHandle, 10, D$DataTextTable, 01000
     On eax < 10, ret
 
-    mov B$WeAreInTheCodeBox &TRUE
+    Mov B$WeAreInTheCodeBox &TRUE
 ;    push D$CodeSource, D$SourceLen, D$SourceEnd
-        mov eax esp, D$OldStackPointer eax, B$CompileErrorHappend &FALSE
+        Mov eax esp, D$OldStackPointer eax, B$CompileErrorHappend &FALSE
 
-        mov eax D$DataTextTable
+        Mov eax D$DataTextTable
         While B$eax > 0
             inc eax
         End_While
-        mov B$eax CR, B$eax+1 LF | add eax 2
+        Mov B$eax CR, B$eax+1 LF | add eax 2
         inc eax
 
         sub eax D$DataTextTable
         push eax
-            call GetAsmTables
+            Call GetAsmTables
         pop eax
-        call NewCopyToCodeSourceA D$DataTextTable, eax ; D$DataTextTableLen
+        Call NewCopyToCodeSourceA D$DataTextTable, eax ; D$DataTextTableLen
 
-        call Coolparsers
+        Call Coolparsers
 
-        call NewCountStatements
+        Call NewCountStatements
 
         On B$CompileErrorHappend = &TRUE, jmp L9>>
 
-        call Hotparsers | On B$CompileErrorHappend = &TRUE, jmp L9>>
+        Call Hotparsers | On B$CompileErrorHappend = &TRUE, jmp L9>>
 
 
-        mov esi D$CodeSourceA, edi D$StructureTextTable, D$FirstDataLabel 0
+        Mov esi D$CodeSourceA, edi D$StructureTextTable, D$FirstDataLabel 0
 
         On B$esi = OpenBracket, inc esi
-        mov B$edi '[' | inc edi
+        Mov B$edi '[' | inc edi
 
 L0:     .While B$esi > EOI
-            mov ebx esi
+            Mov ebx esi
             While B$ebx > LowSigns | inc ebx | End_While
             .If B$ebx = ColonSign
-                On D$FirstDataLabel = 0, mov D$FirstDataLabel esi
+                On D$FirstDataLabel = 0, Mov D$FirstDataLabel esi
                 While B$esi <> ColonSign | movsb | End_While
-                mov B$edi ' ' | inc edi
-                mov eax D$EquateValue | call WriteEax
-                mov B$edi CR, B$edi+1 LF, B$edi+2 ' ' | add edi 3
+                Mov B$edi ' ' | inc edi
+                Mov eax D$EquateValue | Call WriteEax
+                Mov B$edi CR, B$edi+1 LF, B$edi+2 ' ' | add edi 3
             .Else_If B$ebx = MemMarker
                 If B$ebx-1 = 'D'
-                    mov D$DisScale 4
+                    Mov D$DisScale 4
                 Else_If B$ebx-1 = 'W'
-                    mov D$DisScale 2
+                    Mov D$DisScale 2
                 Else_If B$ebx-1 = 'U'
-                    mov D$DisScale 2
+                    Mov D$DisScale 2
                 Else_If B$ebx-1 = 'B'
-                    mov D$DisScale 1
+                    Mov D$DisScale 1
                 Else_If B$ebx-1 = 'Q'
-                    mov D$DisScale 8
+                    Mov D$DisScale 8
                 Else_If B$ebx-1 = 'R'
-                    mov D$DisScale 8
+                    Mov D$DisScale 8
                 Else_If B$ebx-1 = 'F'
-                    mov D$DisScale 4
+                    Mov D$DisScale 4
                 Else_If B$ebx-1 = 'T'
-                    mov D$DisScale 10
+                    Mov D$DisScale 10
                 End_If
             .Else_If B$ebx = NumSign
                 inc esi
                 If B$esi = '0'
-                    call TranslateHexa
+                    Call TranslateHexa
                 Else
-                    call TranslateDecimal
+                    Call TranslateDecimal
                 End_If
                 mul D$DisScale | sub eax D$DisScale | add D$EquateValue eax | jmp L1>>
             .Else_If B$esi = '?'
-                mov eax D$DisScale | add D$EquateValue eax
+                Mov eax D$DisScale | add D$EquateValue eax
             .Else_If B$esi < '0'
 
             .Else_If B$esi > '9'
 
             .Else
-                mov eax D$DisScale | add D$EquateValue eax
+                Mov eax D$DisScale | add D$EquateValue eax
                 While B$esi > LowSigns | inc esi | End_While
             .End_If
             inc esi
@@ -1899,122 +1899,122 @@ L1:     .End_While
 
         inc esi | cmp B$esi EOI | ja L0<<
 
-L2:     mov B$edi CR, B$edi+1 LF | add edi 2
-        mov esi D$FirstDataLabel
+L2:     Mov B$edi CR, B$edi+1 LF | add edi 2
+        Mov esi D$FirstDataLabel
         While B$esi <> ColonSign
             On B$esi = 0, jmp L9>
             movsb
         End_While
-        mov D$edi 'SIZE', B$edi+4 ' ' | add edi 5
-        mov eax D$EquateValue | call WriteEax
-        mov B$edi ']', B$edi+1 0
-        call 'User32.SetDlgItemTextA' D$DataToStructureDialogHandle, 11, D$StructureTextTable
+        Mov D$edi 'SIZE', B$edi+4 ' ' | add edi 5
+        Mov eax D$EquateValue | Call WriteEax
+        Mov B$edi ']', B$edi+1 0
+        Call 'User32.SetDlgItemTextA' D$DataToStructureDialogHandle, 11, D$StructureTextTable
 
-L9:     call ReleaseAsmTables
+L9:     Call ReleaseAsmTables
 
 ;    pop D$SourceEnd, D$SourceLen, D$CodeSource
-    mov B$WeAreInTheCodeBox &FALSE
+    Mov B$WeAreInTheCodeBox &FALSE
 ret
 
 ____________________________________________________________________________________________
 
 EncodeDecode:
-    mov B$WeAreInTheCodeBox &TRUE
+    Mov B$WeAreInTheCodeBox &TRUE
 ;    push D$CodeSource, D$SourceLen, D$SourceEnd
       ; ('AsmMain' 'OutOnError')
-        mov eax esp, D$OldStackPointer eax, B$CompileErrorHappend &FALSE
+        Mov eax esp, D$OldStackPointer eax, B$CompileErrorHappend &FALSE
 
 ; What on earth is EncodeSource???
-        mov eax EncodeSource ;, D$CodeSource eax
+        Mov eax EncodeSource ;, D$CodeSource eax
         While B$eax > 0
             inc eax
         End_While
-        mov B$eax CR, B$eax+1 LF | add eax 2
+        Mov B$eax CR, B$eax+1 LF | add eax 2
         inc eax
 
-;        mov D$SourceEnd eax |
+;        Mov D$SourceEnd eax |
 [EncodeSourceLen: D$ ?]
-        sub eax EncodeSource | mov D$EncodeSourceLen eax
+        sub eax EncodeSource | Mov D$EncodeSourceLen eax
 
-        call GetAsmTables
-        call NewCopyToCodeSourceA EncodeSource D$EncodeSourceLen
+        Call GetAsmTables
+        Call NewCopyToCodeSourceA EncodeSource D$EncodeSourceLen
 
-        call Coolparsers
+        Call Coolparsers
 
-        call NewCountStatements
+        Call NewCountStatements
 
-        call ClearQwordCheckSum
-
-        On B$CompileErrorHappend = &TRUE, jmp L9>>
-
-        call Hotparsers
+        Call ClearQwordCheckSum
 
         On B$CompileErrorHappend = &TRUE, jmp L9>>
-        call InitIndex1 | call InitIndex2
+
+        Call Hotparsers
+
+        On B$CompileErrorHappend = &TRUE, jmp L9>>
+        Call InitIndex1 | Call InitIndex2
 
         Exchange D$CodeSourceA D$CodesourceB
         push D$SourceLen
             move D$SourceLen D$EncodeSourceLen
             move D$AsmTablesLength D$SourceLen
-            call ReuseSourceAForCodeList
+            Call ReuseSourceAForCodeList
         pop D$SourceLen
-        call InitIndex3
+        Call InitIndex3
 
-        call BuildData                          ; result 'CodeSourceB' > 'CodeSourceB'
+        Call BuildData                          ; result 'CodeSourceB' > 'CodeSourceB'
 
         On B$CompileErrorHappend = &TRUE, jmp L9>>
-        call InitDebugIpTable
-        mov B$ErrorLevel 7                      ; For outOnError, Error
+        Call InitDebugIpTable
+        Mov B$ErrorLevel 7                      ; For outOnError, Error
 
-        call ReCodeLine | On B$CompileErrorHappend = &TRUE, jmp L9>>
+        Call ReCodeLine | On B$CompileErrorHappend = &TRUE, jmp L9>>
 
       ; Prepare Text to show in the Code Hexa view:
-        mov esi D$CodeOrigine, edi HexaCodeText
+        Mov esi D$CodeOrigine, edi HexaCodeText
         While esi < D$CodeListPtr
             movzx eax B$esi | inc esi
-            mov ebx eax | shr ebx 4
+            Mov ebx eax | shr ebx 4
             and eax 0F | and ebx 0F
-            mov al B$HexaTable+eax, bl B$HexaTable+ebx
+            Mov al B$HexaTable+eax, bl B$HexaTable+ebx
             shl eax 8 | or eax ebx | or eax 020200000 | stosd
         End_While
-        mov D$edi 0
+        Mov D$edi 0
 
       ; Disassemble: (DisMain)
-        mov B$DisFlag 0, D$SegmentOverride 0, B$AddressSizeOverride 0
-        mov B$OperandSizeOverride 0, W$DisSizeMarker 'D$'
-        mov B$DisCodeDisplacement &FALSE, B$EscapePrefix &FALSE
-        mov esi D$CodeOrigine, edi DecodeText
-L0:     movzx eax B$esi | inc esi | call D$DisOp1+eax*4
+        Mov B$DisFlag 0, D$SegmentOverride 0, B$AddressSizeOverride 0
+        Mov B$OperandSizeOverride 0, W$DisSizeMarker 'D$'
+        Mov B$DisCodeDisplacement &FALSE, B$EscapePrefix &FALSE
+        Mov esi D$CodeOrigine, edi DecodeText
+L0:     movzx eax B$esi | inc esi | Call D$DisOp1+eax*4
         On B$DisFlag = DISDONE, jmp L0<
-        mov D$edi 0
+        Mov D$edi 0
 
       ; In case of text organisation (sub edi 6, for example), we reset:
         If D$DummyDecodeText+4 <> 0
-            mov eax DecodeText
+            Mov eax DecodeText
             While B$eax-1 > 0
                 dec eax
             End_While
-            mov ecx DecodeText | sub ecx eax
-            mov esi DecodeText | add esi 160-1 | mov edi esi | sub esi ecx
+            Mov ecx DecodeText | sub ecx eax
+            Mov esi DecodeText | add esi 160-1 | Mov edi esi | sub esi ecx
             std
 L0:             movsb | cmp edi DecodeText | jae L0<
             cld
-            mov D$DummyDecodeText 0, D$DummyDecodeText+4 0
+            Mov D$DummyDecodeText 0, D$DummyDecodeText+4 0
         End_If
 
-L9:     call ReleaseAsmTables
+L9:     Call ReleaseAsmTables
 
 ;    pop D$SourceEnd, D$SourceLen, D$CodeSource
-    mov B$WeAreInTheCodeBox &FALSE
+    Mov B$WeAreInTheCodeBox &FALSE
 
-    mov D$EncodeSecurity 0 ; Ensure the Buffer never overflows
+    Mov D$EncodeSecurity 0 ; Ensure the Buffer never overflows
 ret
 
 
 EncodeError:
-L0: mov ebx, esp | cmp ebx, D$OldStackPointer | jnb L1>
+L0: Mov ebx, esp | cmp ebx, D$OldStackPointer | jnb L1>
     pop ebx | jmp L0<
-L1: sub esp 8 | call ErrorMessageBox 0, D$ErrorMessagePtr
+L1: sub esp 8 | Call ErrorMessageBox 0, D$ErrorMessagePtr
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -2028,8 +2028,8 @@ L0:   cmp al, B$TextDelimiter | jne L9>         ; if ON  > test if OFF needed
         Jmp L3>
 L1: cmp al '"' | je L2>
       cmp al "'" | jne L9>
-L2: mov B$TextDelimiter al
-L3: mov al, TextSign | xor B$TextGoingOn &TRUE
+L2: Mov B$TextDelimiter al
+L3: Mov al, TextSign | xor B$TextGoingOn &TRUE
 L9: cmp B$TextGoingOn &TRUE
 ret
 
@@ -2039,7 +2039,7 @@ L2: xor B$TextGoingOn &TRUE
 L9: cmp B$TextGoingOn &TRUE
     ret
 
-[IfItIsText | cmp al TextSign | jne M9>         ; macro a bit faster than 'call IsIttext'
+[IfItIsText | cmp al TextSign | jne M9>         ; macro a bit faster than 'Call IsIttext'
  M0: stosb | lodsb | cmp al TextSign | jne M0<     ; when it fits
     jmp #1
  M9: ]

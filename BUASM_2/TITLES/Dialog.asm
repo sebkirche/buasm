@@ -51,9 +51,9 @@ DialogMenuComment:
 [MyFontHandle: ?]
 
 CreateFontForDialogEdition:
-    call 'GDI32.CreateFontA' 10, 5, 0, 0, 400, 0, 0, 0, 1,   ;  DEFAULT_CHARSET 1  OEM_CHARSET 255
+    Call 'GDI32.CreateFontA' 10, 5, 0, 0, 400, 0, 0, 0, 1,   ;  DEFAULT_CHARSET 1  OEM_CHARSET 255
                              0, 0, 0, 0, TypeFace
-    mov D$MyFontHandle eax
+    Mov D$MyFontHandle eax
 ret
 
 _______________________________________________________________________________________
@@ -180,22 +180,22 @@ D$ &WS_CHILD&WS_VISIBLE+&LBS_HASSTRINGS+&LBS_NOTIFY+&WS_VSCROLL+&WS_HSCROLL+&ES_
 ;    ;
 ;    ; i only want to know baseUnits. So:
 ;
-;    mov D$BaseUnitX1 4, D$BaseUnitY1 8, D$BaseUnitX2 0, D$BaseUnitY2, 0     ; <<< the
-;    call 'User32.MapDialogRect' D$Adressee BaseUnits                        ; <<< trick
+;    Mov D$BaseUnitX1 4, D$BaseUnitY1 8, D$BaseUnitX2 0, D$BaseUnitY2, 0     ; <<< the
+;    Call 'User32.MapDialogRect' D$Adressee BaseUnits                        ; <<< trick
 ;
-;    call 'User32.GetWindowRect' D$Adressee DialogBoundingRectangle
-;   ; call 'User32.GetDialogBaseUnits'   ; of no need
+;    Call 'User32.GetWindowRect' D$Adressee DialogBoundingRectangle
+;   ; Call 'User32.GetDialogBaseUnits'   ; of no need
 ;
 ;   ; dialogUnitX = (pixelX * 4) / baseunitX
 ;   ; dialogUnitY = (pixelY * 8) / baseunitY
 ;
-;    mov eax D$DBRX1, edx 0
+;    Mov eax D$DBRX1, edx 0
 ;    shl eax 2 | div D$BaseUnitX1
-;    mov W$DialogX ax
+;    Mov W$DialogX ax
 ;
-;    mov eax D$DBRY1, edx 0
+;    Mov eax D$DBRY1, edx 0
 ;    shl eax 3 | div D$BaseUnitY1
-;    mov W$DialogY ax
+;    Mov W$DialogY ax
 ;ret
 
 
@@ -205,17 +205,17 @@ D$ &WS_CHILD&WS_VISIBLE+&LBS_HASSTRINGS+&LBS_NOTIFY+&WS_VSCROLL+&WS_HSCROLL+&ES_
 
 AddOneControl:
     If W$PreviousControlID = 0
-        call 'USER32.MessageBoxA' D$hwnd, IDFstring, CCFtitle, &MB_SYSTEMMODAL | ret
+        Call 'USER32.MessageBoxA' D$H.MainWindow, IDFstring, CCFtitle, &MB_SYSTEMMODAL | ret
     Else
-        mov W$PreviousControlID 0            ; for next time test (filled -or not- by user)
+        Mov W$PreviousControlID 0            ; for next time test (filled -or not- by user)
     End_If
 
-    call 'User32.SendMessageA' D$DialogListHandle &LB_GETCURSEL eax 0
-    mov D$DialogListIndex eax
+    Call 'User32.SendMessageA' D$DialogListHandle &LB_GETCURSEL eax 0
+    Mov D$DialogListIndex eax
 
-    On D$DialogListIndex > 0FFFF, mov D$DialogListIndex 0      ; no sel. > OK  > add
+    On D$DialogListIndex > 0FFFF, Mov D$DialogListIndex 0      ; no sel. > OK  > add
 
-    mov eax D$DialogListIndex
+    Mov eax D$DialogListIndex
     While eax >= Line_empty+1 | sub eax Line_empty+1 | End_While
 
     Push eax
@@ -223,40 +223,40 @@ AddOneControl:
     If eax = Line_empty
       ; Insert 'DefaultControlLenght' of 'NewDialogControlText':
         dec D$DefaultControlLenght                                  ; no 255 end mark
-        call SearchDialogLine | inc edi | mov edx edi               ; > start of next control
-        mov al 255, ecx MaxTemplateText | repne scasb | dec edi     ; actual end
-        mov esi edi | add edi D$DefaultControlLenght                ; new end
-        mov ecx esi | sub ecx edx | inc ecx                         ; count moveable chars
+        Call SearchDialogLine | inc edi | Mov edx edi               ; > start of next control
+        Mov al 255, ecx MaxTemplateText | repne scasb | dec edi     ; actual end
+        Mov esi edi | add edi D$DefaultControlLenght                ; new end
+        Mov ecx esi | sub ecx edx | inc ecx                         ; count moveable chars
         std | rep movsb | cld                                       ; make room
-        mov edi edx, esi NewDialogControlText                       ; ready for copy
-        mov ecx D$DefaultControlLenght                              ; how much
+        Mov edi edx, esi NewDialogControlText                       ; ready for copy
+        Mov ecx D$DefaultControlLenght                              ; how much
         rep movsb                                                   ; copy default control
         inc D$DefaultControlLenght                                  ; restore full lenght
     Else
       ; add:
-        mov edi D$NewDialogTemplateText, al 255, ecx MaxTemplateText
+        Mov edi D$NewDialogTemplateText, al 255, ecx MaxTemplateText
         repne scasb | dec edi
-        mov esi NewDialogControlText, ecx D$DefaultControlLenght
+        Mov esi NewDialogControlText, ecx D$DefaultControlLenght
         rep movsb
     End_If
 
-    call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+    Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
     pop eax
 
     If eax = Line_empty                                             ; if "insert":
-        call ScrollToInsertedControl
+        Call ScrollToInsertedControl
     Else                                                            ; if "add":
-        call ScrollDownToLastControl
+        Call ScrollDownToLastControl
     End_If
 
-    mov edi D$NewDialogTemplateText, al 0, ecx 200 | repne scasb
-    mov al '0' | repne scasb | add edi 2 | inc B$edi
+    Mov edi D$NewDialogTemplateText, al 0, ecx 200 | repne scasb
+    Mov al '0' | repne scasb | add edi 2 | inc B$edi
     On B$edi > '9', add B$edi 7
     .If B$edi > 'F'
-        mov B$edi '0' | inc B$edi-1
+        Mov B$edi '0' | inc B$edi-1
         On B$edi-1 > '9', add B$edi-1 7
         If B$edi-1 > 'F'
-            mov B$edi-1 '0' | inc B$edi-2
+            Mov B$edi-1 '0' | inc B$edi-2
             On B$edi-2 > '9', add B$edi-2 7       ; >>> up to FFF (4095 controls -enough?-)
         End_If
     .End_If
@@ -267,16 +267,16 @@ ShowDialogResult:
   ; Under 98, impossible to destroy the old Window *after* having created the new one.
   ; (Works fine under 2000... too bad... ).
 
-    mov eax D$EditedDialogBoxData
+    Mov eax D$EditedDialogBoxData
     push D$eax
         and D$eax 0FFF_FFFF | or D$eax &WS_VISIBLE__&WS_POPUP
 
-        call 'User32.DestroyWindow' D$EditedDialogHandle
-        call 'User32.CreateDialogIndirectParamA' D$hinstance, D$EditedDialogBoxData,
-                                                 D$hwnd, EditedDialogBoxProc, 0
-        mov D$EditedDialogHandle eax
+        Call 'User32.DestroyWindow' D$EditedDialogHandle
+        Call 'User32.CreateDialogIndirectParamA' D$hinstance, D$EditedDialogBoxData,
+                                                 D$H.MainWindow, EditedDialogBoxProc, 0
+        Mov D$EditedDialogHandle eax
 
-        mov eax D$EditedDialogBoxData
+        Mov eax D$EditedDialogBoxData
     pop D$eax
 ret
 
@@ -312,7 +312,7 @@ ________________________________________________________________________________
 [ArrowCursor: ?]
 
 Proc EditedDialogBoxProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
@@ -320,30 +320,30 @@ Proc EditedDialogBoxProc:
   ; some time, the menu seems destroyed (must be by Win -as bound to dialog-)
   ; > so, reinitialise. But then, the menu (visible) do not work any more
   ; in the editor. Saved data work fine....
-    ...If D@Message = &WM_INITDIALOG
-        move D$EditedDialogHandle D@Adressee
-        call MakeControlIDList
-        mov B$EditionInitFlag &TRUE
+    ...If D@msg = &WM_INITDIALOG
+        move D$EditedDialogHandle D@hwnd
+        Call MakeControlIDList
+        Mov B$EditionInitFlag &TRUE
 
-        call GetDialoBaseUnits
+        Call GetDialoBaseUnits
 
         If D$ActualMenutestID <> 0
-            call 'User32.DestroyMenu' D$ActualMenutestID
-            mov eax D$MenuListPtr | add eax 4
-            call 'User32.LoadMenuIndirectA' D$eax
-            mov D$ActualMenutestID eax
-            call 'User32.SetMenu' D@Adressee eax
+            Call 'User32.DestroyMenu' D$ActualMenutestID
+            Mov eax D$MenuListPtr | add eax 4
+            Call 'User32.LoadMenuIndirectA' D$eax
+            Mov D$ActualMenutestID eax
+            Call 'User32.SetMenu' D@hwnd eax
         End_If
 
-  ;  ...Else_If D@Message = &WM_CLOSE
-  ;      call 'User32.DestroyWindow' D@Adressee
+  ;  ...Else_If D@msg = &WM_CLOSE
+  ;      Call 'User32.DestroyWindow' D@hwnd
 
     ...Else
-L8:     popad | mov eax &FALSE | jmp L9>
+L8:     popad | Mov eax &FALSE | jmp L9>
 
     ...End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
@@ -351,37 +351,37 @@ L9: EndP
 [Text12345: '1234567890', 0] [DialogUnitX: ?    DialogUnitY: ?]
 
 UpdateControlDims:
-    mov eax D$Control.rcNormalPosition.left, edx 0
+    Mov eax D$Control.rcNormalPosition.left, edx 0
     shl eax 2 | div D$BaseUnitX1
     On edx >= 5, inc eax
-    mov edi Text12345 | call FromBinaryToDecimalAscii
-    call 'USER32.SendMessageA' D$DialogControlsHandles+4, &WM_SETTEXT, 0, Text12345
-    mov ecx D$DialogControlsHandles+4 | call WriteDimOnly
+    Mov edi Text12345 | Call FromBinaryToDecimalAscii
+    Call 'USER32.SendMessageA' D$DialogControlsHandles+4, &WM_SETTEXT, 0, Text12345
+    Mov ecx D$DialogControlsHandles+4 | Call WriteDimOnly
 
-    mov eax D$Control.rcNormalPosition.Top, edx 0
+    Mov eax D$Control.rcNormalPosition.Top, edx 0
     shl eax 3 | div D$BaseUnitY1
     On edx >= 5, inc eax
-    mov edi Text12345 | call FromBinaryToDecimalAscii
-    call 'USER32.SendMessageA' D$DialogControlsHandles+12+4, &WM_SETTEXT, 0, Text12345
-    mov ecx D$DialogControlsHandles+12+4 | call WriteDimOnly
+    Mov edi Text12345 | Call FromBinaryToDecimalAscii
+    Call 'USER32.SendMessageA' D$DialogControlsHandles+12+4, &WM_SETTEXT, 0, Text12345
+    Mov ecx D$DialogControlsHandles+12+4 | Call WriteDimOnly
 
-    mov eax D$Control.rcNormalPosition.Right, edx 0
+    Mov eax D$Control.rcNormalPosition.Right, edx 0
     sub eax D$Control.rcNormalPosition.left
     shl eax 2 | div D$BaseUnitX1
     On edx >= 5, inc eax
-    mov edi Text12345 | call FromBinaryToDecimalAscii
-    call 'USER32.SendMessageA' D$DialogControlsHandles+24+4, &WM_SETTEXT, 0, Text12345
-    mov ecx D$DialogControlsHandles+24+4 | call WriteDimOnly
+    Mov edi Text12345 | Call FromBinaryToDecimalAscii
+    Call 'USER32.SendMessageA' D$DialogControlsHandles+24+4, &WM_SETTEXT, 0, Text12345
+    Mov ecx D$DialogControlsHandles+24+4 | Call WriteDimOnly
 
-    mov eax D$Control.rcNormalPosition.Bottom, edx 0
+    Mov eax D$Control.rcNormalPosition.Bottom, edx 0
     sub eax D$Control.rcNormalPosition.Top
     shl eax 3 | div D$BaseUnitY1
     On edx >= 5, inc eax
-    mov edi Text12345 | call FromBinaryToDecimalAscii
-    call 'USER32.SendMessageA' D$DialogControlsHandles+36+4, &WM_SETTEXT, 0, Text12345
-    mov ecx D$DialogControlsHandles+36+4 | call WriteDimOnly
+    Mov edi Text12345 | Call FromBinaryToDecimalAscii
+    Call 'USER32.SendMessageA' D$DialogControlsHandles+36+4, &WM_SETTEXT, 0, Text12345
+    Mov ecx D$DialogControlsHandles+36+4 | Call WriteDimOnly
 
-    call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+    Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
 ret
 
 
@@ -391,26 +391,26 @@ ret
 ;;
 
 UpdateDialogDims:
-    mov B$ModifiedControl &FALSE
+    Mov B$ModifiedControl &FALSE
 
-    call 'USER32.GetClientRect' D$EditedDialogHandle, Control.rcNormalPosition.left
+    Call 'USER32.GetClientRect' D$EditedDialogHandle, Control.rcNormalPosition.left
 
   ; Result of '.GetClientRect' >>> right > Weidth // Bottom > Hight:
-    mov eax D$Control.rcNormalPosition.Right, edx 0
+    Mov eax D$Control.rcNormalPosition.Right, edx 0
     shl eax 2 | div D$BaseUnitX1
     On edx >= 5, inc eax
-    mov edi Text12345 | call FromBinaryToDecimalAscii
-    call 'USER32.SendMessageA' D$DialogControlsHandles+24+4, &WM_SETTEXT, 0, Text12345
-    mov ecx D$DialogControlsHandles+24+4 | call WriteDimOnly
+    Mov edi Text12345 | Call FromBinaryToDecimalAscii
+    Call 'USER32.SendMessageA' D$DialogControlsHandles+24+4, &WM_SETTEXT, 0, Text12345
+    Mov ecx D$DialogControlsHandles+24+4 | Call WriteDimOnly
 
-    mov eax D$Control.rcNormalPosition.Bottom, edx 0
+    Mov eax D$Control.rcNormalPosition.Bottom, edx 0
     shl eax 3 | div D$BaseUnitY1
     On edx >= 5, inc eax
-    mov edi Text12345 | call FromBinaryToDecimalAscii
-    call 'USER32.SendMessageA' D$DialogControlsHandles+36+4, &WM_SETTEXT, 0, Text12345
-    mov ecx D$DialogControlsHandles+36+4 | call WriteDimOnly
+    Mov edi Text12345 | Call FromBinaryToDecimalAscii
+    Call 'USER32.SendMessageA' D$DialogControlsHandles+36+4, &WM_SETTEXT, 0, Text12345
+    Mov ecx D$DialogControlsHandles+36+4 | Call WriteDimOnly
 
-    call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+    Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
 ret
 
 
@@ -423,8 +423,8 @@ ret
 ;;
 
 GetDialoBaseUnits:
-    mov D$BaseUnitX1 4, D$BaseUnitY1 8, D$BaseUnitX2 0, D$BaseUnitY2, 0
-    call 'User32.MapDialogRect' D$EditedDialogHandle BaseUnits
+    Mov D$BaseUnitX1 4, D$BaseUnitY1 8, D$BaseUnitX2 0, D$BaseUnitY2, 0
+    Call 'User32.MapDialogRect' D$EditedDialogHandle BaseUnits
 ret
 
 ____________________________________________________________________________________________
@@ -520,22 +520,22 @@ Proc MouseProc:
 
     ..Else_If D$EditedDialogHandle = 0
       ; All of this should be no use. Just added security...
-L0:     mov al B$UserClickedOnControl | or al B$UserRightClickedOnControl
+L0:     Mov al B$UserClickedOnControl | or al B$UserRightClickedOnControl
         If al <> &FALSE
-            mov B$UserClickedOnControl &FALSE, B$UserRightClickedOnControl &FALSE
-            call 'USER32.ClipCursor' &NULL
+            Mov B$UserClickedOnControl &FALSE, B$UserRightClickedOnControl &FALSE
+            Call 'USER32.ClipCursor' &NULL
         End_If
         jmp L9>>
 
     ..Else
-        mov al B$UserClickedOnControl | or al B$UserRightClickedOnControl
+        Mov al B$UserClickedOnControl | or al B$UserRightClickedOnControl
         .If al = &FALSE
-            mov ebx D@lParam, eax D$ebx, ebx D$ebx+4
-            mov D$FromPointX eax, D$FromPointY ebx
-            mov D$ClickFromPointX eax, D$ClickFromPointY ebx
-            call 'USER32.WindowFromPoint' eax, ebx | On eax = &FALSE, jmp L0<<
+            Mov ebx D@lParam, eax D$ebx, ebx D$ebx+4
+            Mov D$FromPointX eax, D$FromPointY ebx
+            Mov D$ClickFromPointX eax, D$ClickFromPointY ebx
+            Call 'USER32.WindowFromPoint' eax, ebx | On eax = &FALSE, jmp L0<<
             If eax <> D$EditedDialogHandle
-                call 'USER32.IsChild' D$EditedDialogHandle, eax | On eax = &FALSE, jmp L0<<
+                Call 'USER32.IsChild' D$EditedDialogHandle, eax | On eax = &FALSE, jmp L0<<
             End_If
         .End_If
 
@@ -543,101 +543,101 @@ L0:     mov al B$UserClickedOnControl | or al B$UserRightClickedOnControl
     _______________________________
 
     If D@wParam = &WM_LBUTTONDOWN
-        call SearchForWhatControl
+        Call SearchForWhatControl
 
     Else_If D@wParam = &WM_RBUTTONDOWN
-        call SearchForWhatControl
+        Call SearchForWhatControl
 
     End_If
 
     ...If D$HookedHandle <> 0
         ..If D@wParam = &WM_LBUTTONDOWN
-            mov ebx D@lParam, eax D$ebx, ebx D$ebx+4
-            mov D$FromPointX eax, D$FromPointY ebx
-            mov D$ClickFromPointX eax, D$ClickFromPointY ebx
+            Mov ebx D@lParam, eax D$ebx, ebx D$ebx+4
+            Mov D$FromPointX eax, D$FromPointY ebx
+            Mov D$ClickFromPointX eax, D$ClickFromPointY ebx
 
-            mov eax D$EditedDialogHandle
+            Mov eax D$EditedDialogHandle
             If D$HookedHandle = eax
-                mov B$UserRightClickedOnControl &TRUE
+                Mov B$UserRightClickedOnControl &TRUE
             Else
-                mov B$UserClickedOnControl &TRUE
+                Mov B$UserClickedOnControl &TRUE
             End_If
 
-            call 'USER32.GetWindowPlacement' D$HookedHandle, Control
+            Call 'USER32.GetWindowPlacement' D$HookedHandle, Control
 
-            call ClipCursorInDialog
+            Call ClipCursorInDialog
 
-            popad | mov eax &TRUE | ExitP
+            popad | Mov eax &TRUE | ExitP
 
         ..Else_If D@wParam = &WM_RBUTTONDOWN
-            mov ebx D@lParam, eax D$ebx, ebx D$ebx+4
-            mov D$FromPointX eax, D$FromPointY ebx
-            mov D$ClickFromPointX eax, D$ClickFromPointY ebx
+            Mov ebx D@lParam, eax D$ebx, ebx D$ebx+4
+            Mov D$FromPointX eax, D$FromPointY ebx
+            Mov D$ClickFromPointX eax, D$ClickFromPointY ebx
 
-            mov B$UserRightClickedOnControl &TRUE
+            Mov B$UserRightClickedOnControl &TRUE
 
-            call 'USER32.GetWindowPlacement' D$HookedHandle, Control
+            Call 'USER32.GetWindowPlacement' D$HookedHandle, Control
 
-            call ClipCursorInSelected
+            Call ClipCursorInSelected
 
-            popad | mov eax &TRUE | ExitP
+            popad | Mov eax &TRUE | ExitP
 
         ..Else_If D@wParam = &WM_LBUTTONUP
-            mov B$UserClickedOnControl &FALSE, B$UserRightClickedOnControl &FALSE
-            call KickDims
-            mov D$HookedHandle 0
-            call 'USER32.ClipCursor' &NULL
+            Mov B$UserClickedOnControl &FALSE, B$UserRightClickedOnControl &FALSE
+            Call KickDims
+            Mov D$HookedHandle 0
+            Call 'USER32.ClipCursor' &NULL
 
-            popad | mov eax &TRUE | ExitP
+            popad | Mov eax &TRUE | ExitP
 
         ..Else_If D@wParam = &WM_RBUTTONUP
-L1:         mov B$UserRightClickedOnControl &FALSE, B$UserClickedOnControl &FALSE
-            call KickDims
-            mov D$HookedHandle 0
-            call 'USER32.ClipCursor' &NULL
+L1:         Mov B$UserRightClickedOnControl &FALSE, B$UserClickedOnControl &FALSE
+            Call KickDims
+            Mov D$HookedHandle 0
+            Call 'USER32.ClipCursor' &NULL
 
-            popad | mov eax &TRUE | ExitP
+            popad | Mov eax &TRUE | ExitP
 
         ..Else_If D@wParam = &WM_MOUSEMOVE
-            mov ebx D@lParam, eax D$ebx, ebx D$ebx+4
-            mov D$FromPointX eax, D$FromPointY ebx
+            Mov ebx D@lParam, eax D$ebx, ebx D$ebx+4
+            Mov D$FromPointX eax, D$FromPointY ebx
 
             .If B$UserClickedOnControl = &TRUE
-                mov eax D$FromPointX | sub eax D$ClickFromPointX
+                Mov eax D$FromPointX | sub eax D$ClickFromPointX
                 add D$Control.rcNormalPosition.left eax
                 add D$Control.rcNormalPosition.right eax
                 add D$ClickFromPointX eax
 
-                mov ebx D$FromPointY | sub ebx D$ClickFromPointY
+                Mov ebx D$FromPointY | sub ebx D$ClickFromPointY
                 add D$Control.rcNormalPosition.Top ebx
                 add D$Control.rcNormalPosition.Bottom ebx
                 add D$ClickFromPointY ebx
 
-                call 'USER32.SetWindowPlacement' D$HookedHandle, Control
-                mov B$ModifiedControl &TRUE
+                Call 'USER32.SetWindowPlacement' D$HookedHandle, Control
+                Mov B$ModifiedControl &TRUE
 
             .Else_If B$UserRightClickedOnControl = &TRUE
-                mov eax D$FromPointX | sub eax D$ClickFromPointX
+                Mov eax D$FromPointX | sub eax D$ClickFromPointX
                 add D$Control.rcNormalPosition.right eax
                 add D$ClickFromPointX eax
 
-                mov eax D$FromPointY | sub eax D$ClickFromPointY
+                Mov eax D$FromPointY | sub eax D$ClickFromPointY
                 add D$Control.rcNormalPosition.Bottom eax
                 add D$ClickFromPointY eax
 
-                call 'USER32.SetWindowPlacement' D$HookedHandle, Control
-                mov B$ModifiedControl &TRUE
+                Call 'USER32.SetWindowPlacement' D$HookedHandle, Control
+                Mov B$ModifiedControl &TRUE
 
             .End_If
 
-            popad | mov eax &TRUE | ExitP
+            popad | Mov eax &TRUE | ExitP
 
         ..End_If
 
     ...End_If
 
 L9: popad
-    call 'USER32.CallNextHookEx' D$hHook D@nCode D@wParam D@lParam
+    Call 'USER32.CallNextHookEx' D$hHook D@nCode D@wParam D@lParam
 EndP
 
 
@@ -645,15 +645,15 @@ EndP
 ; 'HookedHandle' Window dimentions.
 
 ClipCursorInDialog:
-    call 'USER32.GetClientRect' D$EditedDialogHandle RECT
-    call 'USER32.ClientToScreen' D$EditedDialogHandle RECTleft
-    call 'USER32.ClientToScreen' D$EditedDialogHandle RECTright
+    Call 'USER32.GetClientRect' D$EditedDialogHandle RECT
+    Call 'USER32.ClientToScreen' D$EditedDialogHandle RECTleft
+    Call 'USER32.ClientToScreen' D$EditedDialogHandle RECTright
 
-    mov eax D$HookedHandle
+    Mov eax D$HookedHandle
     If eax = D$EditedDialogHandle
       ; Target = Dialog >>> Bottom-Right limits = Screen limits, (for resizing Dialog):
-        call 'USER32.GetSystemMetrics' &SM_CXSCREEN | mov D$RECTright eax
-        call 'USER32.GetSystemMetrics' &SM_CYSCREEN | mov D$RECTbottom eax
+        Call 'USER32.GetSystemMetrics' &SM_CXSCREEN | Mov D$RECTright eax
+        Call 'USER32.GetSystemMetrics' &SM_CYSCREEN | Mov D$RECTbottom eax
 
     Else
       ; Target = Control
@@ -661,14 +661,14 @@ ClipCursorInDialog:
       ; >>> Top-Left limits = Dialog limits - (Mouse Pos - Control Top-Left)
         move D$PointX D$Control.rcNormalPosition.left
         move D$PointY D$Control.rcNormalPosition.top
-        call 'USER32.ClientToScreen' D$EditedDialogHandle POINT
-        mov eax D$FromPointX | sub eax D$PointX
-        mov ebx D$FromPointY | sub ebx D$PointY
+        Call 'USER32.ClientToScreen' D$EditedDialogHandle POINT
+        Mov eax D$FromPointX | sub eax D$PointX
+        Mov ebx D$FromPointY | sub ebx D$PointY
         add D$RECTleft eax | add D$RECTtop ebx
 
     End_If
 
-    call 'USER32.ClipCursor' RECT
+    Call 'USER32.ClipCursor' RECT
 ret
 
 
@@ -676,44 +676,44 @@ ret
 [SlideBarX: ?    SlideBarY: ?]
 
 ClipCursorInSelected:
-    mov eax D$HookedHandle | On eax = D$EditedDialogHandle, jmp ClipCursorInDialog
+    Mov eax D$HookedHandle | On eax = D$EditedDialogHandle, jmp ClipCursorInDialog
 
   ; Dialog Dims:
-    call 'USER32.GetClientRect' D$EditedDialogHandle RECT
+    Call 'USER32.GetClientRect' D$EditedDialogHandle RECT
     move D$EditedDialogX D$RECTleft, D$EditedDialogY D$RECTtop
-    call 'USER32.ClientToScreen' D$EditedDialogHandle EditedDialogX
+    Call 'USER32.ClientToScreen' D$EditedDialogHandle EditedDialogX
 
   ; Control Left-Top Dims:
     move D$RECTleft D$Control.rcNormalPosition.left
     move D$RECTtop D$Control.rcNormalPosition.top
-    call 'USER32.ClientToScreen' D$EditedDialogHandle RECTleft
-    call 'USER32.ClientToScreen' D$EditedDialogHandle RECTright
+    Call 'USER32.ClientToScreen' D$EditedDialogHandle RECTleft
+    Call 'USER32.ClientToScreen' D$EditedDialogHandle RECTright
 
   ; Target = Control >>> Limit resizing to 25/25:
     move D$PointX D$Control.rcNormalPosition.right
     move D$PointY D$Control.rcNormalPosition.bottom
-    call 'USER32.ClientToScreen' D$EditedDialogHandle POINT
+    Call 'USER32.ClientToScreen' D$EditedDialogHandle POINT
 ;;
   For sizing, if the user Right-Clicks rigth upon the lower right corner, OK, but, if
   he Clicks, say, in the middle of the Control, we have to substract that 'Half-Size'
   of the control from the upper-left limit of the ClipCursor call, to let the modification
   go down to the minimum allowed size:
 ;;
-    mov ebx D$EditedDialogX
-    mov eax D$PointX | sub eax D$FromPointX
+    Mov ebx D$EditedDialogX
+    Mov eax D$PointX | sub eax D$FromPointX
     sub eax D$MinimumX
     sub D$RECTleft eax ;| add D$RECTleft 25
   ; Don't let the Mouse go outside the Dialog, in cases of compensation.
-    On D$RECTleft < ebx, mov D$RECTleft ebx
+    On D$RECTleft < ebx, Mov D$RECTleft ebx
 
-    mov ebx D$EditedDialogY
-    mov eax D$PointY | sub eax D$FromPointY
+    Mov ebx D$EditedDialogY
+    Mov eax D$PointY | sub eax D$FromPointY
     sub eax D$MinimumY
     sub D$RECTtop eax ;| add D$RECTtop 25
   ; Don't let the Mouse go outside the Dialog, in cases of compensation.
-    On D$RECTtop < ebx, mov D$RECTtop ebx
+    On D$RECTtop < ebx, Mov D$RECTtop ebx
 
-    call 'USER32.ClipCursor' RECT
+    Call 'USER32.ClipCursor' RECT
 ret
 
 ____________________________________________________________________________________________
@@ -721,15 +721,15 @@ ________________________________________________________________________________
 ; 'HookComments'
 
 Proc InstallHook:
-    call 'KERNEL32.GetCurrentThreadId'
-    call 'USER32.SetWindowsHookExA' &WH_MOUSE, MouseProc, &NULL, eax
-    mov D$hHook eax
+    Call 'KERNEL32.GetCurrentThreadId'
+    Call 'USER32.SetWindowsHookExA' &WH_MOUSE, MouseProc, &NULL, eax
+    Mov D$hHook eax
 EndP
 
 
 Proc UninstallHook:
-    On D$hHook <> 0, call 'USER32.UnhookWindowsHookEx' D$hHook
-    mov D$hHook 0
+    On D$hHook <> 0, Call 'USER32.UnhookWindowsHookEx' D$hHook
+    Mov D$hHook 0
 EndP
 
 
@@ -739,33 +739,33 @@ EndP
 ;;
 
 KickDims:
-    mov eax D$HookedHandle
+    Mov eax D$HookedHandle
 
     .If eax <> D$EditedDialogHandle
-        call 'USER32.GetDlgCtrlID' D$HookedHandle
+        Call 'USER32.GetDlgCtrlID' D$HookedHandle
 
-        mov edi ControlsIDlist, ecx ControlsIDlistdWords
+        Mov edi ControlsIDlist, ecx ControlsIDlistdWords
         repne scasd
 
 L1:     If ecx > 0
-            mov eax ControlsIDlistdWords
+            Mov eax ControlsIDlistdWords
             sub eax ecx                         ; eax = ID list position (in ControlsIDlist)
-            mov ecx Line_empty+1 | imul eax ecx ; what control dim
+            Mov ecx Line_empty+1 | imul eax ecx ; what control dim
             push eax
-            call 'User32.SendMessageA' D$DialogListHandle &LB_SETTOPINDEX eax 0 ; Pos
+            Call 'User32.SendMessageA' D$DialogListHandle &LB_SETTOPINDEX eax 0 ; Pos
             pop eax | add eax Line_Dim
-            call 'User32.SendMessageA' D$DialogListHandle &LB_SETCURSEL eax 0   ; select
-            call SetDialogTools
-            On B$ModifiedControl = &TRUE, call UpdateControlDims
+            Call 'User32.SendMessageA' D$DialogListHandle &LB_SETCURSEL eax 0   ; select
+            Call SetDialogTools
+            On B$ModifiedControl = &TRUE, Call UpdateControlDims
         End_If
 
     .Else
-        call 'User32.SendMessageA' D$DialogListHandle &LB_SETTOPINDEX 0 0
-        call 'User32.SendMessageA' D$DialogListHandle &LB_SETCURSEL Line_Dim 0
+        Call 'User32.SendMessageA' D$DialogListHandle &LB_SETTOPINDEX 0 0
+        Call 'User32.SendMessageA' D$DialogListHandle &LB_SETCURSEL Line_Dim 0
 
-        call SetDialogTools
+        Call SetDialogTools
 
-        On B$ModifiedControl = &TRUE, call UpdateDialogDims
+        On B$ModifiedControl = &TRUE, Call UpdateDialogDims
     .End_If
 ret
 
@@ -786,38 +786,38 @@ ________________________________________________________________________________
 SearchForWhatControl:
     push D$FromPointX, D$FromPointY
 
-        call 'USER32.GetWindowRect' D$EditedDialogHandle EditedDialogRectangle
+        Call 'USER32.GetWindowRect' D$EditedDialogHandle EditedDialogRectangle
 
-        mov eax D$FromPointX
+        Mov eax D$FromPointX
         cmp eax D$EditedDialogRectangle | jb L9>>
         cmp eax D$EditedDialogRectangle+8 | ja L9>>
-        mov eax D$FromPointY
+        Mov eax D$FromPointY
         cmp eax D$EditedDialogRectangle+4 | jb L9>>
         cmp eax D$EditedDialogRectangle+12 | ja L9>>
 
-        mov eax D$EditedDialogRectangle | sub D$FromPointX eax
-        mov eax D$EditedDialogRectangle+4 | sub D$FromPointY eax
-        mov ebx D$EditedDialogRectangle+12 | sub ebx eax
+        Mov eax D$EditedDialogRectangle | sub D$FromPointX eax
+        Mov eax D$EditedDialogRectangle+4 | sub D$FromPointY eax
+        Mov ebx D$EditedDialogRectangle+12 | sub ebx eax
         push ebx
-        call 'USER32.GetClientRect' D$EditedDialogHandle EditedDialogRectangle
+        Call 'USER32.GetClientRect' D$EditedDialogHandle EditedDialogRectangle
         pop ebx
         sub ebx D$EditedDialogRectangle+12 | sub D$FromPointY ebx
 
 
-        mov D$BaseUnitX1 4, D$BaseUnitY1 8, D$BaseUnitX2 0, D$BaseUnitY2, 0     ; <<< the
+        Mov D$BaseUnitX1 4, D$BaseUnitY1 8, D$BaseUnitX2 0, D$BaseUnitY2, 0     ; <<< the
 
-        call 'User32.MapDialogRect' D$EditedDialogHandle BaseUnits               ; <<< trick
+        Call 'User32.MapDialogRect' D$EditedDialogHandle BaseUnits               ; <<< trick
 
-        mov eax D$FromPointX, edx 0 | shl eax 2 | div D$BaseUnitX1 | mov D$FromPointX eax
-        mov eax D$FromPointY, edx 0 | shl eax 3 | div D$BaseUnitY1 | mov D$FromPointY eax
+        Mov eax D$FromPointX, edx 0 | shl eax 2 | div D$BaseUnitX1 | Mov D$FromPointX eax
+        Mov eax D$FromPointY, edx 0 | shl eax 3 | div D$BaseUnitY1 | Mov D$FromPointY eax
 
-        mov D$HookedID 0, D$HookedHandle 0
+        Mov D$HookedID 0, D$HookedHandle 0
 
-        mov esi D$EditedDialogBoxData
+        Mov esi D$EditedDialogBoxData
 
         add esi 8  ; Style // Extended Style.
 
-        mov eax 0 | lodsw | mov ecx eax | cmp ecx 0 | je L8>>   ; How many Controls
+        Mov eax 0 | lodsw | Mov ecx eax | cmp ecx 0 | je L8>>   ; How many Controls
         add esi (4*2)                                           ; Dims
         While W$esi <> 0 | add esi 2 | End_While | add esi 2    ; Menu.
         While W$esi <> 0 | add esi 2 | End_While | add esi 2    ; Class.
@@ -831,48 +831,48 @@ SearchForWhatControl:
 L0:     add esi 8  ; Style // Extended Style.
 
       ; Here are the searched Dims: X, Y, W, H (Words).
-        mov ax W$esi   | cmp D$FromPointX eax | jb L2>>
-        mov ax W$esi+2 | cmp D$FromPointY eax | jb L2>>
-        mov ax W$esi+4 | add ax W$esi | cmp D$FromPointX eax | ja L2>
-        mov ax W$esi+6 | add ax W$esi+2 | cmp D$FromPointY eax | ja L2>
+        Mov ax W$esi   | cmp D$FromPointX eax | jb L2>>
+        Mov ax W$esi+2 | cmp D$FromPointY eax | jb L2>>
+        Mov ax W$esi+4 | add ax W$esi | cmp D$FromPointX eax | ja L2>
+        Mov ax W$esi+6 | add ax W$esi+2 | cmp D$FromPointY eax | ja L2>
             move W$HookedID W$esi+8
 
-            mov eax esi | sub eax 8 | mov D$HookedControlStylePtr eax
+            Mov eax esi | sub eax 8 | Mov D$HookedControlStylePtr eax
             move D$HookedControlStyle D$eax
 
-            add eax 18 | mov D$HookedControlClassPtr eax
+            add eax 18 | Mov D$HookedControlClassPtr eax
             move D$HookedControlClass D$eax
 
-            mov B$ClassNameInside &FALSE
+            Mov B$ClassNameInside &FALSE
             If W$eax <> 0FFFF
                 push esi
-                    mov esi eax, edi HookedControlClass
+                    Mov esi eax, edi HookedControlClass
                     While W$esi <> 0
                         movsw
                     End_While
                     movsw
                 pop esi
-                mov B$ClassNameInside &TRUE
+                Mov B$ClassNameInside &TRUE
             End_If
 
-            mov eax 0
+            Mov eax 0
 
-L2:     call NextControl | dec ecx | jnz L0<<
+L2:     Call NextControl | dec ecx | jnz L0<<
 
         If D$HookedID <> 0
-            push ebx | call GetSmallerReSize | pop ebx
+            push ebx | Call GetSmallerReSize | pop ebx
 
-            mov ebx D$HookedControlStylePtr
-            mov D$ebx &BS_PUSHBUTTON__&BS_BITMAP__&BS_FLAT__&WS_CHILD__&WS_VISIBLE
-            mov ebx D$HookedControlClassPtr, D$ebx 080_FFFF ; Button.
-            On B$ClassNameInside = &TRUE, call AdjustTitle
-            call ShowDialogResult
-            call 'USER32.GetDlgItem' D$EditedDialogHandle, D$HookedID
-            mov D$HookedHandle eax
+            Mov ebx D$HookedControlStylePtr
+            Mov D$ebx &BS_PUSHBUTTON__&BS_BITMAP__&BS_FLAT__&WS_CHILD__&WS_VISIBLE
+            Mov ebx D$HookedControlClassPtr, D$ebx 080_FFFF ; Button.
+            On B$ClassNameInside = &TRUE, Call AdjustTitle
+            Call ShowDialogResult
+            Call 'USER32.GetDlgItem' D$EditedDialogHandle, D$HookedID
+            Mov D$HookedHandle eax
 
         Else
 L8:         move D$HookedHandle D$EditedDialogHandle
-            mov D$MinimumX 200, D$MinimumY 50
+            Mov D$MinimumX 200, D$MinimumY 50
 
         End_If
 
@@ -883,9 +883,9 @@ ret
 [MinimumX: ?    MinimumY: ?]
 
 GetSmallerReSize:
-    mov D$MinimumX 10, D$MinimumY 10
+    Mov D$MinimumX 10, D$MinimumY 10
 
-    mov esi D$HookedControlStylePtr
+    Mov esi D$HookedControlStylePtr
 
     .If D$esi+18 = 0_81_FFFF  ; +18 >>> Class = 0FFFF 081 >>> Edit Control
         test D$esi &WS_VSCROLL | jz L1>
@@ -929,8 +929,8 @@ ret
 ; instead of the zero Class string termination:
 
 AdjustTitle:
-    mov ebx D$HookedControlClassPtr
-    While W$ebx <> 0 | add ebx 2 | End_While | mov B$ebx 'X'
+    Mov ebx D$HookedControlClassPtr
+    While W$ebx <> 0 | add ebx 2 | End_While | Mov B$ebx 'X'
 ret
 
 ____________________________________________________________________________________________
@@ -942,14 +942,14 @@ ________________________________________________________________________________
 [ControlsIDlist: ? #1000] [ControlsIDlistdWords 1000]
 
 MakeControlIDList:
-    mov edi ControlsIDlist, eax 0, ecx ControlsIDlistdWords | rep stosd ; clear ID table
-    mov ebx ControlsIDlist
-    mov edi D$EditedDialogBoxData
-    mov edx 0, dx W$edi+8                       ; number of controls in edx
+    Mov edi ControlsIDlist, eax 0, ecx ControlsIDlistdWords | rep stosd ; clear ID table
+    Mov ebx ControlsIDlist
+    Mov edi D$EditedDialogBoxData
+    Mov edx 0, dx W$edi+8                       ; number of controls in edx
     On edx = 0, ret
     add edi 22
-    mov ax 0, ecx 100 | repne scasw
-    mov ecx 100 | repne scasw                   ; edi > end of dialog data
+    Mov ax 0, ecx 100 | repne scasw
+    Mov ecx 100 | repne scasw                   ; edi > end of dialog data
 L0: test edi 00_11 | jz L1>
         add edi 2                               ; > start of Control data
 L1: On edx = 0, jmp L9>
@@ -958,9 +958,9 @@ L1: On edx = 0, jmp L9>
     If W$edi = 0FFFF                            ; type by number
         add edi 4
     Else
-        mov ax 0, ecx 100 | repne scasw         ; type by name
+        Mov ax 0, ecx 100 | repne scasw         ; type by name
     End_If
-    mov ax 0, ecx 100 | repne scasw             ; control title
+    Mov ax 0, ecx 100 | repne scasw             ; control title
     add edi 2                                   ; > end of Control data
     dec edx | jmp L0<
 L9: ret
@@ -1011,40 +1011,40 @@ _______________________________________________________________________________
 
 CreateDialogMenu:
   ; Main Menu:
-    call 'USER32.CreateMenu' | mov D$DialogMenuHandle eax
+    Call 'USER32.CreateMenu' | Mov D$DialogMenuHandle eax
 
   ; Templates PopUp:
-    call 'USER32.CreatePopupMenu' | mov D$DialogPopUpMenuTemplate eax
+    Call 'USER32.CreatePopupMenu' | Mov D$DialogPopUpMenuTemplate eax
 
-    call 'USER32.AppendMenuA' D$DialogPopUpMenuTemplate, 0, ID_DEadd, DEadd
-    call 'USER32.AppendMenuA' D$DialogPopUpMenuTemplate, 0, ID_DEdel, DEdel
-    call 'USER32.AppendMenuA' D$DialogPopUpMenuTemplate, &MF_SEPARATOR, &NULL, &NUll
-    call 'USER32.AppendMenuA' D$DialogPopUpMenuTemplate, 0, ID_DEdelMenu, DEdelMenu
-    call 'USER32.AppendMenuA' D$DialogPopUpMenuTemplate, 0, ID_DEreplaceMenu, DEreplaceMenu
-    call 'USER32.AppendMenuA' D$DialogPopUpMenuTemplate, &MF_SEPARATOR, &NULL, &NUll
-    call 'USER32.AppendMenuA' D$DialogPopUpMenuTemplate, 0, ID_DEreset, DEreset
+    Call 'USER32.AppendMenuA' D$DialogPopUpMenuTemplate, 0, ID_DEadd, DEadd
+    Call 'USER32.AppendMenuA' D$DialogPopUpMenuTemplate, 0, ID_DEdel, DEdel
+    Call 'USER32.AppendMenuA' D$DialogPopUpMenuTemplate, &MF_SEPARATOR, &NULL, &NUll
+    Call 'USER32.AppendMenuA' D$DialogPopUpMenuTemplate, 0, ID_DEdelMenu, DEdelMenu
+    Call 'USER32.AppendMenuA' D$DialogPopUpMenuTemplate, 0, ID_DEreplaceMenu, DEreplaceMenu
+    Call 'USER32.AppendMenuA' D$DialogPopUpMenuTemplate, &MF_SEPARATOR, &NULL, &NUll
+    Call 'USER32.AppendMenuA' D$DialogPopUpMenuTemplate, 0, ID_DEreset, DEreset
 
-    call 'USER32.InsertMenuA' D$DialogMenuHandle, 0,
+    Call 'USER32.InsertMenuA' D$DialogMenuHandle, 0,
                               &MF_BYCOMMAND__&MF_POPUP__&MF_STRING,
                               D$DialogPopUpMenuTemplate, DETemplates
 
   ; Exit PopUp:
-    call 'USER32.CreatePopupMenu' | mov D$DialogPopUpMenuExit eax
+    Call 'USER32.CreatePopupMenu' | Mov D$DialogPopUpMenuExit eax
 
-    call 'USER32.AppendMenuA' D$DialogPopUpMenuExit, 0, ID_DEsaveToResources, DEsaveToResources
-    call 'USER32.AppendMenuA' D$DialogPopUpMenuExit, 0, ID_DEsaveToClipBoard, DEsaveToClipBoard
-    call 'USER32.AppendMenuA' D$DialogPopUpMenuExit, 0, ID_DEsaveToDisk, DEsaveToDisk
-    call 'USER32.AppendMenuA' D$DialogPopUpMenuExit, &MF_SEPARATOR, &NULL, &NUll
-    call 'USER32.AppendMenuA' D$DialogPopUpMenuExit, 0, ID_DEabort, DEabort
+    Call 'USER32.AppendMenuA' D$DialogPopUpMenuExit, 0, ID_DEsaveToResources, DEsaveToResources
+    Call 'USER32.AppendMenuA' D$DialogPopUpMenuExit, 0, ID_DEsaveToClipBoard, DEsaveToClipBoard
+    Call 'USER32.AppendMenuA' D$DialogPopUpMenuExit, 0, ID_DEsaveToDisk, DEsaveToDisk
+    Call 'USER32.AppendMenuA' D$DialogPopUpMenuExit, &MF_SEPARATOR, &NULL, &NUll
+    Call 'USER32.AppendMenuA' D$DialogPopUpMenuExit, 0, ID_DEabort, DEabort
 
-    call 'USER32.InsertMenuA' D$DialogMenuHandle, 1,
+    Call 'USER32.InsertMenuA' D$DialogMenuHandle, 1,
                               &MF_BYCOMMAND__&MF_POPUP__&MF_STRING,
                               D$DialogPopUpMenuExit, DEExit
 
   ; Menu Help:
-    call 'USER32.AppendMenuA' D$DialogMenuHandle, 0, ID_DEhelp, DEhelp
+    Call 'USER32.AppendMenuA' D$DialogMenuHandle, 0, ID_DEhelp, DEhelp
 
-    call 'USER32.SetMenu' D$DialogEditorHandle, D$DialogMenuHandle
+    Call 'USER32.SetMenu' D$DialogEditorHandle, D$DialogMenuHandle
 ret
 
 _______________________________________________________________________________
@@ -1053,42 +1053,42 @@ ________________________________________________________________________________
 
 FillDialogListBox:
     ; preserv Pos and Selection
-    call 'User32.SendMessageA' D$DialogListHandle &LB_GETTOPINDEX D$DialogListIndex 0
+    Call 'User32.SendMessageA' D$DialogListHandle &LB_GETTOPINDEX D$DialogListIndex 0
     push eax
 
-    call 'User32.SendMessageA' D$DialogListHandle &LB_GETCURSEL D$DialogListIndex 0
+    Call 'User32.SendMessageA' D$DialogListHandle &LB_GETCURSEL D$DialogListIndex 0
     push eax
 
-    call 'User32.SendMessageA' D$DialogListHandle &LB_RESETCONTENT 0 0     ; makes list empty
+    Call 'User32.SendMessageA' D$DialogListHandle &LB_RESETCONTENT 0 0     ; makes list empty
 
-    mov edi D$NewDialogTemplateText
+    Mov edi D$NewDialogTemplateText
 
 L1: push edi
-      call 'User32.SendMessageA' D$DialogListHandle &LB_ADDSTRING  0  edi   ; fill
+      Call 'User32.SendMessageA' D$DialogListHandle &LB_ADDSTRING  0  edi   ; fill
     pop edi
-    mov al 0, ecx 200 | repne scasb
+    Mov al 0, ecx 200 | repne scasb
     cmp B$edi 255 | jne L1<
 
     ; restore Selection and Pos:
     pop ebx, eax
     push ebx
-    call 'User32.SendMessageA' D$DialogListHandle &LB_SETTOPINDEX eax 0
+    Call 'User32.SendMessageA' D$DialogListHandle &LB_SETTOPINDEX eax 0
     pop eax
-    call 'User32.SendMessageA' D$DialogListHandle &LB_SETCURSEL eax 0
+    Call 'User32.SendMessageA' D$DialogListHandle &LB_SETCURSEL eax 0
 L9: ret
 
 
 ; Restore end mark, in case of second run:
 
 ResetDialogListBox:
-    mov edi D$NewDialogTemplateText, ecx Line_empty+1, al 0
+    Mov edi D$NewDialogTemplateText, ecx Line_empty+1, al 0
 
 L0: push ecx
-        mov ecx 200 | repne scasb
+        Mov ecx 200 | repne scasb
     pop ecx
     loop L0<
 
-    mov B$edi 255
+    Mov B$edi 255
 ret
 
 ____________________________________________________________________________________
@@ -1115,60 +1115,60 @@ ret
 ; missing the &ICC_LINK_CLASS ?
 InitDialogEdition:
 
-    call 'ComCtl32.InitCommonControlsEx' CodeAddressFormClassName@Init_All_Common_Controls ; added by Guga
+    Call 'ComCtl32.InitCommonControlsEx' CodeAddressFormClassName@Init_All_Common_Controls ; added by Guga
 
     If B$OnDialogEdition = &TRUE
         Beep | ret
     End_If
-    call InitDialogMemory
+    Call InitDialogMemory
 
-    mov edi D$NewDialogTemplateText,
+    Mov edi D$NewDialogTemplateText,
         esi DefaultDialogTemplateText,
         ecx D$DefaultDialogTemplateTextLen
     rep movsb
-    mov D$edi 0FFFFFFFF                          ; End mark
+    Mov D$edi 0FFFFFFFF                          ; End mark
 
-    mov edi D$EditedDialogBoxData,
+    Mov edi D$EditedDialogBoxData,
         esi DefaultEditedDialogBoxData,
         ecx D$DefaultEditedDialogBoxDataLenght
     rep movsb
 
-    mov edi DialogList, eax 0, ecx 300
+    Mov edi DialogList, eax 0, ecx 300
     repne scasd | sub edi 4
-    mov D$DialogListPtr edi
+    Mov D$DialogListPtr edi
 
-    mov D$DialogMenutrueID 0, D$ActualMenutestID 0
+    Mov D$DialogMenutrueID 0, D$ActualMenutestID 0
 
 ReInitDialogEdition:
-    call InstallHook
+    Call InstallHook
 
-    call FromTextToBinTemplate
+    Call FromTextToBinTemplate
 ;;
  Little difficulty: User can check either "POPUP" or "CHILD". Results visible dialog
  must remain "POPUP/VISIBLE" because created with "CreateDialogIndirectParamA"
  (either "CHILD" or not "VISIBLE" would make it unvisible for edition. So do we
  save true Dialog Style value and set the fitting one for edition:
 ;;
-    mov eax D$EditedDialogBoxData
+    Mov eax D$EditedDialogBoxData
     push D$eax
         and D$eax 0FFF_FFFF | or D$eax 0_9000_0000
 
-        call 'User32.CreateDialogIndirectParamA' D$hinstance, D$EditedDialogBoxData,
+        Call 'User32.CreateDialogIndirectParamA' D$hinstance, D$EditedDialogBoxData,
                                                  D$EditWindowHandle, EditedDialogBoxProc, 0
-        mov D$EditedDialogHandle eax
+        Mov D$EditedDialogHandle eax
 
-        call 'User32.DialogBoxIndirectParamA' D$hinstance,      ; "create..." > modeless
+        Call 'User32.DialogBoxIndirectParamA' D$hinstance,      ; "create..." > modeless
                     DialogBoxData, 0, EditDialogBoxProc, 0      ; "Dialog..." > modal
       ; Editor Handle in 'DialogEditorHandle'.
 
-        mov eax D$EditedDialogBoxData
+        Mov eax D$EditedDialogBoxData
     pop D$eax
 
-    mov W$PreviousControlID 0FFFF
+    Mov W$PreviousControlID 0FFFF
 
-    call UninstallHook
+    Call UninstallHook
 
-    call SortDialogs
+    Call SortDialogs
 ret
 
 
@@ -1176,10 +1176,10 @@ ret
 
 SortDialogs:
   ; ID / Ptr / Size // ...
-L0: mov esi DialogList, edi esi | add edi 12
+L0: Mov esi DialogList, edi esi | add edi 12
 
     While D$edi <> 0
-        mov eax D$esi
+        Mov eax D$esi
         If eax > D$edi
             Exchange D$esi D$edi
             Exchange D$esi+4 D$edi+4
@@ -1199,21 +1199,21 @@ Proc CheckNotUsedId:
 
         On B$SameIdAllowed = &TRUE, ExitP
 
-L0:     mov esi DialogList
+L0:     Mov esi DialogList
 
         While D$esi <> 0
-            mov eax D$esi
+            Mov eax D$esi
             If eax = D@ID
-                call WriteDecimalID, eax, DoubleID
-                call 'USER32.MessageBoxA' D@Parent, {'This Dialog ID already exist', 0},
+                Call WriteDecimalID, eax, DoubleID
+                Call 'USER32.MessageBoxA' D@Parent, {'This Dialog ID already exist', 0},
                                           DoubleID, &MB_OK
-                mov eax &IDCANCEL | ExitP
+                Mov eax &IDCANCEL | ExitP
             Else
                 add esi 12 | add edi 12
             End_If
         End_While
 
-        mov eax &IDOK
+        Mov eax &IDOK
 EndP
 
 
@@ -1221,17 +1221,17 @@ Proc WriteDecimalID:
     Argument @Value, @Destination
 
     pushad
-        mov eax D@Value, edi D@Destination, ecx 10
+        Mov eax D@Value, edi D@Destination, ecx 10
 
-        mov D$edi ' ID ' | add edi 4
+        Mov D$edi ' ID ' | add edi 4
 
         push 0-1
-L0:     mov edx 0 | div ecx | push edx | cmp eax 0 | ja L0<
+L0:     Mov edx 0 | div ecx | push edx | cmp eax 0 | ja L0<
 
 L0:     pop eax | cmp eax 0-1 | je L9>
         add al '0' | stosb | jmp L0<
 
-L9:     mov B$edi 0
+L9:     Mov B$edi 0
     popad
 EndP
 
@@ -1243,21 +1243,21 @@ ________________________________________________________________________________
 
 ScrollDownToLastControl:
   ; Scroll full down to last new added control edition:
-    call 'User32.SendMessageA' D$DialogListHandle &LB_GETCOUNT 0 0
-    dec eax | mov D$LastDialogListItem eax
+    Call 'User32.SendMessageA' D$DialogListHandle &LB_GETCOUNT 0 0
+    dec eax | Mov D$LastDialogListItem eax
     push eax
-        call 'User32.SendMessageA' D$DialogListHandle &LB_SETTOPINDEX eax 0
+        Call 'User32.SendMessageA' D$DialogListHandle &LB_SETTOPINDEX eax 0
     pop eax
     sub eax 2
-    call 'User32.SendMessageA' D$DialogListHandle &LB_SETCURSEL  eax 0
+    Call 'User32.SendMessageA' D$DialogListHandle &LB_SETCURSEL  eax 0
 ret
 
 
 ScrollToInsertedControl:
-    call 'User32.SendMessageA' D$DialogListHandle &LB_GETCOUNT 0 0
-    dec eax | mov D$LastDialogListItem eax
-    mov eax D$DialogListIndex | add eax Line_Font
-    call 'User32.SendMessageA' D$DialogListHandle &LB_SETCURSEL  eax 0  ; select title
+    Call 'User32.SendMessageA' D$DialogListHandle &LB_GETCOUNT 0 0
+    dec eax | Mov D$LastDialogListItem eax
+    Mov eax D$DialogListIndex | add eax Line_Font
+    Call 'User32.SendMessageA' D$DialogListHandle &LB_SETCURSEL  eax 0  ; select title
 ret
 
 [UpDownEndScroll 8]
@@ -1274,204 +1274,204 @@ ret
 ; zero. The Value is a signed dWord.
 
 Proc EditDialogBoxProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
     .If B$OnMenuEdition = &TRUE
-        If D@Message = &WM_NOTIFY
+        If D@msg = &WM_NOTIFY
             jmp L1>
-        Else_If D@Message = &WM_VSCROLL
+        Else_If D@msg = &WM_VSCROLL
             jmp L1>
-        Else_If D@Message = &WM_COMMAND
-L1:         call 'User32.SendMessageA' D$MenuEditorHandle, &WM_COMMAND, &IDCANCEL, 0
+        Else_If D@msg = &WM_COMMAND
+L1:         Call 'User32.SendMessageA' D$MenuEditorHandle, &WM_COMMAND, &IDCANCEL, 0
         End_If
     .End_If
 
     If D$UserModifiedDim <> &FALSE
-        mov ecx D$UserModifiedDim | call WriteDim
-        mov D$UserModifiedDim &FALSE
+        Mov ecx D$UserModifiedDim | Call WriteDim
+        Mov D$UserModifiedDim &FALSE
     End_If
 
-    ...If D@Message = &WM_NOTIFY
-        mov ebx D@lParam, eax D$ebx+8     ; user click and hold on Updown in Dim edition
+    ...If D@msg = &WM_NOTIFY
+        Mov ebx D@lParam, eax D$ebx+8     ; user click and hold on Updown in Dim edition
         If eax = &UDN_DELTAPOS
-            mov eax D$ebx, edi DialogControlsHandles, ecx 12 | repne scasd
-            sub edi 8 | mov ecx D$edi               ; each "dim": string / edit / UpDown
+            Mov eax D$ebx, edi DialogControlsHandles, ecx 12 | repne scasd
+            sub edi 8 | Mov ecx D$edi               ; each "dim": string / edit / UpDown
             move D$ProposedUpDowmChange D$ebx+16    ; This is the proposed change (signed dWord)
-            call WriteDim
-            call 'User32.SetForegroundWindow' D$DialogEditorHandle
-            popad | mov eax &FALSE | jmp L9>>
+            Call WriteDim
+            Call 'User32.SetForegroundWindow' D$DialogEditorHandle
+            popad | Mov eax &FALSE | jmp L9>>
         End_If
 
-    ...Else_If D@Message = &WM_VSCROLL        ; user clicked and release Updown in Dim edition
-        mov eax D@wParam | and eax UpDownEndScroll | jz C9>
-          mov eax D@lParam, edi DialogControlsHandles, ecx 12 | repne scasd
-          sub edi 8 | mov ecx D$edi           ; each "dim": string / edit / UpDown
-          mov D$UserModifiedDim ecx
-          call WriteDim
-          call 'User32.SetForegroundWindow' D$DialogEditorHandle
+    ...Else_If D@msg = &WM_VSCROLL        ; user clicked and release Updown in Dim edition
+        Mov eax D@wParam | and eax UpDownEndScroll | jz C9>
+          Mov eax D@lParam, edi DialogControlsHandles, ecx 12 | repne scasd
+          sub edi 8 | Mov ecx D$edi           ; each "dim": string / edit / UpDown
+          Mov D$UserModifiedDim ecx
+          Call WriteDim
+          Call 'User32.SetForegroundWindow' D$DialogEditorHandle
 
 ; ID_DEadd 3  ID_DEdel 4  ID_DEreset 5  ID_DEexit 6  ID_DEhelp 7
 
 ; D$StyleHelpButtonsHandles > List of Styles Help
 C9:
-    ...Else_If D@Message = &WM_COMMAND
+    ...Else_If D@msg = &WM_COMMAND
         .If D@wParam = ID_DEadd
-            call AddOneControl
-            call 'User32.SendMessageA' D$DialogListHandle, &LB_GETCURSEL, 0, 0
+            Call AddOneControl
+            Call 'User32.SendMessageA' D$DialogListHandle, &LB_GETCURSEL, 0, 0
             sub eax 2
-            call 'User32.SendMessageA' D$DialogListHandle, &LB_SETCURSEL, eax, 0
-            call SetDialogTools
-            call 'User32.SetForegroundWindow' D$DialogEditorHandle
+            Call 'User32.SendMessageA' D$DialogListHandle, &LB_SETCURSEL, eax, 0
+            Call SetDialogTools
+            Call 'User32.SetForegroundWindow' D$DialogEditorHandle
             jmp L7>>
 
         .Else_If D@wParam = ID_DEdel
-            call DelOneControl
-            call 'User32.SetForegroundWindow' D$DialogEditorHandle
+            Call DelOneControl
+            Call 'User32.SetForegroundWindow' D$DialogEditorHandle
             jmp L7>>
 
         .Else_If D@wParam = ID_DEdel_Menu
-            call SearchDialogLine
+            Call SearchDialogLine
             If D$edi = 'FFFF'
-                mov D$ActualMenutestID 0, D$DialogMenuTrueID 0
+                Mov D$ActualMenutestID 0, D$DialogMenuTrueID 0
                 push esi | ZCopy {"0 ;      no Menu", 0} | pop esi
-                call FromTextToBinTemplate | call ShowDialogResult
-                call FillDialogListBox
+                Call FromTextToBinTemplate | Call ShowDialogResult
+                Call FillDialogListBox
             Else
-                call NoDialogMenu
+                Call NoDialogMenu
             End_If
             jmp L7>>
 
         .Else_If D@wParam = ID_DEreplaceMenu
-            call SearchDialogLine
+            Call SearchDialogLine
             If D$edi = 'FFFF'
-                call AddMenuToDialog
+                Call AddMenuToDialog
             Else
-                call NoDialogMenu
+                Call NoDialogMenu
             End_If
             jmp L7>>
 
         .Else_If D@wParam = ID_DEreset
-            call ResetDialogListBox | call FillDialogListBox
-            call 'User32.SetForegroundWindow' D$DialogEditorHandle
-            mov W$PreviousControlID 0FFFF
-            call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+            Call ResetDialogListBox | Call FillDialogListBox
+            Call 'User32.SetForegroundWindow' D$DialogEditorHandle
+            Mov W$PreviousControlID 0FFFF
+            Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
             jmp L7>>
 
         .Else_If D@wParam = ID_DEhelp
-L1:         call Help, B_U_AsmName, DialogHelp, ContextHlpMessage | jmp L7>>
+L1:         Call Help, B_U_AsmName, DialogHelp, ContextHlpMessage | jmp L7>>
 
         .Else_If D@wParam = ID_DEsaveToResources
-            mov ebx 4 | call ExitDialog | jmp L7>>
+            Mov ebx 4 | Call ExitDialog | jmp L7>>
 
         .Else_If D@wParam = ID_DEsaveToClipBoard
-            mov ebx 0 | call ExitDialog | jmp L7>>
+            Mov ebx 0 | Call ExitDialog | jmp L7>>
 
         .Else_If D@wParam = ID_DEsaveToDisk
-            mov ebx 8 | call ExitDialog | jmp L7>>
+            Mov ebx 8 | Call ExitDialog | jmp L7>>
 
         .Else_If D@wParam = ID_DEabort
-            mov ebx 12 | call ExitDialog | jmp L7>>
+            Mov ebx 12 | Call ExitDialog | jmp L7>>
 
         .Else_If D@wParam = &IDCANCEL
-            call 'User32.EndDialog' D@Adressee 0
-            call 'User32.DestroyWindow' D$EditedDialogHandle
-            mov D$DialogEditorHandle 0, D$EditedDialogHandle 0
-            mov B$OnDialogEdition &FALSE, B$DialogLoadedFromResources &FALSE | jmp L7>>
+            Call 'User32.EndDialog' D@hwnd 0
+            Call 'User32.DestroyWindow' D$EditedDialogHandle
+            Mov D$DialogEditorHandle 0, D$EditedDialogHandle 0
+            Mov B$OnDialogEdition &FALSE, B$DialogLoadedFromResources &FALSE | jmp L7>>
         .End_If
 
-        mov eax D@wParam, ebx eax, ecx D@lParam
+        Mov eax D@wParam, ebx eax, ecx D@lParam
       ; buttons handles in ecx
         shr eax 16 | and ebx 0FFFF
 
         ..If ecx = D$DialogListHandle
-            On eax = &LBN_SELCHANGE, call SetDialogTools
+            On eax = &LBN_SELCHANGE, Call SetDialogTools
 
         ..Else
             .If eax = &BN_CLICKED
               ; Check button?
                 On ebx = 1, jmp L7>>
               ; case of user hit [Return]
-                mov esi DialogControlsHandles, ebx 0
+                Mov esi DialogControlsHandles, ebx 0
 L0:             lodsd
                 If eax = ecx
-                   call WriteStyle
+                   Call WriteStyle
                 Else_If eax <> 0
                   ; stop on 0 (user click, but not on a 'moveable' control)
                     add ebx 4 | jmp L0<
                 End_If
 
                 On ecx = 0, jmp L2>
-                    mov esi StyleHelpButtonsHandles, ebx 0
+                    Mov esi StyleHelpButtonsHandles, ebx 0
 L0:                 lodsd
 
               ; Ready for Styles Help ('RunDialogHelp' / 'HelpDialogProc'):
                     If eax = ecx
-                        call ShowStyleInfo
+                        Call ShowStyleInfo
                     Else_If eax <> 0      ; stop on 0 (user click, but not on a 'moveable' control)
                         add ebx 4 | jmp L0<
                     End_If
-                ;  call 'User32.SetForegroundWindow' D$DialogEditorHandle
+                ;  Call 'User32.SetForegroundWindow' D$DialogEditorHandle
 
             .Else_If eax = &EN_CHANGE           ; Edit Box?
                 If D$ControlIndex = Line_Title
-                    call WriteTitle
+                    Call WriteTitle
                 Else_If D$ControlIndex = Line_ID
-                    call WriteID
+                    Call WriteID
                 Else_If D$ControlIndex = Line_Class
-                    call WriteTitle              ; reuse for Dialog Class
+                    Call WriteTitle              ; reuse for Dialog Class
                 End_If
-L2:             call 'User32.SetForegroundWindow' D$DialogEditorHandle
+L2:             Call 'User32.SetForegroundWindow' D$DialogEditorHandle
 
             .Else_If eax = &LBN_SELCHANGE       ; List Box >>> font syze or type, or Class
                 If D$DialogControlsHandles+4 = 0
-                    call WriteClass
+                    Call WriteClass
                 Else_If ecx = D$DialogControlsHandles
-                    call WriteFontType
+                    Call WriteFontType
                 Else
-                    call WriteFontSize
+                    Call WriteFontSize
                 End_If
-                call 'User32.SetForegroundWindow' D$DialogEditorHandle
+                Call 'User32.SetForegroundWindow' D$DialogEditorHandle
 
             .Else_If eax = &EN_UPDATE                  ; direct input in Dim edit control
-                On D$ControlIndex = Line_Dim, call WriteDim
-                call 'User32.SetForegroundWindow' D$DialogEditorHandle
+                On D$ControlIndex = Line_Dim, Call WriteDim
+                Call 'User32.SetForegroundWindow' D$DialogEditorHandle
 
             .End_If
 
         ..End_If
 
-    ...Else_If D@Message = &WM_INITDIALOG
-        move D$DialogEditorHandle D@Adressee
+    ...Else_If D@msg = &WM_INITDIALOG
+        move D$DialogEditorHandle D@hwnd
 
-        call 'User32.GetDlgItem' D@Adressee ID_Ilist | mov D$DialogListHandle eax
+        Call 'User32.GetDlgItem' D@hwnd ID_Ilist | Mov D$DialogListHandle eax
 
-        call CreateDialogMenu
+        Call CreateDialogMenu
 
         If B$OnClipDialog = &FALSE
-            call ResetDialogListBox | call FillDialogListBox
-            call ScrollDownToLastControl
+            Call ResetDialogListBox | Call FillDialogListBox
+            Call ScrollDownToLastControl
         Else
-            call FillDialogListBox | call ScrollDownToLastControl
-            mov B$OnClipDialog &FALSE
+            Call FillDialogListBox | Call ScrollDownToLastControl
+            Mov B$OnClipDialog &FALSE
         End_If
-        mov B$OnDialogEdition &TRUE
+        Mov B$OnDialogEdition &TRUE
 
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
 
-    ...Else_If D@Message = &WM_CTLCOLORLISTBOX
+    ...Else_If D@msg = &WM_CTLCOLORLISTBOX
         jmp L1>
 
-    ...Else_If D@Message = &WM_CTLCOLOREDIT
-L1:     call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+    ...Else_If D@msg = &WM_CTLCOLOREDIT
+L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
 
     ...Else
-L8:     popad | mov eax &FALSE | jmp L9>
+L8:     popad | Mov eax &FALSE | jmp L9>
     ...End_If
 
-L7: popad | mov eax &TRUE
+L7: popad | Mov eax &TRUE
 
 L9: EndP
 
@@ -1608,7 +1608,7 @@ Creates the dialog even if an error occur, for example, if a child window cannot
 Blocks the WM_ENTERIDLE messages that Windows would otherwise send to the owner of the dialog box when the dialog box is displayed.", 0
  DS_SETFOREGROUNDhelp: "DS_SETFOREGROUND:
 
-Brings the dialog box to the foreground, like it could be done with a call to SetForegroundWindow", 0
+Brings the dialog box to the foreground, like it could be done with a Call to SetForegroundWindow", 0
  DS_SYSMODALhelp: "DS_SYSMODAL:
 
 > System-modal dialog box.
@@ -1635,7 +1635,7 @@ ________________________________________________________________________________
 ; (esi >>> first text hexa number char after leading '0'):
 
 TranslateDialogHexa:
-    mov ebx 0
+    Mov ebx 0
 L0: lodsb | cmp al ' ' | je L9>
             cmp al ';' | je L9>
             cmp al CR | jbe L9>
@@ -1644,8 +1644,8 @@ L0: lodsb | cmp al ' ' | je L9>
 L9: ret                                     ; >>> ebx = binary value
 
 TranslateDialogText8:
-    mov ecx 8
-L0: mov eax ebx | and eax 0_F000_0000 | shr eax 28
+    Mov ecx 8
+L0: Mov eax ebx | and eax 0_F000_0000 | shr eax 28
     add al '0' | On al > '9', add al 7
     shl ebx 4
     stosb | loop L0<
@@ -1653,23 +1653,23 @@ ret
 
 TranslateDialogText4:
     shl ebx 16
-    mov ecx 4 | jmp L0<
+    Mov ecx 4 | jmp L0<
 
 TranslateDialogText2:
     shl ebx 24
-    mov ecx 2 | jmp L0<
+    Mov ecx 2 | jmp L0<
 
 ____________________________________________________________________________________
 
 ShowDialogStyles:
-    mov esi D$NewDialogTemplateText | add esi 3
-    call TranslateDialogHexa | mov D$CheckActual ebx
+    Mov esi D$NewDialogTemplateText | add esi 3
+    Call TranslateDialogHexa | Mov D$CheckActual ebx
 
     move D$CheckingMask DialogCheckingMask
-    mov esi DialogBitTable
+    Mov esi DialogBitTable
 
     push ebp
-        call CheckControlStyles
+        Call CheckControlStyles
     pop ebp
 ret
 
@@ -1691,7 +1691,7 @@ CheckControlStyles:
 
       esi = ptr to Style Bits table
 ;;
-    mov edi DialogControlsHandles, ecx 0
+    Mov edi DialogControlsHandles, ecx 0
     While D$edi > 0
        add edi 4 | inc ecx                ; number of check boxes at screen in ecx
     End_While
@@ -1712,29 +1712,29 @@ CheckControlStyles:
  may be significant - and Check / UnCheck- (exemple: BS_PUSHBUTTON) and that we have to
  discriminate 00_10 (BS_CHECKBOX, for exemple) from 00_10... Killing:
 ;;
-    mov edx D$CheckingMask, ebp 0              ; ebp = handles index for 'SendMessage'
+    Mov edx D$CheckingMask, ebp 0              ; ebp = handles index for 'SendMessage'
 
 L0: lodsd                                      ; loads one style value from Styles list
     pushad
-      mov edx D$edx                            ; CheckingMask  !!!!!!!!!!!!!!!!!!!!!!!!
+      Mov edx D$edx                            ; CheckingMask  !!!!!!!!!!!!!!!!!!!!!!!!
       ; eax Style bit value from list
         ; (Style and eax) <> eax >>> false?:
-      mov ebx D$CheckActual | and ebx eax | cmp eax ebx | jne L6>
+      Mov ebx D$CheckActual | and ebx eax | cmp eax ebx | jne L6>
         ; (eax and CheckingMask) = 0  > next line
-      mov ebx eax | and ebx edx | cmp ebx 0 | jne L4>
+      Mov ebx eax | and ebx edx | cmp ebx 0 | jne L4>
         ; check only if really 0 wanted:
         cmp eax 0 | jne L5>
           ; true zero?:
-          mov eax D$CheckActual | and eax 00_111 | cmp eax 0 | je L5>
+          Mov eax D$CheckActual | and eax 00_111 | cmp eax 0 | je L5>
             jmp L6>
         ; last test for 'true', only if: bit value = (Bit value and CheckingMask):
-L4:     mov eax D$CheckActual | and eax edx | cmp ebx eax | jne L6>
+L4:     Mov eax D$CheckActual | and eax edx | cmp ebx eax | jne L6>
 
-L5:   mov eax &TRUE | jmp L7>    ; check
+L5:   Mov eax &TRUE | jmp L7>    ; check
 
-L6:   mov eax &FALSE             ; UnCheck
+L6:   Mov eax &FALSE             ; UnCheck
 
-L7:   call 'User32.SendMessageA' D$DialogControlsHandles+ebp &BM_SETCHECK eax 0
+L7:   Call 'User32.SendMessageA' D$DialogControlsHandles+ebp &BM_SETCHECK eax 0
     popad | add ebp 4 | add edx 4 | loop L0<
 ret
 
@@ -1743,97 +1743,97 @@ ret
 ; at any check box, we just need actual style value and according checking mask table):
 
 ShowControlStyles:
-    call SearchDialogLine | mov esi edi | add esi 3
-    call TranslateDialogHexa | mov D$CheckActual ebx
+    Call SearchDialogLine | Mov esi edi | add esi 3
+    Call TranslateDialogHexa | Mov D$CheckActual ebx
 
     add D$DialogListIndex Line_Class
-        call SearchWhatControlClass             ; ebx = indice of class (0 / 1 / 2 / 3...)
+        Call SearchWhatControlClass             ; ebx = indice of class (0 / 1 / 2 / 3...)
     sub D$DialogListIndex Line_Class
 
     ..If edi = ControlClassByNumber             ; >>> class by Number
         .If ebx = 0
             move D$CheckingMask ButtonCheckingMask
-            mov esi ButtonBitTable
+            Mov esi ButtonBitTable
         .Else_If ebx = 1
             move D$CheckingMask EditCheckingMask
-            mov esi EditBitTable
+            Mov esi EditBitTable
         .Else_If ebx = 2
             move D$CheckingMask StaticCheckingMask
-            mov esi StaticBitTable
+            Mov esi StaticBitTable
         .Else_If ebx = 3
             move D$CheckingMask ListCheckingMask
-            mov esi ListBitTable
+            Mov esi ListBitTable
         .Else_If ebx = 4
             move D$CheckingMask ScrollCheckingMask
-            mov esi ScrollBitTable
+            Mov esi ScrollBitTable
         .Else_If ebx = 5
             move D$CheckingMask ComboCheckingMask
-            mov esi ComboBitTable
+            Mov esi ComboBitTable
         .End_If
     ..Else                                      ; >>> class by Name
         .If ebx = 0
             move D$CheckingMask UpDownCheckingMask
-            mov esi UpDownBitTable
+            Mov esi UpDownBitTable
         .Else_If ebx = 1
             ret                                 ; msctls_progress32 (no controls)
         .Else_If ebx = 2
             move D$CheckingMask TrackCheckingMask
-            mov esi TrackBitTable
+            Mov esi TrackBitTable
         .Else_If ebx = 3
             move D$CheckingMask TreeCheckingMask
-            mov esi TreeBitTable
+            Mov esi TreeBitTable
         .Else_If ebx = 4
             move D$CheckingMask TabCheckingMask
-            mov esi TabBitTable
+            Mov esi TabBitTable
         .Else_If ebx = 5
             move D$CheckingMask ListViewCheckingMask
-            mov esi ListViewBitTable
+            Mov esi ListViewBitTable
         .Else_If ebx = 6
             move D$CheckingMask ToolBarCheckingMask
-            mov esi ToolBarBitTable
+            Mov esi ToolBarBitTable
         .Else_If ebx = 7
             move D$CheckingMask RichEdit20aCheckingMask
-            mov esi RichEdit20aBitTable
+            Mov esi RichEdit20aBitTable
         .Else_If ebx = 8
             move D$CheckingMask SysHeader32CheckingMask
-            mov esi SysHeader32BitTable
+            Mov esi SysHeader32BitTable
         .Else_If ebx = 9
             move D$CheckingMask ReBarWindow32CheckingMask
-            mov esi ReBarWindow32BitTable
+            Mov esi ReBarWindow32BitTable
         .Else_If ebx = 10
             move D$CheckingMask Tooltips_class32CheckingMask
-            mov esi Tooltips_class32BitTable
+            Mov esi Tooltips_class32BitTable
         .Else_If ebx = 11
             move D$CheckingMask msctls_statusbar32CheckingMask
-            mov esi msctls_statusbar32BitTable
+            Mov esi msctls_statusbar32BitTable
         .Else_If ebx = 12
             move D$CheckingMask msctls_hotkey32CheckingMask
-            mov esi msctls_hotkey32BitTable
+            Mov esi msctls_hotkey32BitTable
         .Else_If ebx = 13
             move D$CheckingMask ComboBoxEx32CheckingMask
-            mov esi ComboBoxEx32BitTable
+            Mov esi ComboBoxEx32BitTable
         .Else_If ebx = 14
             move D$CheckingMask SysAnimate32CheckingMask
-            mov esi SysAnimate32BitTable
+            Mov esi SysAnimate32BitTable
         .Else_If ebx = 15
             move D$CheckingMask SysMonthCal32CheckingMask
-            mov esi SysMonthCal32BitTable
+            Mov esi SysMonthCal32BitTable
         .Else_If ebx = 16
             move D$CheckingMask SysDateTimePick32CheckingMask
-            mov esi SysDateTimePick32BitTable
+            Mov esi SysDateTimePick32BitTable
         .Else_If ebx = 17
             move D$CheckingMask SysIPAddress32CheckingMask
-            mov esi SysIPAddress32BitTable
+            Mov esi SysIPAddress32BitTable
         .Else_If ebx = 18
             move D$CheckingMask SysPagerCheckingMask
-            mov esi SysPagerBitTable
+            Mov esi SysPagerBitTable
         .Else_If ebx = 19
             move D$CheckingMask SysLinkCheckingMask
-            mov esi SysLinkBitTable
+            Mov esi SysLinkBitTable
         .End_If
     ..End_If
 
-    call CheckControlStyles
+    Call CheckControlStyles
 ret
 
 _______________________________________________________________________________________
@@ -1854,59 +1854,59 @@ ________________________________________________________________________________
 ;;
 ShowDimControls:
   ; First retrieve values from user text dim:
-    call SearchDialogLine
-    mov al ' ' | mov ecx 200 | repne scasb  ; space used as separator > count of data
+    Call SearchDialogLine
+    Mov al ' ' | Mov ecx 200 | repne scasb  ; space used as separator > count of data
     If D$DimIsForDialogWindow = &TRUE
         repne scasb                         ; jump over n (number of controls)
     End_If
-    mov esi edi | inc esi
-    call TranslateDialogHexa | mov D$DialogDimTable+ 8 ebx
+    Mov esi edi | inc esi
+    Call TranslateDialogHexa | Mov D$DialogDimTable+ 8 ebx
 
-    call TranslateDialogHexa | mov D$DialogDimTable+20 ebx
+    Call TranslateDialogHexa | Mov D$DialogDimTable+20 ebx
 
-    call TranslateDialogHexa | mov D$DialogDimTable+32 ebx
+    Call TranslateDialogHexa | Mov D$DialogDimTable+32 ebx
 
-    call TranslateDialogHexa | mov D$DialogDimTable+44 ebx
+    Call TranslateDialogHexa | Mov D$DialogDimTable+44 ebx
 
-    mov ecx 4, esi DialogDimTable, ebx 0
+    Mov ecx 4, esi DialogDimTable, ebx 0
 L0: push ecx
       ; display text:
         push esi, ebx
-            mov eax D$esi+4 | add eax 6
-            call 'User32.CreateWindowExA'  0, StaticClassName, 0,
+            Mov eax D$esi+4 | add eax 6
+            Call 'User32.CreateWindowExA'  0, StaticClassName, 0,
                                            &WS_CHILD+&WS_VISIBLE+&SS_SIMPLE, 2, eax,
                                            120 20, D$DialogEditorHandle 0 D$hInstance 0
         pop ebx, esi
-        mov D$DialogControlsHandles+ebx eax
+        Mov D$DialogControlsHandles+ebx eax
         push esi, ebx
-            call 'User32.SendMessageA' eax &WM_SETFONT D$MyFontHandle &FALSE
-            call 'User32.SetWindowTextA' D$DialogControlsHandles+ebx D$esi
+            Call 'User32.SendMessageA' eax &WM_SETFONT D$MyFontHandle &FALSE
+            Call 'User32.SetWindowTextA' D$DialogControlsHandles+ebx D$esi
         pop ebx esi
 
       ; display edit box:
         push esi, ebx
-            call 'User32.CreateWindowExA'  0  EditClass  0,
+            Call 'User32.CreateWindowExA'  0  EditClass  0,
                       &WS_CHILD+&WS_VISIBLE+&WS_BORDER+&ES_NUMBER+&ES_RIGHT+&ES_MULTILINE,
                       80 D$esi+4  45 20, D$DialogEditorHandle 0 D$hInstance 0
         pop ebx, esi
-        mov D$DialogControlsHandles+ebx+4 eax
+        Mov D$DialogControlsHandles+ebx+4 eax
 
       ; display Up and down control:                     +&UDS_ARROWKEYS
         push esi, ebx
-            call 'Comctl32.CreateUpDownControl',
+            Call 'Comctl32.CreateUpDownControl',
               &WS_CHILD+&WS_BORDER+&WS_VISIBLE+&UDS_SETBUDDYINT+&UDS_NOTHOUSANDS+&UDS_HORZ,
                       130 D$esi+4 20 20, D$DialogEditorHandle, 102, D$Hinstance,
                       eax  2000 0  D$esi+8
         pop ebx, esi
-        mov D$DialogControlsHandles+ebx+8 eax
+        Mov D$DialogControlsHandles+ebx+8 eax
 
       ; Set the speed (repeat speeds) of the UpDown Controls:
         push esi, eax, ebx
-            call 'User32.SendMessageA' eax &UDM_SETACCEL 2 UDACCEL
+            Call 'User32.SendMessageA' eax &UDM_SETACCEL 2 UDACCEL
         pop ebx, eax, esi
 
         push esi, ebx
-            call 'User32.SendMessageA' eax &UDM_SETBUDDY D$DialogControlsHandles+ebx+4 0
+            Call 'User32.SendMessageA' eax &UDM_SETBUDDY D$DialogControlsHandles+ebx+4 0
         pop ebx, esi
 
         add ebx 12 | add esi 12
@@ -1924,21 +1924,21 @@ ________________________________________________________________________________
 ; at first display.
 
 ShowTitleControl:
-    call 'User32.CreateWindowExA' 0  EditClass  0,
+    Call 'User32.CreateWindowExA' 0  EditClass  0,
                      &WS_CHILD+&WS_VISIBLE+&WS_BORDER+&ES_AUTOHSCROLL+&ES_MULTILINE,
                                  2 200 145 20, D$DialogEditorHandle 0 D$hInstance 0
-    mov D$DialogControlsHandles eax
+    Mov D$DialogControlsHandles eax
 
   ; Copy data title (without quotes and comments) in TitleEditText:
-    call SearchDialogLine | inc edi | mov esi edi
-    mov al '"', ecx 200, ebx 200 | repne scasb                      ; search "Text lenght"
+    Call SearchDialogLine | inc edi | Mov esi edi
+    Mov al '"', ecx 200, ebx 200 | repne scasb                      ; search "Text lenght"
     sub ebx ecx | xchg ecx ebx | dec ecx
-    mov edi ActualFontName | rep movsb | mov al 0 | stosb           ; copy + end mark
+    Mov edi ActualFontName | rep movsb | Mov al 0 | stosb           ; copy + end mark
 
-    call 'User32.GetDlgCtrlID' D$DialogControlsHandles
-    call 'User32.SetDlgItemTextA' D$DialogEditorHandle eax ActualFontName  ; show edition text
-    call 'User32.SetFocus' D$DialogControlsHandles
-    call 'User32.SendMessageA' D$DialogControlsHandles  &EM_SETSEL  0  0-1
+    Call 'User32.GetDlgCtrlID' D$DialogControlsHandles
+    Call 'User32.SetDlgItemTextA' D$DialogEditorHandle eax ActualFontName  ; show edition text
+    Call 'User32.SetFocus' D$DialogControlsHandles
+    Call 'User32.SendMessageA' D$DialogControlsHandles  &EM_SETSEL  0  0-1
 ret
 
 [ComboClass: 'COMBOBOX', 0]  ; EditClass
@@ -1975,76 +1975,76 @@ ret
 ; Search for the actual font in font name list to retrieve the index for sizes table:
 
 SearchFontIndex:
-    mov edi DialogFonts, edx 0-4
+    Mov edi DialogFonts, edx 0-4
 
     While B$edi > 0
-        mov esi ActualFontName | add edx 4
+        Mov esi ActualFontName | add edx 4
         push edi
-            mov ecx 200, ebx 200, al 0 | repne scasb | sub ebx ecx | dec ebx
+            Mov ecx 200, ebx 200, al 0 | repne scasb | sub ebx ecx | dec ebx
         pop edi
         If ebx = D$ComboFontNameLenght
-            mov esi edi, ecx ebx | repe cmpsb | je L9>
-                mov edi esi | add edi ebx | inc edi
+            Mov esi edi, ecx ebx | repe cmpsb | je L9>
+                Mov edi esi | add edi ebx | inc edi
         Else
             add edi ebx | inc edi
         End_If
     End_While
-    mov eax 0 | ret
+    Mov eax 0 | ret
 
-L9: mov eax edx | ret
+L9: Mov eax edx | ret
 
 
 [FontComboHandle: ?  FontComboID: ?  ComboFontNameLenght: ?]
 
 ShowFontControls:
   ; Font Type edition combo box:
-    call 'User32.CreateWindowExA'  0, ComboClass, 0,
+    Call 'User32.CreateWindowExA'  0, ComboClass, 0,
 &WS_CHILD+&WS_VISIBLE+&WS_BORDER+&CBS_HASSTRINGS+&CBS_AUTOHSCROLL+&CBS_DROPDOWNLIST+&WS_VSCROLL+&ES_AUTOVSCROLL,
                       2, 240, 145, 220, D$DialogEditorHandle, 0, D$hInstance, 0
-    mov D$DialogControlsHandles eax
+    Mov D$DialogControlsHandles eax
 
   ; Copy data font text (without quotes and comments) in TitleEditText:
-    call SearchDialogLine
-    mov esi edi, edi ActualFontSize
+    Call SearchDialogLine
+    Mov esi edi, edi ActualFontSize
     while B$esi > ' '
         movsb
     End_While
-    mov al 0 | stosb
-    add esi 2 | mov edi esi
-    mov al '"', ecx 200, ebx 200 | repne scasb                      ; search "Text lenght"
+    Mov al 0 | stosb
+    add esi 2 | Mov edi esi
+    Mov al '"', ecx 200, ebx 200 | repne scasb                      ; search "Text lenght"
     sub ebx ecx | xchg ecx ebx | dec ecx
-    mov D$ComboFontNameLenght ecx
-    mov edi ActualFontName | rep movsb | mov al 0 | stosb           ; copy + end mark
+    Mov D$ComboFontNameLenght ecx
+    Mov edi ActualFontName | rep movsb | Mov al 0 | stosb           ; copy + end mark
 
-    mov edi DialogFonts
+    Mov edi DialogFonts
     While B$edi > 0
         push edi
-            call 'User32.SendMessageA' D$DialogControlsHandles &CB_ADDSTRING 0  edi
+            Call 'User32.SendMessageA' D$DialogControlsHandles &CB_ADDSTRING 0  edi
         pop edi
-        mov al 0, ecx 200 | repne scasb
+        Mov al 0, ecx 200 | repne scasb
     End_While
 
-    call 'User32.SendMessageA' D$DialogControlsHandles &CB_SELECTSTRING  0  ActualFontName
+    Call 'User32.SendMessageA' D$DialogControlsHandles &CB_SELECTSTRING  0  ActualFontName
 
   ; Font size edition box:
-    call 'User32.CreateWindowExA'  0, ComboClass  0,
+    Call 'User32.CreateWindowExA'  0, ComboClass  0,
     &WS_CHILD+&WS_VISIBLE+&WS_BORDER+&CBS_HASSTRINGS+&CBS_AUTOHSCROLL+&CBS_DROPDOWNLIST+&WS_VSCROLL+&ES_AUTOVSCROLL,
                                   100, 200, 47, 150, D$DialogEditorHandle, 0, D$hInstance, 0
-    mov D$DialogControlsHandles+4 eax
+    Mov D$DialogControlsHandles+4 eax
 
-    call SearchFontIndex
+    Call SearchFontIndex
 
     If eax > 0
-        mov edi D$FontSizesTable+eax
+        Mov edi D$FontSizesTable+eax
         While B$edi > 0
             push edi
-                call 'User32.SendMessageA' D$DialogControlsHandles+4 &CB_ADDSTRING 0  edi
+                Call 'User32.SendMessageA' D$DialogControlsHandles+4 &CB_ADDSTRING 0  edi
             pop edi
-            mov al 0, ecx 200 | repne scasb
+            Mov al 0, ecx 200 | repne scasb
         End_While
     End_If
 
-    call 'User32.SendMessageA' D$DialogControlsHandles+4  &CB_SELECTSTRING  0  ActualFontSize
+    Call 'User32.SendMessageA' D$DialogControlsHandles+4  &CB_SELECTSTRING  0  ActualFontSize
 ret
 
 ________________________________________________________________________________________
@@ -3880,7 +3880,7 @@ Version 4.70. The rebar control always displays bands in the same order. You can
 
 [RBS_REGISTERDROPhelp: "RBS_REGISTERDROP:
 
-Version 4.71. The rebar control generates RBN_GETOBJECT notification messages when an object is dragged over a band in the control. To receive the RBN_GETOBJECT notifications, initialize OLE with a call to OleInitialize or CoInitialize.", 0]
+Version 4.71. The rebar control generates RBN_GETOBJECT notification messages when an object is dragged over a band in the control. To receive the RBN_GETOBJECT notifications, initialize OLE with a Call to OleInitialize or CoInitialize.", 0]
 
 [RBS_TOOLTIPShelp: "RBS_TOOLTIPS:
 
@@ -4545,27 +4545,27 @@ ____________________________________
 ; General routine for showing the checkboxes under the main edition:
 
 SSCkeckBoxes:
-    mov eax 170, ebx 0
+    Mov eax 170, ebx 0
 
     .While B$esi > 0
         push eax, ebx, esi
-            call 'User32.CreateWindowExA' 0, ButtonClassName, esi,
+            Call 'User32.CreateWindowExA' 0, ButtonClassName, esi,
                            &WS_CHILD__&WS_VISIBLE__&BS_AUTOCHECKBOX,
                            16, eax, 140, 10, D$DialogEditorHandle, 0, D$hInstance, 0
             pop esi, ebx | push ebx, esi
-            mov D$DialogControlsHandles+ebx eax
-            call 'User32.SendMessageA' eax &WM_SETFONT D$MyFontHandle &TRUE
+            Mov D$DialogControlsHandles+ebx eax
+            Call 'User32.SendMessageA' eax &WM_SETFONT D$MyFontHandle &TRUE
         pop esi, ebx, eax
 
         push eax, ebx, esi
           ; This is the little Style [?] Buttons:
-            call 'User32.CreateWindowExA' 0, ButtonClassName, QuestionMark,
+            Call 'User32.CreateWindowExA' 0, ButtonClassName, QuestionMark,
                            &WS_CHILD__&WS_VISIBLE,
                            2, eax, 12, 12, D$DialogEditorHandle, 0, D$hInstance, 0
-            mov D$StyleHelpButtonsHandles+ebx eax
-            call 'User32.SendMessageA' eax &WM_SETFONT D$MyFontHandle &TRUE
+            Mov D$StyleHelpButtonsHandles+ebx eax
+            Call 'User32.SendMessageA' eax &WM_SETFONT D$MyFontHandle &TRUE
         pop edi
-            mov al 0, ecx 200 | repne scasb | mov esi edi
+            Mov al 0, ecx 200 | repne scasb | Mov esi edi
         pop ebx, eax
 
         add eax 14 | add ebx 4
@@ -4596,52 +4596,52 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 Proc HelpDialogProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    .If D@Message = &WM_INITDIALOG
+    .If D@msg = &WM_INITDIALOG
       ; lParam >>> InitValue >>> set Text...
-        call 'USER32.SetDlgItemTextA' D@Adressee, 1, D@lParam
+        Call 'USER32.SetDlgItemTextA' D@hwnd, 1, D@lParam
 
-    .Else_If D@Message = &WM_CTLCOLOREDIT
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        call 'USER32.SendMessageA' D@lParam &EM_SETSEL 0 0
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>>
+    .Else_If D@msg = &WM_CTLCOLOREDIT
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        Call 'USER32.SendMessageA' D@lParam &EM_SETSEL 0 0
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>>
 
-    .Else_If D@Message = &WM_PARENTNOTIFY
+    .Else_If D@msg = &WM_PARENTNOTIFY
         jmp L4>
 
-    .Else_If D@Message = &WM_LBUTTONDOWN
+    .Else_If D@msg = &WM_LBUTTONDOWN
         jmp L4>
 
-    .Else_If D@Message = &WM_RBUTTONDOWN
+    .Else_If D@msg = &WM_RBUTTONDOWN
         jmp L4>
 
-    .Else_If D@Message = &WM_COMMAND
-        mov eax D@wParam, ebx eax | shr eax 16 | and ebx 0FFFF
+    .Else_If D@msg = &WM_COMMAND
+        Mov eax D@wParam, ebx eax | shr eax 16 | and ebx 0FFFF
 
         If ebx = &IDCANCEL
             jmp L4>
         Else_If eax = &EN_CHANGE
             jmp L4>
         Else_If eax = &EN_UPDATE
-L4:         call 'USER32.SetFocus' D$DialogListHandle
+L4:         Call 'USER32.SetFocus' D$DialogListHandle
             jmp L5>
         Else_If eax = &EN_KILLFOCUS
-L5:         call 'User32.EndDialog' D@Adressee 0
+L5:         Call 'User32.EndDialog' D@hwnd 0
         End_If
 
     .Else
-L8:     popad | mov eax &FALSE | jmp L9>
+L8:     popad | Mov eax &FALSE | jmp L9>
     .End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
 
-[ShowSetOfCheckBoxes | mov esi #1 | call SSCkeckBoxes]
+[ShowSetOfCheckBoxes | Mov esi #1 | Call SSCkeckBoxes]
 
 [CCFstring: B$
 "
@@ -4657,7 +4657,7 @@ L9: EndP
 
 
 ControlClassFirst:
-    call 'USER32.MessageBoxA' D$hwnd, CCFstring, CCFtitle, &MB_SYSTEMMODAL
+    Call 'USER32.MessageBoxA' D$H.MainWindow, CCFstring, CCFtitle, &MB_SYSTEMMODAL
 ret
 
 ; from line pointed by user, searches what class and return in edi:ebx
@@ -4665,7 +4665,7 @@ ret
 
 ShowControlStyleControl:
     push D$DialogListIndex
-       add D$DialogListIndex Line_Class | call SearchWhatControlClass
+       add D$DialogListIndex Line_Class | Call SearchWhatControlClass
 
        ..If edi = ControlClassByNumber
             If ebx = 0      | ShowSetOfCheckBoxes ButtonTextTable
@@ -4675,7 +4675,7 @@ ShowControlStyleControl:
             Else_If ebx = 4 | ShowSetOfCheckBoxes ScrollTextTable
             Else_If ebx = 5 | ShowSetOfCheckBoxes ComboTextTable
             Else
-                call ControlClassFirst
+                Call ControlClassFirst
             End_If
        ..Else                                                   ; (edi = ControlClassByNames)
             .If ebx = 0      | ShowSetOfCheckBoxes UpDownTextTable
@@ -4718,26 +4718,26 @@ ret
     Resize: Right Button.", 0]
 
 ShowIDcontrols:
-    call SearchDialogLine | mov esi edi | call TranslateDialogHexa
+    Call SearchDialogLine | Mov esi edi | Call TranslateDialogHexa
     push ebx
-        call 'USER32.CreateWindowExA' 0, EditClass, 0,
+        Call 'USER32.CreateWindowExA' 0, EditClass, 0,
              &WS_CHILD+&WS_VISIBLE+&WS_BORDER+&ES_NUMBER+&ES_RIGHT+&ES_MULTILINE,
              80, 200, 45, 20, D$DialogEditorHandle, 0, D$hInstance, 0
-        mov D$DialogControlsHandles eax
-        call 'User32.GetDlgCtrlID' eax
+        Mov D$DialogControlsHandles eax
+        Call 'User32.GetDlgCtrlID' eax
     pop ebx
 
-    call 'USER32.SetDlgItemInt' D$DialogEditorHandle, eax, ebx, &FALSE
+    Call 'USER32.SetDlgItemInt' D$DialogEditorHandle, eax, ebx, &FALSE
 
-    call 'USER32.CreateWindowExA' 0, EditClass, 0,
+    Call 'USER32.CreateWindowExA' 0, EditClass, 0,
              &WS_CHILD+&WS_VISIBLE+&ES_MULTILINE+&ES_READONLY,
              4, 250, 140, 200, D$DialogEditorHandle, 0, D$hInstance, 0
-    mov D$DialogControlsHandles+4 eax
-    call 'USER32.SendMessageA' eax, &WM_SETTEXT, 0, ID_Message
-    call 'USER32.SendMessageA' D$DialogControlsHandles+4, &WM_SETFONT, D$MyFontHandle, &TRUE
+    Mov D$DialogControlsHandles+4 eax
+    Call 'USER32.SendMessageA' eax, &WM_SETTEXT, 0, ID_Message
+    Call 'USER32.SendMessageA' D$DialogControlsHandles+4, &WM_SETFONT, D$MyFontHandle, &TRUE
 
-    call 'USER32.SetFocus' D$DialogControlsHandles
-    call 'USER32.SendMessageA' D$DialogControlsHandles ,&EM_SETSEL, 0, 0-1
+    Call 'USER32.SetFocus' D$DialogControlsHandles
+    Call 'USER32.SendMessageA' D$DialogControlsHandles ,&EM_SETSEL, 0, 0-1
 ret
 
 
@@ -4772,103 +4772,103 @@ ret
 ; or "ControlClassByNumber" (6 classes 'by number', 6 classes 'by name'):
 
 SearchWhatControlClass:
-    call SearchDialogLine
+    Call SearchDialogLine
     ..If D$edi = 'FFFF'
-        mov esi edi | add esi 5 | call TranslateDialogHexa  ; > ebx = 080 / 081 / ...
-        sub ebx 080 | mov edi ControlClassByNumber          ; > ebx = 0 / 1 / 2...
+        Mov esi edi | add esi 5 | Call TranslateDialogHexa  ; > ebx = 080 / 081 / ...
+        sub ebx 080 | Mov edi ControlClassByNumber          ; > ebx = 0 / 1 / 2...
     ..Else
-        mov eax D$edi+8
+        Mov eax D$edi+8
         .If D$edi+8 = 'updo'         ; msctls_updown32
-            mov ebx 0
+            Mov ebx 0
         .Else_If D$edi+8 = 'prog'    ; msctls_progress32
-            mov ebx 1
+            Mov ebx 1
         .Else_If D$edi+8 = 'trac'    ; msctls_trackbar32
-            mov ebx 2
+            Mov ebx 2
         .Else_If D$edi+4 = 'Tree'    ; SysTreeView32
-            mov ebx 3
+            Mov ebx 3
         .Else_If D$edi+4 = 'List'    ; SysListView32
-            mov ebx 5
+            Mov ebx 5
         .Else_If D$edi+8 = 'ontr'    ; SysTabControl32
-            mov ebx 4
+            Mov ebx 4
         .Else_If D$edi+1 = 'Tool'    ; ToolbarWindow32
-            mov ebx 6
+            Mov ebx 6
         .Else_If D$edi+8 = 't20A'    ; RichEdit20a
-            mov ebx 7
+            Mov ebx 7
         .Else_If D$edi+1 = 'SysH'    ; SysHeader32
-            mov ebx 8
+            Mov ebx 8
         .Else_If D$edi+1 = 'ReBa'   ; ReBarWindow32
-            mov ebx 9
+            Mov ebx 9
         .Else_If D$edi+5 = 'tips'  ;tooltips_class32
-            mov ebx 10
+            Mov ebx 10
         .Else_If D$edi+8 = 'stat' ; msctls_statusbar32
-            mov ebx 11
+            Mov ebx 11
         .Else_If D$edi+8 = 'hotk'; msctls_hotkey32
-            mov ebx 12
+            Mov ebx 12
         .Else_If D$edi+1 = 'Comb' ;ComboBoxEx32
-            mov ebx 13
+            Mov ebx 13
         .Else_If D$edi+1 = 'SysA'; SysAnimate32
-            mov ebx 14
+            Mov ebx 14
         .Else_If D$edi+1 = 'SysM' ;SysMonthCal32
-            mov ebx 15
+            Mov ebx 15
         .Else_If D$edi+1 = 'SysD' ;SysDateTimePick32
-            mov ebx 16
+            Mov ebx 16
         .Else_If D$edi+1 = 'SysI' ;SysIPAddress32
-            mov ebx 17
+            Mov ebx 17
         .Else_If D$edi+1 = 'SysP'  ;SysPager
-            mov ebx 18
+            Mov ebx 18
         .Else_If D$edi+1 = 'SysL'  ; SysLink
-            mov ebx 19
+            Mov ebx 19
         .End_If
 
-      mov edi ControlClassByNames
+      Mov edi ControlClassByNames
     ..End_If
 ret
 
 
 ShowClassControls:
-    call 'User32.CreateWindowExA'  0, ComboClass, 0,
+    Call 'User32.CreateWindowExA'  0, ComboClass, 0,
 &WS_CHILD+&WS_VISIBLE+&WS_BORDER+&CBS_HASSTRINGS+&CBS_AUTOHSCROLL+&CBS_DROPDOWNLIST+&WS_VSCROLL+&ES_AUTOVSCROLL,
                                   2, 200, 145, 320, D$DialogEditorHandle, 0, D$hInstance, 0
-    mov D$DialogControlsHandles eax
+    Mov D$DialogControlsHandles eax
 
     ; Copy data font text (without quotes and comments) in TitleEditText:
 
-    call SearchWhatControlClass
+    Call SearchWhatControlClass
 
-    mov al 0, ecx 0FFFF
+    Mov al 0, ecx 0FFFF
     While ebx > 0                       ; setting edi > start of whatever class
         repne scasb | dec ebx           ; name, either by number or by name
     End_While
-    mov esi edi, ecx 200 , al 0
-    mov edi ActualClassName
+    Mov esi edi, ecx 200 , al 0
+    Mov edi ActualClassName
 
 L0: lodsb | stosb | cmp al 0 | ja L0<   ; copying actual name for next 'CB_SELECTSTRING'
 
-    mov edi ControlClassByNumber        ; build list name from class by numbers:
+    Mov edi ControlClassByNumber        ; build list name from class by numbers:
     While B$edi > 0
         push edi
-            call 'User32.SendMessageA' D$DialogControlsHandles &CB_ADDSTRING 0  edi
+            Call 'User32.SendMessageA' D$DialogControlsHandles &CB_ADDSTRING 0  edi
         pop edi
-        mov al 0, ecx 200 | repne scasb
+        Mov al 0, ecx 200 | repne scasb
     End_While
 
-    mov edi ControlClassByNames         ; build list name from class by names:
+    Mov edi ControlClassByNames         ; build list name from class by names:
     While B$edi > 0
         push edi
-            call 'User32.SendMessageA' D$DialogControlsHandles &CB_ADDSTRING 0  edi
+            Call 'User32.SendMessageA' D$DialogControlsHandles &CB_ADDSTRING 0  edi
         pop edi
-        mov al 0, ecx 200 | repne scasb
+        Mov al 0, ecx 200 | repne scasb
     End_While
 
   ; setting actual choice in edit control of ComboBox:
-    call 'User32.SendMessageA' D$DialogControlsHandles &CB_SELECTSTRING  0  ActualClassName
+    Call 'User32.SendMessageA' D$DialogControlsHandles &CB_SELECTSTRING  0  ActualClassName
 ret
 ____________________________________________________________________________________
 
 ; used by many 'user modifications' writting inside the edited template:
 
 SearchDialogLine:
-    mov ecx MaxTemplateText, edi D$NewDialogTemplateText, ebx 0, al 0
+    Mov ecx MaxTemplateText, edi D$NewDialogTemplateText, ebx 0, al 0
 
     While ebx < D$DialogListIndex
         repne scasb | inc ebx
@@ -4877,7 +4877,7 @@ ret
 
 
 NoDialogMenu:
-    call 'USER32.MessageBoxA', 0, {'There is no Menu in this Dialog', 0},
+    Call 'USER32.MessageBoxA', 0, {'There is no Menu in this Dialog', 0},
                               {' Dialog Menu', 0}, &MB_SYSTEMMODAL
 ret
 
@@ -4885,19 +4885,19 @@ ret
 ; At same time: reset the table of controls handles and close these controls:
 
 KillPreviousDialogControls:
-    mov esi DialogControlsHandles
+    Mov esi DialogControlsHandles
     While D$esi > 0
-        lodsd | mov D$esi-4 0
+        lodsd | Mov D$esi-4 0
         push esi
-            call 'USER32.DestroyWindow' eax
+            Call 'USER32.DestroyWindow' eax
         pop esi
     End_While
 
-    mov esi StyleHelpButtonsHandles
+    Mov esi StyleHelpButtonsHandles
     While D$esi > 0
-        lodsd | mov D$esi-4 0
+        lodsd | Mov D$esi-4 0
         push esi
-            call 'USER32.DestroyWindow' eax
+            Call 'USER32.DestroyWindow' eax
         pop esi
     End_While
 ret
@@ -4908,97 +4908,97 @@ ret
 ;     ", 0]
 
 OldAddMenuToDialog:
-    mov esi MenuList
+    Mov esi MenuList
 
    ..If D$esi = 0                               ; no Menu:
-        call 'USER32.MessageBoxA'  0  NewMenuForDialog  argh,
+        Call 'USER32.MessageBoxA'  0  NewMenuForDialog  argh,
                                 &MB_SYSTEMMODAL+&MB_ICONQUESTION+&MB_YESNO
         If eax = &IDYES
-            call NewMenu
-            mov eax D$MenuListPtr               ; either 0 or ID
+            Call NewMenu
+            Mov eax D$MenuListPtr               ; either 0 or ID
         Else
-            mov eax 0
+            Mov eax 0
         End_If
    ..Else                                       ; menu(s) exist in rsrc:
-        call 'USER32.MessageBoxA'  0  NewMenuForDialog  argh,
+        Call 'USER32.MessageBoxA'  0  NewMenuForDialog  argh,
                                 &MB_SYSTEMMODAL+&MB_ICONQUESTION+&MB_YESNO
         .If eax = &IDYES
-            call NewMenu | mov D$ActualMenutestID 0
-            mov esi D$MenuListPtr
+            Call NewMenu | Mov D$ActualMenutestID 0
+            Mov esi D$MenuListPtr
             If D$esi = 0
-                mov eax 0
+                Mov eax 0
             Else
-                mov eax D$MenuListPtr
+                Mov eax D$MenuListPtr
             End_If
         .Else
-            mov D$MenuListPtr MenuList,  B$UserTellWhatMenu &FALSE
+            Mov D$MenuListPtr MenuList,  B$UserTellWhatMenu &FALSE
             While B$UserTellWhatMenu = &FALSE   ; even if only 1 menu because we do
-                call WhatMenu                   ; not set here the true user menu ID but
+                Call WhatMenu                   ; not set here the true user menu ID but
             End_While                           ; intead the 'D$ActualMenutestID'
             If D$MenuListPtr = 0
-                mov eax 0
+                Mov eax 0
             Else
-                mov eax D$MenuListPtr
+                Mov eax D$MenuListPtr
             End_If
         .End_If
    ..End_If
 
    ; now, eax = Menu ID or 0.
    .If eax = 0
-        mov D$ActualMenutestID 0, D$DialogMenuTrueID 0
+        Mov D$ActualMenutestID 0, D$DialogMenuTrueID 0
    .Else
         move D$DialogMenuTrueID D$eax
         If D$DialogMenuTrueID <> 0              ; happends if user abort menu edition
-            add eax 4 | call 'User32.LoadMenuIndirectA' D$eax ; menu Id (from resources)
-            mov D$ActualMenutestID eax
-            call SearchDialogLine
-            mov eax 'FFFF' | stosd | mov al ' ' | stosb
-            mov ebx D$DialogMenuTrueID
-            call TranslateDialogText4 | mov al ' ' | stosb | mov ax '; ' | stosw
-            call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+            add eax 4 | Call 'User32.LoadMenuIndirectA' D$eax ; menu Id (from resources)
+            Mov D$ActualMenutestID eax
+            Call SearchDialogLine
+            Mov eax 'FFFF' | stosd | Mov al ' ' | stosb
+            Mov ebx D$DialogMenuTrueID
+            Call TranslateDialogText4 | Mov al ' ' | stosb | Mov ax '; ' | stosw
+            Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
         End_If
    .End_If
 ret
 ;;
 
 AddMenuToDialog:
-    call 'USER32.DialogBoxParamA' D$hinstance 31555 &NULL NewOrExistingMenuProc &NULL
+    Call 'USER32.DialogBoxParamA' D$hinstance 31555 &NULL NewOrExistingMenuProc &NULL
 
     .If B$NewOrExistingMenuChoice = 6           ; New.
-        call NewMenu | mov D$ActualMenutestID 0
-        mov esi D$MenuListPtr
+        Call NewMenu | Mov D$ActualMenutestID 0
+        Mov esi D$MenuListPtr
         If D$esi = 0
-            mov eax 0
+            Mov eax 0
         Else
-            mov eax D$MenuListPtr
+            Mov eax D$MenuListPtr
         End_If
 
     .Else_If B$NewOrExistingMenuChoice = 5       ; Existing.
-        mov D$MenuListPtr MenuList,  B$UserTellWhatMenu &FALSE
+        Mov D$MenuListPtr MenuList,  B$UserTellWhatMenu &FALSE
         While B$UserTellWhatMenu = &FALSE   ; even if only 1 menu because we do
-            call WhatMenu                   ; not set here the true user menu ID but
+            Call WhatMenu                   ; not set here the true user menu ID but
         End_While                           ; intead the 'D$ActualMenutestID'
         If D$MenuListPtr = 0
-            mov eax 0
+            Mov eax 0
         Else
-            mov eax D$MenuListPtr
+            Mov eax D$MenuListPtr
         End_If
 
     .End_If
 
  ; now, eax = Menu ID or 0.
    .If eax = 0
-        mov D$ActualMenutestID 0, D$DialogMenuTrueID 0
+        Mov D$ActualMenutestID 0, D$DialogMenuTrueID 0
    .Else
         move D$DialogMenuTrueID D$eax
         If D$DialogMenuTrueID <> 0              ; happends if user abort menu edition
-            add eax 4 | call 'User32.LoadMenuIndirectA' D$eax ; menu Id (from resources)
-            mov D$ActualMenutestID eax
-            call SearchDialogLine
-            mov eax 'FFFF' | stosd | mov al ' ' | stosb
-            mov ebx D$DialogMenuTrueID
-            call TranslateDialogText4 | mov al ' ' | stosb | mov ax '; ' | stosw
-            call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+            add eax 4 | Call 'User32.LoadMenuIndirectA' D$eax ; menu Id (from resources)
+            Mov D$ActualMenutestID eax
+            Call SearchDialogLine
+            Mov eax 'FFFF' | stosd | Mov al ' ' | stosb
+            Mov ebx D$DialogMenuTrueID
+            Call TranslateDialogText4 | Mov al ' ' | stosb | Mov ax '; ' | stosw
+            Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
         End_If
    .End_If
 ret
@@ -5007,44 +5007,44 @@ ret
 [NewOrExistingMenuChoice: ?]
 
 Proc NewOrExistingMenuProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_INITDIALOG
+    ...If D@msg = &WM_INITDIALOG
       ; If no Menu >>> Disable the [Load Existing] Button:
-        mov esi MenuList
+        Mov esi MenuList
         If D$esi = 0
-            call 'User32.GetDlgItem' D@adressee, 5
-            call 'User32.EnableWindow' eax &FALSE
+            Call 'User32.GetDlgItem' D@hwnd, 5
+            Call 'User32.EnableWindow' eax &FALSE
         End_If
 
-    ...Else_If D@Message = &WM_COMMAND
-        mov eax D@wParam | and D@wParam 0FFFF | shr eax 16
+    ...Else_If D@msg = &WM_COMMAND
+        Mov eax D@wParam | and D@wParam 0FFFF | shr eax 16
 
         If D@wParam = &IDCANCEL
-            mov B$NewOrExistingMenuChoice 0
-            call 'User32.DestroyWindow' D@Adressee
+            Mov B$NewOrExistingMenuChoice 0
+            Call 'User32.DestroyWindow' D@hwnd
 
         Else_If D@wParam = 5            ; Existing.
-            mov B$NewOrExistingMenuChoice 5
-            call 'User32.DestroyWindow' D@Adressee
+            Mov B$NewOrExistingMenuChoice 5
+            Call 'User32.DestroyWindow' D@hwnd
 
         Else_If D@wParam = 6            ; New.
-            mov B$NewOrExistingMenuChoice 6
-            call 'User32.DestroyWindow' D@Adressee
+            Mov B$NewOrExistingMenuChoice 6
+            Call 'User32.DestroyWindow' D@hwnd
 
         Else_If D@wParam = &IDHELP
-            call Help, B_U_AsmName, DialogHelp, ContextHlpMessage
+            Call Help, B_U_AsmName, DialogHelp, ContextHlpMessage
 
         End_If
 
     ...Else
-L8:     popad | mov eax &FALSE | jmp L9>
+L8:     popad | Mov eax &FALSE | jmp L9>
 
     ...End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 L9: EndP
 ____________________________________________________________________________________________
 
@@ -5052,24 +5052,24 @@ ________________________________________________________________________________
 
 EditDialogMenu:
     push D$DialogMenuTrueID
-        mov esi MenuList, eax D$DialogMenuTrueID
+        Mov esi MenuList, eax D$DialogMenuTrueID
         While D$esi <> eax
             add esi 12
         End_While
-        mov D$MenuListPtr esi | call ReEditExistingMenu
+        Mov D$MenuListPtr esi | Call ReEditExistingMenu
     pop eax
 
     If D$uMenu_ID <> eax
       move D$DialogMenuTrueID D$uMenu_ID
     End_If
 
-    mov eax D$MenuListPtr | add eax 4          ; ptr to menu data
-    call 'User32.LoadMenuIndirectA' D$eax | mov D$ActualMenutestID eax
-    call SearchDialogLine
-    mov eax 'FFFF' | stosd | mov al ' ' | stosb
-    mov ebx D$DialogMenuTrueID
-    call TranslateDialogText4 | mov al ' ' | stosb | mov ax '; ' | stosw
-    call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+    Mov eax D$MenuListPtr | add eax 4          ; ptr to menu data
+    Call 'User32.LoadMenuIndirectA' D$eax | Mov D$ActualMenutestID eax
+    Call SearchDialogLine
+    Mov eax 'FFFF' | stosd | Mov al ' ' | stosb
+    Mov ebx D$DialogMenuTrueID
+    Call TranslateDialogText4 | Mov al ' ' | stosb | Mov ax '; ' | stosw
+    Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
 ret
 
 ______________________________________________________________________________________
@@ -5086,56 +5086,56 @@ ________________________________________________________________________________
 [DialogListIndex: ?           ; true 0 based line number in main list
  ControlIndex: ?]             ; 0 based index of line in one control
 
-[NoDialogControl | mov D$DialogListIndex 0_FFFF_FFFF | mov D$ControlIndex 0_FFFF_FFFF]
+[NoDialogControl | Mov D$DialogListIndex 0_FFFF_FFFF | Mov D$ControlIndex 0_FFFF_FFFF]
 
 [EditingMenuFromDialog: ?]
 
 SetDialogTools:
-    call KillPreviousDialogControls
+    Call KillPreviousDialogControls
     NoDialogControl
-    call 'User32.SendMessageA' D$DialogListHandle, &LB_GETCURSEL, eax, 0
-    mov D$DialogListIndex eax
+    Call 'User32.SendMessageA' D$DialogListHandle, &LB_GETCURSEL, eax, 0
+    Mov D$DialogListIndex eax
 
     ..If eax < Line_empty
-        mov D$ControlIndex eax
+        Mov D$ControlIndex eax
         .If eax = Line_Style
-            call ShowDialogStyleControl | call ShowDialogStyles
+            Call ShowDialogStyleControl | Call ShowDialogStyles
         .Else_If eax = Line_Dim
-            mov D$DimIsForDialogWindow &TRUE | call ShowDimControls
+            Mov D$DimIsForDialogWindow &TRUE | Call ShowDimControls
         .Else_If eax = Line_ID
-            call SearchDialogLine
+            Call SearchDialogLine
             If D$edi = 'FFFF'
-                call EditDialogMenu
+                Call EditDialogMenu
             Else
-                call AddMenuToDialog
+                Call AddMenuToDialog
             End_If
         .Else_If eax = Line_Class
-            call ShowTitleControl          ; reuse for dialog class
+            Call ShowTitleControl          ; reuse for dialog class
          ;  NoDialogControl  ; not yet
         .Else_If eax = Line_Class
             NoDialogControl  ; not yet
         .Else_If eax = Line_Title
-            call ShowTitleControl
+            Call ShowTitleControl
         .Else_If eax = Line_Font
-            call ShowFontControls
+            Call ShowFontControls
         .End_If
     ..Else_If eax = Line_empty
         NoDialogControl    ; separator
     ..Else_If eax < D$LastDialogListItem
 L1:     sub eax Line_empty+1 | cmp eax Line_empty+1 | jae L1<
-        mov D$ControlIndex eax
+        Mov D$ControlIndex eax
         If eax = Line_Style
-            call ShowControlStyleControl | call ShowControlStyles
+            Call ShowControlStyleControl | Call ShowControlStyles
         Else_If eax = Line_ExStyle
             NoDialogControl   ; not yet
         Else_If eax = Line_Dim
-            mov D$DimIsForDialogWindow &FALSE | call ShowDimControls
+            Mov D$DimIsForDialogWindow &FALSE | Call ShowDimControls
         Else_If eax = Line_ID
-            call ShowIDcontrols
+            Call ShowIDcontrols
         Else_If eax = Line_Class
-            call ShowClassControls
+            Call ShowClassControls
         Else_If eax = Line_Title
-            call ShowTitleControl
+            Call ShowTitleControl
         Else_If eax = Line_Font
             NoDialogControl   ; not yet
         End_If
@@ -5150,7 +5150,7 @@ ________________________________________________________________________________
 ____________________________________________________________________________________
 
 
-[NextTemplateLine | xchg esi edi | mov al 0 | mov ecx 200 | repne scasb | xchg esi edi]
+[NextTemplateLine | xchg esi edi | Mov al 0 | Mov ecx 200 | repne scasb | xchg esi edi]
 
 
 [ControlNumberPtr: 0]            ; user doesn't have to set this record (before Dims)
@@ -5161,87 +5161,87 @@ ________________________________________________________________________________
 ; 'FromBinToTextTemplate' doesn't do the reverse operation...
 
 FromTextToBinTemplate:
-    mov esi D$NewDialogTemplateText, edi D$EditedDialogBoxData
+    Mov esi D$NewDialogTemplateText, edi D$EditedDialogBoxData
 
-    add esi 3 | call TranslateDialogHexa | mov eax ebx | stosd  ; Style
+    add esi 3 | Call TranslateDialogHexa | Mov eax ebx | stosd  ; Style
     NextTemplateLine
-    add esi 3 | call TranslateDialogHexa | mov eax ebx | stosd  ; extended style
+    add esi 3 | Call TranslateDialogHexa | Mov eax ebx | stosd  ; extended style
     NextTemplateLine | add esi 3
-    mov D$ControlNumberPtr edi                                  ; used down there to
-    call TranslateDialogHexa | mov eax 0 | stosw                ; set dummy control number
-    call TranslateDialogHexa | mov eax ebx | stosw              ; X pos
-    call TranslateDialogHexa | mov eax ebx | stosw              ; Y pos
-    call TranslateDialogHexa | mov eax ebx | stosw              ; width
-    call TranslateDialogHexa | mov eax ebx | stosw              ; hight
-    NextTemplateLine | call TranslateDialogHexa
+    Mov D$ControlNumberPtr edi                                  ; used down there to
+    Call TranslateDialogHexa | Mov eax 0 | stosw                ; set dummy control number
+    Call TranslateDialogHexa | Mov eax ebx | stosw              ; X pos
+    Call TranslateDialogHexa | Mov eax ebx | stosw              ; Y pos
+    Call TranslateDialogHexa | Mov eax ebx | stosw              ; width
+    Call TranslateDialogHexa | Mov eax ebx | stosw              ; hight
+    NextTemplateLine | Call TranslateDialogHexa
   ; Why the commented out lines? >>> DialogMenuComment
   ;  If ebx = 0
-      mov ax 0 | stosw                                          ; no menu
+      Mov ax 0 | stosw                                          ; no menu
   ;  Else
-  ;    mov eax ebx | stosw                                      ; 0FFFF in ebx > menu
-  ;    call TranslateDialogHexa
-  ;    mov eax ebx | stosw                                      ; menu ID
+  ;    Mov eax ebx | stosw                                      ; 0FFFF in ebx > menu
+  ;    Call TranslateDialogHexa
+  ;    Mov eax ebx | stosw                                      ; menu ID
   ;  End_If
     NextTemplateLine | inc esi
-    mov eax 0 | stosw                                           ; no class in edition
-  ;  mov al 0FF
+    Mov eax 0 | stosw                                           ; no class in edition
+  ;  Mov al 0FF
     push edi
-        mov edi ClassRecord
+        Mov edi ClassRecord
 L0:     cmp B$esi '"' | je L1>
         cmp B$esi "'" | je L1>
             lodsb | stosb                                       ; preserve Class for savings
         jmp L0<
-L1:     mov eax 0 | stosd                                       ; end mark at our string
+L1:     Mov eax 0 | stosd                                       ; end mark at our string
     pop edi
-    NextTemplateLine | inc esi | mov eax 0
+    NextTemplateLine | inc esi | Mov eax 0
 L0: cmp B$esi '"' | je L1>
     cmp B$esi "'" | je L1>
         lodsb | stosw                                            ; title
     jmp L0<
-L1: mov ax 0 | stosw |  NextTemplateLine
-    call TranslateDialogHexa | mov eax ebx | stosw               ; font size
-    inc esi | mov ax 0
+L1: Mov ax 0 | stosw |  NextTemplateLine
+    Call TranslateDialogHexa | Mov eax ebx | stosw               ; font size
+    inc esi | Mov ax 0
 L0: cmp B$esi '"' | je L1>
     cmp B$esi "'" | je L1>
         lodsb | stosw                                            ; font name
     jmp L0<
-L1: mov ax 0 | stosw
+L1: Mov ax 0 | stosw
     Test edi 00_11 | jz L1>                                      ; Dword aligned?
         stosw                                                    ; no > align!
 L1: NextTemplateLine | NextTemplateLine                          ; + 1 blank line in text
 
     .While B$esi <> 255                                          ; Controls data:
-        mov ebx D$ControlNumberPtr | inc W$ebx
+        Mov ebx D$ControlNumberPtr | inc W$ebx
         add esi 3
-        call TranslateDialogHexa | mov eax ebx | stosd           ; style
+        Call TranslateDialogHexa | Mov eax ebx | stosd           ; style
         NextTemplateLine | add esi 3
-        call TranslateDialogHexa | mov eax ebx | stosd           ; extended style
+        Call TranslateDialogHexa | Mov eax ebx | stosd           ; extended style
         NextTemplateLine | add esi 3
 
-        call TranslateDialogHexa | mov eax ebx | stosw           ; X pos
-        call TranslateDialogHexa | mov eax ebx | stosw           ; Y pos
-        call TranslateDialogHexa | mov eax ebx | stosw           ; width
-        call TranslateDialogHexa | mov eax ebx | stosw           ; hight
+        Call TranslateDialogHexa | Mov eax ebx | stosw           ; X pos
+        Call TranslateDialogHexa | Mov eax ebx | stosw           ; Y pos
+        Call TranslateDialogHexa | Mov eax ebx | stosw           ; width
+        Call TranslateDialogHexa | Mov eax ebx | stosw           ; hight
         NextTemplateLine
-        call TranslateDialogHexa | mov eax ebx | stosw           ; ID
+        Call TranslateDialogHexa | Mov eax ebx | stosw           ; ID
         NextTemplateLine
         If D$esi = 'FFFF'                                        ; class by number:
-            mov ax 0FFFF | stosw | add  esi 5
-            call TranslateDialogHexa | mov eax ebx | stosw       ; class
+            Mov ax 0FFFF | stosw | add  esi 5
+            Call TranslateDialogHexa | Mov eax ebx | stosw       ; class
         Else
-            inc esi | mov eax 0
+            inc esi | Mov eax 0
 L0:         cmp B$esi '"' | je L1>
             cmp B$esi "'" | je L1>
             lodsb | stosw
             jmp L0<
-L1:         mov ax 0 | stosw
+L1:         Mov ax 0 | stosw
         End_If
-        NextTemplateLine | inc esi | mov ax 0
+        NextTemplateLine | inc esi | Mov ax 0
 L0:     cmp B$esi '"' | je L1>
         cmp B$esi "'" | je L1>
             lodsb | stosw                                       ; title
         jmp L0<
-L1:     mov ax 0 | stosw                                        ; end mark
+L1:     Mov ax 0 | stosw                                        ; end mark
         NextTemplateLine | stosw                                ; no creation dat
         Test edi 00_11 | jz L1>                                 ; Dword aligned?
             stosw                                               ; no > align!
@@ -5257,19 +5257,19 @@ ________________________________________________________________________________
 [ClickedCheckBoxHandle: ?  FlagCheck: ?]
 
 WriteStyle:
-    mov eax D$DialogListIndex, D$ClickedCheckBoxHandle ecx
+    Mov eax D$DialogListIndex, D$ClickedCheckBoxHandle ecx
 
     ...If eax = D$ControlIndex              ; >>> this is for Dialog Style:
         move D$CheckMust D$DialogMustHaveBitTable+ebx
         move D$CheckExclude D$DialogExcludeBitTable+ebx
         move D$CheckingMask DialogCheckingMask
         move D$CheckBit D$DialogBitTable+ebx
-        mov esi DialogBitTable
+        Mov esi DialogBitTable
 
     ...Else                                  ; >>> this is for Control Style:
         push ebx                                ; table indice (0 / 4 / 8 / 12...)
             add D$DialogListIndex Line_Class
-            call SearchWhatControlClass             ; ebx = indice of class (0 / 1 / 2 / 3...)
+            Call SearchWhatControlClass             ; ebx = indice of class (0 / 1 / 2 / 3...)
             sub D$DialogListIndex Line_Class
         pop eax                                       ; table indice in eax
         ..If edi = ControlClassByNumber               ; >>> class by Number
@@ -5278,37 +5278,37 @@ WriteStyle:
                 move D$CheckExclude D$ButtonExcludeBitTable+eax
                 move D$CheckingMask ButtonCheckingMask
                 move D$CheckBit D$ButtonBitTable+eax
-                mov esi ButtonBitTable
+                Mov esi ButtonBitTable
             .Else_If ebx = 1
                 move D$CheckMust D$EditMustHaveBitTable+eax        ; Edit control
                 move D$CheckExclude D$EditExcludeBitTable+eax
                 move D$CheckingMask EditCheckingMask
                 move D$CheckBit D$EditBitTable+eax
-                mov esi EditBitTable
+                Mov esi EditBitTable
             .Else_If ebx = 2
                 move D$CheckMust D$StaticMustHaveBitTable+eax      ; Static Control
                 move D$CheckExclude D$StaticExcludeBitTable+eax
                 move D$CheckingMask StaticCheckingMask
                 move D$CheckBit D$StaticBitTable+eax
-                mov esi StaticBitTable
+                Mov esi StaticBitTable
             .Else_If ebx = 3
                 move D$CheckMust D$ListMustHaveBitTable+eax        ; ListBox
                 move D$CheckExclude D$ListExcludeBitTable+eax
                 move D$CheckingMask ListCheckingMask
                 move D$CheckBit D$ListBitTable+eax
-                mov esi ListBitTable
+                Mov esi ListBitTable
             .Else_If ebx = 4
                 move D$CheckMust D$ScrollMustHaveBitTable+eax      ; ScrollBar
                 move D$CheckExclude D$ScrollExcludeBitTable+eax
                 move D$CheckingMask ScrollCheckingMask
                 move D$CheckBit D$ScrollBitTable+eax
-                mov esi ScrollBitTable
+                Mov esi ScrollBitTable
             .Else_If ebx = 5
                 move D$CheckMust D$ComboMustHaveBitTable+eax       ; ComboBox
                 move D$CheckExclude D$ComboExcludeBitTable+eax
                 move D$CheckingMask ComboCheckingMask
                 move D$CheckBit D$ComboBitTable+eax
-                mov esi ComboBitTable
+                Mov esi ComboBitTable
             .End_If
         ..Else                                         ; >>> class by Name
             .If ebx = 0
@@ -5316,7 +5316,7 @@ WriteStyle:
                 move D$CheckExclude D$UpDownExcludeBitTable+eax
                 move D$CheckingMask UpDownCheckingMask
                 move D$CheckBit D$UpDownBitTable+eax
-                mov esi UpDownBitTable
+                Mov esi UpDownBitTable
             .Else_If ebx = 1
                 ret                                    ; msctls_progress32 (no controls)
             .Else_If ebx = 2
@@ -5324,130 +5324,130 @@ WriteStyle:
                 move D$CheckExclude D$TrackExcludeBitTable+eax
                 move D$CheckingMask TrackCheckingMask
                 move D$CheckBit D$TrackBitTable+eax
-                mov esi TrackBitTable
+                Mov esi TrackBitTable
             .Else_If ebx = 3
                 move D$CheckMust D$TreeMustHaveBitTable+eax        ; SysTreeView32
                 move D$CheckExclude D$TreeExcludeBitTable+eax
                 move D$CheckingMask TreeCheckingMask
                 move D$CheckBit D$TreeBitTable+eax
-                mov esi TreeBitTable
+                Mov esi TreeBitTable
             .Else_If ebx = 4
                 move D$CheckMust D$TabMustHaveBitTable+eax         ; SysTabControl32
                 move D$CheckExclude D$TabExcludeBitTable+eax
                 move D$CheckingMask TabCheckingMask
                 move D$CheckBit D$TabBitTable+eax
-                mov esi TabBitTable
+                Mov esi TabBitTable
             .Else_If ebx = 5
                 move D$CheckMust D$ListViewMustHaveBitTable+eax    ; SysListView32
                 move D$CheckExclude D$ListViewExcludeBitTable+eax
                 move D$CheckingMask ListViewCheckingMask
                 move D$CheckBit D$ListViewBitTable+eax
-                mov esi ListViewBitTable
+                Mov esi ListViewBitTable
             .Else_If ebx = 6
                 move D$CheckMust D$ToolBarMustHaveBitTable+eax    ; ToolbarWindow32
                 move D$CheckExclude D$ToolBarExcludeBitTable+eax
                 move D$CheckingMask ToolBarCheckingMask
                 move D$CheckBit D$ToolBarBitTable+eax
-                mov esi ToolBarBitTable
+                Mov esi ToolBarBitTable
 
             .Else_If ebx = 7
                 move D$CheckMust D$RichEdit20aMustHaveBitTable+eax    ; RichEdit20a
                 move D$CheckExclude D$RichEdit20aExcludeBitTable+eax
                 move D$CheckingMask RichEdit20aCheckingMask
                 move D$CheckBit D$RichEdit20aBitTable+eax
-                mov esi RichEdit20aBitTable
+                Mov esi RichEdit20aBitTable
 
             .Else_If ebx = 8
                 move D$CheckMust D$SysHeader32MustHaveBitTable+eax    ; SysHeader32
                 move D$CheckExclude D$SysHeader32ExcludeBitTable+eax
                 move D$CheckingMask SysHeader32CheckingMask
                 move D$CheckBit D$SysHeader32BitTable+eax
-                mov esi SysHeader32BitTable
+                Mov esi SysHeader32BitTable
 
             .Else_If ebx = 9
                 move D$CheckMust D$ReBarWindow32MustHaveBitTable+eax    ; ReBarWindow32
                 move D$CheckExclude D$ReBarWindow32ExcludeBitTable+eax
                 move D$CheckingMask ReBarWindow32CheckingMask
                 move D$CheckBit D$ReBarWindow32BitTable+eax
-                mov esi ReBarWindow32BitTable
+                Mov esi ReBarWindow32BitTable
 
             .Else_If ebx = 10
                 move D$CheckMust D$tooltips_class32MustHaveBitTable+eax    ; tooltips_class32
                 move D$CheckExclude D$tooltips_class32ExcludeBitTable+eax
                 move D$CheckingMask tooltips_class32CheckingMask
                 move D$CheckBit D$tooltips_class32BitTable+eax
-                mov esi tooltips_class32BitTable
+                Mov esi tooltips_class32BitTable
 
             .Else_If ebx = 11
                 move D$CheckMust D$msctls_statusbar32MustHaveBitTable+eax    ; msctls_statusbar32
                 move D$CheckExclude D$msctls_statusbar32ExcludeBitTable+eax
                 move D$CheckingMask msctls_statusbar32CheckingMask
                 move D$CheckBit D$msctls_statusbar32BitTable+eax
-                mov esi msctls_statusbar32BitTable
+                Mov esi msctls_statusbar32BitTable
 
             .Else_If ebx = 12
                 move D$CheckMust D$msctls_hotkey32MustHaveBitTable+eax    ; msctls_hotkey32
                 move D$CheckExclude D$msctls_hotkey32ExcludeBitTable+eax
                 move D$CheckingMask msctls_hotkey32CheckingMask
                 move D$CheckBit D$msctls_hotkey32BitTable+eax
-                mov esi msctls_hotkey32BitTable
+                Mov esi msctls_hotkey32BitTable
 
             .Else_If ebx = 13
                 move D$CheckMust D$ComboBoxEx32MustHaveBitTable+eax    ; ComboBoxEx32
                 move D$CheckExclude D$ComboBoxEx32ExcludeBitTable+eax
                 move D$CheckingMask ComboBoxEx32CheckingMask
                 move D$CheckBit D$ComboBoxEx32BitTable+eax
-                mov esi ComboBoxEx32BitTable
+                Mov esi ComboBoxEx32BitTable
 
             .Else_If ebx = 14
                 move D$CheckMust D$SysAnimate32MustHaveBitTable+eax    ; SysAnimate32
                 move D$CheckExclude D$SysAnimate32ExcludeBitTable+eax
                 move D$CheckingMask SysAnimate32CheckingMask
                 move D$CheckBit D$SysAnimate32BitTable+eax
-                mov esi SysAnimate32BitTable
+                Mov esi SysAnimate32BitTable
 
             .Else_If ebx = 15
                 move D$CheckMust D$SysMonthCal32MustHaveBitTable+eax    ; SysMonthCal32
                 move D$CheckExclude D$SysMonthCal32ExcludeBitTable+eax
                 move D$CheckingMask SysMonthCal32CheckingMask
                 move D$CheckBit D$SysMonthCal32BitTable+eax
-                mov esi SysMonthCal32BitTable
+                Mov esi SysMonthCal32BitTable
 
             .Else_If ebx = 16
                 move D$CheckMust D$SysDateTimePick32MustHaveBitTable+eax    ; SysDateTimePick32
                 move D$CheckExclude D$SysDateTimePick32ExcludeBitTable+eax
                 move D$CheckingMask SysDateTimePick32CheckingMask
                 move D$CheckBit D$SysDateTimePick32BitTable+eax
-                mov esi SysDateTimePick32BitTable
+                Mov esi SysDateTimePick32BitTable
 
             .Else_If ebx = 17
                 move D$CheckMust D$SysIPAddress32MustHaveBitTable+eax    ; SysIPAddress32
                 move D$CheckExclude D$SysIPAddress32ExcludeBitTable+eax
                 move D$CheckingMask SysIPAddress32CheckingMask
                 move D$CheckBit D$SysIPAddress32BitTable+eax
-                mov esi SysIPAddress32BitTable
+                Mov esi SysIPAddress32BitTable
 
             .Else_If ebx = 18
                 move D$CheckMust D$SysPagerMustHaveBitTable+eax    ; SysPager
                 move D$CheckExclude D$SysPagerExcludeBitTable+eax
                 move D$CheckingMask SysPagerCheckingMask
                 move D$CheckBit D$SysPagerBitTable+eax
-                mov esi SysPagerBitTable
+                Mov esi SysPagerBitTable
 
             .Else_If ebx = 19
                 move D$CheckMust D$SysLinkMustHaveBitTable+eax    ; SysLink
                 move D$CheckExclude D$SysLinkExcludeBitTable+eax
                 move D$CheckingMask SysLinkCheckingMask
                 move D$CheckBit D$SysLinkBitTable+eax
-                mov esi SysLinkBitTable
+                Mov esi SysLinkBitTable
             .End_If
         ..End_If
 
     ...End_If
 
     push esi
-        call SearchDialogLine | add edi 3           ; edi > "NewDialogTemplateText": Style
-        mov esi edi | call TranslateDialogHexa      ; Style value in ebx
+        Call SearchDialogLine | add edi 3           ; edi > "NewDialogTemplateText": Style
+        Mov esi edi | Call TranslateDialogHexa      ; Style value in ebx
     pop esi
 ;;
  Now: D$CheckBit = bit value of the clicked checkbox
@@ -5460,8 +5460,8 @@ WriteStyle:
  We take care of "required" / "exclude" bits only if we are setting the bits:
 ;;
     push esi, edi, ebx
-        call 'User32.SendMessageA' D$ClickedCheckBoxHandle &BM_GETCHECK 0 0
-        mov D$FlagCheck eax
+        Call 'User32.SendMessageA' D$ClickedCheckBoxHandle &BM_GETCHECK 0 0
+        Mov D$FlagCheck eax
     pop ebx, edi, esi
 
 
@@ -5472,14 +5472,14 @@ L1: xor ebx D$CheckBit                                  ; new set bit
 
 ; or ebx &WS_THICKFRAME  (for my tests)
 
-    mov D$CheckActual ebx
+    Mov D$CheckActual ebx
     pushad
-        call TranslateDialogText8  ; write ebx (text) at "NewDialogTemplateText": Style
+        Call TranslateDialogText8  ; write ebx (text) at "NewDialogTemplateText": Style
     popad
 
-    call CheckControlStyles
+    Call CheckControlStyles
 
-    call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+    Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
 ret
 
 ____________________________________________________________________________________________
@@ -5488,62 +5488,62 @@ ________________________________________________________________________________
 
 ShowStyleInfo:
     .If D$CheckingMask = DialogCheckingMask
-        mov eax DialogStylesHelp
+        Mov eax DialogStylesHelp
     .Else_If D$CheckingMask = ButtonCheckingMask
-        mov eax ButtonStylesHelp
+        Mov eax ButtonStylesHelp
     .Else_If D$CheckingMask = EditCheckingMask
-        mov eax EditStylesHelp
+        Mov eax EditStylesHelp
     .Else_If D$CheckingMask = StaticCheckingMask
-        mov eax StaticStylesHelp
+        Mov eax StaticStylesHelp
     .Else_If D$CheckingMask = ListCheckingMask
-        mov eax ListBoxStyles
+        Mov eax ListBoxStyles
     .Else_If D$CheckingMask = ScrollCheckingMask
-        mov eax ScrollStylesHelp
+        Mov eax ScrollStylesHelp
     .Else_If D$CheckingMask = ComboCheckingMask
-        mov eax ComboStylesHelp
+        Mov eax ComboStylesHelp
     .Else_If D$CheckingMask = UpDownCheckingMask
-        mov eax UpDownStylesHelp
+        Mov eax UpDownStylesHelp
     .Else_If D$CheckingMask = TrackCheckingMask
-        mov eax TrackStylesHelp
+        Mov eax TrackStylesHelp
     .Else_If D$CheckingMask = TreeCheckingMask
-        mov eax TreeViewStylesHelp
+        Mov eax TreeViewStylesHelp
     .Else_If D$CheckingMask = TabCheckingMask
-        mov eax TabStylesHelp
+        Mov eax TabStylesHelp
     .Else_If D$CheckingMask = ListViewCheckingMask
-        mov eax ListViewStylesHelp
+        Mov eax ListViewStylesHelp
     .Else_If D$CheckingMask = ToolBarCheckingMask
-        mov eax ToolBarStylesHelp
+        Mov eax ToolBarStylesHelp
     .Else_If D$CheckingMask = RichEdit20aCheckingMask
-        mov eax RichEdit20aStylesHelp
+        Mov eax RichEdit20aStylesHelp
     .Else_If D$CheckingMask = SysHeader32CheckingMask
-        mov eax SysHeader32StylesHelp
+        Mov eax SysHeader32StylesHelp
     .Else_If D$CheckingMask = ReBarWindow32CheckingMask
-        mov eax ReBarWindow32StylesHelp
+        Mov eax ReBarWindow32StylesHelp
     .Else_If D$CheckingMask = tooltips_class32CheckingMask
-        mov eax tooltips_class32StylesHelp
+        Mov eax tooltips_class32StylesHelp
     .Else_If D$CheckingMask = msctls_statusbar32CheckingMask
-        mov eax msctls_statusbar32StylesHelp
+        Mov eax msctls_statusbar32StylesHelp
     .Else_If D$CheckingMask = msctls_hotkey32CheckingMask
-        mov eax msctls_hotkey32StylesHelp
+        Mov eax msctls_hotkey32StylesHelp
     .Else_If D$CheckingMask = ComboBoxEx32CheckingMask
-        mov eax ComboBoxEx32StylesHelp
+        Mov eax ComboBoxEx32StylesHelp
     .Else_If D$CheckingMask = SysAnimate32CheckingMask
-        mov eax SysAnimate32StylesHelp
+        Mov eax SysAnimate32StylesHelp
     .Else_If D$CheckingMask = SysMonthCal32CheckingMask
-        mov eax SysMonthCal32StylesHelp
+        Mov eax SysMonthCal32StylesHelp
     .Else_If D$CheckingMask = SysDateTimePick32CheckingMask
-        mov eax SysDateTimePick32StylesHelp
+        Mov eax SysDateTimePick32StylesHelp
     .Else_If D$CheckingMask = SysIPAddress32CheckingMask
-        mov eax SysIPAddress32StylesHelp
+        Mov eax SysIPAddress32StylesHelp
     .Else_If D$CheckingMask = SysPagerCheckingMask
-        mov eax SysPagerStylesHelp
+        Mov eax SysPagerStylesHelp
     .Else_If D$CheckingMask = SysLinkCheckingMask
-        mov eax SysLinkStylesHelp
+        Mov eax SysLinkStylesHelp
     .End_If
 
     sub esi 4 | sub esi StyleHelpButtonsHandles | add esi eax
 
-    call 'USER32.CreateDialogIndirectParamA' D$hinstance, HelpDialog, ecx,
+    Call 'USER32.CreateDialogIndirectParamA' D$hinstance, HelpDialog, ecx,
                                              HelpDialogProc, D$esi
 
 ret
@@ -5553,11 +5553,11 @@ ________________________________________________________________________________
 ; class by name. edi, ecx set by caller:
 
 StripFFFF0080:
-    mov B$edi '"' | inc edi
+    Mov B$edi '"' | inc edi
     push edi
         add edi 8                                   ; edi after 'FFFF 0080'
         push edi
-            mov al 255 | repne scasb | mov ecx edi  ; edi > End of template
+            Mov al 255 | repne scasb | Mov ecx edi  ; edi > End of template
         pop esi
         sub ecx esi                                 ; how many char to move backward
     pop edi                                         ; esi > first char
@@ -5568,75 +5568,75 @@ ret
 [DefaultNumberClass: 'xxxx', 0]
 
 WriteClass: ;need LINES_!!
-    call 'User32.SendMessageA' D$DialogControlsHandles, &CB_GETCURSEL, 0, 0 | mov ebx eax
+    Call 'User32.SendMessageA' D$DialogControlsHandles, &CB_GETCURSEL, 0, 0 | Mov ebx eax
 
-    mov edx D$DialogListIndex, edi D$NewDialogTemplateText, al 0, ecx MaxTemplateText
+    Mov edx D$DialogListIndex, edi D$NewDialogTemplateText, al 0, ecx MaxTemplateText
     sub edx Line_Class
 
 L0: repne scasb | dec edx | jnz L0<                          ; to point to upper Style
-    add edi 4 | mov B$edi-1 '5', al '0', ecx 7 | rep stosb   ; reset Style record to default
-    mov edx Line_Class, al 0, ecx 0FFFFFFFF
+    add edi 4 | Mov B$edi-1 '5', al '0', ecx 7 | rep stosb   ; reset Style record to default
+    Mov edx Line_Class, al 0, ecx 0FFFFFFFF
 L0: repne scasb | dec edx | jnz L0<                          ; point to Class record
 
     ..If D$edi = 'FFFF'
         .If ebx < 6
-            add edi 8 | mov B$edi '0' | add B$edi bl         ; new 'FFFF 008x' value
+            add edi 8 | Mov B$edi '0' | add B$edi bl         ; new 'FFFF 008x' value
         .Else
           ; strip "text", make 9 chars room, copy 'FFFF 008x' value:
             push edi
                 push ebx
-                    call StripFFFF0080
+                    Call StripFFFF0080
                 pop ebx
                 sub ebx 6
-                mov edi ControlClassByNames, ecx 0FFFF, al 0
+                Mov edi ControlClassByNames, ecx 0FFFF, al 0
                 While ebx > 0
                     repne scasb | dec ebx
                 End_While                                ; edi > choosen Class by name text
             pop esi
             inc esi                     ; "StripFFFF0080" have written first quote
-            call ResetTemplateClass
+            Call ResetTemplateClass
         .End_If
     ..Else                              ; edi point to "msctls_...."
       ; Strip "text":
         push ebx, edi
-            inc edi | call StripTemplateText
+            inc edi | Call StripTemplateText
         pop edi, ebx
         .If ebx < 6
           ; make 9 chars room (including <" 0>, copy 'FFFF 008x' value):
             push ebx
-                mov esi edi, edi DefaultNumberClass | call ResetTemplateClass
-                sub edi 7 | mov D$edi 'FFFF', D$edi+4 ' 008'
+                Mov esi edi, edi DefaultNumberClass | Call ResetTemplateClass
+                sub edi 7 | Mov D$edi 'FFFF', D$edi+4 ' 008'
             pop ebx
-            add bl '0' | mov B$edi+8 bl, B$edi+9 ' '
+            add bl '0' | Mov B$edi+8 bl, B$edi+9 ' '
         .Else
             push edi
                 sub ebx 6
               ; make whished lenght room, copy new Class text
-                mov edi ControlClassByNames, ecx 0FFFF, al 0
+                Mov edi ControlClassByNames, ecx 0FFFF, al 0
                 While ebx > 0
                     repne scasb | dec ebx
                 End_While
             pop esi
             inc esi
-            call ResetTemplateClass
+            Call ResetTemplateClass
         .End_If
     ..End_If
 
-    call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+    Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
 ret
 _________________________________________________________________________________
 
 WriteFontSize:
-    mov edi D$NewDialogTemplateText al 0, ecx MaxTemplateText
+    Mov edi D$NewDialogTemplateText al 0, ecx MaxTemplateText
     repne scasb | repne scasb | repne scasb | repne scasb | repne scasb
     push edi
-        call 'User32.SendMessageA' D$DialogControlsHandles+4  &CB_GETCURSEL  0  0
+        Call 'User32.SendMessageA' D$DialogControlsHandles+4  &CB_GETCURSEL  0  0
     pop edi
     push edi
-        call 'User32.SendMessageA' D$DialogControlsHandles+4 &CB_GETLBTEXT eax edi
+        Call 'User32.SendMessageA' D$DialogControlsHandles+4 &CB_GETLBTEXT eax edi
     pop edi
-    mov B$edi+2 ' '
-    call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+    Mov B$edi+2 ' '
+    Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
 ret
 _____________________________________________________________________________________
 
@@ -5644,10 +5644,10 @@ ________________________________________________________________________________
 
 StripTemplateText:
     push edi
-        mov al '"', ecx MaxTemplateText | repne scasb | dec edi ; edi > lasting '"'
+        Mov al '"', ecx MaxTemplateText | repne scasb | dec edi ; edi > lasting '"'
         push edi
-            mov al 255 | repne scasb                            ; edi > End of template
-            mov ecx edi
+            Mov al 255 | repne scasb                            ; edi > End of template
+            Mov ecx edi
         pop esi
         sub ecx esi                                    ; how many char to move backward
     pop edi                                                     ; esi > first char
@@ -5658,13 +5658,13 @@ ret
 ResetTemplateText:
     push edi
         push esi                                                ; > where to write
-            mov al 0, ecx 120, ebx 120 | repne scasb
-            sub ecx 120 | neg ecx | mov ebx ecx                 ; new string lenght
-            mov edi D$NewDialogTemplateText, al 255, ecx MaxTemplateText
-            repne scasb | mov esi edi | add edi ebx             ; edi, esi ready for room
+            Mov al 0, ecx 120, ebx 120 | repne scasb
+            sub ecx 120 | neg ecx | Mov ebx ecx                 ; new string lenght
+            Mov edi D$NewDialogTemplateText, al 255, ecx MaxTemplateText
+            repne scasb | Mov esi edi | add edi ebx             ; edi, esi ready for room
         pop eax
         push eax
-            mov ecx esi | sub ecx eax | dec edi
+            Mov ecx esi | sub ecx eax | dec edi
             std
                 rep movsb                   ; make empty room
             cld
@@ -5674,21 +5674,21 @@ ResetTemplateText:
 L0: lodsb | cmp al 0 | je L9>
     stosb | jmp L0<                         ; write new string
 
-L9: mov al '"' | stosb
+L9: Mov al '"' | stosb
 ret
 ______________________________________________________________________________________
 
 ResetTemplateClass:
     push edi
         push esi                                                   ; > where to write
-            mov al 0, ecx 120, ebx 120 | repne scasb
-            sub ecx 120 | neg ecx | mov ebx ecx                    ; new string lenght
+            Mov al 0, ecx 120, ebx 120 | repne scasb
+            sub ecx 120 | neg ecx | Mov ebx ecx                    ; new string lenght
             add ebx 2                                              ; for ' 0'
-            mov edi D$NewDialogTemplateText, al 255, ecx MaxTemplateText
-            repne scasb | mov esi edi | add edi ebx                ; edi, esi ready for room
+            Mov edi D$NewDialogTemplateText, al 255, ecx MaxTemplateText
+            repne scasb | Mov esi edi | add edi ebx                ; edi, esi ready for room
         pop eax
         push eax
-            mov ecx esi | sub ecx eax | dec edi
+            Mov ecx esi | sub ecx eax | dec edi
             std
                 rep movsb                ; make empty room
             cld
@@ -5698,8 +5698,8 @@ ResetTemplateClass:
 L0: lodsb | cmp al 0 | je L9>
     stosb | jmp L0<                      ; write new string
 
-L9: mov al '"' | stosb
-    mov ax ' 0' | stosw
+L9: Mov al '"' | stosb
+    Mov ax ' 0' | stosw
 ret
 
 __________________________________________________________________________________
@@ -5707,22 +5707,22 @@ ________________________________________________________________________________
 [LBbuffer: ? #30] ;[LBbufferLen 120]
 
 ClearLBbuffer:
-    mov eax 0, ecx 30, edi LBbuffer | rep stosd
+    Mov eax 0, ecx 30, edi LBbuffer | rep stosd
 ret
 
 
 WriteFontType:
-    call ClearLBbuffer
-    mov edi D$NewDialogTemplateText al 0, ecx MaxTemplateText
+    Call ClearLBbuffer
+    Mov edi D$NewDialogTemplateText al 0, ecx MaxTemplateText
     repne scasb | repne scasb | repne scasb | repne scasb | repne scasb
     add edi 4
     push edi
-        call StripTemplateText
-        call 'User32.SendMessageA' D$DialogControlsHandles  &CB_GETCURSEL  0  0
-        call 'User32.SendMessageA' D$DialogControlsHandles &CB_GETLBTEXT eax LBbuffer
+        Call StripTemplateText
+        Call 'User32.SendMessageA' D$DialogControlsHandles  &CB_GETCURSEL  0  0
+        Call 'User32.SendMessageA' D$DialogControlsHandles &CB_GETLBTEXT eax LBbuffer
     pop esi
-    mov edi LBbuffer | call ResetTemplateText
-    call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+    Mov edi LBbuffer | Call ResetTemplateText
+    Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
 ret
 ________________________________________________________________________________________
 ;;
@@ -5732,7 +5732,7 @@ ________________________________________________________________________________
  then to hexa, then to hexa text !!!!!!!!............ These Edit boxes no not seam to
  have a valid ID. They are created by:
 
-     call 'User32.CreateWindowExA'  0  EditClass  0,
+     Call 'User32.CreateWindowExA'  0  EditClass  0,
              WS_CHILD+WS_VISIBLE+WS_BORDER+ES_NUMBER+ES_RIGHT+ES_MULTILINE,
              80 D$esi+4  45 20, D$EDBPadressee 0 D$hInstance 0
 
@@ -5743,32 +5743,32 @@ ________________________________________________________________________________
 
 WriteDimOnly:
     push ecx                          ; edit control handle ( > edx )
-        call 'User32.SendMessageA' ecx, &WM_GETTEXT, 0F, LBbuffer
+        Call 'User32.SendMessageA' ecx, &WM_GETTEXT, 0F, LBbuffer
     pop edx
-    call SearchDialogLine           ; Edi is set there.
-    mov esi DialogControlsHandles, ebx 1
+    Call SearchDialogLine           ; Edi is set there.
+    Mov esi DialogControlsHandles, ebx 1
     while D$esi <> edx | add esi 4 | inc ebx | End_While  ; search for what control
   ; 3 handles (text, edit, UpDown). So: 2 > 1   5 > 2   8 > 3   11 > 4
     shr ebx 1 | On ebx > 2, dec ebx
     add ebx D$DimIsForDialogWindow                       ; jump over n (number of controls)
-    mov al ' '
+    Mov al ' '
     While ebx > 0 | repne scasb | dec ebx | End_While    ; edi > dim to overwrite
     push edi
 
       ; Translate decimal to binary (simplified version):
-        mov eax 0, ecx 0, esi LBbuffer
-L2:     mov cl B$esi | inc  esi              ; (eax used for result > no lodsb)
+        Mov eax 0, ecx 0, esi LBbuffer
+L2:     Mov cl B$esi | inc  esi              ; (eax used for result > no lodsb)
         cmp cl 0 | jbe  L9>
-            mov edx 10 | mul edx | sub  ecx '0'
+            Mov edx 10 | mul edx | sub  ecx '0'
             add  eax ecx | jmp  L2<          ; >>> number in EAX
-L9:         mov ebx eax
-            add ebx D$ProposedUpDowmChange | mov D$ProposedUpDowmChange 0
+L9:         Mov ebx eax
+            add ebx D$ProposedUpDowmChange | Mov D$ProposedUpDowmChange 0
       ; Store text hexa at "DimTempo":
-        mov edi LBbuffer | call TranslateDialogText8 | mov al 0 | stosb
+        Mov edi LBbuffer | Call TranslateDialogText8 | Mov al 0 | stosb
     pop edi
-    mov eax '0000' | stosd | dec edi | mov esi LBbuffer
+    Mov eax '0000' | stosd | dec edi | Mov esi LBbuffer
     While B$esi+1 > 0 | inc esi | End_While
-    std | mov ecx 4
+    std | Mov ecx 4
 L0:     lodsb
         stosb | On esi < LBbuffer, jmp L9>
         loop L0<
@@ -5776,43 +5776,43 @@ L9: cld
 ret
 
 WriteDim:
-    call WriteDimOnly
-    call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+    Call WriteDimOnly
+    Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
 ret
 __________________________________________________________________________________
 
 WriteTitle:
-    call SearchDialogLine | inc edi        ; points to Class record
+    Call SearchDialogLine | inc edi        ; points to Class record
     push edi
-        call StripTemplateText
-        call 'User32.GetDlgCtrlID' D$DialogControlsHandles
-        call 'User32.GetDlgItemTextA' D$DialogEditorHandle eax LBbuffer 100
+        Call StripTemplateText
+        Call 'User32.GetDlgCtrlID' D$DialogControlsHandles
+        Call 'User32.GetDlgItemTextA' D$DialogEditorHandle eax LBbuffer 100
                                         ; fix limit (100) here
                                         ; (sendmessage for text limitation doesn't work)
     pop esi
 
-    mov edi LBbuffer | call ResetTemplateText
+    Mov edi LBbuffer | Call ResetTemplateText
 
-    call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+    Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
 ret
 _____________________________________________________________________________________
 
 WriteID:
-    call SearchDialogLine
+    Call SearchDialogLine
 
     push edi
-      call 'User32.GetDlgCtrlID' D$DialogControlsHandles
-      call 'User32.GetDlgItemInt' D$DialogEditorHandle eax  0  0
+      Call 'User32.GetDlgCtrlID' D$DialogControlsHandles
+      Call 'User32.GetDlgItemInt' D$DialogEditorHandle eax  0  0
     pop edi
 
-    mov ebx eax, ecx 4  | On eax > 0, mov W$PreviousControlID ax
+    Mov ebx eax, ecx 4  | On eax > 0, Mov W$PreviousControlID ax
 
-L0: mov eax ebx | and eax 0_F000 | shr eax 12
+L0: Mov eax ebx | and eax 0_F000 | shr eax 12
     add al '0' | On al > '9', add al 7
     shl ebx 4
     stosb | loop L0<
 
-    call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+    Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
 ret
 ____________________________________________________________________________________
 
@@ -5828,13 +5828,13 @@ ________________________________________________________________________________
  Wahoo: ' Whahooo!!!...', 0]
 
 OutDelOneControl:
-    call 'USER32.MessageBoxA' D$hwnd, DelMessage, Wahoo, &MB_SYSTEMMODAL
+    Call 'USER32.MessageBoxA' D$H.MainWindow, DelMessage, Wahoo, &MB_SYSTEMMODAL
 ret
 
 
 DelOneControl:
-    call 'User32.SendMessageA' D$DialogListHandle &LB_GETCURSEL eax 0
-    mov D$DialogListIndex eax
+    Call 'User32.SendMessageA' D$DialogListHandle &LB_GETCURSEL eax 0
+    Mov D$DialogListIndex eax
 
     .If D$DialogListIndex < Line_empty+1
         jmp OutDelOneControl
@@ -5843,14 +5843,14 @@ DelOneControl:
         jmp OutDelOneControl
 
     .Else
-        call SearchDialogLine
+        Call SearchDialogLine
         On B$edi = 0, jmp OutDelOneControl
 
-        mov al 0, ecx MaxTemplateText          ; edi > one record inside one control
+        Mov al 0, ecx MaxTemplateText          ; edi > one record inside one control
         While B$edi > 0
             repne scasb
         End_While
-        mov esi edi | sub edi 2                ; esi > end of control records
+        Mov esi edi | sub edi 2                ; esi > end of control records
         std
             While B$edi > 0
                 repne scasb
@@ -5861,13 +5861,13 @@ DelOneControl:
 ; If user delete some control before defining the ID, we reset the flag for new "Add":
         push edi
             repne scasb | repne scasb
-            On D$edi = '0000', mov W$PreviousControlID 0FFFF  ; ID at +52 octets from start
+            On D$edi = '0000', Mov W$PreviousControlID 0FFFF  ; ID at +52 octets from start
 
-            mov al 255, edi esi | repne scasb  ; search for the end
-            mov ecx edi
+            Mov al 255, edi esi | repne scasb  ; search for the end
+            Mov ecx edi
         pop edi | dec edi | sub ecx edi        ; ecx = lenght of data to move upward
         rep movsb
-        call FromTextToBinTemplate | call ShowDialogResult | call FillDialogListBox
+        Call FromTextToBinTemplate | Call ShowDialogResult | Call FillDialogListBox
 
     .End_If
 ret
@@ -5877,28 +5877,28 @@ ________________________________________________________________________________
 
 ExitDialog:
     .If ebx = 0
-        call SaveClipDialog | call CloseDialogEdition
+        Call SaveClipDialog | Call CloseDialogEdition
     .Else_If ebx = 4
         If B$DialogLoadedFromResources = &TRUE
-            call SaveResourceDialog | call CloseDialogEdition
+            Call SaveResourceDialog | Call CloseDialogEdition
         Else
-            call SaveNewResourceDialog | call CloseDialogEdition
+            Call SaveNewResourceDialog | Call CloseDialogEdition
         End_If
-        mov B$SourceHasChanged &TRUE
+        Mov B$SourceHasChanged &TRUE
     .Else_If ebx = 8
-       call CloseDialogEdition |  call SaveDialogToDisk
+       Call CloseDialogEdition |  Call SaveDialogToDisk
     .Else   ;_If ebx = 12
-       call CloseDialogEdition
+       Call CloseDialogEdition
     .End_If
 ret
 
 CloseDialogEdition:
-    call 'USER32.ClipCursor' &NULL
-    call UninstallHook
-    call 'User32.EndDialog' D$DialogEditorHandle 0
-    call 'User32.DestroyWindow' D$EditedDialogHandle
-    mov D$DialogEditorHandle 0, D$EditedDialogHandle 0
-    mov B$OnDialogEdition &FALSE, B$DialogLoadedFromResources &FALSE
+    Call 'USER32.ClipCursor' &NULL
+    Call UninstallHook
+    Call 'User32.EndDialog' D$DialogEditorHandle 0
+    Call 'User32.DestroyWindow' D$EditedDialogHandle
+    Mov D$DialogEditorHandle 0, D$EditedDialogHandle 0
+    Mov B$OnDialogEdition &FALSE, B$DialogLoadedFromResources &FALSE
 ret
 
 _______________________________________________________________________________________
@@ -5915,53 +5915,53 @@ ________________________________________________________________________________
 BuildDialogTemplate:
     VirtualAlloc ClipTemplate 60_000
 
-    mov edi D$ClipTemplate , esi D$NewDialogTemplateText
-    mov al '[' | stosb
-    mov eax 'Dial' | stosd | mov eax 'og: ' | stosd
-    mov ebx 0, edx 8, B$InsideText &FALSE
+    Mov edi D$ClipTemplate , esi D$NewDialogTemplateText
+    Mov al '[' | stosb
+    Mov eax 'Dial' | stosd | Mov eax 'og: ' | stosd
+    Mov ebx 0, edx 8, B$InsideText &FALSE
 
 L0: lodsb
     ..If al = 0                                     ; line end:
-        mov edx 0
+        Mov edx 0
         .If B$esi = 0                               ; block end (dialog or control)
             inc esi
             push edi
                 std
-                    mov al ';', ecx 200 | repne scasb      ; write ']' before comment
-                    mov al ' ' | repe scasb | add edi 2    ; search last non space char
-                    mov al ']' | stosb
+                    Mov al ';', ecx 200 | repne scasb      ; write ']' before comment
+                    Mov al ' ' | repe scasb | add edi 2    ; search last non space char
+                    Mov al ']' | stosb
                 cld
             pop edi
-            mov al CR, ah LF | stosw | stosw
+            Mov al CR, ah LF | stosw | stosw
             On B$esi = 255, jmp L9>>
-            mov al '[' | stosb
-            mov eax 'Cont' | stosd | mov eax 'rol0' | stosd | dec edi
+            Mov al '[' | stosb
+            Mov eax 'Cont' | stosd | Mov eax 'rol0' | stosd | dec edi
             push ebx
-                call TranslateDialogText4
+                Call TranslateDialogText4
             pop ebx
             inc ebx
-            mov ax ': ' | stosw | add edx 10
+            Mov ax ': ' | stosw | add edx 10
         .Else
-            mov al CR, ah LF | stosw | mov al ' ' | stosb
+            Mov al CR, ah LF | stosw | Mov al ' ' | stosb
         .End_If
-        mov B$InsideText &FALSE
+        Mov B$InsideText &FALSE
 
     ..Else
         .If al = '"'
-            mov al "'" | mov B$InsideText &TRUE
+            Mov al "'" | Mov B$InsideText &TRUE
         .End_If
         .If al <> '0'
             If al = ';'
-                mov ecx 30 | cmp edx 28 | ja L2>
-                sub ecx edx | mov al ' ' | rep stosb
-                mov al ';', B$InsideText &TRUE
+                Mov ecx 30 | cmp edx 28 | ja L2>
+                sub ecx edx | Mov al ' ' | rep stosb
+                Mov al ';', B$InsideText &TRUE
             End_If
             On B$InsideText = &TRUE, jmp L2>
             If B$esi <> '$'                         ; set a leading '0'
                 cmp B$edi-1 ' ' | jne L2>           ; for naked hexa
                 cmp al '1' | jb L2>
                 cmp al 'F' | ja L2>
-                    mov B$edi '0' | inc edi | inc edx  ; numbers (not before 'U$'/'D$')
+                    Mov B$edi '0' | inc edi | inc edx  ; numbers (not before 'U$'/'D$')
             End_If
 L2:         stosb | inc edx
         .Else
@@ -5973,23 +5973,23 @@ L2:         stosb | inc edx
     ..End_If
     jmp L0<<
 
-L9: sub edi D$ClipTemplate | mov D$ClipTemplateLength edi
+L9: sub edi D$ClipTemplate | Mov D$ClipTemplateLength edi
 ret
 
 
 SaveClipDialog:
     push D$BlockStartTextPtr, D$BlockEndTextPtr, D$BlockInside
 
-        call BuildDialogTemplate
+        Call BuildDialogTemplate
         move D$BlockStartTextPtr D$ClipTemplate
 
-L9:     mov eax D$BlockStartTextPtr | add eax D$ClipTemplateLength | dec eax
-        mov D$BlockEndTextPtr eax
+L9:     Mov eax D$BlockStartTextPtr | add eax D$ClipTemplateLength | dec eax
+        Mov D$BlockEndTextPtr eax
 
-        mov B$BlockInside &TRUE | call ControlC | mov B$BlockInside &FALSE
+        Mov B$BlockInside &TRUE | Call ControlC | Mov B$BlockInside &FALSE
 
         VirtualFree D$ClipTemplate
-        mov B$InsideText &FALSE
+        Mov B$InsideText &FALSE
 
     pop D$BlockInside, D$BlockEndTextPtr, D$BlockStartTextPtr
 ret
@@ -6039,43 +6039,43 @@ ret
 ; 0  0  0  0  0]
 
 SaveDialogToDisk:
-    call BuildDialogTemplate
+    Call BuildDialogTemplate
 
-    mov edi SaveFilter, eax 0, ecx 65 | rep stosd
-    mov D$SaveDlgFilter 'New.', D$SaveDlgFilter+3 '.dlg', D$SaveDlgFilter+7 0
+    Mov edi SaveFilter, eax 0, ecx 65 | rep stosd
+    Mov D$SaveDlgFilter 'New.', D$SaveDlgFilter+3 '.dlg', D$SaveDlgFilter+7 0
 
-    call 'Comdlg32.GetSaveFileNameA' OpenDlg | On eax = &FALSE, jmp L9>>
+    Call 'Comdlg32.GetSaveFileNameA' OpenDlg | On eax = &FALSE, jmp L9>>
 
-    call ForceExtension SaveDlgFilter, '.dlg'
+    Call ForceExtension SaveDlgFilter, '.dlg'
 
-    call 'KERNEL32.CreateFileA' SaveDlgFilter &GENERIC_WRITE,
+    Call 'KERNEL32.CreateFileA' SaveDlgFilter &GENERIC_WRITE,
                                &FILE_SHARE_READ, 0,
                                &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-        mov eax D$BusyFilePtr | call MessageBox | jmp L9>>
+        Mov eax D$BusyFilePtr | Call MessageBox | jmp L9>>
     End_If
 
-    mov D$DestinationHandle eax, D$NumberOfReadBytes 0
+    Mov D$DestinationHandle eax, D$NumberOfReadBytes 0
 
-    call 'KERNEL32.WriteFile' D$DestinationHandle, D$ClipTemplate, D$ClipTemplateLength,
+    Call 'KERNEL32.WriteFile' D$DestinationHandle, D$ClipTemplate, D$ClipTemplateLength,
                               NumberOfReadBytes  0
 
-    call 'KERNEL32.CloseHandle' D$DestinationHandle | mov D$DestinationHandle 0
+    Call 'KERNEL32.CloseHandle' D$DestinationHandle | Mov D$DestinationHandle 0
 
 L9: VirtualFree D$ClipTemplate
-    mov B$InsideText &FALSE
+    Mov B$InsideText &FALSE
 ret
 
 
 Proc ForceExtension:
     Argument @FileName, @Ext
 
-        mov eax D@FileName, ebx D@Ext
+        Mov eax D@FileName, ebx D@Ext
         While B$eax <> 0 | inc eax | End_While | sub eax 4
 
         ..If D$eax <> ebx
             .If B$eax = '.'
-L1:             mov D$eax ebx, B$eax+4 0
+L1:             Mov D$eax ebx, B$eax+4 0
             .Else
                 If B$eax+1 = '.'
                     inc eax | jmp L1<
@@ -6093,40 +6093,40 @@ EndP
 ; Reuse of the ClipBoard Naming because reuse of the Routine for Loading from ClipBoard.
 
 OpenDlgFile:
-    mov D$OtherFilesFilters DialogFilesFilters
-    mov D$OpenOtherFileTitle DialogFilesTitle
+    Mov D$OtherFilesFilters DialogFilesFilters
+    Mov D$OpenOtherFileTitle DialogFilesTitle
 
-    move D$OtherhwndFileOwner D$hwnd, D$OtherhInstance D$hInstance
+    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$hInstance
 
-    mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
-    call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
+    Mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
+    Call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
 
     If D$OtherSaveFilter = 0
         pop eax | ret
     End_If
 
-    call 'KERNEL32.CreateFileA' OtherSaveFilter &GENERIC_READ,
+    Call 'KERNEL32.CreateFileA' OtherSaveFilter &GENERIC_READ,
                                 &FILE_SHARE_READ, 0,
                                 &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-      mov eax D$BusyFilePtr | call MessageBox | pop eax | ret  ; return to caller of caller
+      Mov eax D$BusyFilePtr | Call MessageBox | pop eax | ret  ; return to caller of caller
     Else
-      mov D$OtherSourceHandle eax
+      Mov D$OtherSourceHandle eax
     End_If
 
-    call 'KERNEL32.GetFileSize'  eax 0 | mov D$ClipBoardLen eax
+    Call 'KERNEL32.GetFileSize'  eax 0 | Mov D$ClipBoardLen eax
 
     If eax > 0
         VirtualAlloc ClipBoardPTR eax
 
-        mov eax D$ClipBoardPTR | add eax D$ClipBoardLen | mov D$ClipBoardEnd eax
+        Mov eax D$ClipBoardPTR | add eax D$ClipBoardLen | Mov D$ClipBoardEnd eax
 
-        mov D$NumberOfReadBytes 0
-        call 'KERNEL32.ReadFile' D$OtherSourceHandle D$ClipBoardPTR,
+        Mov D$NumberOfReadBytes 0
+        Call 'KERNEL32.ReadFile' D$OtherSourceHandle D$ClipBoardPTR,
                                  D$ClipBoardLen NumberOfReadBytes 0
     End_If
 
-    call 'KERNEL32.CloseHandle' D$OtherSourceHandle
+    Call 'KERNEL32.CloseHandle' D$OtherSourceHandle
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -6145,7 +6145,7 @@ ________________________________________________________________________________
 ;;
 
 SearchLenghtOfDialogData:
-    mov ebx D$LastDialogListItem, esi D$EditedDialogBoxData
+    Mov ebx D$LastDialogListItem, esi D$EditedDialogBoxData
     inc ebx                                     ; ex: 7+7+7+6 (last line not account)
     lodsd | lodsd                               ; styles
     lodsw | lodsw | lodsw | lodsw | lodsw       ; n, X, Y, W, H
@@ -6153,9 +6153,9 @@ SearchLenghtOfDialogData:
     On ax > 0, lodsw                            ; menu ID
     lodsw                                       ; class? > 0 for edition
 
-    mov edi esi
-        mov ax 0, ecx 200 | repne scasw | repne scasw   ; title / font
-    mov esi edi
+    Mov edi esi
+        Mov ax 0, ecx 200 | repne scasw | repne scasw   ; title / font
+    Mov esi edi
 
     sub ebx Line_empty+1
     while ebx > 0
@@ -6165,21 +6165,21 @@ L1:     lodsd | lodsd                           ; styles
         lodsw | lodsw | lodsw | lodsw           ; X, Y, W, H
         lodsw | lodsw                           ; ID / Class
         If ax <> 0FFFF
-            mov edi esi
-                mov ax 0, ecx 200 | repne scasw ; Text form Class (zero ended)
-            mov esi edi
+            Mov edi esi
+                Mov ax 0, ecx 200 | repne scasw ; Text form Class (zero ended)
+            Mov esi edi
         End_If
-        mov edi esi
-            mov ax 0, ecx 200 | repne scasw     ; title
-        mov esi edi
+        Mov edi esi
+            Mov ax 0, ecx 200 | repne scasw     ; title
+        Mov esi edi
         lodsw
 
         sub ebx Line_empty+1
     End_While
 
-    mov ecx esi | sub ecx D$EditedDialogBoxData ; lenght of dialog data
+    Mov ecx esi | sub ecx D$EditedDialogBoxData ; lenght of dialog data
 
-    mov esi ClassRecord
+    Mov esi ClassRecord
     While B$esi > 0
         lodsb | add ecx 2
     End_While
@@ -6226,78 +6226,78 @@ ret
 
 
 ErrorIDnumber:
-    call 'USER32.MessageBoxA' D$hwnd, EIDNMessage, Wahoo, &MB_SYSTEMMODAL
+    Call 'USER32.MessageBoxA' D$H.MainWindow, EIDNMessage, Wahoo, &MB_SYSTEMMODAL
 ret
 
 
 [UserAbortID: 0] [IDstring: '        ' 0]
 
 Proc WhatDialogIdProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_INITDIALOG
-        mov B$UserAbortID &FALSE
-        call 'User32.GetDlgItem' D@Adressee, IDNumberEdit
+    ...If D@msg = &WM_INITDIALOG
+        Mov B$UserAbortID &FALSE
+        Call 'User32.GetDlgItem' D@hwnd, IDNumberEdit
         push eax
-            call 'User32.SendMessageA' eax, &EM_SETLIMITTEXT, 5, 0
+            Call 'User32.SendMessageA' eax, &EM_SETLIMITTEXT, 5, 0
         pop eax
         If B$DialogLoadedFromResources = &TRUE
-            mov eax D$WhatDialogListPtr, edi IDString, ebx 10          ; translate ID to
-            sub eax 4 | mov eax D$eax
+            Mov eax D$WhatDialogListPtr, edi IDString, ebx 10          ; translate ID to
+            sub eax 4 | Mov eax D$eax
             add edi 9                                                    ; decimal text
-L0:         mov edx 0 | div ebx
-            dec edi | add dl '0' | mov B$edi dl | cmp eax 0 | ja L0<
-            call 'User32.SetDlgItemTextA' D@Adressee, IDNumberEdit, edi
+L0:         Mov edx 0 | div ebx
+            dec edi | add dl '0' | Mov B$edi dl | cmp eax 0 | ja L0<
+            Call 'User32.SetDlgItemTextA' D@hwnd, IDNumberEdit, edi
 
         Else
-            mov esi DialogList
+            Mov esi DialogList
             While D$esi+12 > 0
                 add esi 12
             End_While
-            mov D$DialogListPtr esi | On D$esi <> 0, add D$DialogListPtr 12
+            Mov D$DialogListPtr esi | On D$esi <> 0, add D$DialogListPtr 12
 
             lodsd | add eax 10
-            mov edi IDString, ebx 10 | add edi 9 | jmp L0<
+            Mov edi IDString, ebx 10 | add edi 9 | jmp L0<
         End_If
 
-        call 'USER32.SetClassLongA' D@Adressee, &GCL_HICON, D$wc_hIcon
+        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
 
-    ...Else_If D@Message = &WM_COMMAND
+    ...Else_If D@msg = &WM_COMMAND
         ..If W@wParam = OK_ID
-            call 'USER32.GetDlgItemInt' D@Adressee, IDNumberEdit, 0, 0
+            Call 'USER32.GetDlgItemInt' D@hwnd, IDNumberEdit, 0, 0
 
             .If eax > 0FFFF
-                call ErrorIDnumber
+                Call ErrorIDnumber
             .Else
                 If B$DialogLoadedFromResources = &FALSE
                     push eax
-                        call CheckNotUsedId eax, D@Adressee
+                        Call CheckNotUsedId eax, D@hwnd
                     pop ebx
                     On eax = &IDCANCEL, jmp L5>
-                    mov eax ebx
+                    Mov eax ebx
                 End_If
 
                 If B$DialogLoadedFromResources = &TRUE
-                    mov edi D$WhatDialogListPtr | sub edi 4 | stosd
+                    Mov edi D$WhatDialogListPtr | sub edi 4 | stosd
                 Else
-                    mov edi D$DialogListPtr | stosd | add D$DialogListPtr 4
+                    Mov edi D$DialogListPtr | stosd | add D$DialogListPtr 4
                 End_If
-                call 'User32.EndDialog' D@Adressee, 0
+                Call 'User32.EndDialog' D@hwnd, 0
             .End_If
 
         ..Else_If W@wParam = Abort_ID
-            mov B$UserAbortID &TRUE
-            call 'User32.EndDialog' D@Adressee, 0
+            Mov B$UserAbortID &TRUE
+            Call 'User32.EndDialog' D@hwnd, 0
         ..End_If
 
     ...Else
-        popad | mov eax &FALSE | jmp L9>
+        popad | Mov eax &FALSE | jmp L9>
 
     ...End_If
 
-L5: popad | mov eax &TRUE
+L5: popad | Mov eax &TRUE
 
 L9: EndP
 ____________________________________________________________________________________________
@@ -6309,11 +6309,11 @@ ________________________________________________________________________________
 ;;
 
 SaveNewResourceDialog:
-    call SearchLenghtOfDialogData
+    Call SearchLenghtOfDialogData
     push ecx
         VirtualAlloc TempoMemPointer ecx                ; new memory for dialog data
 
-        call 'User32.DialogBoxIndirectParamA' D$hinstance,
+        Call 'User32.DialogBoxIndirectParamA' D$hinstance,
                WhatDialogIDData, 0, WhatDialogIdProc, 0 ; write ID in list <<<<<<<<
 
         If B$UserAbortID = &TRUE
@@ -6321,14 +6321,14 @@ SaveNewResourceDialog:
             pop eax, eax  | ret                 ; return to caller of 'ExitDialog'
         End_If
 
-        mov eax D$TempoMemPointer
-        mov edi D$DialogListPtr | stosd         ; write ptr to data in list <<<<<<<<
+        Mov eax D$TempoMemPointer
+        Mov edi D$DialogListPtr | stosd         ; write ptr to data in list <<<<<<<<
         add D$DialogListPtr 4
-        mov edi eax                             ; ready for fill
+        Mov edi eax                             ; ready for fill
     pop ecx
-    mov esi D$DialogListPtr | mov D$esi ecx     ; write size in list <<<<<<<<
+    Mov esi D$DialogListPtr | Mov D$esi ecx     ; write size in list <<<<<<<<
     add D$DialogListPtr 4
-    call SaveDialogDataToResources
+    Call SaveDialogDataToResources
 ret
 
 ____________________________________________________________________________________________
@@ -6336,7 +6336,7 @@ ________________________________________________________________________________
 ;         edi = Ptr to a Mem in DialogList.
 
 SaveDialogDataToResources:
-    mov esi D$EditedDialogBoxData
+    Mov esi D$EditedDialogBoxData
 
     movsd | movsd                           ; Style / Ext.Style
 
@@ -6349,13 +6349,13 @@ SaveDialogDataToResources:
     If D$DialogMenuTrueID = 0
         stosw                               ; '0' menu
     Else
-        mov eax 0FFFF | stosw
-        mov eax D$DialogMenuTrueID | stosw  ; See comments at 'DialogMenuComment'
+        Mov eax 0FFFF | stosw
+        Mov eax D$DialogMenuTrueID | stosw  ; See comments at 'DialogMenuComment'
     End_If
 
     lodsw
     push esi
-        mov esi ClassRecord, eax 0
+        Mov esi ClassRecord, eax 0
         Do
             lodsb | stosw                   ; write preserved Class
         loop_Until al = 0
@@ -6386,10 +6386,10 @@ SaveDialogDataToResources:
 ;;
     jecxz L9>
 
-    mov eax esi, ebx edi | and eax 00_11 | and ebx 00_11
+    Mov eax esi, ebx edi | and eax 00_11 | and ebx 00_11
     .If eax <> ebx
         If eax = 0
-            mov W$edi 0 | add edi 2
+            Mov W$edi 0 | add edi 2
         Else
             lodsw | sub ecx 2 | jecxz L9>
         End_If
@@ -6402,87 +6402,87 @@ ________________________________________________________________________________
 
 
 SaveResourceDialog:
-    call 'User32.DialogBoxIndirectParamA' D$hinstance,
+    Call 'User32.DialogBoxIndirectParamA' D$hinstance,
               WhatDialogIDData  0  WhatDialogIdProc 0   ; write ID in list <<<<<<<<
 
     If B$UserAbortID = &TRUE
           pop eax | ret
     End_If
 
-    mov eax D$WhatDialogListPtr, eax D$eax
+    Mov eax D$WhatDialogListPtr, eax D$eax
     VirtualFree eax                                     ; free previous mem ptr in List
 
-    call SearchLenghtOfDialogData
+    Call SearchLenghtOfDialogData
     push ecx
         VirtualAlloc TempoMemPointer ecx
-        mov eax D$TempoMemPointer
-        mov edi D$WhatDialogListPtr | stosd             ; write ptr to data in list <<<<<<<<
-        mov edi eax                                     ; ready for fill
+        Mov eax D$TempoMemPointer
+        Mov edi D$WhatDialogListPtr | stosd             ; write ptr to data in list <<<<<<<<
+        Mov edi eax                                     ; ready for fill
     pop ecx
-    mov esi D$WhatDialogListPtr | add esi 4
-    mov D$esi ecx                                       ; write size in list <<<<<<<<
+    Mov esi D$WhatDialogListPtr | add esi 4
+    Mov D$esi ecx                                       ; write size in list <<<<<<<<
 
-    call SaveDialogDataToResources
+    Call SaveDialogDataToResources
 ret
 
 
 ReleaseResourceMemory:
   ; All Lists are: ID / Pointer to Mem / Size.
 
-    mov esi DialogList, D$DialogListPtr DialogList
-    call ReleaseOneResourceMemory
+    Mov esi DialogList, D$DialogListPtr DialogList
+    Call ReleaseOneResourceMemory
 
-    mov esi MenuList, D$MenuListPtr MenuList
-    call ReleaseOneResourceMemory
+    Mov esi MenuList, D$MenuListPtr MenuList
+    Call ReleaseOneResourceMemory
 
-    mov esi IconList, D$IconListPtr IconList
-    call ReleaseOneResourceMemory
+    Mov esi IconList, D$IconListPtr IconList
+    Call ReleaseOneResourceMemory
 
-    mov esi GroupIconList, D$GroupIconListPtr GroupIconList
-    call ReleaseOneResourceMemory
+    Mov esi GroupIconList, D$GroupIconListPtr GroupIconList
+    Call ReleaseOneResourceMemory
 
-    mov esi CursorList, D$CursorListPtr CursorList
-    call ReleaseOneResourceMemory
+    Mov esi CursorList, D$CursorListPtr CursorList
+    Call ReleaseOneResourceMemory
 
-    mov esi GroupCursorList, D$GroupCursorListPtr GroupCursorList
-    call ReleaseOneResourceMemory
+    Mov esi GroupCursorList, D$GroupCursorListPtr GroupCursorList
+    Call ReleaseOneResourceMemory
 
-    mov esi BitMapList, D$BitMapListPtr BitMapList
-    call ReleaseOneResourceMemory
+    Mov esi BitMapList, D$BitMapListPtr BitMapList
+    Call ReleaseOneResourceMemory
 
-    mov esi WaveList, D$WaveListPtr WaveList
-    call ReleaseOneResourceMemory
+    Mov esi WaveList, D$WaveListPtr WaveList
+    Call ReleaseOneResourceMemory
 
-    mov esi AviList, D$AviListPtr AviList
-    call ReleaseOneResourceMemory
+    Mov esi AviList, D$AviListPtr AviList
+    Call ReleaseOneResourceMemory
 
-    mov esi RcDataList, D$RcDataListPtr RcDataList
-    call ReleaseOneResourceMemory
+    Mov esi RcDataList, D$RcDataListPtr RcDataList
+    Call ReleaseOneResourceMemory
 
- ;   mov esi OtherList, D$OtherListPtr OtherList
- ;   call ReleaseOneResourceMemory
+ ;   Mov esi OtherList, D$OtherListPtr OtherList
+ ;   Call ReleaseOneResourceMemory
 
-    mov edi uRsrcList, D$uRsrcListPtr uRsrcList, eax 0, ecx 1000
+    Mov edi uRsrcList, D$uRsrcListPtr uRsrcList, eax 0, ecx 1000
     rep | stosd                             ; Clear uRsrcList
 ret
 
 
 ReleaseOneResourceMemory:
 L0: lodsd | On eax = 0, ret                 ; ID
-        mov D$esi-4 0                       ; (and clear BitMapList table)
-        lodsd | mov D$esi-4 0               ; ptr
+        Mov D$esi-4 0                       ; (and clear BitMapList table)
+        lodsd | Mov D$esi-4 0               ; ptr
         push esi
             VirtualFree eax
         pop esi
-        lodsd | mov D$esi-4 0 | jmp L0<     ; size
+        lodsd | Mov D$esi-4 0 | jmp L0<     ; size
 
 ____________________________________________________________________________________
 
 SearchResourceType:  ; in:  ebx = type (&RT_DIALOG, &RT_MENU, ...)
-    mov esi D$UserPEStartOfResources | cmp esi 0 | je L8>
+    Mov esi D$UserPEStartOfResources | cmp esi 0 | je L8>
 
     add esi 14                          ; > points to number of resources
-    mov eax 0 | lodsw | mov ecx eax     ; > in ecx
+    Mov eax 0 | lodsw | Mov ecx eax     ; > in ecx
     On eax = 0, ret                     ; if no resources at all
 
   ; search RT_MENU, ... in resource general header:
@@ -6496,29 +6496,29 @@ L1: lodsd                               ; menu "Level2Rt_Menu-StartOfRsrc+NodeFl
     add eax D$UserPEStartOfResources
 
   ; edx will be the Number of Resources in a Type:
-    add eax 14 | mov esi eax | movzx edx W$esi
+    add eax 14 | Mov esi eax | movzx edx W$esi
   ; If the Resource is registered by name instead of by ID:
 
     ;.If edx = 0
 
     .If W$esi-2 <> 0
-        call StoreNameToID esi
-        mov dx W$esi-2      ; Number of Resource for a given Type
+        Call StoreNameToID esi
+        Mov dx W$esi-2      ; Number of Resource for a given Type
         push esi, edx
             dec dx | add esi 8
-            While dx > 0 | call StoreNameToID esi | dec dx | add esi 8 | End_While
+            While dx > 0 | Call StoreNameToID esi | dec dx | add esi 8 | End_While
         pop edx, esi
 
         movzx edx W$esi-2 | add dx W$esi
   ;  .Else
   ;      If ebx = &RT_ICON
-  ;          On B$FirstIconDone = &FALSE, call StoreNameToID esi
+  ;          On B$FirstIconDone = &FALSE, Call StoreNameToID esi
   ;      End_If
 
     .End_If
     add esi 2 | ret
 
-L8: mov eax 0 | ret
+L8: Mov eax 0 | ret
 
 
 ; 'NamedIdList' Records are: [NumberID / StringLength with 2 "'" / 'String'] / [...] / ...
@@ -6532,30 +6532,30 @@ Proc StoreNameToID:
         If D$NamedIDList = 0
             pushad
                 VirtualAlloc NamedIDList D$ResourcesSize
-                mov D$NamedIdListPtr eax
+                Mov D$NamedIdListPtr eax
             popad
         End_If
 
-        mov eax D@Pointer | add eax 2 ; Points now to Name Pointer (+ 0_8000_0000 mark)
-        mov eax D$eax | and eax 0_FFFF
+        Mov eax D@Pointer | add eax 2 ; Points now to Name Pointer (+ 0_8000_0000 mark)
+        Mov eax D$eax | and eax 0_FFFF
        ; .If ebx = RT_ICON
        ;     If B$FirstIconDone = &FALSE
-       ;         mov eax 1, B$FirstIconDone &TRUE
+       ;         Mov eax 1, B$FirstIconDone &TRUE
        ;     End_If
        ; .End_If
-        mov edi D$NamedIdListPtr | stosd                        ; ID
+        Mov edi D$NamedIdListPtr | stosd                        ; ID
 
 
-        mov esi eax | add esi D$UserPEStartOfResources
+        Mov esi eax | add esi D$UserPEStartOfResources
 
-        lodsw | movzx eax ax | mov ecx eax | add eax 2 | stosd  ; Length
+        lodsw | movzx eax ax | Mov ecx eax | add eax 2 | stosd  ; Length
 
-        mov B$edi '"' | inc edi
+        Mov B$edi '"' | inc edi
 
 L0:     lodsw | stosb | loop L0<
-        mov B$edi '"' | inc edi | mov D$edi 0                   ; String
+        Mov B$edi '"' | inc edi | Mov D$edi 0                   ; String
 
-        mov D$NamedIdListPtr edi
+        Mov D$NamedIdListPtr edi
 EndP
 
 ____________________________________________________________________________________________
@@ -6567,38 +6567,38 @@ ________________________________________________________________________________
 ;;
 NamedIdSubstitution:  ; 'SymbolicAnalyzes' 'FRproc' 'StringReplaceAll'
     ...If D$NamedIdList <> 0
-        mov esi D$NamedIdList
-        mov B$DownSearch &TRUE, B$CaseSearch &FALSE, B$SilentSearch &TRUE
+        Mov esi D$NamedIdList
+        Mov B$DownSearch &TRUE, B$CaseSearch &FALSE, B$SilentSearch &TRUE
 
         ..While D$esi <> 0
           ; Create a Copy of the NumberID in Text form:
-            lodsd | mov edi ReplaceWithString | call WriteEax | mov B$edi 0
+            lodsd | Mov edi ReplaceWithString | Call WriteEax | Mov B$edi 0
 
           ; Copy the User Source IDName into the 'SearchString' Buffer:
-            lodsd | mov D$LenOfSearchedString eax, ecx eax
-            mov edi SearchString | rep movsb | mov al 0 | stosb
+            lodsd | Mov D$LenOfSearchedString eax, ecx eax
+            Mov edi SearchString | rep movsb | Mov al 0 | stosb
 
           ; esi ready for next Record:
             add esi ebx
             push esi
-                mov D$NextSearchPos 0
+                Mov D$NextSearchPos 0
                 move D$CurrentWritingPos D$CodeSource
-                call StringSearch
+                Call StringSearch
                 ..If B$BlockInside = &TRUE
                   ; The Text of the IdName has been found. Search back for the Data Label:
-                    mov esi D$BlockStartTextPtr
+                    Mov esi D$BlockStartTextPtr
                     While D$esi <> 'Data' | dec esi | End_While
 
                   ; Copy the 'DATAXXXXXX' into the 'SearchString' Buffer:
-                    mov edi SearchString, ecx 0
-                    While B$esi <> ':' | movsb | inc ecx | End_While | mov al 0 | stosb
-                    mov D$LenOfSearchedString ecx
+                    Mov edi SearchString, ecx 0
+                    While B$esi <> ':' | movsb | inc ecx | End_While | Mov al 0 | stosb
+                    Mov D$LenOfSearchedString ecx
 
                   ; Search Evocations of 'DATAXXXXXX', replace by the ID Number Text:
-L0:                 call StringSearch
+L0:                 Call StringSearch
                     If B$BlockInside = &TRUE
-                        mov eax D$BlockEndTextPtr
-                        On B$eax+1 <> ':', call IDReplace
+                        Mov eax D$BlockEndTextPtr
+                        On B$eax+1 <> ':', Call IDReplace
                         jmp L0<
                     End_If
 
@@ -6612,18 +6612,18 @@ ret
 
 
 IDReplace:
-    mov esi ReplaceWithString, edi D$BlockStartTextPtr
+    Mov esi ReplaceWithString, edi D$BlockStartTextPtr
 
     While B$esi <> 0 | movsb | End_While
-    While B$edi > ' ' | mov B$edi ' ' | inc edi | End_While
+    While B$edi > ' ' | Mov B$edi ' ' | inc edi | End_While
 ret
 
 
 SearchResourceNamedType:   ; in:  edi = Named Type pointer ('WAVE', 'AVI', ...), edx = len
-    mov esi D$UserPEStartOfResources | cmp esi 0 | je L8>>  ; retire >>
+    Mov esi D$UserPEStartOfResources | cmp esi 0 | je L8>>  ; retire >>
 
     add esi 14                            ; > points to number of resources
-    mov eax 0 | lodsw | mov ecx eax       ; > in ecx
+    Mov eax 0 | lodsw | Mov ecx eax       ; > in ecx
     On eax = 0, ret                    ; if no resources at all
 
   ; search Ptr to Name, ... in resource general header:
@@ -6631,7 +6631,7 @@ SearchResourceNamedType:   ; in:  edi = Named Type pointer ('WAVE', 'AVI', ...),
 L0: lodsd | test eax 0_8000_0000 | jz L2>
     pushad
         xor eax 0_8000_0000 | add eax D$UserPEStartOfResources
-        mov ecx edx, esi eax | lodsw | cmp al dl | jne L1>
+        Mov ecx edx, esi eax | lodsw | cmp al dl | jne L1>
         repe cmpsw | je L3>
 L1: popad
 L2: lodsd | loop L0<
@@ -6642,22 +6642,22 @@ L3: popad
     and eax 0FFFFFFF                      ; strip node flag (0_80000000)
     add eax D$UserPEStartOfResources
 
-    add eax 14 | mov esi eax, edx 0, dx W$esi
+    add eax 14 | Mov esi eax, edx 0, dx W$esi
     If edx = 0
-        call StoreNameToID esi
-        mov dx W$esi-2
+        Call StoreNameToID esi
+        Mov dx W$esi-2
     End_If
     add esi 2 | ret
 
-L8: mov eax 0 | ret
+L8: Mov eax 0 | ret
 
 
 ; Read all Dialogs in RosAsm PE. Same routine as the ones for icon / menu.
 
 ReadRosAsmPeDialogs:
-    mov edi DialogList, eax 0, ecx 300 | rep stosd
-    mov ebx RT_DIALOG | call SearchResourceType | On eax = 0, ret
-    mov D$DialogListPtr DialogList,  ebx DialogListPtr | call ReadResourcesRecord
+    Mov edi DialogList, eax 0, ecx 300 | rep stosd
+    Mov ebx RT_DIALOG | Call SearchResourceType | On eax = 0, ret
+    Mov D$DialogListPtr DialogList,  ebx DialogListPtr | Call ReadResourcesRecord
   ret
 
  ______________________________________
@@ -6671,24 +6671,24 @@ ReadRosAsmPeDialogs:
 ; edx is the Number of Resources in a Type
 
 ReadResourcesRecord:
-    lodsd | and eax 0FFFF | mov edi D$ebx | stosd   ; Write ID.
-    mov D$ebx edi                                   ; Adjust D$XxxxxxListPtr.
+    lodsd | and eax 0FFFF | Mov edi D$ebx | stosd   ; Write ID.
+    Mov D$ebx edi                                   ; Adjust D$XxxxxxListPtr.
     lodsd                                  ; "Level3Rt_Menu-StartOfRsrc+NodeFlag" in eax
 
     push esi, edx
         test eax 08000_0000 | jnz L1>
-            add eax D$UserPEStartOfResources | mov esi eax | jmp L5>>
+            add eax D$UserPEStartOfResources | Mov esi eax | jmp L5>>
 
-L1:     and eax 0FFFFFFF | add eax D$UserPEStartOfResources | add eax 20 | mov esi eax
+L1:     and eax 0FFFFFFF | add eax D$UserPEStartOfResources | add eax 20 | Mov esi eax
       ; Language. dir:
         lodsd                    ; "Level4Rt_Menu-StartOfRsrc" in eax (no NodeFlag here
                                  ; next one is leafe ptr to true resources)
         add eax D$UserPEStartOfResources
-        mov esi eax
+        Mov esi eax
 
       ; Records of each resource:
 L5:     lodsd                                   ; ptr to menu data (but RVA - startOfResource)
-L1:     mov ecx D$esi
+L1:     Mov ecx D$esi
         sub eax D$ResourcesRVA                  ; - RVA
         add eax D$UserPEStartOfResources        ; eax now points to true menu data
 
@@ -6704,17 +6704,17 @@ L1:     mov ecx D$esi
             pop ecx, ebx
         pop esi
 
-        mov edi D$TempoMemPointer
+        Mov edi D$TempoMemPointer
         push edi, ecx
             rep movsb                           ; copy bin template to temporary mem
         pop ecx, eax
 
-        mov edi D$ebx | stosd
-        mov eax ecx | stosd | mov D$ebx edi
+        Mov edi D$ebx | stosd
+        Mov eax ecx | stosd | Mov D$ebx edi
 
     pop edx, esi
     dec edx | cmp edx 0 | ja ReadResourcesRecord; next resource TYPEs dir record > ID ready
-L9: mov eax &TRUE
+L9: Mov eax &TRUE
 ret
 _____________________________________________________________________________________
 ;;
@@ -6737,38 +6737,38 @@ LoadFromResources:
     If B$OnDialogEdition = &TRUE
         Beep | ret  ; prevents from multi-runs
     End_If
-    call InitDialogMemory
+    Call InitDialogMemory
 
-    mov esi DialogList
+    Mov esi DialogList
     .If D$esi  = 0                    ; empty? > out
-        call 'USER32.MessageBoxA' D$hwnd, NoResourceDialog, Argh, &MB_SYSTEMMODAL | ret
+        Call 'USER32.MessageBoxA' D$H.MainWindow, NoResourceDialog, Argh, &MB_SYSTEMMODAL | ret
 
     .Else_If D$esi+12 = 0               ; only one resource? > OK
-        mov D$WhatDialogListPtr DialogList+4
+        Mov D$WhatDialogListPtr DialogList+4
 
-        mov ebx D$WhatDialogListPtr, ebx D$ebx
+        Mov ebx D$WhatDialogListPtr, ebx D$ebx
         If W$ebx+18 = 0
-            mov D$ActualMenutestID 0, D$DialogMenuTrueID 0
+            Mov D$ActualMenutestID 0, D$DialogMenuTrueID 0
         Else
-            movzx eax W$ebx+20 | mov D$DialogMenuTrueID eax
-            mov esi MenuList
+            movzx eax W$ebx+20 | Mov D$DialogMenuTrueID eax
+            Mov esi MenuList
             While D$esi <> eax
                 add esi 12
             End_While
-            mov D$MenuListPtr esi
+            Mov D$MenuListPtr esi
             add esi 4
-            call 'User32.LoadMenuIndirectA' D$esi | mov D$ActualMenutestID eax
+            Call 'User32.LoadMenuIndirectA' D$esi | Mov D$ActualMenutestID eax
         End_If
 
     .Else                               ; several resources? > wich one?
-        mov D$DialogListHandle 0, D$DialogEditorHandle 0
-        call WhatResourceTemplate       ; > D$WhatDialogListPtr > Data pointer
+        Mov D$DialogListHandle 0, D$DialogEditorHandle 0
+        Call WhatResourceTemplate       ; > D$WhatDialogListPtr > Data pointer
 
     .End_If
 
-    mov B$DialogLoadedFromResources &TRUE
-    call FromBinToTextTemplate
-    call ReInitDialogEdition
+    Mov B$DialogLoadedFromResources &TRUE
+    Call FromBinToTextTemplate
+    Call ReInitDialogEdition
 ret
 
 ____________________________________________________________________________________________
@@ -6785,11 +6785,11 @@ LoadDialogFromFile:
         Beep | ret
     End_If
 
-    mov B$DialogFromFile &TRUE
+    Mov B$DialogFromFile &TRUE
 
-    call InitDialogMemory
+    Call InitDialogMemory
 
-    call OpenDlgFile | jmp L0>
+    Call OpenDlgFile | jmp L0>
 
 
 LoadDialogFromClipBoard:
@@ -6797,88 +6797,88 @@ LoadDialogFromClipBoard:
         Beep | ret
     End_If
 
-    mov B$DialogFromFile &FALSE
+    Mov B$DialogFromFile &FALSE
 
-    call InitDialogMemory
+    Call InitDialogMemory
 
-    call OpenClipBoard
+    Call OpenClipBoard
 
 
 L0: On D$ClipBoardPtr = 0, ret
     On D$ClipBoardlen = 0, ret
 
-    mov B$WeAreInTheCodeBox &TRUE
-    mov eax esp, D$OldStackPointer eax
+    Mov B$WeAreInTheCodeBox &TRUE
+    Mov eax esp, D$OldStackPointer eax
 
     push D$CodeSourceA, D$CodeSourceB
 
-        mov ecx D$ClipBoardlen | add ecx 010
+        Mov ecx D$ClipBoardlen | add ecx 010
         VirtualAlloc CodeSourceA, ecx | add D$CodeSourceA 010
-        mov ecx D$ClipBoardlen | add ecx 010
+        Mov ecx D$ClipBoardlen | add ecx 010
         VirtualAlloc CodeSourceB, ecx | add D$CodeSourceB 010
 
-        call NewCopyToCodeSourceA D$ClipBoardPtr, D$ClipBoardlen
+        Call NewCopyToCodeSourceA D$ClipBoardPtr, D$ClipBoardlen
 
         If B$DialogFromFile = &TRUE
             VirtualFree D$ClipBoardPTR
         Else
-            call CloseClipBoard
+            Call CloseClipBoard
         End_If
 
-        mov esi D$CodeSourceA | While B$esi > 0 | inc esi | End_While
-        mov W$esi CRLF | add esi 2 | add D$StripLen 2
+        Mov esi D$CodeSourceA | While B$esi > 0 | inc esi | End_While
+        Mov W$esi CRLF | add esi 2 | add D$StripLen 2
 
-        call ClearQwordCheckSum
+        Call ClearQwordCheckSum
 
-        call CoolParsers
+        Call CoolParsers
 
-        call NewCountStatements | On B$CompileErrorHappend = &TRUE, jmp L9>>
+        Call NewCountStatements | On B$CompileErrorHappend = &TRUE, jmp L9>>
 
-        call HotParsers | On B$CompileErrorHappend = &TRUE, jmp L9>>
+        Call HotParsers | On B$CompileErrorHappend = &TRUE, jmp L9>>
 
-        call InitIndex1 | call InitIndex2
+        Call InitIndex1 | Call InitIndex2
 
         Exchange D$CodeSourceA D$CodesourceB
 
         push D$SourceLen
             move D$SourceLen D$StripLen
             move D$AsmTablesLength D$SourceLen
-            call ReuseSourceAForCodeList
+            Call ReuseSourceAForCodeList
         pop D$SourceLen
 
-        ;call ClearQwordCheckSum
+        ;Call ClearQwordCheckSum
 
-        call InitIndex3
+        Call InitIndex3
 
-        call SaveCheckSumTable
+        Call SaveCheckSumTable
 
-        mov eax D$CodeListPtr | mov D$DataList eax | mov D$DataListPtr eax
-        call StoreDatas
+        Mov eax D$CodeListPtr | Mov D$DataList eax | Mov D$DataListPtr eax
+        Call StoreDatas
 
-        call RestoreCheckSumTable
+        Call RestoreCheckSumTable
 
-L9:     mov B$WeAreInTheCodeBox &FALSE | On B$CompileErrorHappend = &TRUE, jmp L9>>
+L9:     Mov B$WeAreInTheCodeBox &FALSE | On B$CompileErrorHappend = &TRUE, jmp L9>>
 
-        mov B$OnClipDialog &TRUE
+        Mov B$OnClipDialog &TRUE
 
-        mov esi D$DataList, edi D$NewDialogTemplateText, D$ActualEditedDialogID 0
-        mov eax D$DataListPtr | sub eax D$DataList | inc eax
-        mov D$ResourceDialogSize eax
+        Mov esi D$DataList, edi D$NewDialogTemplateText, D$ActualEditedDialogID 0
+        Mov eax D$DataListPtr | sub eax D$DataList | inc eax
+        Mov D$ResourceDialogSize eax
 
         .If W$esi+18 = 0FFFF
-            movzx eax W$esi+20 | mov D$DialogMenuTrueID eax
+            movzx eax W$esi+20 | Mov D$DialogMenuTrueID eax
             push esi
-                mov esi MenuList
+                Mov esi MenuList
                 While D$esi <> eax
                     add esi 12
                     If D$esi = 0
-                        pop esi | call NoSuchMenu | jmp L9>
+                        pop esi | Call NoSuchMenu | jmp L9>
                     End_If
                 End_While
             pop esi
         .End_If
 
-        call FromClipBoardBinToText | call ReInitDialogEdition
+        Call FromClipBoardBinToText | Call ReInitDialogEdition
 
 L9:     VirtualFree D$CodeSourceA, D$CodeSourceB
     pop D$CodeSourceB, D$CodeSourceA
@@ -6895,8 +6895,8 @@ Resources.
 MissingMenuID: "         ", 0]
 
 NoSuchMenu:
-    call WriteDecimalID eax, MissingMenuID
-    call 'USER32.MessageBoxA' D$hwnd, NoMenuMessage, Argh, &MB_OK
+    Call WriteDecimalID eax, MissingMenuID
+    Call 'USER32.MessageBoxA' D$H.MainWindow, NoMenuMessage, Argh, &MB_OK
 ret
 ____________________________________________________________________________________________
 
@@ -6906,44 +6906,44 @@ ________________________________________________________________________________
 WhatResourceTemplate:
   ; 'DialogList' structure is (dWords): ID / Ptr / Size // ...
   ; D$WhatDialogListPtr >>> Ptr to Dialog Mem in the form of 'DefaultDialogTemplateText').
-    mov D$OkDialogFlag &FALSE, D$WhatDialogListPtr DialogList+4
+    Mov D$OkDialogFlag &FALSE, D$WhatDialogListPtr DialogList+4
     .While B$OkDialogFlag = &FALSE
 
-        mov ebx D$WhatDialogListPtr, ebx D$ebx
+        Mov ebx D$WhatDialogListPtr, ebx D$ebx
         If W$ebx+18 = 0
-            mov D$ActualMenutestID 0, D$DialogMenuTrueID 0
+            Mov D$ActualMenutestID 0, D$DialogMenuTrueID 0
         Else
           ; If Menu, W$ebx+18 = 0FFFF // W$ebx+20 = ID Number.
-            movzx eax W$ebx+20 | mov D$DialogMenuTrueID eax
-            mov esi MenuList
+            movzx eax W$ebx+20 | Mov D$DialogMenuTrueID eax
+            Mov esi MenuList
             While D$esi <> eax
                 add esi 12
             End_While
-            mov D$MenuListPtr esi | add esi 4
-            call 'User32.LoadMenuIndirectA' D$esi | mov D$ActualMenutestID eax
+            Mov D$MenuListPtr esi | add esi 4
+            Call 'User32.LoadMenuIndirectA' D$esi | Mov D$ActualMenutestID eax
         End_If
 
-        call FromBinToTextTemplate | call FromTextToBinTemplate
+        Call FromBinToTextTemplate | Call FromTextToBinTemplate
 
-        call 'User32.CreateDialogIndirectParamA' D$hinstance, D$EditedDialogBoxData,
+        Call 'User32.CreateDialogIndirectParamA' D$hinstance, D$EditedDialogBoxData,
                                                  D$EditWindowHandle, EditedDialogBoxProc, 0
-        mov D$ChoiceDialogHandle eax
+        Mov D$ChoiceDialogHandle eax
 
-        call SetNextChoiceID
-        call 'User32.DialogBoxIndirectParamA' D$hinstance, ChoiceBar, D$hwnd, ChoiceDialogBoxProc, DialogList
+        Call SetNextChoiceID
+        Call 'User32.DialogBoxIndirectParamA' D$hinstance, ChoiceBar, D$H.MainWindow, ChoiceDialogBoxProc, DialogList
       ; This is the deletion of the viewed Dialog (not of the Choice Bar Dialog):
-        call 'User32.EndDialog' D$ChoiceDialogHandle 0
+        Call 'User32.EndDialog' D$ChoiceDialogHandle 0
 
         .If B$OkDialogFlag = &VK_ESCAPE
             pop eax | ret                          ; abort "LoadFromResources" caller
         .Else_If D$WhatDialogListPtr < DialogList
-            mov D$WhatDialogListPtr DialogList+4
-            call SetNextChoiceID
+            Mov D$WhatDialogListPtr DialogList+4
+            Call SetNextChoiceID
         .Else
-            mov esi D$WhatDialogListPtr
+            Mov esi D$WhatDialogListPtr
             If D$esi = 0
-                sub D$WhatDialogListPtr 12 | mov esi D$WhatDialogListPtr
-                call SetNextChoiceID
+                sub D$WhatDialogListPtr 12 | Mov esi D$WhatDialogListPtr
+                Call SetNextChoiceID
             End_If
         .End_If
     .End_While
@@ -6957,71 +6957,71 @@ ________________________________________________________________________________
 [ChoiceBackHandle: ?    ChoiceOKHandle: ?    ChoiceForthHandle: ?]
 
 SetNextChoiceID:
-L1: mov eax D$WhatDialogListPtr, eax D$eax-4
-    mov ecx 10, edi ChoiceDecimalID+10, D$edi 0200020, D$edi+4 0200020,
+L1: Mov eax D$WhatDialogListPtr, eax D$eax-4
+    Mov ecx 10, edi ChoiceDecimalID+10, D$edi 0200020, D$edi+4 0200020,
     D$edi+8 0200020, D$edi+12 0200020
     add edi 18
-L2: mov edx 0 | div ecx | dec edi | add dl '0'
-    mov B$edi 0 | dec edi | mov B$edi dl | cmp eax 0 | ja L2<
+L2: Mov edx 0 | div ecx | dec edi | add dl '0'
+    Mov B$edi 0 | dec edi | Mov B$edi dl | cmp eax 0 | ja L2<
 ret
 
 [ListOrigin: ?]
 Proc ChoiceDialogBoxProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_COMMAND
-        mov eax D@wParam | and eax 0FFFF
+    ...If D@msg = &WM_COMMAND
+        Mov eax D@wParam | and eax 0FFFF
         .If eax = CHOICEFORTH
-            add D$WhatDialogListPtr 12 | call SetNextChoiceID
+            add D$WhatDialogListPtr 12 | Call SetNextChoiceID
 
         .Else_If eax = CHOICEBACK
-            sub D$WhatDialogListPtr 12 | call SetNextChoiceID
+            sub D$WhatDialogListPtr 12 | Call SetNextChoiceID
 
         .Else_If eax = CHOICEFIRST
             move D$WhatDialogListPtr D$ListOrigin  ;DialogList+4 |
             add D$WhatDialogListPtr 4
-            call SetNextChoiceID
+            Call SetNextChoiceID
 
         .Else_If eax = CHOICELAST
-L0:         add D$WhatDialogListPtr 12 | mov eax D$WhatDialogListPtr
+L0:         add D$WhatDialogListPtr 12 | Mov eax D$WhatDialogListPtr
             cmp D$eax 0 | ja L0<
-            sub D$WhatDialogListPtr 12 | call SetNextChoiceID
+            sub D$WhatDialogListPtr 12 | Call SetNextChoiceID
 
         .Else_If eax = CHOICEOK
-            mov B$OkDialogFlag &TRUE
+            Mov B$OkDialogFlag &TRUE
 
         .Else_If eax = &IDCANCEL
-            mov B$OkDialogFlag &VK_ESCAPE
+            Mov B$OkDialogFlag &VK_ESCAPE
 
         .Else
             jmp L8>>
         .End_If
 
-        mov D$ChoiceDialogBoxHandle 0
-        call 'User32.EndDialog' D@Adressee 0
+        Mov D$ChoiceDialogBoxHandle 0
+        Call 'User32.EndDialog' D@hwnd 0
 
-    ...Else_If D@Message = &WM_INITDIALOG
-        move D$ChoiceDialogBoxHandle D@Adressee, D$ListOrigin D@lParam
+    ...Else_If D@msg = &WM_INITDIALOG
+        move D$ChoiceDialogBoxHandle D@hwnd, D$ListOrigin D@lParam
 
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
-        call 'USER32.GetWindowPlacement' D@Adressee Control
-        mov eax D$Control.rcNormalPosition.top | shr eax 2
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Call 'USER32.GetWindowPlacement' D@hwnd Control
+        Mov eax D$Control.rcNormalPosition.top | shr eax 2
         add D$Control.rcNormalPosition.top eax
         add D$Control.rcNormalPosition.bottom eax
-        call 'USER32.SetWindowPlacement' D@Adressee Control
+        Call 'USER32.SetWindowPlacement' D@hwnd Control
 
     ...Else
         If D$ChoiceDialogBoxHandle <> 0
-            call 'USER32.GetFocus'
-            On eax <> D@Adressee, call 'User32.SetForegroundWindow' D@Adressee
+            Call 'USER32.GetFocus'
+            On eax <> D@hwnd, Call 'User32.SetForegroundWindow' D@hwnd
         End_If
-        popad | mov eax &FALSE | jmp L9>
+        popad | Mov eax &FALSE | jmp L9>
 
     ...End_If
 
-L8: popad | mov eax &TRUE
+L8: popad | Mov eax &TRUE
 
 L9: EndP
 
@@ -7033,29 +7033,29 @@ DeleteDialog:
     If B$OnDialogEdition = &TRUE
         Beep | ret                    ; prevents from multi-runs
     End_If
-    call InitDialogMemory
-    mov esi DialogList
+    Call InitDialogMemory
+    Mov esi DialogList
     .If D$esi  = 0                                          ; empty? > out
-        call 'USER32.MessageBoxA' D$hwnd, NoResourceDialog, Argh, &MB_SYSTEMMODAL | ret
+        Call 'USER32.MessageBoxA' D$H.MainWindow, NoResourceDialog, Argh, &MB_SYSTEMMODAL | ret
     .Else                                                   ; Wich resources to kill?
-        call WhatResourceTemplate
+        Call WhatResourceTemplate
     .End_If
-    mov eax D$WhatDialogListPtr
-    call 'User32.CreateDialogIndirectParamA' D$hinstance, D$eax, D$hwnd, EditedDialogBoxProc 0
-        mov D$ChoiceDialogHandle eax
+    Mov eax D$WhatDialogListPtr
+    Call 'User32.CreateDialogIndirectParamA' D$hinstance, D$eax, D$H.MainWindow, EditedDialogBoxProc 0
+        Mov D$ChoiceDialogHandle eax
 
-    call 'USER32.MessageBoxA' D$hwnd, SureDeleteDialog, Argh, &MB_SYSTEMMODAL+&MB_YESNO
+    Call 'USER32.MessageBoxA' D$H.MainWindow, SureDeleteDialog, Argh, &MB_SYSTEMMODAL+&MB_YESNO
     push eax
-        call 'User32.DestroyWindow' D$ChoiceDialogHandle
+        Call 'User32.DestroyWindow' D$ChoiceDialogHandle
     pop eax
 
     If eax = &IDYES
         sub D$WhatDialogListPtr 4                       ; > ID / Ptr /Size
-        mov esi D$WhatDialogListPtr, edi esi
+        Mov esi D$WhatDialogListPtr, edi esi
         add esi 12
-        mov eax esi | sub eax DialogList | shr eax 2
+        Mov eax esi | sub eax DialogList | shr eax 2
 
-        mov ecx MAXDIALOG | sub ecx eax                 ; tail to move
+        Mov ecx MAXDIALOG | sub ecx eax                 ; tail to move
         rep movsd                                       ; scratch
     End_If
 
@@ -7065,14 +7065,14 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 SimplyGetDialog:
-    call InitDialogMemory
+    Call InitDialogMemory
 
-    mov esi DialogList
+    Mov esi DialogList
     If D$esi  = 0
-        call 'USER32.MessageBoxA' D$hwnd, NoResourceDialog, Argh, &MB_SYSTEMMODAL
-        mov eax 0 | ret
+        Call 'USER32.MessageBoxA' D$H.MainWindow, NoResourceDialog, Argh, &MB_SYSTEMMODAL
+        Mov eax 0 | ret
     Else
-        call WhatResourceTemplate
+        Call WhatResourceTemplate
     End_If
 ret
 
@@ -7083,32 +7083,32 @@ SaveToBinaryFile:
         Beep | ret
     End_If
 
-    call SimplyGetDialog | On B$OkDialogFlag = &VK_ESCAPE, ret
+    Call SimplyGetDialog | On B$OkDialogFlag = &VK_ESCAPE, ret
 
   ; Similar to SaveDialogToDisk:
 
-    mov edi SaveFilter, eax 0, ecx 65 | rep stosd
-    mov D$SaveDlgFilter 'New.', D$SaveDlgFilter+3 '.dlf', D$SaveDlgFilter+7 0
+    Mov edi SaveFilter, eax 0, ecx 65 | rep stosd
+    Mov D$SaveDlgFilter 'New.', D$SaveDlgFilter+3 '.dlf', D$SaveDlgFilter+7 0
 
-    call 'Comdlg32.GetSaveFileNameA' OpenDlg | On eax = &FALSE, ret
+    Call 'Comdlg32.GetSaveFileNameA' OpenDlg | On eax = &FALSE, ret
 
-    call ForceExtension SaveDlgFilter, '.bdf'
+    Call ForceExtension SaveDlgFilter, '.bdf'
 
-    call 'KERNEL32.CreateFileA' SaveDlgFilter &GENERIC_WRITE,
+    Call 'KERNEL32.CreateFileA' SaveDlgFilter &GENERIC_WRITE,
                                &FILE_SHARE_READ, 0,
                                &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, 0
 
     If eax = &INVALID_HANDLE_VALUE
-        mov eax D$BusyFilePtr | call MessageBox | ret
+        Mov eax D$BusyFilePtr | Call MessageBox | ret
     End_If
 
-    mov D$DestinationHandle eax, D$NumberOfReadBytes 0
+    Mov D$DestinationHandle eax, D$NumberOfReadBytes 0
 
-    mov esi D$WhatDialogListPtr | sub esi 4 | mov ecx D$esi+8, esi D$esi+4
+    Mov esi D$WhatDialogListPtr | sub esi 4 | Mov ecx D$esi+8, esi D$esi+4
 
-    call 'KERNEL32.WriteFile' D$DestinationHandle, esi, ecx, NumberOfReadBytes  0
+    Call 'KERNEL32.WriteFile' D$DestinationHandle, esi, ecx, NumberOfReadBytes  0
 
-    call 'KERNEL32.CloseHandle' D$DestinationHandle | mov D$DestinationHandle 0
+    Call 'KERNEL32.CloseHandle' D$DestinationHandle | Mov D$DestinationHandle 0
 ret
 
 
@@ -7119,51 +7119,51 @@ LoadFromBinaryFile:
         Beep | ret
     End_If
 
-    mov D$OtherFilesFilters BinDialogFilesFilters
-    mov D$OpenOtherFileTitle DialogFilesTitle
+    Mov D$OtherFilesFilters BinDialogFilesFilters
+    Mov D$OpenOtherFileTitle DialogFilesTitle
 
-    move D$OtherhwndFileOwner D$hwnd, D$OtherhInstance D$hInstance
+    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$hInstance
 
-    mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
-    call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
+    Mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
+    Call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
 
     On D$OtherSaveFilter = 0, ret
 
-    call 'KERNEL32.CreateFileA' OtherSaveFilter &GENERIC_READ,
+    Call 'KERNEL32.CreateFileA' OtherSaveFilter &GENERIC_READ,
                                 &FILE_SHARE_READ, 0,
                                 &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-      mov eax D$BusyFilePtr | call MessageBox | ret  ; return to caller of caller
+      Mov eax D$BusyFilePtr | Call MessageBox | ret  ; return to caller of caller
     Else
-      mov D$OtherSourceHandle eax
+      Mov D$OtherSourceHandle eax
     End_If
 
-    call 'KERNEL32.GetFileSize' eax, 0 | mov D$BinDialogLength eax
+    Call 'KERNEL32.GetFileSize' eax, 0 | Mov D$BinDialogLength eax
 
     If eax > 0
         VirtualAlloc BinDialogMemory eax
 
-        mov D$NumberOfReadBytes 0
-        call 'KERNEL32.ReadFile' D$OtherSourceHandle, D$BinDialogMemory,
+        Mov D$NumberOfReadBytes 0
+        Call 'KERNEL32.ReadFile' D$OtherSourceHandle, D$BinDialogMemory,
                                  D$BinDialogLength, NumberOfReadBytes, 0
     Else
         ret
     End_If
 
-    call 'KERNEL32.CloseHandle' D$OtherSourceHandle
+    Call 'KERNEL32.CloseHandle' D$OtherSourceHandle
 
-    mov esi DialogList | While D$esi <> 0 | add esi 12 | End_While
-    mov D$DialogListPtr esi
-    mov eax D$BinDialogMemory, D$esi+4 eax
-    mov eax D$BinDialogLength, D$esi+8 eax
+    Mov esi DialogList | While D$esi <> 0 | add esi 12 | End_While
+    Mov D$DialogListPtr esi
+    Mov eax D$BinDialogMemory, D$esi+4 eax
+    Mov eax D$BinDialogLength, D$esi+8 eax
 
-    mov B$DialogLoadedFromResources &FALSE
-    call 'User32.DialogBoxIndirectParamA' D$hinstance, WhatDialogIDData, 0,
+    Mov B$DialogLoadedFromResources &FALSE
+    Call 'User32.DialogBoxIndirectParamA' D$hinstance, WhatDialogIDData, 0,
                                           WhatDialogIdProc, 0
 
     If B$UserAbortID = &TRUE
-        mov esi DialogList | While D$esi+4 <> 0 | add esi 12 | End_While
-        mov D$esi-4 0, D$esi-8 0, D$esi-12 0
+        Mov esi DialogList | While D$esi+4 <> 0 | add esi 12 | End_While
+        Mov D$esi-4 0, D$esi-8 0, D$esi-12 0
         VirtualFree D$BinDialogMemory
     End_If
 ret
@@ -7174,45 +7174,45 @@ ReplaceFromBinaryFile:
         Beep | ret
     End_If
 
-    call SimplyGetDialog | On B$OkDialogFlag = &VK_ESCAPE, ret
+    Call SimplyGetDialog | On B$OkDialogFlag = &VK_ESCAPE, ret
 
-    mov D$OtherFilesFilters BinDialogFilesFilters
-    mov D$OpenOtherFileTitle DialogFilesTitle
+    Mov D$OtherFilesFilters BinDialogFilesFilters
+    Mov D$OpenOtherFileTitle DialogFilesTitle
 
-    move D$OtherhwndFileOwner D$hwnd, D$OtherhInstance D$hInstance
+    move D$OtherhwndFileOwner D$H.MainWindow, D$OtherhInstance D$hInstance
 
-    mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
-    call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
+    Mov edi OtherSaveFilter, ecx 260, eax 0 | rep stosd
+    Call 'Comdlg32.GetOpenFileNameA' OtherOpenStruc
 
     On D$OtherSaveFilter = 0, ret
 
-    call 'KERNEL32.CreateFileA' OtherSaveFilter &GENERIC_READ,
+    Call 'KERNEL32.CreateFileA' OtherSaveFilter &GENERIC_READ,
                                 &FILE_SHARE_READ, 0,
                                 &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-      mov eax D$BusyFilePtr | call MessageBox | ret  ; return to caller of caller
+      Mov eax D$BusyFilePtr | Call MessageBox | ret  ; return to caller of caller
     Else
-      mov D$OtherSourceHandle eax
+      Mov D$OtherSourceHandle eax
     End_If
 
-    call 'KERNEL32.GetFileSize' eax, 0 | mov D$BinDialogLength eax
+    Call 'KERNEL32.GetFileSize' eax, 0 | Mov D$BinDialogLength eax
 
     If eax > 0
         VirtualAlloc BinDialogMemory eax
 
-        mov D$NumberOfReadBytes 0
-        call 'KERNEL32.ReadFile' D$OtherSourceHandle, D$BinDialogMemory,
+        Mov D$NumberOfReadBytes 0
+        Call 'KERNEL32.ReadFile' D$OtherSourceHandle, D$BinDialogMemory,
                                  D$BinDialogLength, NumberOfReadBytes, 0
     Else
         ret
     End_If
 
-    call 'KERNEL32.CloseHandle' D$OtherSourceHandle
+    Call 'KERNEL32.CloseHandle' D$OtherSourceHandle
 
-    mov edi D$WhatDialogListPtr | sub edi 4
+    Mov edi D$WhatDialogListPtr | sub edi 4
     VirtualFree D$edi+4
-    mov eax D$BinDialogMemory, D$edi+4 eax
-    mov eax D$BinDialogLength, D$edi+8 eax
+    Mov eax D$BinDialogMemory, D$edi+4 eax
+    Mov eax D$BinDialogLength, D$edi+8 eax
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -7226,22 +7226,22 @@ ReplaceDialogFromFile:  ; DeleteDialog // LoadDialogFromFile
 
   ; LoadDialogFromFile
 
-    call OpenDlgFile | On D$ClipBoardPtr = 0, ret
+    Call OpenDlgFile | On D$ClipBoardPtr = 0, ret
                        On D$ClipBoardlen = 0, ret
 
-    call 'USER32.MessageBoxA' D$hwnd, SureReplaceDialog, Argh, &MB_SYSTEMMODAL+&MB_YESNO
+    Call 'USER32.MessageBoxA' D$H.MainWindow, SureReplaceDialog, Argh, &MB_SYSTEMMODAL+&MB_YESNO
 
     If eax = &IDYES
-        mov esi D$ClipBoardPtr, edi D$WhatDialogListPtr, ecx D$ClipBoardlen
-        mov D$edi+4 ecx, edi D$edi
+        Mov esi D$ClipBoardPtr, edi D$WhatDialogListPtr, ecx D$ClipBoardlen
+        Mov D$edi+4 ecx, edi D$edi
         rep movsb
     End_If
 
-    call CloseClipBoard
+    Call CloseClipBoard
 
-    mov B$DialogLoadedFromResources &TRUE
-    call FromBinToTextTemplate
-    call ReInitDialogEdition
+    Mov B$DialogLoadedFromResources &TRUE
+    Call FromBinToTextTemplate
+    Call ReInitDialogEdition
 ret
 ____________________________________________________________________________________________
 
@@ -7312,164 +7312,164 @@ ________________________________________________________________________________
 [ActualEditedDialogID: 0  ResourceDialogSize: 0  DialogNcontrol: 0]
 [isDLGEX: B$ 0 InjectFont: 0]
 FromBinToTextTemplate:
-    call InitDialogMemory
-    mov B$OnClipDialog &TRUE              ; reuse of this flag for initialisation in proc
+    Call InitDialogMemory
+    Mov B$OnClipDialog &TRUE              ; reuse of this flag for initialisation in proc
 
-    mov eax D$WhatDialogListPtr, esi D$eax, edi D$NewDialogTemplateText  ; esi > ptr
+    Mov eax D$WhatDialogListPtr, esi D$eax, edi D$NewDialogTemplateText  ; esi > ptr
     move D$ActualEditedDialogID D$eax-4                                  ; ID
     move D$ResourceDialogSize D$eax+4                                    ; size
 
 FromClipBoardBinToText:
     cmp D$esi 0FFFF0001 | setz B$isDLGEX
 
-    mov eax 'D$  ' | stosd | dec edi
+    Mov eax 'D$  ' | stosd | dec edi
     If B$isDLGEX = &TRUE
-       mov ebx D$esi+0C
+       Mov ebx D$esi+0C
     Else
-       mov ebx D$esi
+       Mov ebx D$esi
     End_If
-    test ebx &DS_SETFONT | setz B$InjectFont | or ebx &DS_SETFONT | call TranslateDialogText8
-    mov eax ' ; S' | stosd | mov eax 'tyle' | stosd | mov al 0 | stosb
-    mov eax 'D$  ' | stosd | dec edi
-    mov ebx D$esi+08
+    test ebx &DS_SETFONT | setz B$InjectFont | or ebx &DS_SETFONT | Call TranslateDialogText8
+    Mov eax ' ; S' | stosd | Mov eax 'tyle' | stosd | Mov al 0 | stosb
+    Mov eax 'D$  ' | stosd | dec edi
+    Mov ebx D$esi+08
     If B$isDLGEX = &TRUE
-       mov ebx D$esi+08
+       Mov ebx D$esi+08
     Else
-       mov ebx D$esi+04
+       Mov ebx D$esi+04
     End_If
-    call TranslateDialogText8
-    mov eax ' ; E' | stosd | mov eax 'xSty' | stosd |mov eax 'le' | stosd | dec edi
+    Call TranslateDialogText8
+    Mov eax ' ; E' | stosd | Mov eax 'xSty' | stosd |mov eax 'le' | stosd | dec edi
     If B$isDLGEX = &TRUE
-;      mov eax 'D$ 0' | stosd | dec edi
-;      mov ebx D$esi+04 | call TranslateDialogText8; HelpID
-;      mov eax ' ; H' | stosd | mov eax 'elpI' | stosd| mov ax 'D' | stosw
+;      Mov eax 'D$ 0' | stosd | dec edi
+;      Mov ebx D$esi+04 | Call TranslateDialogText8; HelpID
+;      Mov eax ' ; H' | stosd | Mov eax 'elpI' | stosd| Mov ax 'D' | stosw
        add esi 08
     End_If
     add esi 08
 
-    mov eax 'U$  ' | stosd | dec edi
-    lodsw | mov W$DialogNcontrol ax
-            mov ebx eax | call TranslateDialogText4 | mov al ' '| stosb  ; n
-    lodsw | mov ebx eax | call TranslateDialogText4 | mov al ' '| stosb  ; X
-    lodsw | mov ebx eax | call TranslateDialogText4 | mov al ' '| stosb  ; Y
-    lodsw | mov ebx eax | call TranslateDialogText4 | mov al ' '| stosb  ; W
-    lodsw | mov ebx eax | call TranslateDialogText4 | mov al ' '| stosb  ; H
-    mov eax ' ; D' | stosd | mov ax 'im' | stosw | mov al 0 | stosb
+    Mov eax 'U$  ' | stosd | dec edi
+    lodsw | Mov W$DialogNcontrol ax
+            Mov ebx eax | Call TranslateDialogText4 | Mov al ' '| stosb  ; n
+    lodsw | Mov ebx eax | Call TranslateDialogText4 | Mov al ' '| stosb  ; X
+    lodsw | Mov ebx eax | Call TranslateDialogText4 | Mov al ' '| stosb  ; Y
+    lodsw | Mov ebx eax | Call TranslateDialogText4 | Mov al ' '| stosb  ; W
+    lodsw | Mov ebx eax | Call TranslateDialogText4 | Mov al ' '| stosb  ; H
+    Mov eax ' ; D' | stosd | Mov ax 'im' | stosw | Mov al 0 | stosb
 
     lodsw    ; always 0 in RosAsm edition but 0 or 'FFFF ID' in resources:
 
     If D$DialogMenuTrueID = 0
-        mov eax '0 ; ' | stosd | mov eax '    ' | stosd |
-        mov eax ' no ' | stosd | mov eax 'Menu' | stosd | mov al 0 | stosb  ; No menu
+        Mov eax '0 ; ' | stosd | Mov eax '    ' | stosd |
+        Mov eax ' no ' | stosd | Mov eax 'Menu' | stosd | Mov al 0 | stosb  ; No menu
       ; beware: this is room for "FFFF ID ; menu" when menu added!
     Else
-        mov ebx 0FFFF | call TranslateDialogText4 | mov al ' ' | stosb       ; Menu
+        Mov ebx 0FFFF | Call TranslateDialogText4 | Mov al ' ' | stosb       ; Menu
         lodsw
-        mov ebx D$DialogMenuTrueID |  call TranslateDialogText4
-        mov eax ' ; M' | stosd | mov ax 'en' | stosw | mov al 'u' | stosb | mov al 0 | stosb
+        Mov ebx D$DialogMenuTrueID |  Call TranslateDialogText4
+        Mov eax ' ; M' | stosd | Mov ax 'en' | stosw | Mov al 'u' | stosb | Mov al 0 | stosb
     End_If
 
-    mov al '"' | stosb | mov bx W$esi | inc bx | jne L0> | add esi 4 | jmp L1> ; can Id
+    Mov al '"' | stosb | Mov bx W$esi | inc bx | jne L0> | add esi 4 | jmp L1> ; can Id
 L0: lodsw | cmp ax 0 | je L1>
         stosb | jmp L0<
-L1: mov al '"' | stosb
-    mov eax ' 0 ;' | stosd | mov eax ' Cla' | stosd | mov ax 'ss' | stosw
-    mov al 0 | stosb
+L1: Mov al '"' | stosb
+    Mov eax ' 0 ;' | stosd | Mov eax ' Cla' | stosd | Mov ax 'ss' | stosw
+    Mov al 0 | stosb
 
-    mov al '"' | stosb
+    Mov al '"' | stosb
 L0: lodsw | cmp ax 0 | je L1>
         stosb | jmp L0<
-L1: mov al '"' | stosb
-    mov eax ' 0 ;' | stosd | mov eax ' Tit' | stosd | mov ax 'le' | stosw
-    mov al 0 | stosb
+L1: Mov al '"' | stosb
+    Mov eax ' 0 ;' | stosd | Mov eax ' Tit' | stosd | Mov ax 'le' | stosw
+    Mov al 0 | stosb
 
     cmp B$InjectFont 0 | je F0>
-    mov eax '08 "' |stosd| mov eax 'Helv' |stosd| jmp L1> ; Inject font!
+    Mov eax '08 "' |stosd| Mov eax 'Helv' |stosd| jmp L1> ; Inject font!
 F0:
-    lodsw | mov ebx eax | call TranslateDialogText2 ;pointsize
+    lodsw | Mov ebx eax | Call TranslateDialogText2 ;pointsize
     If B$isDLGEX = &TRUE
-;       mov al 020 | stosb
-;       lodsw | mov ebx eax | call TranslateDialogText4 ;weight
-;       mov al 020 | stosb
-;       lodsw | mov ebx eax | call TranslateDialogText4 ;bItalic
+;       Mov al 020 | stosb
+;       lodsw | Mov ebx eax | Call TranslateDialogText4 ;weight
+;       Mov al 020 | stosb
+;       lodsw | Mov ebx eax | Call TranslateDialogText4 ;bItalic
        add esi 04 ; or above
     End_If
-    mov ax ' "' | stosw
+    Mov ax ' "' | stosw
 L0: lodsw | cmp ax 0 | je L1>
         stosb | jmp L0<
-L1: mov al '"' | stosb
-    mov eax ' 0 ;' | stosd | mov eax ' Fon' | stosd | mov al 't' | stosb
-    mov al 0 | stosb | stosb
+L1: Mov al '"' | stosb
+    Mov eax ' 0 ;' | stosd | Mov eax ' Fon' | stosd | Mov al 't' | stosb
+    Mov al 0 | stosb | stosb
 
     ALIGN_ON 4 esi
 
 L1: .While W$DialogNcontrol > 0
        dec W$DialogNcontrol
-       mov eax 'D$  ' | stosd | dec edi
+       Mov eax 'D$  ' | stosd | dec edi
        If B$isDLGEX = &TRUE
-          mov ebx D$esi+08
+          Mov ebx D$esi+08
        Else
-          mov ebx D$esi
+          Mov ebx D$esi
        End_If
-       call TranslateDialogText8
-       mov eax ' ; S' | stosd | mov eax 'tyle' | stosd | mov al 0 | stosb
-       mov eax 'D$  ' | stosd | dec edi
-       mov ebx D$esi+04
-       call TranslateDialogText8
-       mov eax ' ; E' | stosd | mov eax 'xSty' | stosd |mov eax 'le' | stosd | dec edi
+       Call TranslateDialogText8
+       Mov eax ' ; S' | stosd | Mov eax 'tyle' | stosd | Mov al 0 | stosb
+       Mov eax 'D$  ' | stosd | dec edi
+       Mov ebx D$esi+04
+       Call TranslateDialogText8
+       Mov eax ' ; E' | stosd | Mov eax 'xSty' | stosd |mov eax 'le' | stosd | dec edi
        If B$isDLGEX = &TRUE
-;         mov eax 'D$  ' | stosd | dec edi
-;         mov ebx D$esi | call TranslateDialogText8; HelpID
-;         mov eax ' ; H' | stosd | mov eax 'elpI' | stosd| mov ax 'D' | stosw
+;         Mov eax 'D$  ' | stosd | dec edi
+;         Mov ebx D$esi | Call TranslateDialogText8; HelpID
+;         Mov eax ' ; H' | stosd | Mov eax 'elpI' | stosd| Mov ax 'D' | stosw
           add esi 04
        End_If
        add esi 08
 
-       mov eax 'U$  ' | stosd | dec edi
-       lodsw | mov ebx eax | call TranslateDialogText4 | mov al ' '| stosb ; X
-       lodsw | mov ebx eax | call TranslateDialogText4 | mov al ' '| stosb ; Y
-       lodsw | mov ebx eax | call TranslateDialogText4 | mov al ' '| stosb ; W
-       lodsw | mov ebx eax | call TranslateDialogText4 | mov al ' '| stosb ; H
-       mov eax ' ; D' | stosd | mov eax 'im' | stosd | dec edi
+       Mov eax 'U$  ' | stosd | dec edi
+       lodsw | Mov ebx eax | Call TranslateDialogText4 | Mov al ' '| stosb ; X
+       lodsw | Mov ebx eax | Call TranslateDialogText4 | Mov al ' '| stosb ; Y
+       lodsw | Mov ebx eax | Call TranslateDialogText4 | Mov al ' '| stosb ; W
+       lodsw | Mov ebx eax | Call TranslateDialogText4 | Mov al ' '| stosb ; H
+       Mov eax ' ; D' | stosd | Mov eax 'im' | stosd | dec edi
 
-       lodsw | mov ebx eax | call TranslateDialogText4
+       lodsw | Mov ebx eax | Call TranslateDialogText4
        If B$isDLGEX = &TRUE
           add esi 2
        End_If
-       mov eax ' ; I' | stosd | mov ax 'D' | stosw
+       Mov eax ' ; I' | stosd | Mov ax 'D' | stosw
 
        lodsw
        If ax = 0FFFF
-          mov ebx eax | call TranslateDialogText4 | mov al ' '| stosb
-          lodsw | mov ebx eax | call TranslateDialogText4
+          Mov ebx eax | Call TranslateDialogText4 | Mov al ' '| stosb
+          lodsw | Mov ebx eax | Call TranslateDialogText4
        Else
-          sub esi 2 | mov al '"' | stosb
+          sub esi 2 | Mov al '"' | stosb
 L0:       lodsw | cmp ax 0 | je L1>
           stosb | jmp L0<
-L1:       mov al '"' | stosb | mov ax ' 0' | stosw
+L1:       Mov al '"' | stosb | Mov ax ' 0' | stosw
        End_If
-       mov eax ' ; C' | stosd | mov eax 'lass' | stosd | mov al 0 | stosb
+       Mov eax ' ; C' | stosd | Mov eax 'lass' | stosd | Mov al 0 | stosb
 
-      mov al '"' | stosb | mov bx W$esi | inc bx | jne L0> | add esi 4 | jmp L1> ; can ResId
+      Mov al '"' | stosb | Mov bx W$esi | inc bx | jne L0> | add esi 4 | jmp L1> ; can ResId
 L0:   lodsw | cmp ax 0 | je L1>
       stosb | jmp L0<
-L1:   mov al '"' | stosb
-      mov eax ' 0 ;' | stosd | mov eax ' Tit' | stosd | mov ax 'le' | stosw
-      mov al 0 | stosb
+L1:   Mov al '"' | stosb
+      Mov eax ' 0 ;' | stosd | Mov eax ' Tit' | stosd | Mov ax 'le' | stosw
+      Mov al 0 | stosb
 
       movzx eax W$esi
       If B$isDLGEX = &FALSE
-         mov ah 0
+         Mov ah 0
       End_If
       add esi eax ; skip CreationData; NoAlign!
 L1:
-      mov eax '0 ; ' | stosd | mov eax 'No c' | stosd | mov eax 'reat' | stosd
-      mov eax 'ion ' | stosd | mov eax 'data' | stosd | mov al 0 | stosb | stosb
+      Mov eax '0 ; ' | stosd | Mov eax 'No c' | stosd | Mov eax 'reat' | stosd
+      Mov eax 'ion ' | stosd | Mov eax 'data' | stosd | Mov al 0 | stosb | stosb
 
       add esi 5 | and esi 0-4;ALIGN_ON 4 esi
 L1:
     .End_While
-    mov al 255 | stosb
+    Mov al 255 | stosb
 ret
 ;DLGTEMPLATEEX
 ;[0FFFF0001, D$helpID, D$EXSTYLE, D$STYLE, W$Ncntrls, W$X, W$Y, W$Width, W$Height
@@ -7485,17 +7485,17 @@ ret
 
 SetMenuToLoadWithDialog:
     pushad
-        mov eax D$DialogMenuTrueID, esi MenuList
+        Mov eax D$DialogMenuTrueID, esi MenuList
         While D$esi <> eax
             If D$esi = 0
-                mov D$DialogMenuTrueID 0, D$ActualMenutestID 0
-                popad | mov eax 0 | ret
+                Mov D$DialogMenuTrueID 0, D$ActualMenutestID 0
+                popad | Mov eax 0 | ret
             End_If
             add esi 12
         End_While
         add esi 4
-        call 'User32.LoadMenuIndirectA' D$esi
-        mov D$ActualMenutestID eax
+        Call 'User32.LoadMenuIndirectA' D$esi
+        Mov D$ActualMenutestID eax
     popad
 ret
 

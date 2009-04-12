@@ -17,13 +17,13 @@ TITLE DisData
 ;;
 ; Obsolete
 WriteAllDisData:
-    mov esi D$SectionsMap | add esi D$FirstSection
-    mov edx D$EndOfSectionsMap
+    Mov esi D$SectionsMap | add esi D$FirstSection
+    Mov edx D$EndOfSectionsMap
 
 L0: .While esi < edx
         test B$esi DATAFLAG+VIRTUALFLAG | jz L9>
-            mov cl B$esi
-            mov ebx esi, eax esi
+            Mov cl B$esi
+            Mov ebx esi, eax esi
             sub ebx D$SectionsMap | add ebx D$RoutingMap
 
 L1:         inc ebx | inc esi | cmp esi edx | jae L2>
@@ -35,9 +35,9 @@ L2:         sub eax D$SectionsMap | add eax D$SizesMap
             sub ebx D$RoutingMap | add ebx D$SizesMap
 
             If cl = VIRTUALFLAG
-                call WriteOneVirtualDataChunk, eax, ebx
+                Call WriteOneVirtualDataChunk, eax, ebx
             Else
-                call WriteOneDataChunk eax, ebx
+                Call WriteOneDataChunk eax, ebx
             End_If
 
             jmp L0<
@@ -53,12 +53,12 @@ Proc WriteOneDataChunksAsFound:
 
       ; Reset the output to the start of Line (first row):
         While B$edi-1 <= ' ' | dec edi | End_While
-        mov D$edi CRLF2 | add edi 4
+        Mov D$edi CRLF2 | add edi 4
 
       ; esi points into 'UserPeStart'.
 
       ; Consider DATA or VIRTUALDATA Flags, in SectionsMap:
-        mov eax D@Section, edx eax, cl B$eax, D@ChunkSize 0, B@Type cl
+        Mov eax D@Section, edx eax, cl B$eax, D@ChunkSize 0, B@Type cl
 
         While B$edx = cl
             inc edx | inc D@ChunkSize | On edx = D$EndOfSectionsMap, jmp L0>
@@ -70,8 +70,8 @@ Proc WriteOneDataChunksAsFound:
   'eax:edx' is now the 'Start:End' of the whole 'Chunk', inside 'SectionsMap'.
 ;;
 L0:     .While eax < edx
-            mov ebx eax | sub ebx D$SectionsMap | add ebx D$RoutingMap
-            mov ecx edx | sub ecx D$SectionsMap | add ecx D$RoutingMap
+            Mov ebx eax | sub ebx D$SectionsMap | add ebx D$RoutingMap
+            Mov ecx edx | sub ecx D$SectionsMap | add ecx D$RoutingMap
 
 L1:         inc ebx | cmp ebx ecx | jae L2>
             test B$ebx LABEL+EVOCATED | jz L1<
@@ -79,13 +79,13 @@ L1:         inc ebx | cmp ebx ecx | jae L2>
 L2:         sub eax D$SectionsMap | add eax D$SizesMap
             sub ebx D$RoutingMap | add ebx D$SizesMap
 
-          ; call BuildCommentedDataReference eax ; made by Guga
+          ; Call BuildCommentedDataReference eax ; made by Guga
 
             push ebx, edx
                 If B@Type = VIRTUALFLAG
-                    call WriteOneVirtualDataChunk, eax, ebx
+                    Call WriteOneVirtualDataChunk, eax, ebx
                 Else
-                    call WriteOneDataChunk eax, ebx
+                    Call WriteOneDataChunk eax, ebx
                 End_If
             pop edx, eax
 
@@ -109,31 +109,31 @@ Proc WriteOneDataChunk:
     Arguments @SizesmapStart, @SizesmapEnd
     Uses esi, edx
 
-        InitDataLineBreak | mov B$edi '[' | inc edi
+        InitDataLineBreak | Mov B$edi '[' | inc edi
 
         test D@SizesmapStart 00_11 | jz L0>
-            mov eax D@SizesmapStart
+            Mov eax D@SizesmapStart
             If eax = D$NextDataChunkStart
-                mov B$edi '<' | inc edi
+                Mov B$edi '<' | inc edi
             Else
-                mov D$edi '<2 ' | add edi 3
+                Mov D$edi '<2 ' | add edi 3
             End_If
 
 L0:     test D@SizesmapStart 00_1111 | jnz L0>
-                mov D$edi '<16 ' | add edi 4
+                Mov D$edi '<16 ' | add edi 4
 
-L0:     mov eax D@SizesmapStart | sub eax D$SizesMap | add eax D$SectionsMap
-        call WriteOneDataLabel eax
+L0:     Mov eax D@SizesmapStart | sub eax D$SizesMap | add eax D$SectionsMap
+        Call WriteOneDataLabel eax
 
-        mov esi D@SizesmapStart, edx D@SizesmapEnd, cl B$esi
-        mov D$NextDataChunkStart edx
+        Mov esi D@SizesmapStart, edx D@SizesmapEnd, cl B$esi
+        Mov D$NextDataChunkStart edx
 
-        mov B$RepetitiveBytesDone &FALSE | call DisDataTypeRouter
+        Mov B$RepetitiveBytesDone &FALSE | Call DisDataTypeRouter
 
         While B$edi-1 <= ' ' | dec edi | End_While
         On B$edi-1 = ',' dec edi
 
-        mov B$edi ']', W$edi+1 CRLF | add edi 3
+        Mov B$edi ']', W$edi+1 CRLF | add edi 3
 EndP
 
 
@@ -142,113 +142,113 @@ EndP
 DisDataTypeRouter:
   ; esi = SizesmapStart, edx = SizesmapEnd, cl = SizeFlag
 
- ; mov eax esi | sub eax D$SizesMap | add eax D$DisImageBase
+ ; Mov eax esi | sub eax D$SizesMap | add eax D$DisImageBase
  ; On eax = 0403000, int3 ;map
 
-    mov B$ActualSizeFlag cl, D$RealDataChunkEdx edx
+    Mov B$ActualSizeFlag cl, D$RealDataChunkEdx edx
 
-    call AlignSizeOn ecx
+    Call AlignSizeOn ecx
 
     If edx = esi
-        mov edx D$RealDataChunkEdx
-        mov cl BYTE, B$ActualSizeFlag cl | call WriteDisBytes | jmp L9>>
+        Mov edx D$RealDataChunkEdx
+        Mov cl BYTE, B$ActualSizeFlag cl | Call WriteDisBytes | jmp L9>>
     End_If
 
-    On cl = 0, mov cl BYTE
+    On cl = 0, Mov cl BYTE
 
     .If cl = BYTE
-        mov eax edx | sub eax esi | and eax 00_11
+        Mov eax edx | sub eax esi | and eax 00_11
         If eax = 00_10
-            mov cl WORD
+            Mov cl WORD
         Else_If eax = 00_00
-            mov cl DWORD
+            Mov cl DWORD
         End_If
     .End_If
 
     .If cl = BYTE
-        call WriteDisBytes
+        Call WriteDisBytes
     .Else_If cl = WORD
-        call WriteDisWords
+        Call WriteDisWords
     .Else_If cl = DWORD
-        call WriteDisPointers ; WriteDisdWords
+        Call WriteDisPointers ; WriteDisdWords
     .Else_If cl = POINTER
-        call WriteDisPointers
+        Call WriteDisPointers
     .Else_If cl = POINTER+DWORD
-        call WriteDisPointers
+        Call WriteDisPointers
     .Else_If cl = STRINGS+BYTE
-        call WriteDisAscii
+        Call WriteDisAscii
     .Else_If cl = STRINGS+WORD
-        call WriteDisUnicode
+        Call WriteDisUnicode
     .Else_If cl = FP4
-        call WriteDisFP4
+        Call WriteDisFP4
     .Else_If cl = FP8
-        call WriteDisFP8
+        Call WriteDisFP8
     .Else_If cl = FP10
-        call WriteDisFP10
+        Call WriteDisFP10
     .Else_If cl = FP4+POINTER
-        call WriteDisFP4
+        Call WriteDisFP4
     .Else_If cl = FP8+POINTER
-        call WriteDisFP8
+        Call WriteDisFP8
     .Else_If cl = FP10+POINTER
-        call WriteDisFP10
+        Call WriteDisFP10
     .Else_If cl = STRINGS+BYTE+POINTER
-        mov cl STRINGS+BYTE, B$ActualSizeFlag cl
-        call WriteDisAscii
+        Mov cl STRINGS+BYTE, B$ActualSizeFlag cl
+        Call WriteDisAscii
     .Else_If cl = STRINGS+WORD+POINTER
-        mov cl STRINGS+WORD, B$ActualSizeFlag cl
-        call WriteDisUnicode
+        Mov cl STRINGS+WORD, B$ActualSizeFlag cl
+        Call WriteDisUnicode
     .Else_If cl = STRINGS+POINTER
-        mov cl STRINGS+BYTE, B$ActualSizeFlag cl
-        call WriteDisAscii
+        Mov cl STRINGS+BYTE, B$ActualSizeFlag cl
+        Call WriteDisAscii
     .Else
         test cl STRINGS | jz L1>
             If B$LastSizeFlag = STRINGS+BYTE
-                mov cl STRINGS+BYTE, B$ActualSizeFlag cl | call WriteDisAscii
+                Mov cl STRINGS+BYTE, B$ActualSizeFlag cl | Call WriteDisAscii
             Else_If B$LastSizeFlag = STRINGS+WORD
-                mov cl STRINGS+WORD, B$ActualSizeFlag cl | call WriteDisUnicode
+                Mov cl STRINGS+WORD, B$ActualSizeFlag cl | Call WriteDisUnicode
             Else
-                mov cl STRINGS+BYTE, B$ActualSizeFlag cl | call WriteDisAscii
+                Mov cl STRINGS+BYTE, B$ActualSizeFlag cl | Call WriteDisAscii
             End_If
             jmp L5>>
 
-L1:     mov eax edx | sub eax esi
+L1:     Mov eax edx | sub eax esi
         cmp eax 4 | jb L1>
-            call IsPointerCandidate
+            Call IsPointerCandidate
 
             If eax = &TRUE
-                mov cl POINTER, B$ActualSizeFlag cl
-                call AlignSizeOn ecx
-                call WriteDisPointers | jmp L5>>
+                Mov cl POINTER, B$ActualSizeFlag cl
+                Call AlignSizeOn ecx
+                Call WriteDisPointers | jmp L5>>
             End_If
 
 L1:   ; edx (end) has been aligned: Unalign:
-        mov edx D$RealDataChunkEdx | call IsStringCandidate
+        Mov edx D$RealDataChunkEdx | Call IsStringCandidate
 
         If eax = &TRUE
-           ; mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+           ; Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
            ; push esi, edx
-                mov cl STRINGS+BYTE, B$ActualSizeFlag cl | call WriteDisAscii
+                Mov cl STRINGS+BYTE, B$ActualSizeFlag cl | Call WriteDisAscii
            ; pop edx, esi
-           ; mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+           ; Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
         Else
-            mov cl BYTE, B$ActualSizeFlag cl | call WriteDisBytes
+            Mov cl BYTE, B$ActualSizeFlag cl | Call WriteDisBytes
         End_If
 
     .End_If
 
-  ; Trailing Bytes may remain there because of the above call to 'AlignSizeOn'. So:
+  ; Trailing Bytes may remain there because of the above Call to 'AlignSizeOn'. So:
 L5: .If esi < D$RealDataChunkEdx
-        mov edx D$RealDataChunkEdx
-        mov W$edi '  ' | add edi 2
-        mov eax edx | sub eax esi
+        Mov edx D$RealDataChunkEdx
+        Mov W$edi '  ' | add edi 2
+        Mov eax edx | sub eax esi
         If eax < 4
-            mov cl BYTE, B$ActualSizeFlag cl | call WriteDisBytes
+            Mov cl BYTE, B$ActualSizeFlag cl | Call WriteDisBytes
         Else
             jmp DisDataTypeRouter
         End_If
     .End_If
 
-L9: mov cl B$ActualSizeFlag, B$LastSizeFlag cl
+L9: Mov cl B$ActualSizeFlag, B$LastSizeFlag cl
 ret
 
 
@@ -256,24 +256,24 @@ Proc WriteOneDataLabel: ; 'WriteDisCodeLabel', 'WriteExportedFunctionLabel'
 ; called by 'WriteOneDataChunk' and 'WriteOneVirtualDataChunk'
     Argument @SectionsMapPtr
 
-        mov eax D@SectionsMapPtr | sub eax D$SectionsMap | add eax D$RoutingMap
+        Mov eax D@SectionsMapPtr | sub eax D$SectionsMap | add eax D$RoutingMap
 
         Test B$eax EXPORTNODE | jz L1>  ; 'CheckExport'
-            mov ebx eax, eax D@SectionsMapPtr
+            Mov ebx eax, eax D@SectionsMapPtr
             sub eax D$SectionsMap | add eax D$DisImageBase
-            call WriteExportedFunctionLabel
+            Call WriteExportedFunctionLabel
 
-L1:     mov eax D@SectionsMapPtr
+L1:     Mov eax D@SectionsMapPtr
 
         If B$eax = DATAFLAG
-            mov D$edi 'Data' | add edi 4
+            Mov D$edi 'Data' | add edi 4
         Else_If B$eax = VIRTUALFLAG
-            mov D$edi 'Virt', D$edi+4 'ual' | add edi 7
+            Mov D$edi 'Virt', D$edi+4 'ual' | add edi 7
         End_If
 
         sub eax D$SectionsMap | add eax D$DisImageBase
         push eax
-            call WriteEax
+            Call WriteEax
         pop eax
 
         ToStringsMapFrom DisImageBase, eax
@@ -283,7 +283,7 @@ L1:     mov eax D@SectionsMapPtr
             pop esi
         End_If
 
-        mov W$edi ': ' | add edi 2
+        Mov W$edi ': ' | add edi 2
 EndP
 
 
@@ -292,32 +292,32 @@ Proc AlignSizeOn:
     Uses ecx
 
       ; esi = SizesmapStart, edx = SizesmapEnd
-        mov ecx D@Unit | and ecx (not STRINGS)
+        Mov ecx D@Unit | and ecx (not STRINGS)
 
         .If cl = POINTER
-            mov ecx 4
+            Mov ecx 4
         .Else
             and ecx (not POINTER)
             If cl = 0
-                mov ecx BYTE | ExitP
+                Mov ecx BYTE | ExitP
             Else_If cl = BYTE
                 ExitP
             Else_If cl = WORD
-                mov ecx 2
+                Mov ecx 2
             Else_If cl = DWORD
-                mov ecx 4
+                Mov ecx 4
             Else_If cl = FP4
-                mov ecx 4
+                Mov ecx 4
             Else_If cl = FP8
-                mov ecx 8
+                Mov ecx 8
             Else_If cl = FP10
-                mov ecx 10
+                Mov ecx 10
             End_If
         .End_If
 
-        mov eax edx | sub eax esi
-        mov edx 0 | div ecx | mul ecx
-        mov edx esi | add edx eax
+        Mov eax edx | sub eax esi
+        Mov edx 0 | div ecx | mul ecx
+        Mov edx esi | add edx eax
 EndP
 
 
@@ -325,115 +325,115 @@ EndP
 
 IsRepetitiveBytes:
     If B$RepetitiveBytesDone = &TRUE
-        mov D$NumberOfRepetitiveData 0 | ret
+        Mov D$NumberOfRepetitiveData 0 | ret
     End_If
 
     push esi, ecx, edx
         sub edx D$SizesMap | add edx D$UserPeStart
 
-        mov esi ebx, al B$esi, ecx 0
+        Mov esi ebx, al B$esi, ecx 0
 
         While B$esi = al
             lodsb | inc ecx | cmp esi edx | jae L2>>
         End_While
 
 L2:     If ecx > 1
-            mov D$NumberOfRepetitiveData ecx
+            Mov D$NumberOfRepetitiveData ecx
         Else
-            mov D$NumberOfRepetitiveData 0
+            Mov D$NumberOfRepetitiveData 0
         End_If
 
     pop edx, ecx, esi
 
-    mov B$RepetitiveBytesDone &TRUE
+    Mov B$RepetitiveBytesDone &TRUE
 ret
 
 
 IsRepetitiveWords:
     If B$RepetitiveBytesDone = &TRUE
-        mov D$NumberOfRepetitiveData 0 | ret
+        Mov D$NumberOfRepetitiveData 0 | ret
     End_If
 
     push esi, ecx, edx
         sub edx D$SizesMap | add edx D$UserPeStart
 
-        mov esi ebx, ax W$esi, ecx 0
+        Mov esi ebx, ax W$esi, ecx 0
 
         While W$esi = ax
             lodsw | inc ecx | cmp esi edx | jae L2>>
         End_While
 
 L2:     If ecx > 1
-            mov D$NumberOfRepetitiveData ecx
+            Mov D$NumberOfRepetitiveData ecx
         Else
-            mov D$NumberOfRepetitiveData 0
+            Mov D$NumberOfRepetitiveData 0
         End_If
 
     pop edx, ecx, esi
 
-    mov B$RepetitiveBytesDone &TRUE
+    Mov B$RepetitiveBytesDone &TRUE
 ret
 
 
 IsRepetitivedWords:
     If B$RepetitiveBytesDone = &TRUE
-        mov D$NumberOfRepetitiveData 0 | ret
+        Mov D$NumberOfRepetitiveData 0 | ret
     End_If
 
     push esi, ecx, edx
         sub edx D$SizesMap | add edx D$UserPeStart
 
-        mov esi ebx, eax D$esi, ecx 0
+        Mov esi ebx, eax D$esi, ecx 0
 
         While D$esi = eax
             lodsd | inc ecx | cmp esi edx | jae L2>>
         End_While
 
 L2:     If ecx > 1
-            mov D$NumberOfRepetitiveData ecx
+            Mov D$NumberOfRepetitiveData ecx
         Else
-            mov D$NumberOfRepetitiveData 0
+            Mov D$NumberOfRepetitiveData 0
         End_If
 
     pop edx, ecx, esi
 
-    mov B$RepetitiveBytesDone &TRUE
+    Mov B$RepetitiveBytesDone &TRUE
 ret
 
 
 WriteDisBytes: ; 'WriteBytesData', 'WriteAsciiData'
   ; esi = SizesmapStart, edx = SizesmapEnd, cl = SizeFlag
     On B$edi-2 = '$', sub edi 3
-    mov D$edi 'B$ ' | add edi 3
+    Mov D$edi 'B$ ' | add edi 3
 
-    mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
+    Mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
 
-    call IsRepetitiveBytes
+    Call IsRepetitiveBytes
 
     If D$NumberOfRepetitiveData > 0
-        movzx eax B$ebx | push ebx | call WriteEax | pop ebx
-        mov W$edi ' #' | add edi 2
-        mov eax D$NumberOfRepetitiveData | push ebx | call WriteEax | pop ebx
+        movzx eax B$ebx | push ebx | Call WriteEax | pop ebx
+        Mov W$edi ' #' | add edi 2
+        Mov eax D$NumberOfRepetitiveData | push ebx | Call WriteEax | pop ebx
         add esi D$NumberOfRepetitiveData
         add ebx D$NumberOfRepetitiveData | cmp esi edx | jae L9>
-        call NextDisDataLine
+        Call NextDisDataLine
     End_If
 
-L0: movzx eax B$ebx | push ebx | call WriteEax | pop ebx
+L0: movzx eax B$ebx | push ebx | Call WriteEax | pop ebx
 
     inc esi | inc ebx | cmp esi edx | jae L9>
 
         .If B$esi <> 0
             If B$esi <> cl
-                call NextDisDataLine
-                mov cl B$esi | ret
+                Call NextDisDataLine
+                Mov cl B$esi | ret
             End_If
         .End_If
 
         If edi > D$NextDataOutputBreak
-            call NextDisDataLine
+            Call NextDisDataLine
         Else_If esi < edx
-            mov D$edi ', ' | add edi 2
+            Mov D$edi ', ' | add edi 2
         End_If
 
     jmp L0<
@@ -443,41 +443,41 @@ L9: ret
 WriteDisWords:
   ; esi = SizesmapStart, edx = SizesmapEnd, cl = SizeFlag
    On B$edi-2 = '$', sub edi 3
-    mov D$edi 'W$ ' | add edi 3
+    Mov D$edi 'W$ ' | add edi 3
 
-    mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
+    Mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
 
-    call IsRepetitiveWords
+    Call IsRepetitiveWords
 
     If D$NumberOfRepetitiveData > 0
-        movzx eax W$ebx | push ebx | call WriteEax | pop ebx
-        mov W$edi ' #' | add edi 2
-        mov eax D$NumberOfRepetitiveData | push ebx | call WriteEax | pop ebx
-        mov eax D$NumberOfRepetitiveData | shl eax 1
+        movzx eax W$ebx | push ebx | Call WriteEax | pop ebx
+        Mov W$edi ' #' | add edi 2
+        Mov eax D$NumberOfRepetitiveData | push ebx | Call WriteEax | pop ebx
+        Mov eax D$NumberOfRepetitiveData | shl eax 1
         add esi eax | add ebx eax | cmp esi edx | jae L9>
-        call NextDisDataLine
+        Call NextDisDataLine
     End_If
 
-L0: mov eax edx | sub eax esi
+L0: Mov eax edx | sub eax esi
     If eax < 2
-        mov cl BYTE | ret
+        Mov cl BYTE | ret
     End_If
 
-    movzx eax W$ebx | push ebx | call WriteEax | pop ebx
+    movzx eax W$ebx | push ebx | Call WriteEax | pop ebx
 
     add esi 2 | add ebx 2 | cmp esi edx | jae L9>
 
         .If B$esi <> 0
             If B$esi <> cl
-                call NextDisDataLine
-                mov cl B$esi | ret
+                Call NextDisDataLine
+                Mov cl B$esi | ret
             End_If
         .End_If
 
         If edi > D$NextDataOutputBreak
-            call NextDisDataLine
+            Call NextDisDataLine
         Else_If esi < edx
-            mov D$edi ', ' | add edi 2
+            Mov D$edi ', ' | add edi 2
         End_If
 
     jmp L0<
@@ -487,36 +487,36 @@ L9: ret
 WriteDisdWords:
   ; esi = SizesmapStart, edx = SizesmapEnd, cl = SizeFlag
     On B$edi-2 = '$', sub edi 3
-    mov D$edi 'D$ ' | add edi 3
+    Mov D$edi 'D$ ' | add edi 3
 
-    mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
+    Mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
 
-    call IsRepetitivedWords
+    Call IsRepetitivedWords
 
     If D$NumberOfRepetitiveData > 0
-        mov eax D$ebx | push ebx | call WriteEax | pop ebx
-        mov W$edi ' #' | add edi 2
-        mov eax D$NumberOfRepetitiveData | push ebx | call WriteEax | pop ebx
-        mov eax D$NumberOfRepetitiveData | shl eax 2
+        Mov eax D$ebx | push ebx | Call WriteEax | pop ebx
+        Mov W$edi ' #' | add edi 2
+        Mov eax D$NumberOfRepetitiveData | push ebx | Call WriteEax | pop ebx
+        Mov eax D$NumberOfRepetitiveData | shl eax 2
         add esi eax | add ebx eax | cmp esi edx | jae L9>>
-        call NextDisDataLine
+        Call NextDisDataLine
     End_If
 
-L0: mov eax D$ebx | push ebx | call WriteEax | pop ebx
+L0: Mov eax D$ebx | push ebx | Call WriteEax | pop ebx
 
     add esi 4 | add ebx 4 | cmp esi edx | jae L9>
 
         .If B$esi <> 0
             If B$esi <> cl
-                call NextDisDataLine
-                mov cl B$esi | ret
+                Call NextDisDataLine
+                Mov cl B$esi | ret
             End_If
         .End_If
 
         If edi > D$NextDataOutputBreak
-            call NextDisDataLine
+            Call NextDisDataLine
         Else_If esi < edx
-            mov D$edi ', ' | add edi 2
+            Mov D$edi ', ' | add edi 2
         End_If
 
     jmp L0<<
@@ -528,16 +528,16 @@ L9: ret
 WriteDisPointers:
   ; esi = SizesmapStart, edx = SizesmapEnd, cl = SizeFlag
     On B$edi-2 = '$', sub edi 3
-    mov D$edi 'D$ ' | add edi 3
+    Mov D$edi 'D$ ' | add edi 3
 
-    mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
+    Mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
 
-L0: mov eax edx | sub eax esi
+L0: Mov eax edx | sub eax esi
     If eax < 4
-        mov cl BYTE | ret
+        Mov cl BYTE | ret
     End_If
 
-    mov eax D$ebx
+    Mov eax D$ebx
 
     ;sub eax D$DisImageBase | add eax D$RoutingMap
     ;test B$eax LABEL | jz WriteDisdWords
@@ -546,20 +546,20 @@ L0: mov eax edx | sub eax esi
   This case of zeroed POINTERs should be turned DWORDs, in 'CheckFlagsCoherency'
 ;;
     .If eax = 0
-        call IsRepetitivedWords
+        Call IsRepetitivedWords
 
         If D$NumberOfRepetitiveData > 0
-            mov eax D$ebx | push ebx | call WriteEax | pop ebx
-            mov W$edi ' #' | add edi 2
-            mov eax D$NumberOfRepetitiveData | push ebx | call WriteEax | pop ebx
-            mov eax D$NumberOfRepetitiveData | shl eax 2
+            Mov eax D$ebx | push ebx | Call WriteEax | pop ebx
+            Mov W$edi ' #' | add edi 2
+            Mov eax D$NumberOfRepetitiveData | push ebx | Call WriteEax | pop ebx
+            Mov eax D$NumberOfRepetitiveData | shl eax 2
             add esi eax | add ebx eax | cmp esi edx | jae L9>>
-            call NextDisDataLine | jmp L0<
+            Call NextDisDataLine | jmp L0<
         End_If
 
     .End_If
 
-    mov B$RepetitiveBytesDone &TRUE
+    Mov B$RepetitiveBytesDone &TRUE
 
     push eax
         sub eax D$DisImageBase | add eax D$SectionsMap
@@ -571,34 +571,34 @@ L1:             sub eax D$RoutingMap | add eax D$SectionsMap
                 If B$eax = CODEFLAG
                     sub eax D$SectionsMap | add eax D$RoutingMap
                     test B$eax LABEL+INSTRUCTION | jz L2>
-                    mov D$edi 'Code' | add edi 4
+                    Mov D$edi 'Code' | add edi 4
                 Else_If B$eax = DATAFLAG
-                    mov D$edi 'Data' | add edi 4
+                    Mov D$edi 'Data' | add edi 4
                 Else_If B$eax = VIRTUALFLAG
-                    mov D$edi 'Virt', D$edi+4 'ual' | add edi 7
+                    Mov D$edi 'Virt', D$edi+4 'ual' | add edi 7
                 End_If
             .End_If
         ..End_If
 L2: pop eax
 
     .If D$edi-4 = 'tual'
-        mov B$WasValidPointer &TRUE
+        Mov B$WasValidPointer &TRUE
     .Else_If D$edi-4 = 'Data'
-        mov B$WasValidPointer &TRUE
+        Mov B$WasValidPointer &TRUE
     .Else_If D$edi-4 = 'Code'
-        mov B$WasValidPointer &TRUE
+        Mov B$WasValidPointer &TRUE
     .Else
-        mov B$WasValidPointer &FALSE
+        Mov B$WasValidPointer &FALSE
         push eax
-            mov edx D$RealDataChunkEdx | call IsStringCandidate
+            Mov edx D$RealDataChunkEdx | Call IsStringCandidate
             If eax = &TRUE
                 pop eax
-                mov cl STRINGS+BYTE, B$ActualSizeFlag cl | call WriteDisAscii | ret
+                Mov cl STRINGS+BYTE, B$ActualSizeFlag cl | Call WriteDisAscii | ret
             End_If
         pop eax
     .End_If
 
-    push ebx, eax | call WriteEax | pop eax, ebx
+    push ebx, eax | Call WriteEax | pop eax, ebx
 
     ..If B$WasValidPointer = &TRUE
         ToStringsMapFrom DisImageBase, eax
@@ -616,15 +616,15 @@ L2: pop eax
 
         .If B$esi <> 0
             If B$esi <> cl
-                call NextDisDataLine
-                mov cl B$esi | ret
+                Call NextDisDataLine
+                Mov cl B$esi | ret
             End_If
         .End_If
 
         If edi > D$NextDataOutputBreak
-            call NextDisDataLine
+            Call NextDisDataLine
         Else_If esi < edx
-            mov D$edi ', ' | add edi 2
+            Mov D$edi ', ' | add edi 2
         End_If
 
     jmp L0<<
@@ -635,17 +635,17 @@ L9: ret
 
 WriteDisAscii: ; 'WriteAsciiData'
   ; esi = SizesmapStart, edx = SizesmapEnd, cl = SizeFlag
-    mov B$RepetitiveBytesDone &TRUE
+    Mov B$RepetitiveBytesDone &TRUE
     On B$edi-2 = '$', sub edi 3
-    mov D$edi 'B$ ' | add edi 3
-    mov B$InsideQuotes &FALSE
+    Mov D$edi 'B$ ' | add edi 3
+    Mov B$InsideQuotes &FALSE
 
-    mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
+    Mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
 
 L0: movzx eax B$ebx
 ;On D$ebx = '3D F', int3
     push ebx
-        mov ebx D$TruthAsciiTable
+        Mov ebx D$TruthAsciiTable
 
         ...If B$ebx+eax = GOODASCII
 ;;
@@ -662,27 +662,27 @@ L0: movzx eax B$ebx
             On al = '"', jmp L2>
 
             If B$InsideQuotes = &FALSE
-                mov B$edi '"' | inc edi
-                mov B$InsideQuotes &TRUE
+                Mov B$edi '"' | inc edi
+                Mov B$InsideQuotes &TRUE
             End_If
             stosb
 
         ...Else
 L2:         If B$InsideQuotes = &TRUE
-                mov B$edi '"' | inc edi
-                mov B$InsideQuotes &FALSE
+                Mov B$edi '"' | inc edi
+                Mov B$InsideQuotes &FALSE
             End_If
             .If W$edi-2 <> ', '
                 If W$edi-3 <> 'B$'
-                    mov W$edi ', ' | add edi 2
+                    Mov W$edi ', ' | add edi 2
                 End_If
             .End_If
-            call WriteEax
+            Call WriteEax
             inc esi
             ..If esi < edx
                 .If W$edi-2 <> ', '
                     If W$edi-3 <> 'B$'
-                        mov D$edi ', ' | add edi 2
+                        Mov D$edi ', ' | add edi 2
                     End_If
                 .End_If
             ..End_If
@@ -695,36 +695,36 @@ L2:         If B$InsideQuotes = &TRUE
         ..If B$esi <> 0
             .If B$esi <> cl
                 If B$InsideQuotes = &TRUE
-                    mov B$edi '"' | inc edi
-                    mov B$InsideQuotes &FALSE
+                    Mov B$edi '"' | inc edi
+                    Mov B$InsideQuotes &FALSE
                 End_If
-                call NextDisDataLine
-                mov cl B$esi | ret
+                Call NextDisDataLine
+                Mov cl B$esi | ret
             .End_If
         ..End_If
 
         jmp L0<<
 
 L9: If B$InsideQuotes = &TRUE
-        mov B$edi '"' | inc edi
-        mov B$InsideQuotes &FALSE
+        Mov B$edi '"' | inc edi
+        Mov B$InsideQuotes &FALSE
     End_If
 ret
 
 
 WriteDisUnicode:
   ; esi = SizesmapStart, edx = SizesmapEnd, cl = SizeFlag
-    mov B$RepetitiveBytesDone &TRUE
+    Mov B$RepetitiveBytesDone &TRUE
     On B$edi-2 = '$', sub edi 3
-    mov D$edi 'U$ ' | add edi 3
-    mov B$InsideQuotes &FALSE
+    Mov D$edi 'U$ ' | add edi 3
+    Mov B$InsideQuotes &FALSE
 
-    mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
+    Mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
 
 L0: movzx eax B$ebx
 
     push ebx, ecx
-        mov ecx ebx, ebx D$TruthAsciiTable
+        Mov ecx ebx, ebx D$TruthAsciiTable
         ..If B$ebx+eax = GOODASCII
             On al = '"', jmp L2>
             If al = CR
@@ -733,26 +733,26 @@ L0: movzx eax B$ebx
                 On B$ecx-2 <> CR, jmp L2>
             End_If
             If B$InsideQuotes = &FALSE
-                mov B$edi '"' | inc edi
-                mov B$InsideQuotes &TRUE
+                Mov B$edi '"' | inc edi
+                Mov B$InsideQuotes &TRUE
             End_If
             stosb
         ..Else
 L2:         If B$InsideQuotes = &TRUE
-                mov B$edi '"' | inc edi
-                mov B$InsideQuotes &FALSE
+                Mov B$edi '"' | inc edi
+                Mov B$InsideQuotes &FALSE
             End_If
             .If W$edi-2 <> ', '
                 If W$edi-3 <> 'U$'
-                    mov W$edi ', ' | add edi 2
+                    Mov W$edi ', ' | add edi 2
                 End_If
             .End_If
-            call WriteEax
+            Call WriteEax
             inc esi
             .If esi < edx
                 .If W$edi-2 <> ', '
                     If W$edi-3 <> 'U$'
-                        mov W$edi ', ' | add edi 2
+                        Mov W$edi ', ' | add edi 2
                     End_If
                 .End_If
             .End_If
@@ -765,19 +765,19 @@ L2:         If B$InsideQuotes = &TRUE
         ..If B$esi <> 0
             .If B$esi <> cl
                 If B$InsideQuotes = &TRUE
-                    mov B$edi '"' | inc edi
-                    mov B$InsideQuotes &FALSE
+                    Mov B$edi '"' | inc edi
+                    Mov B$InsideQuotes &FALSE
                 End_If
-                call NextDisDataLine
-                mov cl B$esi | ret
+                Call NextDisDataLine
+                Mov cl B$esi | ret
             .End_If
         ..End_If
 
         jmp L0<<
 
 L9: If B$InsideQuotes = &TRUE
-        mov B$edi '"' | inc edi
-        mov B$InsideQuotes &FALSE
+        Mov B$edi '"' | inc edi
+        Mov B$InsideQuotes &FALSE
     End_If
 ret
 
@@ -786,36 +786,36 @@ WriteDisFP4: ; WriteDisdWords
   ; esi = SizesmapStart, edx = SizesmapEnd, cl = SizeFlag
     On B$edi-2 = '$', sub edi 3
 
-L0: mov eax edx | sub eax esi
+L0: Mov eax edx | sub eax esi
     If eax < 4
-        mov cl BYTE | ret
+        Mov cl BYTE | ret
     End_If
 
     push esi, edx
-        mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
-        call WriteFP4
+        Mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
+        Call WriteFP4
     pop edx, esi
 
     add esi 4
 
     .If B$esi <> 0
         If B$esi <> cl
-            call NextDisDataLine
-            mov cl B$esi | ret
+            Call NextDisDataLine
+            Mov cl B$esi | ret
         End_If
     .End_If
 
     .If esi < edx
         If edi > D$NextDataOutputBreak
-            call NextDisDataLine
+            Call NextDisDataLine
         Else_If esi < edx
-            mov D$edi ', ' | add edi 2
+            Mov D$edi ', ' | add edi 2
         End_If
 
         jmp L0<
     .End_If
 
-    mov B$RepetitiveBytesDone &TRUE
+    Mov B$RepetitiveBytesDone &TRUE
 ret
 
 
@@ -823,36 +823,36 @@ WriteDisFP8:
   ; esi = SizesmapStart, edx = SizesmapEnd, cl = SizeFlag
     On B$edi-2 = '$', sub edi 3
 
-L0: mov eax edx | sub eax esi
+L0: Mov eax edx | sub eax esi
     If eax < 8
-        mov cl BYTE | ret
+        Mov cl BYTE | ret
     End_If
 
     push esi, edx
-        mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
-        call WriteFP8
+        Mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
+        Call WriteFP8
     pop edx, esi
 
     add esi 8
 
     .If B$esi <> 0
         If B$esi <> cl
-            call NextDisDataLine
-            mov cl B$esi | ret
+            Call NextDisDataLine
+            Mov cl B$esi | ret
         End_If
     .End_If
 
     .If esi < edx
         If edi > D$NextDataOutputBreak
-            call NextDisDataLine
+            Call NextDisDataLine
         Else_If esi < edx
-            mov D$edi ', ' | add edi 2
+            Mov D$edi ', ' | add edi 2
         End_If
 
         jmp L0<
     .End_If
 
-    mov B$RepetitiveBytesDone &TRUE
+    Mov B$RepetitiveBytesDone &TRUE
 ret
 
 
@@ -860,79 +860,79 @@ WriteDisFP10:
   ; esi = SizesmapStart, edx = SizesmapEnd, cl = SizeFlag
     On B$edi-2 = '$', sub edi 3
 
-L0: mov eax edx | sub eax esi
+L0: Mov eax edx | sub eax esi
     If eax < 10
-        mov cl BYTE | ret
+        Mov cl BYTE | ret
     End_If
 
     push esi, edx
-        mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
-        call WriteFP10
+        Mov ebx esi | sub ebx D$Sizesmap | add ebx D$UserPeStart
+        Call WriteFP10
     pop edx, esi
 
     add esi 10
 
     .If B$esi <> 0
         If B$esi <> cl
-            call NextDisDataLine
-            mov cl B$esi | ret
+            Call NextDisDataLine
+            Mov cl B$esi | ret
         End_If
     .End_If
 
     .If esi < edx
         If edi > D$NextDataOutputBreak
-            call NextDisDataLine
+            Call NextDisDataLine
         Else_If esi < edx
-            mov D$edi ', ' | add edi 2
+            Mov D$edi ', ' | add edi 2
         End_If
 
         jmp L0<
     .End_If
 
-    mov B$RepetitiveBytesDone &TRUE
+    Mov B$RepetitiveBytesDone &TRUE
 ret
 
 
 NextDisDataLine:
     InitDataLineBreak
-    mov D$edi 020200A0D, D$edi+4 '    ', D$edi+8 '    ', D$edi+12 '    ', D$edi+16 '    '
+    Mov D$edi 020200A0D, D$edi+4 '    ', D$edi+8 '    ', D$edi+12 '    ', D$edi+16 '    '
     add edi 19
 ret
 
 
 NextCommentedDisDataLine:
     InitDataLineBreak
-    mov D$edi 020200A0D, D$edi+4 '    ', D$edi+8 '    ', D$edi+12 '    ', D$edi+16 '  ; '
+    Mov D$edi 020200A0D, D$edi+4 '    ', D$edi+8 '    ', D$edi+12 '    ', D$edi+16 '  ; '
     add edi 19
 ret
 
 
-[InitDataLineBreak | mov D$NextDataOutputBreak edi | add D$NextDataOutputBreak 70]
+[InitDataLineBreak | Mov D$NextDataOutputBreak edi | add D$NextDataOutputBreak 70]
 
 
 IsPointerCandidate:
   ; esi = SizesmapStart, edx = SizesmapEnd, cl = SizeFlag
     push ecx, esi
-        mov ecx edx | sub ecx esi | shr ecx 2
+        Mov ecx edx | sub ecx esi | shr ecx 2
 
         sub esi D$Sizesmap | add esi D$Routingmap
 
 L0:     test B$esi INDIRECT | jz L1>
-            mov eax esi
+            Mov eax esi
             sub eax D$Routingmap | add eax D$UserPeStart
-            mov eax D$eax
+            Mov eax D$eax
             sub eax D$DisImageBase | add eax D$RoutingMap
 
             If eax < D$Routingmap
                 ;
             Else_If eax < D$EndOfRoutingMap
                 test B$eax LABEL | jz L1>
-                    mov eax &TRUE | jmp L9>
+                    Mov eax &TRUE | jmp L9>
             End_If
 
 L1:         add esi 4 | loop L0<
 
-            mov eax &FALSE
+            Mov eax &FALSE
 L9: pop esi, ecx
 ret
 
@@ -940,10 +940,10 @@ ret
 IsStringCandidate:
   ; esi = SizesmapStart, edx = SizesmapEnd, cl = SizeFlag
     push esi, ecx, edx
-L0:     mov ecx edx | sub ecx esi
+L0:     Mov ecx edx | sub ecx esi
         sub esi D$Sizesmap | add esi D$UserPeStart | On B$esi = 0, jmp L8>
 
-        mov eax 0, edx D$TruthAsciiTable
+        Mov eax 0, edx D$TruthAsciiTable
 L0:     lodsb | On B$edx+eax = GOODASCII, loop L0<
         jecxz L9>
 
@@ -955,11 +955,11 @@ L1:         If al = 0
                 loop L0<
             End_If
 
-L8:     mov eax &FALSE
+L8:     Mov eax &FALSE
     pop edx, ecx, esi
 ret
 
-L9:     mov eax &TRUE
+L9:     Mov eax &TRUE
     pop edx, ecx, esi
 ret
 
@@ -978,62 +978,62 @@ Proc WriteOneVirtualDataChunk:
     Arguments @SizesmapStart, @SizesmapEnd
     Uses esi, edx
 
-        InitDataLineBreak | mov B$edi '[' | inc edi
+        InitDataLineBreak | Mov B$edi '[' | inc edi
 
         test D@SizesmapStart 00_11 | jz L0>
-            mov B$edi '<' | inc edi
+            Mov B$edi '<' | inc edi
 
-L0:     mov eax D@SizesmapStart | sub eax D$SizesMap | add eax D$SectionsMap
-        call WriteOneDataLabel eax
+L0:     Mov eax D@SizesmapStart | sub eax D$SizesMap | add eax D$SectionsMap
+        Call WriteOneDataLabel eax
 
-        mov esi D@SizesmapStart, ecx D@SizesmapEnd | sub ecx esi
+        Mov esi D@SizesmapStart, ecx D@SizesmapEnd | sub ecx esi
 
         ..If ecx = 1
-            mov D$edi 'B$ ?' | add edi 4
+            Mov D$edi 'B$ ?' | add edi 4
         ..Else_If ecx = 2
-            mov D$edi 'W$ ?' | add edi 4
+            Mov D$edi 'W$ ?' | add edi 4
         ..Else_If ecx = 4
             If B$esi = FP4
-                mov D$edi 'F$ ?'
+                Mov D$edi 'F$ ?'
             Else
-                mov D$edi 'D$ ?'
+                Mov D$edi 'D$ ?'
             End_If
             add edi 4
         ..Else
         ; LOOPVDATAMAX
-L1:         mov eax ecx | and eax 0011
+L1:         Mov eax ecx | and eax 0011
             .If eax = 0
                 If B$esi = FP4
-                    mov D$edi 'F$ ?'
+                    Mov D$edi 'F$ ?'
                 Else
-                    mov D$edi 'D$ ?'
+                    Mov D$edi 'D$ ?'
                 End_If
-                mov W$edi+4 ' #'  | add edi 6
-                mov eax ecx | shr eax 2
-                On eax > LOOPVDATAMAX, mov eax LOOPVDATAMAX
-                call WriteEax
+                Mov W$edi+4 ' #'  | add edi 6
+                Mov eax ecx | shr eax 2
+                On eax > LOOPVDATAMAX, Mov eax LOOPVDATAMAX
+                Call WriteEax
             .Else
-                mov D$edi 'B$ ?', W$edi+4 ' #'  | add edi 6
-                mov eax ecx | On eax > LOOPVDATAMAX, mov eax LOOPVDATAMAX
-                call WriteEax
+                Mov D$edi 'B$ ?', W$edi+4 ' #'  | add edi 6
+                Mov eax ecx | On eax > LOOPVDATAMAX, Mov eax LOOPVDATAMAX
+                Call WriteEax
             .End_If
         ..End_If
-        mov B$edi ']' | inc edi
+        Mov B$edi ']' | inc edi
 
       ; Case of set sizes > RosAsm Max, split into as many sub-sets as wanted:
         If ecx > LOOPVDATAMAX
             sub ecx LOOPVDATAMAX | NextDisLine
             push esi
-                mov esi edi
+                Mov esi edi
                 While B$esi <> '[' | dec esi | End_While
                 While B$esi <> ':' | movsb | End_While
-                mov B$edi 'X' | inc edi
+                Mov B$edi 'X' | inc edi
                 While B$esi <> '$' | movsb | End_While | dec edi
             pop esi
             jmp L1<<
         End_If
 
-        mov D$edi CRLF2 | add edi 4
+        Mov D$edi CRLF2 | add edi 4
 EndP
 
 

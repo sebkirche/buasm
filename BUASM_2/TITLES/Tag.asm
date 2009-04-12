@@ -34,11 +34,11 @@ L0:     If B$esi = ';'
         Else_If B$esi = ' '
             dec esi | jmp L0<
         Else
-            pop esi | mov eax &FALSE | ret
+            pop esi | Mov eax &FALSE | ret
         End_If
 
     pop esi
-    mov eax &TRUE
+    Mov eax &TRUE
 ret
 ____________________________________________________________________________________________
 
@@ -48,49 +48,49 @@ TagParser:
 
   ; esi > 'tag '
     add esi 4 | While B$esi = ' ' | inc esi | End_While
-    mov eax D$esi | or eax 020202020
+    Mov eax D$esi | or eax 020202020
   ; "Tag Dialog DialogID":
     ...If eax = 'dial'
-        mov ax W$esi+4 | or ax 02020
+        Mov ax W$esi+4 | or ax 02020
         .If ax = 'og'
             If B$esi+6 = ' '
-                mov B$ReadyToRun &FALSE
+                Mov B$ReadyToRun &FALSE
                 add esi 7 | jmp DialogTag
             End_If
         .End_If
   ; "Tag Wizard WizardName 'Path...........' ":
     ...Else_If eax = 'wiza'
-        mov ax W$esi+4 | or ax 02020
+        Mov ax W$esi+4 | or ax 02020
         .If ax = 'rd'
             If B$esi+6 = ' '
-                mov B$ReadyToRun &FALSE
+                Mov B$ReadyToRun &FALSE
                 add esi 6 | jmp WizardTag
             End_If
         .End_If
   ; "Tag Unicode LabelName":
     ...Else_If eax = 'unic'
-        mov eax D$esi+3 | or eax 020202020
+        Mov eax D$esi+3 | or eax 020202020
         .If eax = 'code'
             If B$esi+7 = ' '
-                mov B$ReadyToRun &FALSE
+                Mov B$ReadyToRun &FALSE
                 add esi 8 | jmp UnicodeTag
             End_If
         .End_If
   ; "Tag Menu MenuID":
     ...Else_If eax = 'menu'
         If B$esi+4 = ' '
-            mov B$ReadyToRun &FALSE
+            Mov B$ReadyToRun &FALSE
             add esi 5 | jmp MenuTag
         End_If
 
     ...End_If
 
-    call 'USER32.MessageBoxA' D$hwnd, {'Unknown Tag KeyWord', 0}, {'No such Tag', 0}, 0
+    Call 'USER32.MessageBoxA' D$H.MainWindow, {'Unknown Tag KeyWord', 0}, {'No such Tag', 0}, 0
 ret
 
 
 TagDecimalToBin:
-    mov ecx 0, eax 0
+    Mov ecx 0, eax 0
 
 L0: lodsb
     cmp al ' ' | jbe L9>
@@ -101,11 +101,11 @@ L0: lodsb
         lea ecx D$eax+ecx*2         ;     ecx = eax + old ecx * 10
     jmp L0<
 
-L8: call 'USER32.MessageBoxA' D$hwnd, {"Tags' Numbers are to be provided in Decimal notation", 0},
+L8: Call 'USER32.MessageBoxA' D$H.MainWindow, {"Tags' Numbers are to be provided in Decimal notation", 0},
                               {'Bad Number', 0}, 0
-    mov eax &FALSE | ret
+    Mov eax &FALSE | ret
 
-L9: mov eax &TRUE | ret
+L9: Mov eax &TRUE | ret
 
 ____________________________________________________________________________________________
 
@@ -116,17 +116,17 @@ ________________________________________________________________________________
 DialogTag:
     While B$esi = ' ' | inc esi | End_While
 
-    call TagDecimaltoBin
+    Call TagDecimaltoBin
 
     .If eax = &TRUE
-        mov eax ecx
+        Mov eax ecx
 
         If eax = 0
             ; nope
         Else_If eax > 0_FFFF
             ; nope
         Else
-            call GetTagedDialog
+            Call GetTagedDialog
         End_If
     .End_If
 ret
@@ -141,34 +141,34 @@ GetTagedDialog:
     End_If
 
     push eax
-        call ReleaseDialogMemories | call InitDialogMemory
+        Call ReleaseDialogMemories | Call InitDialogMemory
     pop eax
 
-    mov esi DialogList, D$MenuListPtr esi      ; 1 record:  ID / Ptr / Size
+    Mov esi DialogList, D$MenuListPtr esi      ; 1 record:  ID / Ptr / Size
 
 L0: .If D$esi = eax
-        mov D$WhatDialogListPtr esi | add D$WhatDialogListPtr 4  ;DialogList+4
+        Mov D$WhatDialogListPtr esi | add D$WhatDialogListPtr 4  ;DialogList+4
 
-        mov ebx D$WhatDialogListPtr, ebx D$ebx
+        Mov ebx D$WhatDialogListPtr, ebx D$ebx
         If W$ebx+18 = 0
-            mov D$ActualMenutestID 0, D$DialogMenuTrueID 0
+            Mov D$ActualMenutestID 0, D$DialogMenuTrueID 0
         Else
-            movzx eax W$ebx+20 | mov D$DialogMenuTrueID eax
-            mov esi MenuList
+            movzx eax W$ebx+20 | Mov D$DialogMenuTrueID eax
+            Mov esi MenuList
             While D$esi <> eax
                 add esi 12
             End_While
-            mov D$MenuListPtr esi
+            Mov D$MenuListPtr esi
             add esi 4
-            call 'User32.LoadMenuIndirectA' D$esi | mov D$ActualMenutestID eax
+            Call 'User32.LoadMenuIndirectA' D$esi | Mov D$ActualMenutestID eax
         End_If
 
-        mov B$DialogLoadedFromResources &TRUE
-        call FromBinToTextTemplate
-        call ReInitDialogEdition
+        Mov B$DialogLoadedFromResources &TRUE
+        Call FromBinToTextTemplate
+        Call ReInitDialogEdition
 
     .Else_If D$esi = 0
-        call 'USER32.MessageBoxA' D$hwnd, {'No Dialog found with matching ID Number', 0},
+        Call 'USER32.MessageBoxA' D$H.MainWindow, {'No Dialog found with matching ID Number', 0},
                                   {'Bad ID', 0}, 0
     .Else
         add esi 12 | jmp L0<<
@@ -207,72 +207,72 @@ ________________________________________________________________________________
 WizardTag:
 
     If D$DebugDialogHandle <> 0
-          push esi | call KillDebugger | pop esi | On eax = &IDNO, ret
+          push esi | Call KillDebugger | pop esi | On eax = &IDNO, ret
     End_If
 
     ;push D$CurrentWritingPos
-    mov D$CurrentWritingPos esi
-    call SetPartialEditionFromPos
-    mov esi D$CurrentWritingPos
+    Mov D$CurrentWritingPos esi
+    Call SetPartialEditionFromPos
+    Mov esi D$CurrentWritingPos
 
     ; selects the wizard
-    mov eax D$esi+1
+    Mov eax D$esi+1
     or eax 020202020
     If eax = 'form'
 
-        call WizardFormTag
+        Call WizardFormTag
     ;  ; Temporary add, because of the new 'ControlZ', that does not work on the Full Source:
-    ;    call ReInitUndo
+    ;    Call ReInitUndo
     Else_If eax = 'test'
         ;jmp WizardFormTest
     End_If
 
-    call RestoreRealSource
+    Call RestoreRealSource
 
-    call ReInitUndoOnly
+    Call ReInitUndoOnly
 ret
 ____________________________________________________________________________________________
 WizardFormTest:
-    call CheckTagEndPos | On eax = &FALSE, ret
-    call DeleteLastWizardCode esi
+    Call CheckTagEndPos | On eax = &FALSE, ret
+    Call DeleteLastWizardCode esi
 ret
 ____________________________________________________________________________________________
 WizardFormTag:
 
-    call CheckTagEndPos | On eax = &FALSE, ret
+    Call CheckTagEndPos | On eax = &FALSE, ret
 
     ; retrieves Wizard Path :
     push esi
-        call GetRosAsmFilesPath
-        mov esi RosAsmFilesPath | mov edi WizardPath
+        Call GetRosAsmFilesPath
+        Mov esi RosAsmFilesPath | Mov edi WizardPath
         While B$esi <> 0 | movsb | End_While
-        mov esi WizardName
-        While B$esi <> 0 | movsb | End_While | mov B$edi 0
+        Mov esi WizardName
+        While B$esi <> 0 | movsb | End_While | Mov B$edi 0
     pop esi
 
     ; set esi on the character after the first double quote following 'Tag Wizard Form'
     While B$esi <> '"' | inc esi | End_While | inc esi
 
     ; => command line writing:
-    mov edi WizardCommandLine
+    Mov edi WizardCommandLine
 
     ;    * Wizard FileName
-    mov B$edi '"' | inc edi
+    Mov B$edi '"' | inc edi
     push esi
-        mov esi WizardPath
+        Mov esi WizardPath
         While B$esi <> 0 | movsb | End_While
     pop esi
-    mov B$edi '"' | inc edi
+    Mov B$edi '"' | inc edi
 
     ;    * File location
-    mov D$edi '-f "'  | add edi 4
+    Mov D$edi '-f "'  | add edi 4
     While B$esi <> '"' | movsb | End_While
-    mov W$edi '" ' | add edi 2
+    Mov W$edi '" ' | add edi 2
 
     ;    * RosAsm ID
-    mov W$edi '-R'  | add edi 2 | mov B$edi 0 | inc edi
+    Mov W$edi '-R'  | add edi 2 | Mov B$edi 0 | inc edi
 
-    call LoadWizardAndPasteCode esi
+    Call LoadWizardAndPasteCode esi
 
 ret
 ____________________________________________________________________________________________
@@ -280,13 +280,13 @@ Proc DeleteLastWizardCode:
     Argument @TagBegin
     Uses edx
 
-    mov esi D@TagBegin
-    While B$esi <> LF | dec esi | End_While | inc esi | mov edx esi
+    Mov esi D@TagBegin
+    While B$esi <> LF | dec esi | End_While | inc esi | Mov edx esi
     While esi <= D$SourceEnd
         .If W$esi = ((59 shl 8) or LF)
-            mov eax D$esi+3 | or eax 0202020
+            Mov eax D$esi+3 | or eax 0202020
             If eax = 'tag '
-                mov eax D$esi+6 | or eax 020202000
+                Mov eax D$esi+6 | or eax 020202000
                 On eax = ' end', jmp L1>
                 ExitP
             End_If
@@ -296,14 +296,14 @@ Proc DeleteLastWizardCode:
     ; should not be accessed ( checked before)
     ExitP
 
-L1: While B$esi <> CR | inc esi | End_While | dec esi | mov D$BlockEndTextPtr esi
-    mov D$BlockStartTextPtr edx
-    mov B$BlockInside &TRUE
-    mov D$CaretRow 1              ; the caret is set at the beginning of the block
-    mov D$PhysicalCaretRow 1      ;
-    mov eax D$CaretRow, ebx D$CaretLine | call SearchTxtPtr
-    mov D$CurrentWritingPos eax
-    call ControlD
+L1: While B$esi <> CR | inc esi | End_While | dec esi | Mov D$BlockEndTextPtr esi
+    Mov D$BlockStartTextPtr edx
+    Mov B$BlockInside &TRUE
+    Mov D$CaretRow 1              ; the caret is set at the beginning of the block
+    Mov D$PhysicalCaretRow 1      ;
+    Mov eax D$CaretRow, ebx D$CaretLine | Call SearchTxtPtr
+    Mov D$CurrentWritingPos eax
+    Call ControlD
 
     ;ControlZ
 
@@ -312,12 +312,12 @@ ________________________________________________________________________________
 Proc CheckTagEndPos:
     Uses esi
 
-    While B$esi <> LF | dec esi | End_While | inc esi | mov edx esi
+    While B$esi <> LF | dec esi | End_While | inc esi | Mov edx esi
     While esi <= D$SourceEnd
         .If W$esi = ((59 shl 8) or LF)
-            mov eax D$esi+3 | or eax 0202020
+            Mov eax D$esi+3 | or eax 0202020
             If eax = 'tag '
-                mov eax D$esi+6 | or eax 020202000
+                Mov eax D$esi+6 | or eax 020202000
                 On eax = ' end', jmp L1>
                 jmp L2>
             End_If
@@ -325,13 +325,13 @@ Proc CheckTagEndPos:
         inc esi
     End_While
 
-L2: call 'USER32.MessageBoxA' D$hwnd,
+L2: Call 'USER32.MessageBoxA' D$H.MainWindow,
 {"Can't find '; Tag End' mark.
 Write it back and try again ;o)", 0},  {"Error", 0}, &MB_ICONERROR
-    mov eax &FALSE
+    Mov eax &FALSE
     ExitP
 
-L1: mov eax &TRUE
+L1: Mov eax &TRUE
 
 EndP
 ____________________________________________________________________________________________
@@ -341,31 +341,31 @@ Proc AddWizardCode:
 
     move D$ClipBoardLen D@WizardCodeLen
 
-    call ReMapSourceMemoryIfNeeded D$ClipBoardLen | On eax = &IDNO, ret
+    Call ReMapSourceMemoryIfNeeded D$ClipBoardLen | On eax = &IDNO, ret
 
-    call DoStoreBlockPaste
+    Call DoStoreBlockPaste
 
-    mov esi D$SourceEnd | add esi 400                       ; make room inside our text:
-    mov edi esi | add edi D$ClipBoardLen
-    mov ecx esi | sub ecx D$CurrentWritingPos | inc ecx
+    Mov esi D$SourceEnd | add esi 400                       ; make room inside our text:
+    Mov edi esi | add edi D$ClipBoardLen
+    Mov ecx esi | sub ecx D$CurrentWritingPos | inc ecx
     std | rep movsb | cld | inc esi
                                                             ; write from clipboard:
-    mov edi esi, esi D@WizardCodePtr, ecx D$ClipBoardLen
+    Mov edi esi, esi D@WizardCodePtr, ecx D$ClipBoardLen
     pushad | rep movsb | popad
                                                             ; position:
-    mov esi edi, ebx D$CaretLine
+    Mov esi edi, ebx D$CaretLine
 L0: lodsb | inc D$CaretRow | cmp al CR | jne L1>
-        inc ebx | mov D$CaretRow 1 | lodsb | dec ecx | jz L0>
+        inc ebx | Mov D$CaretRow 1 | lodsb | dec ecx | jz L0>
 L1: loop L0<
 
 L0: cmp ebx D$LineNumber | jna L6>
-        mov esi D$UpperLine | mov ecx ebx | sub ecx D$CaretLine
+        Mov esi D$UpperLine | Mov ecx ebx | sub ecx D$CaretLine
 L1:     lodsb | cmp al LF | jne L1<
-            mov D$UpperLine esi | dec ebx | jmp L0<
+            Mov D$UpperLine esi | dec ebx | jmp L0<
 
-L6: mov D$CaretLine ebx
+L6: Mov D$CaretLine ebx
 
-    mov eax D$ClipBoardLen
+    Mov eax D$ClipBoardLen
     add D$SourceLen eax | add D$SourceEnd eax | add D$CurrentWritingPos eax
 
 
@@ -374,118 +374,118 @@ ________________________________________________________________________________
 NewWizardForm:
 
     .If D$DebugDialogHandle <> 0
-          call KillDebugger | If eax = &IDNO | pop esi | ret | End_If
+          Call KillDebugger | If eax = &IDNO | pop esi | ret | End_If
     .End_If
 
-    call 'User32.MessageBoxA' &NULL {'Set the caret where you want the code to be pasted, and click OK.',0},
+    Call 'User32.MessageBoxA' &NULL {'Set the caret where you want the code to be pasted, and click OK.',0},
                               {'Wait a minute...',0}    &MB_ICONEXCLAMATION+&MB_SYSTEMMODAL
 
 
-    call GetRosAsmFilesPath
-    mov esi RosAsmFilesPath | mov edi WizardPath
+    Call GetRosAsmFilesPath
+    Mov esi RosAsmFilesPath | Mov edi WizardPath
     While B$esi <> 0 | movsb | End_While
-    mov esi WizardName
-    While B$esi <> 0 | movsb | End_While | mov B$edi 0
+    Mov esi WizardName
+    While B$esi <> 0 | movsb | End_While | Mov B$edi 0
 
 
-    call 'Kernel32.GetCurrentDirectoryA' &MAX_PATH NewFormPath
-    mov esi NewFormPath | add esi eax
-    mov D$esi '\Wiz' | add esi 4 | mov D$esi 'ardF' | add esi 4 | mov D$esi 'iles' | add esi 4
-    mov B$esi 0
+    Call 'Kernel32.GetCurrentDirectoryA' &MAX_PATH NewFormPath
+    Mov esi NewFormPath | add esi eax
+    Mov D$esi '\Wiz' | add esi 4 | Mov D$esi 'ardF' | add esi 4 | Mov D$esi 'iles' | add esi 4
+    Mov B$esi 0
 
-    push esi | call 'Kernel32.CreateDirectoryA' NewFormPath &NULL | pop esi
+    push esi | Call 'Kernel32.CreateDirectoryA' NewFormPath &NULL | pop esi
 
-    mov D$esi '\WZR' | add esi 4 | mov D$esi 'DFor' | add esi 4 | mov D$esi 'm*.w' | add esi 4
-    mov W$esi 'wf'   | add esi 2 | mov B$esi 0
+    Mov D$esi '\WZR' | add esi 4 | Mov D$esi 'DFor' | add esi 4 | Mov D$esi 'm*.w' | add esi 4
+    Mov W$esi 'wf'   | add esi 2 | Mov B$esi 0
 
   push esi
     ; looks for existing wizard files in the '\WizardFiles\' sub-directory of the program's directory
-    call 'Kernel32.FindFirstFileA' NewFormPath WizardSaving
-    mov D$WizardSearchHandle eax
+    Call 'Kernel32.FindFirstFileA' NewFormPath WizardSaving
+    Mov D$WizardSearchHandle eax
     xor ecx ecx
     If eax <> &INVALID_HANDLE_VALUE
-L1:     push ecx | call 'Kernel32.FindNextFileA' D$WizardSearchHandle WizardSaving | pop ecx
+L1:     push ecx | Call 'Kernel32.FindNextFileA' D$WizardSearchHandle WizardSaving | pop ecx
         inc ecx
         cmp eax 0 | jnz L1<
-        push ecx | call 'Kernel32.FindClose' D$WizardSearchHandle | pop ecx
+        push ecx | Call 'Kernel32.FindClose' D$WizardSearchHandle | pop ecx
     End_If
   pop esi
 
     ; creates the new file name according to the number of already existing files
-    mov ebx ecx | mov edi esi | sub edi 2
+    Mov ebx ecx | Mov edi esi | sub edi 2
     std
-        mov ecx, 4
-L1:     mov al bl | and al 0F | On al >= 0A, add al 7
+        Mov ecx, 4
+L1:     Mov al bl | and al 0F | On al >= 0A, add al 7
         add al, '0' | stosb | shr ebx, 4 | loop L1
     cld
-    mov D$esi-1 '.wwf' | mov B$esi+3 0
+    Mov D$esi-1 '.wwf' | Mov B$esi+3 0
 
 
     ; => command line writing:
-    mov edi WizardCommandLine
+    Mov edi WizardCommandLine
 
     ;    * Wizard FileName
-    mov B$edi '"' | inc edi
-    mov esi WizardPath
+    Mov B$edi '"' | inc edi
+    Mov esi WizardPath
     While B$esi <> 0 | movsb | End_While
-    mov B$edi '"' | inc edi
+    Mov B$edi '"' | inc edi
 
     ;    * File location
-    mov D$edi '-f "'  | add edi 4
-    mov esi NewFormPath
+    Mov D$edi '-f "'  | add edi 4
+    Mov esi NewFormPath
     While B$esi <> 0 | movsb | End_While
-    mov W$edi '" ' | add edi 2
+    Mov W$edi '" ' | add edi 2
 
     ;    * create the Wizard File
-    mov W$edi '-c'  | add edi 2 | mov B$edi 020 | inc edi
+    Mov W$edi '-c'  | add edi 2 | Mov B$edi 020 | inc edi
 
     ;    * RosAsm ID
-    mov W$edi '-R'  | add edi 2 | mov B$edi 0 | inc edi
+    Mov W$edi '-R'  | add edi 2 | Mov B$edi 0 | inc edi
 
-    call LoadWizardAndPasteCode &FALSE
+    Call LoadWizardAndPasteCode &FALSE
 
-    call ReInitUndoOnly
+    Call ReInitUndoOnly
 ret
 
 ____________________________________________________________________________________________
 Proc LoadWizardAndPasteCode:
     Argument @TagBegin
 
-    call 'Kernel32.CreateEventA' &NULL &FALSE &FALSE {'ProducedCode_BeginWrite',0}
-    mov D$ProducedCode_BeginWrite eax
+    Call 'Kernel32.CreateEventA' &NULL &FALSE &FALSE {'ProducedCode_BeginWrite',0}
+    Mov D$ProducedCode_BeginWrite eax
 
-    call 'Kernel32.CreateProcessA' WizardPath WizardCommandLine 0 0  0  0 0 0  STARTUPINFO  ProcessInfos
+    Call 'Kernel32.CreateProcessA' WizardPath WizardCommandLine 0 0  0  0 0 0  STARTUPINFO  ProcessInfos
     If eax = 0
-        call 'User32.MessageBoxA' &NULL {"The Wizard cannot be loaded.",0},
+        Call 'User32.MessageBoxA' &NULL {"The Wizard cannot be loaded.",0},
                                         ErrorMessageTitle   &MB_ICONEXCLAMATION+&MB_SYSTEMMODAL
         jmp L9>>
     End_If
-    call 'Kernel32.WaitForSingleObject' D$ProducedCode_BeginWrite &INFINITE  ; wait while the user uses the wizard
+    Call 'Kernel32.WaitForSingleObject' D$ProducedCode_BeginWrite &INFINITE  ; wait while the user uses the wizard
     ; open the shared memory where the code has been written.
     ; the first DWord of this data is the code length.
-    call 'Kernel32.OpenFileMappingA' &FILE_MAP_ALL_ACCESS 0 {'RosAsmWizardProducedCode',0}
-    mov D$ProducedCodeHandle eax
-    call 'Kernel32.MapViewOfFile' D$ProducedCodeHandle &FILE_MAP_ALL_ACCESS 0 0 0 ; jE!
-    mov D$ProducedCode eax | add D$ProducedCode 4
+    Call 'Kernel32.OpenFileMappingA' &FILE_MAP_ALL_ACCESS 0 {'RosAsmWizardProducedCode',0}
+    Mov D$ProducedCodeHandle eax
+    Call 'Kernel32.MapViewOfFile' D$ProducedCodeHandle &FILE_MAP_ALL_ACCESS 0 0 0 ; jE!
+    Mov D$ProducedCode eax | add D$ProducedCode 4
 
     If D$eax <> 0
-        On D@TagBegin <> &FALSE, call DeleteLastWizardCode D@TagBegin
-        mov eax D$ProducedCode | mov edx D$eax-4
-        call AddWizardCode eax edx
+        On D@TagBegin <> &FALSE, Call DeleteLastWizardCode D@TagBegin
+        Mov eax D$ProducedCode | Mov edx D$eax-4
+        Call AddWizardCode eax edx
     Else
-        On D@TagBegin = &FALSE, call 'Kernel32.DeleteFileA' NewFormPath
+        On D@TagBegin = &FALSE, Call 'Kernel32.DeleteFileA' NewFormPath
     End_If
 
     sub D$ProducedCode 4
-    call 'Kernel32.UnmapViewOfFile' D$ProducedCode
-    call 'Kernel32.CloseHandle' D$ProducedCodeHandle
-    call 'Kernel32.OpenEventA' &EVENT_MODIFY_STATE &FALSE {'ProducedCode_Written',0}
-    mov D$ProducedCode_Written eax
-    call 'Kernel32.SetEvent' D$ProducedCode_Written
-    call 'Kernel32.CloseHandle' D$ProducedCode_Written
-    call 'Kernel32.CloseHandle' D$ProcessInfos+4
-    call 'Kernel32.CloseHandle' D$ProcessInfos
-L9: call 'Kernel32.CloseHandle' D$ProducedCode_BeginWrite
+    Call 'Kernel32.UnmapViewOfFile' D$ProducedCode
+    Call 'Kernel32.CloseHandle' D$ProducedCodeHandle
+    Call 'Kernel32.OpenEventA' &EVENT_MODIFY_STATE &FALSE {'ProducedCode_Written',0}
+    Mov D$ProducedCode_Written eax
+    Call 'Kernel32.SetEvent' D$ProducedCode_Written
+    Call 'Kernel32.CloseHandle' D$ProducedCode_Written
+    Call 'Kernel32.CloseHandle' D$ProcessInfos+4
+    Call 'Kernel32.CloseHandle' D$ProcessInfos
+L9: Call 'Kernel32.CloseHandle' D$ProducedCode_BeginWrite
 
 EndP
 ____________________________________________________________________________________________
@@ -499,7 +499,7 @@ ________________________________________________________________________________
 
 UnicodeTag:
   ; esi points to 'MyUnicodeString', inside "; Tag Unicode MyUnicodeString":
-    call 'USER32.DialogBoxParamW' D$hinstance, 600, &NULL, UnicodeEditorProc, esi
+    Call 'USER32.DialogBoxParamW' D$hinstance, 600, &NULL, UnicodeEditorProc, esi
 ret
 
 
@@ -508,80 +508,80 @@ ret
 ; Tag Dialog 600
 
 Proc UnicodeEditorProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_INITDIALOG
-        move D$UnicodeEditorHandle D@Adressee, D$UnicodeDataPointer D@lParam
+    ...If D@msg = &WM_INITDIALOG
+        move D$UnicodeEditorHandle D@hwnd, D$UnicodeDataPointer D@lParam
 
-        call 'USER32.SetClassLongW' D@Adressee, &GCL_HICON, D$wc_hIcon
+        Call 'USER32.SetClassLongW' D@hwnd, &GCL_HICON, D$wc_hIcon
 
-        call LoadUnicodeEditorFont
+        Call LoadUnicodeEditorFont
 
         On D$UnicodeEditorFontHandle <> 0,
-            call 'USER32.SendDlgItemMessageW' D@Adressee, 10, &WM_SETFONT,
+            Call 'USER32.SendDlgItemMessageW' D@hwnd, 10, &WM_SETFONT,
                                               D$UnicodeEditorFontHandle, &TRUE
 
-        call SetUnicodeDialogContent | jmp L8>>
+        Call SetUnicodeDialogContent | jmp L8>>
 
-    ...Else_If D@Message = &WM_COMMAND
-        mov eax D@wParam | and D@wParam 0FFFF | shr eax 16
+    ...Else_If D@msg = &WM_COMMAND
+        Mov eax D@wParam | and D@wParam 0FFFF | shr eax 16
 
         .If D@wParam = &IDCANCEL
             If D$UnicodeEditorFontHandle <> 0
-                call 'GDI32.DeleteObject' D$UnicodeEditorFontHandle
-                mov D$UnicodeEditorFontHandle 0
+                Call 'GDI32.DeleteObject' D$UnicodeEditorFontHandle
+                Mov D$UnicodeEditorFontHandle 0
             End_If
 
-            call 'User32.DestroyWindow' D@Adressee
+            Call 'User32.DestroyWindow' D@hwnd
 
         .Else_If D@wParam = &IDOK
-          ; The call is from inside the Right-Click, with full Source restored. So:
-            call SetPartialEditionFromPos
-                call PasteUnicodeDialogContent
-            call RestoreRealSource
+          ; The Call is from inside the Right-Click, with full Source restored. So:
+            Call SetPartialEditionFromPos
+                Call PasteUnicodeDialogContent
+            Call RestoreRealSource
 
             If D$UnicodeEditorFontHandle <> 0
-                call 'GDI32.DeleteObject' D$UnicodeEditorFontHandle
-                mov D$UnicodeEditorFontHandle 0
+                Call 'GDI32.DeleteObject' D$UnicodeEditorFontHandle
+                Mov D$UnicodeEditorFontHandle 0
             End_If
 
-            call 'User32.DestroyWindow' D@Adressee
+            Call 'User32.DestroyWindow' D@hwnd
 
         .Else_If D@wParam = 3
-            call GetUnicodeEditorFont
+            Call GetUnicodeEditorFont
 
             If D$UnicodeEditorFontHandle <> 0
-                call 'USER32.SendDlgItemMessageW' D@Adressee, 10, &WM_SETFONT,
+                Call 'USER32.SendDlgItemMessageW' D@hwnd, 10, &WM_SETFONT,
                                               D$UnicodeEditorFontHandle, &TRUE
-                call UpdateRegistry
+                Call UpdateRegistry
             End_If
 ;;
 ; Does not work, at all:
 
         .Else_If D@wParam = 4
-            call 'USER32.GetDlgItem' D@Adressee, 10
+            Call 'USER32.GetDlgItem' D@hwnd, 10
             push eax
-                call 'USER32.GetWindowLongW' eax, &GWL_STYLE
+                Call 'USER32.GetWindowLongW' eax, &GWL_STYLE
                 xor eax &ES_AUTOHSCROLL__&WS_HSCROLL
             pop ebx
-            call 'USER32.SetWindowLongW' ebx, &GWL_STYLE, eax
+            Call 'USER32.SetWindowLongW' ebx, &GWL_STYLE, eax
 ;;
         .End_If
 
-    ...Else_If D@Message = &WM_CTLCOLOREDIT
-        call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0-1, 0
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | ExitP
+    ...Else_If D@msg = &WM_CTLCOLOREDIT
+        Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0-1, 0
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
 
 
     ...Else
-L8:     popad | mov eax &FALSE | ExitP
+L8:     popad | Mov eax &FALSE | ExitP
 
     ...End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 EndP
 
 
@@ -624,20 +624,20 @@ EndP
 
 LoadUnicodeEditorFont:
     If D$UnicodeEditorFontHandle = 0
-        call 'GDI32.CreateFontIndirectA' UNICODE_EDITION_LOGFONT
-        mov D$UnicodeEditorFontHandle eax
+        Call 'GDI32.CreateFontIndirectA' UNICODE_EDITION_LOGFONT
+        Mov D$UnicodeEditorFontHandle eax
     End_If
 ret
 
 
 GetUnicodeEditorFont:
     move D$UNICODE_EDITION_CHOOSEFONT@hwndOwner D$UnicodeEditorHandle
-    call 'Comdlg32.ChooseFontW' UNICODE_EDITION_CHOOSEFONT
+    Call 'Comdlg32.ChooseFontW' UNICODE_EDITION_CHOOSEFONT
 
     If eax = &TRUE
-        On D$UnicodeEditorFontHandle <> 0, call 'GDI32.DeleteObject' D$UnicodeEditorFontHandle
-        call 'GDI32.CreateFontIndirectW' UNICODE_EDITION_LOGFONT
-        mov D$UnicodeEditorFontHandle eax
+        On D$UnicodeEditorFontHandle <> 0, Call 'GDI32.DeleteObject' D$UnicodeEditorFontHandle
+        Call 'GDI32.CreateFontIndirectW' UNICODE_EDITION_LOGFONT
+        Mov D$UnicodeEditorFontHandle eax
     End_If
 ret
 
@@ -646,33 +646,33 @@ ret
  NumberOfUnicodeChars: ?]
 
 PasteUnicodeDialogContent:
-    mov esi D$UnicodeDataPointer
-    call InternalRightClick
+    Mov esi D$UnicodeDataPointer
+    Call InternalRightClick
     If B$BlockInside = &TRUE
-        mov esi D$BlockStartTextPtr
+        Mov esi D$BlockStartTextPtr
         While B$esi <> '[' | dec esi | End_While
-        mov D$BlockStartTextPtr esi, D$UnicodeDataInsertionPoint esi
+        Mov D$BlockStartTextPtr esi, D$UnicodeDataInsertionPoint esi
 
-        mov esi D$BlockEndTextPtr
+        Mov esi D$BlockEndTextPtr
         While B$esi <> ']' | inc esi | End_While
-        mov D$BlockEndTextPtr esi
-        call ControlD
+        Mov D$BlockEndTextPtr esi
+        Call ControlD
 
-        mov B$AddedCRLF &FALSE
+        Mov B$AddedCRLF &FALSE
 
     Else
-        mov B$AddedCRLF &TRUE
+        Mov B$AddedCRLF &TRUE
 
-        mov esi D$UnicodeDataPointer
+        Mov esi D$UnicodeDataPointer
         While B$esi >= ' ' | inc esi | End_While
-        mov D$UnicodeDataInsertionPoint esi
+        Mov D$UnicodeDataInsertionPoint esi
 
     End_If
 
-    ;    mov ebx D$UnicodeDataPointer
+    ;    Mov ebx D$UnicodeDataPointer
     ;    While B$ebx > CR | inc ebx | End_While | add ebx 2
 
-    call 'USER32.SendDlgItemMessageW' D$UnicodeEditorHandle, 10, &WM_GETTEXTLENGTH,
+    Call 'USER32.SendDlgItemMessageW' D$UnicodeEditorHandle, 10, &WM_GETTEXTLENGTH,
                                       D$UnicodeEditorFontHandle, &FALSE
     add eax 100
     push eax
@@ -680,39 +680,39 @@ PasteUnicodeDialogContent:
     pop eax
 
     push eax
-        call 'USER32.SendDlgItemMessageW' D$UnicodeEditorHandle, 10, &WM_GETTEXT,
+        Call 'USER32.SendDlgItemMessageW' D$UnicodeEditorHandle, 10, &WM_GETTEXT,
                                           eax, D$Trash1
     pop eax
 
   ; Max = 7 Char ("0FFFF, ") >>> 8 + Alignements (....) >>>> 32
     shl eax 5 | VirtualAlloc Trash2 eax
 
-    mov edi D$Trash2
+    Mov edi D$Trash2
 
     If B$AddedCRLF = &TRUE
-        mov D$edi CRLF2 | add edi 4
+        Mov D$edi CRLF2 | add edi 4
     End_If
 
-    mov B$edi '[', ecx edi | inc edi
+    Mov B$edi '[', ecx edi | inc edi
 
   ; Write the Data Label to the Tempo Buffer:
-    mov esi D$UnicodeDataPointer
+    Mov esi D$UnicodeDataPointer
     While B$esi > ' ' | movsb | End_While
-    mov D$edi ': U$', B$edi+4 ' '| add edi 5
+    Mov D$edi ': U$', B$edi+4 ' '| add edi 5
 
   ; Alignement count:
-    sub ecx edi | neg ecx | mov D$UnicodeValuesAlignment ecx
+    sub ecx edi | neg ecx | Mov D$UnicodeValuesAlignment ecx
 
-    mov esi D$Trash1, ecx 0, D$NumberOfUnicodeChars 0
+    Mov esi D$Trash1, ecx 0, D$NumberOfUnicodeChars 0
     .While W$esi <> 0
-        movzx eax W$esi| add esi 2 | call WriteEax | mov W$edi ', ' | add edi 2 | inc ecx
+        movzx eax W$esi| add esi 2 | Call WriteEax | Mov W$edi ', ' | add edi 2 | inc ecx
         inc D$NumberOfUnicodeChars
       ; New Line when wished:
         If ecx = 11
-            mov ecx 0
-            mov W$edi CRLF | add edi 2
-            mov ecx D$UnicodeValuesAlignment
-            While ecx > 0 | mov B$edi ' ' | dec ecx | inc edi | End_While
+            Mov ecx 0
+            Mov W$edi CRLF | add edi 2
+            Mov ecx D$UnicodeValuesAlignment
+            While ecx > 0 | Mov B$edi ' ' | dec ecx | inc edi | End_While
         End_If
     .End_While
 
@@ -722,44 +722,44 @@ PasteUnicodeDialogContent:
 
   ; Cases of empty Edition:
     If W$edi-2 = 'U$'
-        mov W$edi ' 0' | add edi 2
+        Mov W$edi ' 0' | add edi 2
     Else
-        mov D$edi ', 0]' | add edi 3
+        Mov D$edi ', 0]' | add edi 3
     End_If
 
-    mov W$edi CRLF | add edi 2
-    mov esi D$UnicodeDataPointer
-    mov B$edi ' ' | inc edi
+    Mov W$edi CRLF | add edi 2
+    Mov esi D$UnicodeDataPointer
+    Mov B$edi ' ' | inc edi
     While B$esi > ' ' | movsb | End_While
-    mov D$edi 'Ncha', D$edi+4 'rs: ' | add edi 8
-    mov D$edi 'D$  ' | add edi 3
-    mov eax D$NumberOfUnicodeChars | call WriteEax
+    Mov D$edi 'Ncha', D$edi+4 'rs: ' | add edi 8
+    Mov D$edi 'D$  ' | add edi 3
+    Mov eax D$NumberOfUnicodeChars | Call WriteEax
 
-    mov B$edi ']' | inc edi
+    Mov B$edi ']' | inc edi
 
     move D$BlockStartTextPtr D$Trash2, D$BlockEndTextPtr edi
-    mov B$BlockInside &TRUE
-    call ControlC
+    Mov B$BlockInside &TRUE
+    Call ControlC
 
-    mov B$BlockInside &FALSE
-    call SetCaret D$UnicodeDataInsertionPoint
-    call ControlV
+    Mov B$BlockInside &FALSE
+    Call SetCaret D$UnicodeDataInsertionPoint
+    Call ControlV
 
     VirtualFree D$Trash2, D$Trash1
 ret
 
 
 SetUnicodeDialogContent:
-    mov esi D$UnicodeDataPointer | call InternalRightClick
+    Mov esi D$UnicodeDataPointer | Call InternalRightClick
 
     .If B$BlockInside = &TRUE
-        mov esi D$BlockEndTextPtr
+        Mov esi D$BlockEndTextPtr
         While B$esi <> '0'
             inc esi | On B$esi = ']', ret
         End_While
         push esi
         ; Count the number of Words (at least...):
-          mov ecx 0
+          Mov ecx 0
           While B$esi <> ']'
             On B$esi = '0', inc ecx
             inc esi
@@ -771,10 +771,10 @@ SetUnicodeDialogContent:
 
       ; esi >>> first '0' of the first hexa data.
       ; Translate each Hexa Word to Binary:
-        mov edi D$Trash1
+        Mov edi D$Trash1
       ; strip the leading '0'
 L0:     lodsb
-        mov ebx 0
+        Mov ebx 0
 L1:     lodsb | cmp al ',' | je L8>
                 cmp al ']' | je L8>
                     sub al '0' | cmp al 9 | jbe L2>
@@ -782,7 +782,7 @@ L1:     lodsb | cmp al ',' | je L8>
                         cmp al 0F | ja L9>
 L2:     shl ebx 4 | or bl al | jmp L1<
 
-L8:     mov W$edi bx | add edi 2
+L8:     Mov W$edi bx | add edi 2
 
         If al <> ']'
             While B$esi < '0'
@@ -791,8 +791,8 @@ L8:     mov W$edi bx | add edi 2
             On B$esi = '0', jmp L0<
         End_If
 
-L9:     mov W$edi 0
-        call 'USER32.SendDlgItemMessageW' D$UnicodeEditorHandle, 10, &WM_SETTEXT, 0, D$Trash1
+L9:     Mov W$edi 0
+        Call 'USER32.SendDlgItemMessageW' D$UnicodeEditorHandle, 10, &WM_SETTEXT, 0, D$Trash1
 
         VirtualFree D$Trash1
     .End_If
@@ -804,10 +804,10 @@ ________________________________________________________________________________
 MenuTag: ; 'ExistingMenu'
     While B$esi = ' ' | inc esi | End_While
 
-    call TagDecimalToBin
+    Call TagDecimalToBin
 
     If eax = &TRUE
-        mov eax ecx | call GetTagedMenu
+        Mov eax ecx | Call GetTagedMenu
     End_If
 ret
 
@@ -815,13 +815,13 @@ ret
 [TagedEdition: ?]
 
 GetTagedMenu:
-    mov esi MenuList
+    Mov esi MenuList
   ; (ID / Ptr / Size)
     While D$esi <> 0
         If D$esi = eax
-            mov B$TagedEdition &TRUE
-            mov D$MenuListPtr esi
-            call ReEditExistingMenu | jmp L9>
+            Mov B$TagedEdition &TRUE
+            Mov D$MenuListPtr esi
+            Call ReEditExistingMenu | jmp L9>
         Else
             add esi (4*3)
         End_If
@@ -829,20 +829,20 @@ GetTagedMenu:
 
 L9: .If B$TagedEdition = 0-1
       ; Delete the Previous Menu Equates Block, and paste the New Menu Equates Block:
-        Lea esi D$DataForClipEquates+3 | call InternalRightClick
+        Lea esi D$DataForClipEquates+3 | Call InternalRightClick
 
         If D$BlockInside = &TRUE
-            mov esi D$BlockStartTextPtr
+            Mov esi D$BlockStartTextPtr
             While B$esi <> '[' | dec esi | End_While
-            mov D$BlockStartTextPtr esi
+            Mov D$BlockStartTextPtr esi
             inc esi
             While B$esi <> ']' | inc esi | End_While
-            mov D$BlockEndTextPtr esi
-            call ControlD | call ControlV
+            Mov D$BlockEndTextPtr esi
+            Call ControlD | Call ControlV
         End_If
     .End_If
 
-    mov B$TagedEdition &FALSE
+    Mov B$TagedEdition &FALSE
 ret
 
 

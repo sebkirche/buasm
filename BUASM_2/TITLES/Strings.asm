@@ -111,7 +111,7 @@ TITLE Strings
   SymbolDup:        'Duplicate symbol definition', 0
   OrphanColon:      'Orphan Colon sign encounted', 0
   LocalDefLabel:    'Local label not allowed in data definition', 0
-  NoLocalCall:      'You cannot call for a Local Label', 0
+  NoLocalCall:      'You cannot Call for a Local Label', 0
   NotAnOpcode:      'Unknown mnemonic', 0
   OverByte:         'Value out of byte range', 0
   OverWord:         'Value out of word range', 0
@@ -143,7 +143,7 @@ TITLE Strings
   NoDataLocalLabel: 'No Local Labels in Data: They are reserved for Code', 0
   RealNotation:     'Real Expression: only +-*/ Operators, no nested Parenthesis', 0
   ExpressionSign:   'Bad operator in Expression', 0
-  DataLoopNumber:   'For Huge Data Declaration, use Virtual (?) Data or call for VirtualAlloc', 0
+  DataLoopNumber:   'For Huge Data Declaration, use Virtual (?) Data or Call for VirtualAlloc', 0
   SmallDataLoop:    'What do you mean with "repeat less than 2 times???..."', 0
   BadLoop:          'Loop with no previous Data Declaration', 0
   VDataLoopNumber:  'For huge Virtual Tables: VirtualAlloc or [Configuration]/[Bad Habits]', 0
@@ -205,8 +205,8 @@ TITLE Strings
   GPregister:       'A register must be general purpose', 0
   VERRword:         'VERR/VERW / LTR parameter must be 16 bits register or memory', 0
   WishEreg:         'Memory adressing expects full 32 bit general purpose registers', 0
-  BadApi:           "Api calls form is: call 'Module.Function'", 0
-  NoApi:            'No Api call found in source', 0
+  BadApi:           "Api calls form is: Call 'Module.Function'", 0
+  NoApi:            'No Api Call found in source', 0
   DllNotFound:      'Internal error: user called DLL not found at compile time', 0
   ApiNotFound:      'Internal error: user called API not found at compile time', 0
   NoLocal:          'Local Label not allowed here', 0
@@ -515,72 +515,72 @@ ________________________________________________________________________________
 
 SetNationalLanguage:
     .If eax = 10
-        mov D$StringsLanguage '.en'
+        Mov D$StringsLanguage '.en'
     .Else_If eax = 11
-        mov D$StringsLanguage '.fr'
+        Mov D$StringsLanguage '.fr'
     .Else_If eax = 12
-        mov D$StringsLanguage '.br'
+        Mov D$StringsLanguage '.br'
     .Else_If eax = 13
-        mov D$StringsLanguage '.sp'
+        Mov D$StringsLanguage '.sp'
     .Else_If eax = 14
-        mov D$StringsLanguage '.zh'
+        Mov D$StringsLanguage '.zh'
     .Else_If eax = 15
-        mov D$StringsLanguage '.it'
+        Mov D$StringsLanguage '.it'
     .Else_If eax = 16
-        mov D$StringsLanguage '.de'
+        Mov D$StringsLanguage '.de'
     .Else_If eax = 17
-        mov D$StringsLanguage '.no'
+        Mov D$StringsLanguage '.no'
     .Else_If eax = 18
-        mov D$StringsLanguage '.ca'
+        Mov D$StringsLanguage '.ca'
     .Else_If eax = 201
-        call GetNationalFont
+        Call GetNationalFont
     .End_If
 
-    call OpenStringsFile
+    Call OpenStringsFile
 ret
 
 
 OpenStringsFile:
-    call GetRosAsmFilesPath
-    mov esi RosAsmFilesPath, edi StringNamePath
+    Call GetRosAsmFilesPath
+    Mov esi RosAsmFilesPath, edi StringNamePath
     While B$esi <> 0 | movsb | End_While
 
-    mov D$edi 'Lang', B$edi+4 '\' | add edi 5
-    mov esi RosAsmStringsFiles
+    Mov D$edi 'Lang', B$edi+4 '\' | add edi 5
+    Mov esi RosAsmStringsFiles
     While B$esi <> 0 | movsb | End_While | move D$edi D$StringsLanguage
 
-    call 'KERNEL32.FindFirstFileA' StringNamePath, FindFile
+    Call 'KERNEL32.FindFirstFileA' StringNamePath, FindFile
 
     ...If eax <> &INVALID_HANDLE_VALUE
 
-        call 'KERNEL32.FindClose' eax
+        Call 'KERNEL32.FindClose' eax
 
-        call 'KERNEL32.CreateFileA' StringNamePath, &GENERIC_READ,
+        Call 'KERNEL32.CreateFileA' StringNamePath, &GENERIC_READ,
                                     &FILE_SHARE_READ, 0, &OPEN_EXISTING,
                                     &FILE_ATTRIBUTE_NORMAL, 0
-        mov D$RosAsmStringsFileHandle eax
+        Mov D$RosAsmStringsFileHandle eax
 
-        call 'KERNEL32.GetFileSize' eax, 0 | mov D$RosAsmStringsFilelenght eax
+        Call 'KERNEL32.GetFileSize' eax, 0 | Mov D$RosAsmStringsFilelenght eax
         add eax 10
 
         VirtualAlloc RosAsmStringsMemory eax | add D$RosAsmStringsMemory 10
 
-        call 'KERNEL32.ReadFile' D$RosAsmStringsFileHandle, D$RosAsmStringsMemory,
+        Call 'KERNEL32.ReadFile' D$RosAsmStringsFileHandle, D$RosAsmStringsMemory,
                                  D$RosAsmStringsFilelenght, NumberOfReadBytes, 0
 
-        call 'KERNEL32.CloseHandle' D$RosAsmStringsFileHandle
+        Call 'KERNEL32.CloseHandle' D$RosAsmStringsFileHandle
 
-        mov esi D$RosAsmStringsMemory
-        mov edx esi | add edx D$RosAsmStringsFilelenght
+        Mov esi D$RosAsmStringsMemory
+        Mov edx esi | add edx D$RosAsmStringsFilelenght
 
         If D$StringsLanguage = '.zh'
-            mov B$UnicodeStrings &TRUE | call ParseNationalUstrings
+            Mov B$UnicodeStrings &TRUE | Call ParseNationalUstrings
         Else
-            mov B$UnicodeStrings &FALSE | call ParseNationalStrings
+            Mov B$UnicodeStrings &FALSE | Call ParseNationalStrings
         End_If
 
     ...Else
-        mov D$StringsLanguage '.en'
+        Mov D$StringsLanguage '.en'
 
     ...End_If
 ret
@@ -597,10 +597,10 @@ ParseNationalUstrings:
                         cmp W$esi-2 '$' | jne L9>>
 
           ; Write the Strings Zero End Marks upon the '$':
-            mov W$esi-12 0
+            Mov W$esi-12 0
 
           ; Compute the ID Number
-L0:         mov ecx 0
+L0:         Mov ecx 0
 
 L0:         lodsw
             cmp ax ' ' | je L7>
@@ -611,14 +611,14 @@ L0:         lodsw
                 lea ecx D$eax+ecx*2
             jmp L0<
 
-L5:         call 'USER32.MessageBoxA', 0, {'Bad National Strings File. English assumed', 0},
+L5:         Call 'USER32.MessageBoxA', 0, {'Bad National Strings File. English assumed', 0},
                                           {'National Strings', 0}, 0
-            mov D$StringsLanguage '.en'
+            Mov D$StringsLanguage '.en'
             ret
 
           ; esi point to the beginning of a String, and ecx is the ID Number.
           ; Write it into the 'StringsTable'. Allow missing Ordinal IDs:
-L7:         mov ebx D$StringsTablePointer
+L7:         Mov ebx D$StringsTablePointer
 
             While D$ebx > ecx
                 sub ebx 8 | On ebx < StringsTable, jmp L5<
@@ -626,14 +626,14 @@ L7:         mov ebx D$StringsTablePointer
             While D$ebx < ecx
                 add ebx 8 | On ebx >= StringsTableEnd, jmp L5<
             End_While
-            mov D$ebx+4 esi | mov D$StringsTablePointer ebx
+            Mov D$ebx+4 esi | Mov D$StringsTablePointer ebx
         ..End_If
 
 L9:     add esi 2
     .End_While
 
   ; Write the Strings Zero End Marks for the last Strings:
-    mov W$esi 0
+    Mov W$esi 0
 ret
 
 
@@ -645,10 +645,10 @@ ParseNationalStrings:
             cmp D$esi-4 '$$$$' | jne L9>>
 
           ; Write the Strings Zero End Marks:
-            mov B$esi-6 0
+            Mov B$esi-6 0
 
           ; Compute the ID Number
-L0:         mov ecx 0
+L0:         Mov ecx 0
 
 L0:         lodsb
             cmp al ' ' | je L7>
@@ -659,14 +659,14 @@ L0:         lodsb
                 lea ecx D$eax+ecx*2
             jmp L0<
 
-L5:         call 'USER32.MessageBoxA', 0, {'Bad National Strings File. English assumed', 0},
+L5:         Call 'USER32.MessageBoxA', 0, {'Bad National Strings File. English assumed', 0},
                                           {'National Strings', 0}, 0
-            mov D$StringsLanguage '.en'
+            Mov D$StringsLanguage '.en'
             ret
 
           ; esi point to the beginning of a String, and ecx is the ID Number.
           ; Write it into the 'StringsTable'. Allow missing Ordinal IDs:
-L7:         mov ebx D$StringsTablePointer
+L7:         Mov ebx D$StringsTablePointer
 
             While D$ebx > ecx
                 sub ebx 8 | On ebx < StringsTable, jmp L5<
@@ -674,7 +674,7 @@ L7:         mov ebx D$StringsTablePointer
             While D$ebx < ecx
                 add ebx 8 | On ebx >= StringsTableEnd, jmp L5<
             End_While
-            mov D$ebx+4 esi | mov D$StringsTablePointer ebx
+            Mov D$ebx+4 esi | Mov D$StringsTablePointer ebx
         ..End_If
 
 L9:     inc esi
@@ -682,7 +682,7 @@ L9:     inc esi
 
   ; Write the Strings Zero End Marks for the last Strings:
 
-    mov B$esi 0
+    Mov B$esi 0
 ret
 
 ____________________________________________________________________________________________
@@ -694,35 +694,35 @@ ________________________________________________________________________________
 ;;
 [CustomError
  If D$StringsLanguage = '.zh'
-    call CopyUnicodeToTrash1 #1
+    Call CopyUnicodeToTrash1 #1
     BuildTheUnicodeMessage #2>L
  Else
-    call CopyToTrash1 #1
+    Call CopyToTrash1 #1
     BuildTheAsciiMessage #2>L
  End_If]
 
-[BuildTheUnicodeMessage | call CustomUnicodeStringProc #1, #2, #3 | #+3
-    mov esi D$Trash1Ptr, edi TrashString
+[BuildTheUnicodeMessage | Call CustomUnicodeStringProc #1, #2, #3 | #+3
+    Mov esi D$Trash1Ptr, edi TrashString
     While W$esi > 0 | movsw | End_While | movsb]
 
-[BuildTheAsciiMessage | call CustomStringProc #1, #2, #3 | #+3
-    mov esi D$Trash1Ptr, edi TrashString
+[BuildTheAsciiMessage | Call CustomStringProc #1, #2, #3 | #+3
+    Mov esi D$Trash1Ptr, edi TrashString
     While B$esi > 0 | movsb | End_While | movsw]
 
-[CustomString | call CopyToTrash1 #1 | CustomString2 #2>L]
+[CustomString | Call CopyToTrash1 #1 | CustomString2 #2>L]
 
-[CustomString2 | call CustomStringProc #1, #2, #3 | #+3
- mov esi D$Trash1Ptr, edi TrashString
+[CustomString2 | Call CustomStringProc #1, #2, #3 | #+3
+ Mov esi D$Trash1Ptr, edi TrashString
  While B$esi > 0 | movsb | End_While | movsb]
 
 Proc CopyToTrash1:
     Argument @Source
     Uses esi
 
-        mov esi D@Source, edi Trash1
+        Mov esi D@Source, edi Trash1
         While B$esi <> 0 | movsb | End_While | movsb
 
-        mov D$Trash1Ptr Trash1, D$Trash2Ptr Trash2
+        Mov D$Trash1Ptr Trash1, D$Trash2Ptr Trash2
 EndP
 
 
@@ -730,10 +730,10 @@ Proc CopyUnicodeToTrash1:
     Argument @Source
     Uses esi
 
-        mov esi D@Source, edi Trash1
+        Mov esi D@Source, edi Trash1
         While W$esi <> 0 | movsw | End_While | movsw
 
-        mov D$Trash1Ptr Trash1, D$Trash2Ptr Trash2
+        Mov D$Trash1Ptr Trash1, D$Trash2Ptr Trash2
 EndP
 
 
@@ -741,25 +741,25 @@ Proc CustomStringProc:
     Arguments @Xn, @Type, @Arg
     Uses esi, edi, ebx
 
-        mov esi D$Trash1Ptr, edi D$Trash2Ptr
+        Mov esi D$Trash1Ptr, edi D$Trash2Ptr
 
-        mov eax D@Xn
+        Mov eax D@Xn
         While W$esi <> ax
             movsb | On B$esi = 0, ExitP
         End_While
 
         If D@Type = 'Int'
-            mov eax D@Arg | call WriteEax
+            Mov eax D@Arg | Call WriteEax
 
         Else_If D@Type = 'Str'
             push esi
-                mov esi D@Arg
+                Mov esi D@Arg
                 While B$esi <> 0 | movsb | End_While
             pop esi
 
         End_If
 
-        add esi 2 | While B$esi <> 0 | movsb | End_While | mov B$edi 0
+        add esi 2 | While B$esi <> 0 | movsb | End_While | Mov B$edi 0
 
        Exchange D$Trash1Ptr D$Trash2Ptr
 EndP
@@ -769,14 +769,14 @@ Proc CustomUnicodeStringProc:
     Arguments @Xn, @Type, @Arg
     Uses esi, edi, ebx
 
-        mov esi D$Trash1Ptr, edi D$Trash2Ptr
+        Mov esi D$Trash1Ptr, edi D$Trash2Ptr
 ;;
    '@Xn' stands is the '#1', '#2', '#3' thingies. We make it Unicode, that is,
    for example:
    
    '#1' (031, 023) >>> 0, 031, 0, 023 >>> '#', 0, '1', 0
 ;;
-        mov eax D@Xn | movzx ebx ah
+        Mov eax D@Xn | movzx ebx ah
         shl ebx 16 | or eax ebx  | and eax 0FF00FF
 
         While D$esi <> eax
@@ -784,39 +784,39 @@ Proc CustomUnicodeStringProc:
         End_While
 
         If D@Type = 'Int'
-            mov eax D@Arg | call WriteEaxUnicode
+            Mov eax D@Arg | Call WriteEaxUnicode
 
         Else_If D@Type = 'Str'
             push esi
-                mov esi D@Arg
-                While B$esi <> 0 | movsb | mov B$edi 0 | inc edi | End_While
+                Mov esi D@Arg
+                While B$esi <> 0 | movsb | Mov B$edi 0 | inc edi | End_While
             pop esi
 
         End_If
 
-        add esi 4 | While W$esi <> 0 | movsw | End_While | mov W$edi 0
+        add esi 4 | While W$esi <> 0 | movsw | End_While | Mov W$edi 0
 
         Exchange D$Trash1Ptr D$Trash2Ptr
 EndP
 
 
 WriteEaxUnicode:
-    mov ebx eax
+    Mov ebx eax
 
 L3: If ebx = 0
-        mov W$edi '0' | add edi 2 | ret
+        Mov W$edi '0' | add edi 2 | ret
     End_If
 
     push 0-1
 
-L0: mov eax ebx | shr ebx 4 | and eax 0F
+L0: Mov eax ebx | shr ebx 4 | and eax 0F
 
-    mov al B$HexaTable+eax
+    Mov al B$HexaTable+eax
     push eax
     cmp ebx 0 | ja L0<
-    mov W$edi '0' | add edi 2
+    Mov W$edi '0' | add edi 2
 L0: pop eax | cmp eax 0-1 | je L9>
-    mov B$edi al | inc edi | mov B$edi 0 | inc edi | jmp L0<
+    Mov B$edi al | inc edi | Mov B$edi 0 | inc edi | jmp L0<
 L9: ret
 
 

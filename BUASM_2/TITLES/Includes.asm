@@ -76,7 +76,7 @@ ________________________________________________________________________________
 Proc SetAllIncludeFilesExtension:
     Argument @Extension
 
-    mov esi EquatesName, edi IncludeFileName
+    Mov esi EquatesName, edi IncludeFileName
 
     While B$esi <> 0 | movsb | End_While
     dec edi
@@ -87,7 +87,7 @@ L0: dec edi | cmp B$edi '\' | je L1>
               cmp edi IncludeFileName | ja L0<
                 jmp L2>
 L1: inc edi
-L2: mov B$edi '*' | inc edi | mov eax D@Extension | stosd | mov B$edi 0
+L2: Mov B$edi '*' | inc edi | Mov eax D@Extension | stosd | Mov B$edi 0
 EndP
 
 ____________________________________________________________________________________________
@@ -98,64 +98,64 @@ ________________________________________________________________________________
 [StructuresItem: 'Structures', 0]
 
 PrepareStructuresFiles:
-    call SetAllIncludeFilesExtension '.str'
-    call 'KERNEL32.FindFirstFileA' IncludeFileName FIND_EQU | call SetFullName
+    Call SetAllIncludeFilesExtension '.str'
+    Call 'KERNEL32.FindFirstFileA' IncludeFileName FIND_EQU | Call SetFullName
 
     ..If eax = &INVALID_HANDLE_VALUE
-        mov B$StructuresFileOK &FALSE
+        Mov B$StructuresFileOK &FALSE
         ret
       ; Better let it run without Structures and Api Files if user wants to...
       ; May be temporary...
 
-        call Help, B_U_AsmName, IncludeFilesHelp, ContextHlpMessage
+        Call Help, B_U_AsmName, IncludeFilesHelp, ContextHlpMessage
 
-        mov B$IncludesOK &FALSE
+        Mov B$IncludesOK &FALSE
 
     ..Else  ; 'AddUserMenu'
-        mov D$FindIncHandle eax
+        Mov D$FindIncHandle eax
       ; Copy first the first File Path and Name in case there is only one:
-        mov B$StructuresFileOK &TRUE
-        mov esi FullName, edi MenuItemString, ecx &MAX_PATH | rep movsb
+        Mov B$StructuresFileOK &TRUE
+        Mov esi FullName, edi MenuItemString, ecx &MAX_PATH | rep movsb
 
       ; Is there more than one File.str?
-        call 'KERNEL32.FindNextFileA' D$FindIncHandle FIND_EQU
+        Call 'KERNEL32.FindNextFileA' D$FindIncHandle FIND_EQU
 
 ;mov eax &FALSE ; <<<<<<<<<<<<<<<< Temporary... (ToDo List...).
 
         .If eax = &TRUE
-            call 'KERNEL32.FindClose' D$FindIncHandle
+            Call 'KERNEL32.FindClose' D$FindIncHandle
 
-            mov D$StructureMenuID 4000, B$SeveralStructuresFiles &TRUE
+            Mov D$StructureMenuID 4000, B$SeveralStructuresFiles &TRUE
 
-            call 'USER32.CreatePopupMenu' | mov D$StructPopUpHandle eax
+            Call 'USER32.CreatePopupMenu' | Mov D$StructPopUpHandle eax
 
-            call 'KERNEL32.FindFirstFileA' IncludeFileName FIND_EQU
-            mov D$FindIncHandle eax
+            Call 'KERNEL32.FindFirstFileA' IncludeFileName FIND_EQU
+            Mov D$FindIncHandle eax
 
             Do
-                call SetStructuresMenuItem
-                call 'KERNEL32.FindNextFileA' D$FindIncHandle FIND_EQU
+                Call SetStructuresMenuItem
+                Call 'KERNEL32.FindNextFileA' D$FindIncHandle FIND_EQU
             Loop_Until eax = &FALSE
 
 
 
-            call 'USER32.InsertMenuA' D$MenuHandle, M00_Structures,
+            Call 'USER32.InsertMenuA' D$MenuHandle, M00_Structures,
                                   &MF_BYCOMMAND__&MF_POPUP__&MF_STRING,
                                   D$StructPopUpHandle, StructuresItem
 
-            call 'USER32.DeleteMenu' D$MenuHandle, M00_Structures, &MF_BYCOMMAND
+            Call 'USER32.DeleteMenu' D$MenuHandle, M00_Structures, &MF_BYCOMMAND
 
 
-          ;  call 'USER32.DeleteMenu' D$MenuHandle 8 &MF_BYPOSITION
-          ;  call 'USER32.InsertMenuA' D$MenuHandle 8 &MF_BYPOSITION__&MF_STRING__&MF_POPUP,
+          ;  Call 'USER32.DeleteMenu' D$MenuHandle 8 &MF_BYPOSITION
+          ;  Call 'USER32.InsertMenuA' D$MenuHandle 8 &MF_BYPOSITION__&MF_STRING__&MF_POPUP,
           ;                    D$StructPopUpHandle  StrucPopMenu
         .Else
           ; Else, there is only one .str File.
-            mov B$SeveralStructuresFiles &FALSE
+            Mov B$SeveralStructuresFiles &FALSE
 
         .End_If
 
-        call 'KERNEL32.FindClose' D$FindIncHandle
+        Call 'KERNEL32.FindClose' D$FindIncHandle
 
     ..End_If
 ret
@@ -163,19 +163,19 @@ ret
 [StructureMenuID: ?]
 
 ; Builds the added PopUp Menu under [Struct] main Option:
-; (We have a: > mov D$StructureMenuID 4000 in caller ('OpenStructuresFiles').
+; (We have a: > Mov D$StructureMenuID 4000 in caller ('OpenStructuresFiles').
 
 SetStructuresMenuItem:
-    mov esi FIND_EQU_cFileName
+    Mov esi FIND_EQU_cFileName
     While B$esi <> 0 | inc esi | End_While
     dec esi
     While B$esi <> '.' | dec esi | End_While
-    mov B$esi 0
+    Mov B$esi 0
 L0: dec esi | cmp B$esi '\' | je L1>
               cmp B$esi ':' | je L1>
               cmp esi FIND_EQU_cFileName | ja L0<
 
-L1: call 'USER32.AppendMenuA' D$StructPopUpHandle &MF_STRING D$StructureMenuID esi
+L1: Call 'USER32.AppendMenuA' D$StructPopUpHandle &MF_STRING D$StructureMenuID esi
     inc D$StructureMenuID
 ret
 
@@ -208,14 +208,14 @@ ________________________________________________________________________________
 ;;
 
 AppendToCurrentDirectory:
-    call 'KERNEL32.GetCurrentDirectoryA' &MAX_PATH, EquatesCurrentDirectory
+    Call 'KERNEL32.GetCurrentDirectoryA' &MAX_PATH, EquatesCurrentDirectory
     If eax <> 0
-        mov edi EquatesCurrentDirectory | add edi eax
-        mov al '\'
+        Mov edi EquatesCurrentDirectory | add edi eax
+        Mov al '\'
         On B$edi-1 <> al, stosb
-        mov esi EquatesName | While B$esi <> 0 | movsb | End_While
+        Mov esi EquatesName | While B$esi <> 0 | movsb | End_While
 
-        mov esi EquatesCurrentDirectory, edi EquatesName
+        Mov esi EquatesCurrentDirectory, edi EquatesName
         While B$esi <> 0 | movsb | End_While
     End_If
 ret
@@ -246,22 +246,22 @@ ________________________________________________________________________________
 
 SetFullName:
     pushad
-        mov esi IncludeFileName, edi FullName
+        Mov esi IncludeFileName, edi FullName
         While W$esi <> '*.' | movsb | End_While
-        mov esi FIND_EQU_cFileName
+        Mov esi FIND_EQU_cFileName
         While B$esi <> 0 | movsb | End_While | movsb
     popad
 ret
 ____________________________________________________________________________________________
 
 OpenEquFiles:
-    call IsEquatesEquThere
+    Call IsEquatesEquThere
 
     If B$IncludesOK = &TRUE
-        call GetEquFilesMemory
-        call ReadEquatesEqu
-        call ReadOtherEquFiles
-        call CleanEquateIncMemory
+        Call GetEquFilesMemory
+        Call ReadEquatesEqu
+        Call ReadOtherEquFiles
+        Call CleanEquateIncMemory
     End_If
 ret
 
@@ -269,7 +269,7 @@ ret
 [EquatesEquFileName: 'Equates.equ', 0]
 
 SetEquatesEquFileName:
-    mov esi EquatesName, edi IncludeFileName
+    Mov esi EquatesName, edi IncludeFileName
 
     While B$esi <> 0 | movsb | End_While
     dec edi
@@ -280,68 +280,68 @@ L0: dec edi | cmp B$edi '\' | je L1>
               cmp edi IncludeFileName | ja L0<
                 jmp L2>
 L1: inc edi
-L2: mov esi EquatesEquFileName
+L2: Mov esi EquatesEquFileName
     While B$esi <> 0 | movsb | End_While | movsb
 ret
 
 
 IsEquatesEquThere:
-    call SetEquatesEquFileName
+    Call SetEquatesEquFileName
 
-    call 'KERNEL32.FindFirstFileA' IncludeFileName FIND_EQU
+    Call 'KERNEL32.FindFirstFileA' IncludeFileName FIND_EQU
 
     .If eax = &INVALID_HANDLE_VALUE
-        mov B$IncludesOK &FALSE
-        call Help B_U_AsmName, IncludeFilesHelp, RosAsmHlpMessage
+        Mov B$IncludesOK &FALSE
+        Call Help B_U_AsmName, IncludeFilesHelp, RosAsmHlpMessage
 
     .Else
-        mov B$IncludesOK &TRUE
+        Mov B$IncludesOK &TRUE
     .End_If
 ret
 
 
 GetEquFilesMemory:
-    call SetAllIncludeFilesExtension '.equ'
+    Call SetAllIncludeFilesExtension '.equ'
 
-    call 'KERNEL32.FindFirstFileA' IncludeFileName FIND_EQU | call SetFullName
+    Call 'KERNEL32.FindFirstFileA' IncludeFileName FIND_EQU | Call SetFullName
 
-    mov D$FindIncHandle eax, D$EquatesIncFileSize 0
+    Mov D$FindIncHandle eax, D$EquatesIncFileSize 0
 
-L0:     mov eax D$FIND_EQU_nFileSizeLow | add D$EquatesIncFileSize eax
+L0:     Mov eax D$FIND_EQU_nFileSizeLow | add D$EquatesIncFileSize eax
 
-        call 'KERNEL32.FindNextFileA' D$FindIncHandle FIND_EQU
-        call SetFullName | On eax = &TRUE, jmp L0<
+        Call 'KERNEL32.FindNextFileA' D$FindIncHandle FIND_EQU
+        Call SetFullName | On eax = &TRUE, jmp L0<
 
     VirtualAlloc EquateIncMemory D$EquatesIncFileSize
 
-L9: call 'KERNEL32.FindClose' D$FindIncHandle
+L9: Call 'KERNEL32.FindClose' D$FindIncHandle
 ret
 
 
 ReadEquatesEqu:
-    call SetEquatesEquFileName
-    call 'KERNEL32.CreateFileA' IncludeFileName &GENERIC_READ, &FILE_SHARE_READ, 0,
+    Call SetEquatesEquFileName
+    Call 'KERNEL32.CreateFileA' IncludeFileName &GENERIC_READ, &FILE_SHARE_READ, 0,
                                 &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
 
-    mov D$NumberOfReadBytes 0
+    Mov D$NumberOfReadBytes 0
     push eax
         push eax
-            call 'KERNEL32.GetFileSize' eax, 0 | mov ecx eax
+            Call 'KERNEL32.GetFileSize' eax, 0 | Mov ecx eax
             If ecx = 0
                 pop eax | jmp L9>
             End_If
-            add eax D$EquateIncMemory | mov D$EquateIncMemoryPointer eax
+            add eax D$EquateIncMemory | Mov D$EquateIncMemoryPointer eax
         pop eax
-        call 'KERNEL32.ReadFile' eax, D$EquateIncMemory, ecx, NumberOfReadBytes, 0
+        Call 'KERNEL32.ReadFile' eax, D$EquateIncMemory, ecx, NumberOfReadBytes, 0
     pop eax
 
-L9: call 'KERNEL32.CloseHandle' eax
+L9: Call 'KERNEL32.CloseHandle' eax
 ret
 
 
 IsItEquatesEqu:
-    mov esi FIND_EQU_cFileName, edi EquatesEquFileName
-L0: mov al B$esi, bl B$edi | inc edi | inc esi
+    Mov esi FIND_EQU_cFileName, edi EquatesEquFileName
+L0: Mov al B$esi, bl B$edi | inc edi | inc esi
     If al = 0
         cmp bl 0
     Else
@@ -351,31 +351,31 @@ ret
 
 
 ReadOtherEquFiles:
-    call SetAllIncludeFilesExtension '.equ'
+    Call SetAllIncludeFilesExtension '.equ'
 
-    call 'KERNEL32.FindFirstFileA' IncludeFileName FIND_EQU | call SetFullName
+    Call 'KERNEL32.FindFirstFileA' IncludeFileName FIND_EQU | Call SetFullName
 
         push 0-1
 
-        mov D$FindIncHandle eax
+        Mov D$FindIncHandle eax
 
-L0:     call IsItEquatesEqu | je L1>
-        mov eax D$FIND_EQU_nFileSizeLow
+L0:     Call IsItEquatesEqu | je L1>
+        Mov eax D$FIND_EQU_nFileSizeLow
         push eax
-            call 'KERNEL32.CreateFileA' FullName &GENERIC_READ, &FILE_SHARE_READ, 0,
+            Call 'KERNEL32.CreateFileA' FullName &GENERIC_READ, &FILE_SHARE_READ, 0,
                                         &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, 0
         push eax
 
-L1:     call 'KERNEL32.FindNextFileA' D$FindIncHandle FIND_EQU
-        call SetFullName | On eax = &TRUE, jmp L0<
+L1:     Call 'KERNEL32.FindNextFileA' D$FindIncHandle FIND_EQU
+        Call SetFullName | On eax = &TRUE, jmp L0<
 
-        mov D$NumberOfReadBytes 0
-        mov edi D$EquateIncMemoryPointer
+        Mov D$NumberOfReadBytes 0
+        Mov edi D$EquateIncMemoryPointer
 L0:     pop eax                     ; Handle
         On eax = 0-1, jmp L9>
         pop ecx                     ; Size
         push edi, ecx, eax
-            call 'KERNEL32.ReadFile' eax, edi, ecx, NumberOfReadBytes, 0
+            Call 'KERNEL32.ReadFile' eax, edi, ecx, NumberOfReadBytes, 0
         pop eax, ecx, edi
 
         add edi ecx
@@ -383,21 +383,21 @@ L0:     pop eax                     ; Handle
         On W$edi-2 <> 0A0D, jmp BadEquatesFileEnd
         On W$edi-4 = 0A0D, jmp BadEquatesFileEnd
 
-        push edi | call 'KERNEL32.CloseHandle' eax | pop edi | jmp L0<
+        push edi | Call 'KERNEL32.CloseHandle' eax | pop edi | jmp L0<
 
-L9:     call 'KERNEL32.FindClose' D$FindIncHandle
+L9:     Call 'KERNEL32.FindClose' D$FindIncHandle
 ret
 
 
 CleanEquateIncMemory:
-    mov esi D$EquateIncMemory, edi esi, edx esi | add edx D$EquatesIncFileSize
+    Mov esi D$EquateIncMemory, edi esi, edx esi | add edx D$EquatesIncFileSize
 
     While esi < edx
-        On B$esi = Tab, mov B$esi ' '
+        On B$esi = Tab, Mov B$esi ' '
         inc esi
     End_While
 
-    mov esi edi
+    Mov esi edi
 
     .While esi < edx
         lodsb | stosb
@@ -417,15 +417,15 @@ ________________________________________________________________________________
 ; One Symbol UpperCase / One space / One Hexa in RosAsm syntax / One CR/LF.
 
 CountEquates:
-    mov edx D$EquateIncMemory | add edx D$EquatesIncFileSize
+    Mov edx D$EquateIncMemory | add edx D$EquatesIncFileSize
 
     On W$edx-2 <> 0A0D, jmp BadEquatesFileEnd
     On W$edx-4 = 0A0D, jmp BadEquatesFileEnd
 
-    mov esi D$EquateIncMemory, ecx 0
+    Mov esi D$EquateIncMemory, ecx 0
 
     .While esi < edx
-        mov ebx esi
+        Mov ebx esi
 
         While B$esi > ' ' | inc esi | End_While         ; Read Symbol.
 
@@ -440,7 +440,7 @@ CountEquates:
         add esi 2 | inc ecx
     .End_While
 
-    mov D$NumberOfEquates ecx
+    Mov D$NumberOfEquates ecx
 ret
 
 ____________________________________________________________________________________________
@@ -450,19 +450,19 @@ ________________________________________________________________________________
 [BadEquatesFileEndMessage: 'The Equates File must be ended by *one* CR/FL', 0]
 
 BadEquatesFile:
-    mov esi ebx, edi BadEquatesFileMessage
+    Mov esi ebx, edi BadEquatesFileMessage
     While B$esi > ' ' | movsb | End_While
-    mov D$edi '...', B$edi+4 0
+    Mov D$edi '...', B$edi+4 0
 
 
-    call 'USER32.MessageBoxA' 0, BadEquatesFileMessage, BadEquatesFileTitle, 0
-    call 'KERNEL32.ExitProcess', 0
+    Call 'USER32.MessageBoxA' 0, BadEquatesFileMessage, BadEquatesFileTitle, 0
+    Call 'KERNEL32.ExitProcess', 0
 
 
 BadEquatesFileEnd:
 
-    call 'USER32.MessageBoxA' 0, BadEquatesFileEndMessage, BadEquatesFileTitle, 0
-    call 'KERNEL32.ExitProcess', 0
+    Call 'USER32.MessageBoxA' 0, BadEquatesFileEndMessage, BadEquatesFileTitle, 0
+    Call 'KERNEL32.ExitProcess', 0
 
 
 [EquatesNumber: ?     WinEquTableLenght: ?

@@ -47,17 +47,17 @@ SetPartialEditionFromPos:
 
 SetPartialEdition:
 ; Called when opening a new File, or by 'TitleWindowProc' (on user Tab Selection).
-    call BuildTitleTable
+    Call BuildTitleTable
 
     If D$TiTleTable <> 0
-        call GetActualPartFromPos | call SetActualPartFromPos
+        Call GetActualPartFromPos | Call SetActualPartFromPos
     End_If
 
-    mov D$PreviousUpperLine 0-1 ; (To force remaping the Source Editor Colors)
+    Mov D$PreviousUpperLine 0-1 ; (To force remaping the Source Editor Colors)
 
-    call AskForRedraw
+    Call AskForRedraw
 
-    mov B$RealSourceRestored &FALSE
+    Mov B$RealSourceRestored &FALSE
 ret
 
 
@@ -65,15 +65,15 @@ SetPartialEditionFromPosNoRedraw:
     On D$PreviousPartialSourceLen <> 0, ret
 
 ; Called when opening a new File, or by 'TitleWindowProc' (on user Tab Selection).
-    call BuildTitleTable
+    Call BuildTitleTable
 
     If D$TiTleTable <> 0
-        call GetActualPartFromPos | call SetActualPartFromPos
+        Call GetActualPartFromPos | Call SetActualPartFromPos
     End_If
 
-    mov D$PreviousUpperLine 0-1
+    Mov D$PreviousUpperLine 0-1
 
-    mov B$RealSourceRestored &FALSE
+    Mov B$RealSourceRestored &FALSE
 ret
 
 
@@ -82,17 +82,17 @@ ret
 UndoTitleMove:
     push D$CaretRow D$CaretLine D$CurrentWritingPos D$UpperLine
     push ebx
-        call RestoreRealSource | call BuildTitleTable
+        Call RestoreRealSource | Call BuildTitleTable
     pop ebx
-    mov eax D$TitleTable+ebx*4, D$CurrentWritingPos eax
-    call GetActualPartFromPos | call SetActualPartFromPos
+    Mov eax D$TitleTable+ebx*4, D$CurrentWritingPos eax
+    Call GetActualPartFromPos | Call SetActualPartFromPos
 
-    mov ebx D$UndoPtr | sub bx 32 | mov esi ebx
+    Mov ebx D$UndoPtr | sub bx 32 | Mov esi ebx
     If D$esi+(7*4) <> 0
-        lodsd | mov D$CaretRow eax
-        lodsd | mov D$CaretLine eax
-        lodsd | add eax D$CodeSource | mov D$CurrentWritingPos eax
-        lodsd | add eax D$CodeSource | mov D$UpperLine eax
+        lodsd | Mov D$CaretRow eax
+        lodsd | Mov D$CaretLine eax
+        lodsd | add eax D$CodeSource | Mov D$CurrentWritingPos eax
+        lodsd | add eax D$CodeSource | Mov D$UpperLine eax
         pop eax, eax, eax, eax
     Else
         pop D$UpperLine D$CurrentWritingPos D$CaretLine D$CaretRow
@@ -106,55 +106,55 @@ ret
 RestoreRealSource:                      ; Called only by 'UndoTitleMove'
     On D$PreviousPartialSourceLen = 0, ret
 
-   ; call DeleteUndoFiles
-   ; call KillUndo
-   ; call InitUndo
+   ; Call DeleteUndoFiles
+   ; Call KillUndo
+   ; Call InitUndo
 
-    mov eax D$SourceEnd
+    Mov eax D$SourceEnd
     If W$eax-2 <> CRLF
         add D$SourceEnd 2 | add D$SourceLen 2
     End_If
 
-    mov eax D$SourceLen | sub eax D$PreviousPartialSourceLen
-    mov D$AddedSize eax
+    Mov eax D$SourceLen | sub eax D$PreviousPartialSourceLen
+    Mov D$AddedSize eax
 
   ; Move down (as many 'AddedSize') from Top of Actual Source Part to
   ; End of Actual Edition, to make room:
     .If eax = 0
-        mov edi D$ActualTitle, esi D$CodeSource, ecx D$SourceLen
+        Mov edi D$ActualTitle, esi D$CodeSource, ecx D$SourceLen
         rep movsb
 
     .Else_If eax g 0                ; Positive Number.
 
-        mov esi D$SourceEnd         ; End of Partial Edition
-        mov edi esi | add edi D$AddedSize
-        mov ecx esi | sub ecx D$NextTitle | inc ecx
+        Mov esi D$SourceEnd         ; End of Partial Edition
+        Mov edi esi | add edi D$AddedSize
+        Mov ecx esi | sub ecx D$NextTitle | inc ecx
       ; ecx = length from Source-Next-Title to End-of-Partial-Edition
         std
             rep movsb
         cld
-        mov esi D$CodeSource, edi D$ActualTitle
+        Mov esi D$CodeSource, edi D$ActualTitle
         add esi D$AddedSize         ; equal to the made up room
-        mov ecx D$SourceLen | rep movsb
+        Mov ecx D$SourceLen | rep movsb
 
     .Else                           ; Negative Number.
-        mov esi D$CodeSource, edi D$ActualTitle
-        mov ecx D$SourceLen | jecxz L0>
+        Mov esi D$CodeSource, edi D$ActualTitle
+        Mov ecx D$SourceLen | jecxz L0>
             rep movsb
-L0:     mov esi D$NextTitle
-        mov ecx D$CodeSource | sub ecx D$NextTitle | rep movsb
+L0:     Mov esi D$NextTitle
+        Mov ecx D$CodeSource | sub ecx D$NextTitle | rep movsb
 
     .End_If
 
-    mov eax D$CurrentWritingPos
+    Mov eax D$CurrentWritingPos
     If eax = D$SourceEnd
 L0:     dec eax | cmp B$eax ' ' | jb L0<
     End_If
 
     sub eax D$CodeSource
-    add eax D$ActualTitle | mov D$CurrentWritingPos eax
+    add eax D$ActualTitle | Mov D$CurrentWritingPos eax
 
-    mov eax D$ActualTitle | sub eax D$CodeSource    ; eax = adjustement to new Pos.
+    Mov eax D$ActualTitle | sub eax D$CodeSource    ; eax = adjustement to new Pos.
 
     add D$UpperLine eax
 
@@ -166,39 +166,39 @@ L0:     dec eax | cmp B$eax ' ' | jb L0<
     move D$CodeSource D$RealCodeSource
     move D$SourceEnd D$RealSourceEnd
     move D$SourceLen D$RealSourceLen
-    mov eax D$AddedSize | add D$SourceEnd eax | add D$SourceLen eax
+    Mov eax D$AddedSize | add D$SourceEnd eax | add D$SourceLen eax
 
-    mov D$PreviousPartialSourceLen 0
+    Mov D$PreviousPartialSourceLen 0
 
-    mov B$RealSourceRestored &TRUE
+    Mov B$RealSourceRestored &TRUE
 ret
 
 
 ; Called when Mouse outside User area.
 
 ShowTitles:
-    call RestoreRealSource | call BuildTitleTable
+    Call RestoreRealSource | Call BuildTitleTable
 
     If D$TitleTable > 0
-        call CreateTitleTab | call ShowTitleTab | call SetActualTitle
+        Call CreateTitleTab | Call ShowTitleTab | Call SetActualTitle
 
-        On B$BlinkingCaretWanted = &TRUE, call KillBlinkCursor
+        On B$BlinkingCaretWanted = &TRUE, Call KillBlinkCursor
     End_If
 
-    call SetPartialEditionFromPos
+    Call SetPartialEditionFromPos
 ret
 
 
 [NumberOfTitles: ?   PreviousNumberOfTitles: ?]
 
 BuildTitleTable:
-    mov edi D$CodeSource, ecx D$SourceLen, ebx TitleTable
-    mov B$edi-1 LF
+    Mov edi D$CodeSource, ecx D$SourceLen, ebx TitleTable
+    Mov B$edi-1 LF
 
     move D$PreviousNumberOfTitles D$NumberOfTitles
-    mov D$NumberOfTitles 0
+    Mov D$NumberOfTitles 0
 
-L0: mov al 'T'
+L0: Mov al 'T'
 
 L1: repne scasb | jne L9>>
 
@@ -208,7 +208,7 @@ L1: repne scasb | jne L9>>
 
               ; If the first 'TITLE' is not Top-of-File, set one now:
                 .If ebx = TitleTable
-                    mov eax edi | dec eax
+                    Mov eax edi | dec eax
                     If eax > D$CodeSource
                         move D$TitleTable D$CodeSource | add ebx 4
                         inc D$NumberOfTitles
@@ -216,30 +216,30 @@ L1: repne scasb | jne L9>>
                 .End_If
 
                 If ebx > TitleTable
-                    call TitleSize | jna L2>
+                    Call TitleSize | jna L2>
                 End_If
 
-                mov eax edi | dec eax | mov D$ebx eax
+                Mov eax edi | dec eax | Mov D$ebx eax
                 add ebx 4
                 inc D$NumberOfTitles
                 If ebx = TitleTableEnd
-                    call 'USER32.MessageBoxA', 0, {'Too many TITLEs', 0},
+                    Call 'USER32.MessageBoxA', 0, {'Too many TITLEs', 0},
                                                   {'BuildTitleTable', 0}, 0
                     sub ebx 4
                 End_If
 
 L2:             On ecx > 0, jmp L0<<
 
-L9: mov D$ebx 0     ; 'TitleTable' End Mark.
+L9: Mov D$ebx 0     ; 'TitleTable' End Mark.
 
   ; In case when Only one valid TITLE is found, we run no TITLE:
     If D$TitleTable > 0
-        On D$TitleTable+4 = 0, mov D$TitleTable 0
+        On D$TitleTable+4 = 0, Mov D$TitleTable 0
     End_If
 
-    mov eax D$NumberOfTitles
+    Mov eax D$NumberOfTitles
     If eax <> D$PreviousNumberOfTitles
-        call KillUndo | call InitUndo
+        Call KillUndo | Call InitUndo
     End_If
 ret
 
@@ -247,8 +247,8 @@ ret
 
 TitleSize:
     push ecx
-        mov esi D$ebx-4 ; previous Title Pos.
-        mov ecx 0
+        Mov esi D$ebx-4 ; previous Title Pos.
+        Mov ecx 0
         while esi < edi
             On B$esi = CR, inc ecx
             inc esi
@@ -280,22 +280,22 @@ ________________________________________________________________________________
  ActualPartIndex: ?    PreviousPartIndex: ?]
 
 GetActualPartFromPos:
-    mov esi TiTleTable, ebx D$CurrentWritingPos, eax D$TiTleTable, edx 0
-    mov D$ActualTitle eax | move D$NextTitle D$esi+4
+    Mov esi TiTleTable, ebx D$CurrentWritingPos, eax D$TiTleTable, edx 0
+    Mov D$ActualTitle eax | move D$NextTitle D$esi+4
 
-    mov D$ActualPartIndex 0-2
+    Mov D$ActualPartIndex 0-2
   ; 0-2 because Tab Index are zero based (> -1) and because we are
   ; INCreasing until *next* Title found (> -1)
 
     While eax <= ebx
         inc D$ActualPartIndex
-        mov edx eax | lodsd | On eax = 0, jmp L1>
+        Mov edx eax | lodsd | On eax = 0, jmp L1>
     End_While
 
-L1: On edx = 0, mov edx D$TiTleTable, eax D$TiTleTable+4
-    On eax = 0, mov eax D$SourceEnd
+L1: On edx = 0, Mov edx D$TiTleTable, eax D$TiTleTable+4
+    On eax = 0, Mov eax D$SourceEnd
 
-    mov D$ActualTitle edx, D$NextTitle eax
+    Mov D$ActualTitle edx, D$NextTitle eax
 ret
 ____________________________________________________________________________________________
 
@@ -314,36 +314,36 @@ SetActualPartFromPos:
     move D$RealSourceEnd D$SourceEnd
     move D$RealSourceLen D$SourceLen
 
-    mov edi D$SourceEnd | add edi 400
-    mov D$CodeSource edi
-    mov esi D$ActualTitle, ecx D$NextTitle | sub ecx esi
+    Mov edi D$SourceEnd | add edi 400
+    Mov D$CodeSource edi
+    Mov esi D$ActualTitle, ecx D$NextTitle | sub ecx esi
 
-    mov D$PreviousPartialSourceLen ecx, D$SourceLen ecx
-    mov D$SourceEnd edi | add D$SourceEnd ecx | rep movsb
-    mov eax 0A0D0A0D, ecx 100 | rep stosd
+    Mov D$PreviousPartialSourceLen ecx, D$SourceLen ecx
+    Mov D$SourceEnd edi | add D$SourceEnd ecx | rep movsb
+    Mov eax 0A0D0A0D, ecx 100 | rep stosd
 
-    mov eax D$CodeSource | sub eax D$ActualTiTle  ; eax = Displacement.
+    Mov eax D$CodeSource | sub eax D$ActualTiTle  ; eax = Displacement.
 
     add D$CurrentWritingPos eax | add D$UpperLine eax
 
     If B$BlockInside = &TRUE
         add D$BlockStarttextPtr eax | add D$BlockEndTextPtr eax
         move D$CurrentWritingPos D$BlockEndTextPtr
-        call SetCaret D$CurrentWritingPos
+        Call SetCaret D$CurrentWritingPos
     End_If
 
   ; If user add or suppress a TITLE statement in the Partial Edition;
   ; all these Pointers are wrong. We reset at Top of Part:
-    mov eax D$CurrentWritingPos
+    Mov eax D$CurrentWritingPos
     If eax >= D$SourceEnd
 L1:     move D$CurrentWritingPos D$CodeSource
         move D$UpperLine D$CodeSource
-        mov B$BlockInside &FALSE | jmp L9>>
+        Mov B$BlockInside &FALSE | jmp L9>>
     Else_If eax < D$CodeSource
         jmp L1<
     End_If
 
-    mov eax D$UpperLine
+    Mov eax D$UpperLine
     If eax >= D$SourceEnd
         jmp L1<
     Else_If eax < D$CodeSource
@@ -353,15 +353,15 @@ ret
 ____________________________________________________________________________________________
 
 KillTitleTab:
-    call 'USER32.DestroyWindow' D$TitleWindowHandle | mov D$TitleWindowHandle 0
+    Call 'USER32.DestroyWindow' D$TitleWindowHandle | Mov D$TitleWindowHandle 0
 
-    On B$BlinkingCaretWanted = &TRUE, call InitBlinkCursor
+    On B$BlinkingCaretWanted = &TRUE, Call InitBlinkCursor
 ret
 
 
 SetActualTitle:
-    call 'User32.SendMessageA' D$TitleWindowHandle, &TCM_SETCURSEL, D$ActualPartIndex, 0
-    call 'USER32.ShowWindow' D$TitleWindowHandle, &SW_SHOW
+    Call 'User32.SendMessageA' D$TitleWindowHandle, &TCM_SETCURSEL, D$ActualPartIndex, 0
+    Call 'USER32.ShowWindow' D$TitleWindowHandle, &SW_SHOW
 ret
 
 
@@ -378,14 +378,14 @@ ret
 ; (>>> "TITLE TitleName")
 
 ShowTitleTab: ; CreateTitleTab
-    mov esi TitleTable, D$TitleIndex 0
+    Mov esi TitleTable, D$TitleIndex 0
 
   ; Add a [Top] Tab Item if user did not.
-    mov eax D$esi
+    Mov eax D$esi
     If D$eax <> 'TITL'
-        mov D$TITLE_TC_ITEM_pszText DefaultTopTitle
+        Mov D$TITLE_TC_ITEM_pszText DefaultTopTitle
         push esi
-            call 'User32.SendMessageA' D$TitleWindowHandle, &TCM_INSERTITEM,
+            Call 'User32.SendMessageA' D$TitleWindowHandle, &TCM_INSERTITEM,
                                        D$TitleIndex, TITLE_TC_ITEM
         pop esi
         inc D$TitleIndex
@@ -397,8 +397,8 @@ L0: lodsd | cmp eax 0 | je L9>>
 
     While B$eax = ' ' | inc eax | End_While  ; jump over 'TITLE'.
     While B$eax > ' ' | inc eax | End_While
-    mov ebx eax | add ebx 20
-    mov D$TITLE_TC_ITEM_pszText eax
+    Mov ebx eax | add ebx 20
+    Mov D$TITLE_TC_ITEM_pszText eax
     While B$eax = ' '
         inc eax | On eax > ebx, jmp L1>
     End_While
@@ -408,9 +408,9 @@ L0: lodsd | cmp eax 0 | je L9>>
         inc eax | On eax > ebx, jmp L1>
     End_While
 L1: push D$eax, eax, esi
-        mov B$eax 0
+        Mov B$eax 0
 
-        call 'USER32.SendMessageA' D$TitleWindowHandle, &TCM_INSERTITEM,
+        Call 'USER32.SendMessageA' D$TitleWindowHandle, &TCM_INSERTITEM,
                                    D$TitleIndex, TITLE_TC_ITEM
         inc D$TitleIndex
     pop esi, eax, D$eax
@@ -423,46 +423,46 @@ L9: move D$TabWindowX D$EditWindowX, D$TabWindowY D$EditWindowY,
 
          move D$TabWindowY D$EditWindowH
 
-    call 'USER32.MoveWindow' D$TitleWindowHandle,
+    Call 'USER32.MoveWindow' D$TitleWindowHandle,
                              D$TabWindowX, D$TabWindowY, D$TabWindowW, D$TabWindowH,
                              &FALSE
 
   ; Get the hight of _one_ Tab, inside the Tabbed Control:
-    call 'USER32.SendMessageA' D$TitleWindowHandle, &TCM_GETITEMRECT, 0, TabRECT
-    mov eax D$TabRECT.bottom | sub eax D$TabRECT.top | inc eax
+    Call 'USER32.SendMessageA' D$TitleWindowHandle, &TCM_GETITEMRECT, 0, TabRECT
+    Mov eax D$TabRECT.bottom | sub eax D$TabRECT.top | inc eax
 
     push eax
-        call 'USER32.SendMessageA' D$TitleWindowHandle, &TCM_GETROWCOUNT, 0, 0
+        Call 'USER32.SendMessageA' D$TitleWindowHandle, &TCM_GETROWCOUNT, 0, 0
     pop ecx
 
   ; Now: ecx = Hight of a Tab // eax Number of Rows
-    mul ecx | mov D$TitleTabHight eax
+    mul ecx | Mov D$TitleTabHight eax
 
-    call 'USER32.GetSystemMetrics' &SM_CYDLGFRAME | shl eax 1 | add eax 4
+    Call 'USER32.GetSystemMetrics' &SM_CYDLGFRAME | shl eax 1 | add eax 4
     add D$TitleTabHight eax
 
-    mov eax D$TabWindowH | sub eax D$TitleTabHight | mov D$TabWindowY eax
+    Mov eax D$TabWindowH | sub eax D$TitleTabHight | Mov D$TabWindowY eax
 
     move D$TabWindowH D$TitleTabHight
 
     move D$ClientToScreenPoint 0, D$ClientToScreenPoint+4 0
 
-    call 'USER32.ClientToScreen' D$BpWindowHandle, ClientToScreenPoint
+    Call 'USER32.ClientToScreen' D$BpWindowHandle, ClientToScreenPoint
 
-    mov eax D$ClientToScreenPoint | add D$TabWindowX eax
-    mov eax D$ClientToScreenPoint+4 | add D$TabWindowY eax
-    mov eax D$BpMarginWidth | sub D$TabWindowX eax | add D$TabWindowW eax
+    Mov eax D$ClientToScreenPoint | add D$TabWindowX eax
+    Mov eax D$ClientToScreenPoint+4 | add D$TabWindowY eax
+    Mov eax D$BpMarginWidth | sub D$TabWindowX eax | add D$TabWindowW eax
 
-    call 'USER32.MoveWindow' D$TitleWindowHandle,
+    Call 'USER32.MoveWindow' D$TitleWindowHandle,
                              D$TabWindowX, D$TabWindowY, D$TabWindowW, D$TabWindowH,
                              &FALSE
 
-  ; Set 'TabWindowY' to 'hwnd' coordinates, for firing 'KillTitleTab' on &WM_MOUSEMOVE:
-    call 'USER32.ScreenToClient' D$hwnd, TabWindowX
+  ; Set 'TabWindowY' to 'H.MainWindow' coordinates, for firing 'KillTitleTab' on &WM_MOUSEMOVE:
+    Call 'USER32.ScreenToClient' D$H.MainWindow, TabWindowX
 
   ; Adjust the "Dead-Point" if the ToolBar is [On]:
     If B$ToolBarWanted = &TRUE
-        mov eax D$ToolBarPixelsHight | sub D$TabWindowY eax
+        Mov eax D$ToolBarPixelsHight | sub D$TabWindowY eax
     End_If
 ret
 
@@ -481,58 +481,58 @@ ret
 [TITLEWINDOWSTYLE &TCS_MULTILINE__&WS_VISIBLE__&TCS_BUTTONS__&TCS_HOTTRACK]
 
 CreateTitleTab:
-    call 'USER32.CreateWindowExA' 0, TitleTabWindowTitle, &NULL,
+    Call 'USER32.CreateWindowExA' 0, TitleTabWindowTitle, &NULL,
                                   TITLEWINDOWSTYLE, 0, 0, 0, 0,
-                                  D$hWnd, &NULL, D$hInstance, &NULL
+                                  D$H.MainWindow, &NULL, D$hInstance, &NULL
 
-    mov D$TitleWindowHandle eax
+    Mov D$TitleWindowHandle eax
 
-    call 'USER32.GetWindowLongA' D$TitleWindowHandle, &GWL_STYLE
+    Call 'USER32.GetWindowLongA' D$TitleWindowHandle, &GWL_STYLE
     and eax (not &WS_CAPTION)
-    call 'USER32.SetWindowLongA' D$TitleWindowHandle, &GWL_STYLE, eax
+    Call 'USER32.SetWindowLongA' D$TitleWindowHandle, &GWL_STYLE, eax
 
-    On D$TitleFontHandle = 0, call CreateFontForTitles
-    call 'User32.SendMessageA' D$TitleWindowHandle, &WM_SETFONT, D$TitleFontHandle, &FALSE
+    On D$TitleFontHandle = 0, Call CreateFontForTitles
+    Call 'User32.SendMessageA' D$TitleWindowHandle, &WM_SETFONT, D$TitleFontHandle, &FALSE
 
-    call 'USER32.SetWindowLongA' D$TitleWindowHandle, &GWL_WNDPROC, TitleWindowProc
-    mov D$OriginalTitleBarProcedure eax
+    Call 'USER32.SetWindowLongA' D$TitleWindowHandle, &GWL_WNDPROC, TitleWindowProc
+    Mov D$OriginalTitleBarProcedure eax
 ret
 
 
 CreateFontForTitles:
-  call 'GDI32.CreateFontA' 8 4 0 0 400 0 0 0  1,   ;  DEFAULT_CHARSET 1  OEM_CHARSET 255
+  Call 'GDI32.CreateFontA' 8 4 0 0 400 0 0 0  1,   ;  DEFAULT_CHARSET 1  OEM_CHARSET 255
                        0 0 0 0 Helv
-  mov D$TitleFontHandle eax
+  Mov D$TitleFontHandle eax
 ret
 
 
 [OriginalTitleBarProcedure: ?]
 
 Proc TitleWindowProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
         On B$SourceReady = &FALSE, jmp L8>>
 
-L8:     call 'USER32.CallWindowProcA' D$OriginalTitleBarProcedure,
+L8:     Call 'USER32.CallWindowProcA' D$OriginalTitleBarProcedure,
                                       D$TitleWindowHandle,
-                                      D@Message, D@wParam, D@lParam
+                                      D@msg, D@wParam, D@lParam
 
 ; Make sure that something would likely work under whatever OS version.
 ; But makes it as short as possible, because this is re-intrant with...
 ; here! Risks of Stack overflow, with the Tab Messages.
-        ...If D@Message >= &WM_MOUSEFIRST
-            ..If D@Message =< &WM_MOUSELAST ; (0209) // &WM_CAPTURECHANGED (0215)
+        ...If D@msg >= &WM_MOUSEFIRST
+            ..If D@msg =< &WM_MOUSELAST ; (0209) // &WM_CAPTURECHANGED (0215)
                 pushad
-                    call 'User32.SendMessageA' D$TitleWindowHandle, &TCM_GETCURSEL, 0, 0
+                    Call 'User32.SendMessageA' D$TitleWindowHandle, &TCM_GETCURSEL, 0, 0
                     If eax <> D$ActualPartIndex
-                        mov B$BlockInside &FALSE
+                        Mov B$BlockInside &FALSE
                         push eax
-                            call RestoreRealSource
+                            Call RestoreRealSource
                         pop eax
-                        mov D$ActualPartIndex eax
+                        Mov D$ActualPartIndex eax
                         move D$CurrentWritingPos D$TitleTable+eax*4
-                        call SetPartialEdition
-                        call AskForRedrawNow
+                        Call SetPartialEdition
+                        Call AskForRedrawNow
                     End_If
                 popad
             ..End_If

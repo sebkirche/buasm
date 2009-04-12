@@ -36,54 +36,54 @@ Proc SetupCommandLine:
     Local @hFile, @Size
     Uses esi edi
 
-        call GetCLOFilename
-        call 'Kernel32.CreateFileA' CommandLineFile, &GENERIC_READ, &FILE_SHARE_READ,
+        Call GetCLOFilename
+        Call 'Kernel32.CreateFileA' CommandLineFile, &GENERIC_READ, &FILE_SHARE_READ,
                         &NULL, &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, &NULL
 
         ; In general no clo file will be provided, if we deal with a screensaver put
         ; a /S command as a default command and exit proc
         .If eax = &INVALID_HANDLE_VALUE
             If D$SavingExtension = '.SCR'
-                mov eax ScreensaverCommandLine
+                Mov eax ScreensaverCommandLine
             Else
-                mov eax 0
+                Mov eax 0
             EndIf
             ExitP
         .EndIf
 
-        mov D@hFile eax
+        Mov D@hFile eax
 
         ; Allocate buffer for commandline (must be freed by caller)
-        call 'KERNEL32.GetFileSize' D@hFile, 0
+        Call 'KERNEL32.GetFileSize' D@hFile, 0
         If eax = 0_FFFF_FFFF
-            call ReportWinError {'SetupCommandLine: GetFileSize' 0}
-            call 'Kernel32.CloseHandle' D@hFile
-            mov eax 0
+            Call ReportWinError {'SetupCommandLine: GetFileSize' 0}
+            Call 'Kernel32.CloseHandle' D@hFile
+            Mov eax 0
             ExitP
         EndIf
-        mov D@Size eax
+        Mov D@Size eax
 
         VirtualAlloc CommandLinePtr D@Size
-        mov edi D$CommandLinePtr
+        Mov edi D$CommandLinePtr
 
         ; Read the command line parameters from the file
-        call 'Kernel32.ReadFile' D@hFile, edi, D@Size, BytesTransfered, &NULL
+        Call 'Kernel32.ReadFile' D@hFile, edi, D@Size, BytesTransfered, &NULL
         add edi D$BytesTransfered
-        mov B$edi 0
+        Mov B$edi 0
 
-        call 'Kernel32.CloseHandle' D@hFile
-        mov eax D$CommandLinePtr
+        Call 'Kernel32.CloseHandle' D@hFile
+        Mov eax D$CommandLinePtr
 EndP
 ____________________________________________________________________________________________
 
 [CommandLineFile: B$ ? #&MAXPATH]
 
 GetCLOFilename:
-    mov esi MainName, edi CommandLineFile
+    Mov esi MainName, edi CommandLineFile
     While B$esi <> 0
         movsb
     End_While
-    mov D$edi '.clo', B$edi+4 0 ; append extension
+    Mov D$edi '.clo', B$edi+4 0 ; append extension
 ret
 ____________________________________________________________________________________________
 
@@ -95,23 +95,23 @@ ________________________________________________________________________________
 Proc LoadCommandLine:
     Local @hFile, @Size
 
-        call GetCLOFilename ; Copy filename to buffer
-        call 'Kernel32.CreateFileA' CommandLineFile, &GENERIC_READ, &FILE_SHARE_READ,
+        Call GetCLOFilename ; Copy filename to buffer
+        Call 'Kernel32.CreateFileA' CommandLineFile, &GENERIC_READ, &FILE_SHARE_READ,
                         &NULL, &OPEN_EXISTING, &FILE_ATTRIBUTE_NORMAL, &NULL
-        mov D@hFile eax
+        Mov D@hFile eax
         .If eax = &INVALID_HANDLE_VALUE
-            call 'User32.SetDlgItemTextA' D$OutputHandle, 214, 0 ; clear edit
+            Call 'User32.SetDlgItemTextA' D$OutputHandle, 214, 0 ; clear edit
         .Else
-            call 'KERNEL32.GetFileSize' D@hFile, 0
+            Call 'KERNEL32.GetFileSize' D@hFile, 0
             On eax = 0_FFFF_FFFF, ExitP
-            mov D@Size eax
+            Mov D@Size eax
 
             VirtualAlloc CommandLinePtr D@Size
 
-                call 'Kernel32.ReadFile' D@hFile, D$CommandLinePtr, D@Size, BytesTransfered, &NULL
-                mov eax D$CommandLinePtr | add eax D$BytesTransfered | mov B$eax 0
-                call 'Kernel32.CloseHandle' D@hFile
-                call 'User32.SetDlgItemTextA' D$OutputHandle, 214, D$CommandLinePtr
+                Call 'Kernel32.ReadFile' D@hFile, D$CommandLinePtr, D@Size, BytesTransfered, &NULL
+                Mov eax D$CommandLinePtr | add eax D$BytesTransfered | Mov B$eax 0
+                Call 'Kernel32.CloseHandle' D@hFile
+                Call 'User32.SetDlgItemTextA' D$OutputHandle, 214, D$CommandLinePtr
 
             VirtualFree D$CommandLinePtr
         .End_If
@@ -123,26 +123,26 @@ Proc SaveCommandLine:
     Local @hFile, @Size
 
         ; If string is empty, delete CLO file if it exists
-        call 'User32.SendDlgItemMessageA' D$OutputHandle, 214, &WM_GETTEXTLENGTH, 0, 0
-        mov D@Size eax
+        Call 'User32.SendDlgItemMessageA' D$OutputHandle, 214, &WM_GETTEXTLENGTH, 0, 0
+        Mov D@Size eax
         If eax = 0
-            call GetCLOFilename
-            call 'Kernel32.DeleteFileA' CommandLineFile
+            Call GetCLOFilename
+            Call 'Kernel32.DeleteFileA' CommandLineFile
             ExitP
         End_If
 
         VirtualAlloc CommandLinePtr D@Size
 
-        call GetCLOFilename ; Copy filename
-        call 'Kernel32.CreateFileA' CommandLineFile, &GENERIC_WRITE, &FILE_SHARE_READ,
+        Call GetCLOFilename ; Copy filename
+        Call 'Kernel32.CreateFileA' CommandLineFile, &GENERIC_WRITE, &FILE_SHARE_READ,
                         &NULL, &CREATE_ALWAYS, &FILE_ATTRIBUTE_NORMAL, &NULL
-        mov D@hFile eax
+        Mov D@hFile eax
         If eax <> &INVALID_HANDLE_VALUE
             ; Copy commandline from edit to buffer and write it into the file
-            mov eax D@Size | inc eax
-            call 'User32.GetDlgItemTextA' D$OutputHandle, 214, D$CommandLinePtr, eax
-            call 'Kernel32.WriteFile' D@hFile, D$CommandLinePtr, eax, BytesTransfered, &NULL
-            call 'Kernel32.CloseHandle' D@hFile
+            Mov eax D@Size | inc eax
+            Call 'User32.GetDlgItemTextA' D$OutputHandle, 214, D$CommandLinePtr, eax
+            Call 'Kernel32.WriteFile' D@hFile, D$CommandLinePtr, eax, BytesTransfered, &NULL
+            Call 'Kernel32.CloseHandle' D@hFile
         End_If
 
         VirtualFree D$CommandLinePtr

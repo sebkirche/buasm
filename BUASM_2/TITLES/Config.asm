@@ -56,7 +56,7 @@ TITLE Config
 
 Tree view is build by analyze of main labels and of calls to these main labels® If you validate [List orphans], the list will be added all 'non-called' main labels.
 
-If you validate [First call only],  and some label is called many times, it will be listed at first call occurence only.", 0 ]
+If you validate [First Call only],  and some label is called many times, it will be listed at first Call occurence only.", 0 ]
 
  ________________________________________________________________________
 
@@ -87,30 +87,30 @@ ________________________________________________________________________________
 Proc BrowseForFolder:
     Arguments @hParent, @PathTitle
 
-        mov D$FolderPath 0
+        Mov D$FolderPath 0
         move D$BROWSEINFOA.hwndOwner D@hParent
         move D$BROWSEINFOA.lpszTitle D@PathTitle
-        call 'SHELL32.SHBrowseForFolder' BROWSEINFOA
+        Call 'SHELL32.SHBrowseForFolder' BROWSEINFOA
 
         If eax <> &FALSE
             push eax
-                call 'SHELL32.SHGetPathFromIDList' eax, FolderPath
+                Call 'SHELL32.SHGetPathFromIDList' eax, FolderPath
             pop eax
-            mov B$BrowseForFolderAborted &FALSE
+            Mov B$BrowseForFolderAborted &FALSE
 
         Else
-            mov B$BrowseForFolderAborted &TRUE
+            Mov B$BrowseForFolderAborted &TRUE
 
         End_If
 
-        call 'OLE32.CoTaskMemFree' eax
+        Call 'OLE32.CoTaskMemFree' eax
 Endp
 
 
 Proc cbBrowse:
     Argument @hWin, @uMsg, @lParam, @lpData
 
-    call 'USER32.SetWindowTextA'  D@hWin, D@lpData
+    Call 'USER32.SetWindowTextA'  D@hWin, D@lpData
 EndP
 
 
@@ -138,36 +138,36 @@ but this File is not there.
 VerifyEquatesPath:
     ..If D$FolderPath = 0
         If B$IncludesOK = &FALSE
-L1:         call 'USER32.MessageBoxA', D$hwnd, MustHaveEquatesPath, Argh, &MB_SYSTEMMODAL
-            call 'KERNEL32.ExitProcess' 0
+L1:         Call 'USER32.MessageBoxA', D$H.MainWindow, MustHaveEquatesPath, Argh, &MB_SYSTEMMODAL
+            Call 'KERNEL32.ExitProcess' 0
         End_If
 
-        mov eax 0-1
+        Mov eax 0-1
 
     ..Else
-        mov eax FolderPath
+        Mov eax FolderPath
         While B$eax <> 0 | inc eax | End_While
-        mov D$eax '\Equ', D$eax+4 'ates', D$eax+8 '.equ', B$eax+12 0
-        mov eax FolderPath
+        Mov D$eax '\Equ', D$eax+4 'ates', D$eax+8 '.equ', B$eax+12 0
+        Mov eax FolderPath
 
-        call 'KERNEL32.FindFirstFileA' FolderPath, FindFile
+        Call 'KERNEL32.FindFirstFileA' FolderPath, FindFile
 
         .If eax = &INVALID_HANDLE_VALUE
-            call 'USER32.MessageBoxA' D$hwnd, BadEquatesPath, Argh,
+            Call 'USER32.MessageBoxA' D$H.MainWindow, BadEquatesPath, Argh,
                                       &MB_YESNO+&MB_SYSTEMMODAL+&MB_ICONQUESTION
             If eax = &IDNO
                 On B$IncludesOK = &FALSE, jmp L1<<
-                mov eax 0-1
+                Mov eax 0-1
 
             Else
-                mov eax 0
+                Mov eax 0
 
             End_If
 
         .Else
-            call 'KERNEL32.FindClose' eax
+            Call 'KERNEL32.FindClose' eax
 
-            mov eax FolderPath
+            Mov eax FolderPath
 
         .End_If
 
@@ -191,7 +191,7 @@ ________________________________________________________________________________
 
 Configuration:
     If D$ConfigDialogHandle = 0
-        call 'USER32.DialogBoxParamA' D$hinstance, 3000, &NULL, ConfigTabProc, &NULL
+        Call 'USER32.DialogBoxParamA' D$hinstance, 3000, &NULL, ConfigTabProc, &NULL
     Else
         Beep
     End_If
@@ -199,40 +199,40 @@ ret
 
 
 InitConfigDialogTab:
-    call 'USER32.GetDlgItem' D$ConfigDialogHandle, 100 | mov D$ConfigTabHandle eax
+    Call 'USER32.GetDlgItem' D$ConfigDialogHandle, 100 | Mov D$ConfigTabHandle eax
 
-    mov D$TC_pszText FirstTab | move D$TC_cchTextMax, D$FirstTabLen
-    call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 0, TC_ITEM
+    Mov D$TC_pszText FirstTab | move D$TC_cchTextMax, D$FirstTabLen
+    Call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 0, TC_ITEM
 
     move D$TC_pszText SecondTab | move D$TC_cchTextMax D$SecondTabLen
-    call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 1, TC_ITEM
+    Call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 1, TC_ITEM
 
     move D$TC_pszText ThirdTab | move D$TC_cchTextMax, D$ThirdTabLen
-    call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 2, TC_ITEM
+    Call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 2, TC_ITEM
 
     move D$TC_pszText FourthTab | move D$TC_cchTextMax D$FourthTabLen
-    call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 3, TC_ITEM
+    Call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 3, TC_ITEM
 
     move D$TC_pszText FifthTab | move D$TC_cchTextMax D$FifthTabLen
-    call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 4, TC_ITEM
+    Call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 4, TC_ITEM
 
     move D$TC_pszText SixthTab | move D$TC_cchTextMax D$SixthTabLen
-    call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 5, TC_ITEM
+    Call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 5, TC_ITEM
 
     move D$TC_pszText SeventhTab | move D$TC_cchTextMax, D$SeventhTabLen
-    call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 6, TC_ITEM
+    Call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 6, TC_ITEM
 
     move D$TC_pszText HeigthTab | move D$TC_cchTextMax D$HeigthTabLen
-    call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 7, TC_ITEM
+    Call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 7, TC_ITEM
 
     move D$TC_pszText NinethTab | move D$TC_cchTextMax D$NinethTabLen
-    call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 8, TC_ITEM
+    Call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 8, TC_ITEM
 
     move D$TC_pszText DBPMenuTab | move D$TC_cchTextMax D$DBPMenuLen
-    call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 9, TC_ITEM
+    Call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 9, TC_ITEM
 
     move D$TC_pszText APItab | move D$TC_cchTextMax D$APItabLen
-    call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 10, TC_ITEM
+    Call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_INSERTITEM, 10, TC_ITEM
 ret
 
 ____________________________________________________________________________________________
@@ -244,98 +244,98 @@ ________________________________________________________________________________
 ; Tag Dialog 4100 [Text Editor]
 
 Proc ConfigTabProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_INITDIALOG
+    ...If D@msg = &WM_INITDIALOG
         .If D$ConfigDialogHandle = 0
-            move D$ConfigDialogHandle D@Adressee
-            call InitConfigDialogTab
-            call 'USER32.CreateDialogParamA' D$hinstance, 4000, D$ConfigTabHandle,
+            move D$ConfigDialogHandle D@hwnd
+            Call InitConfigDialogTab
+            Call 'USER32.CreateDialogParamA' D$hinstance, 4000, D$ConfigTabHandle,
                                              ConfigTabProc, &NULL
-            mov D$ConfigTabbedDialogHandle eax, D$ConfigTabIndex 0
-            call InittabTreeView
-            call 'USER32.SetClassLongA' D$ConfigDialogHandle &GCL_HICON D$wc_hIcon
+            Mov D$ConfigTabbedDialogHandle eax, D$ConfigTabIndex 0
+            Call InittabTreeView
+            Call 'USER32.SetClassLongA' D$ConfigDialogHandle &GCL_HICON D$wc_hIcon
         .End_If
         jmp L8>>
 
-    ...Else_If D@Message = &WM_NOTIFY
-        mov esi D@lParam, eax D$esi+8
+    ...Else_If D@msg = &WM_NOTIFY
+        Mov esi D@lParam, eax D$esi+8
         ..If eax = &TCN_SELCHANGE
-            call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_GETCURSEL, 0, 0
-            mov D$ConfigTabIndex eax
+            Call 'User32.SendMessageA' D$ConfigTabHandle, &TCM_GETCURSEL, 0, 0
+            Mov D$ConfigTabIndex eax
 
-            call 'User32.DestroyWindow' D$ConfigTabbedDialogHandle
-            mov eax D$ConfigTabIndex, ecx 100 | mul ecx | add eax 4000
+            Call 'User32.DestroyWindow' D$ConfigTabbedDialogHandle
+            Mov eax D$ConfigTabIndex, ecx 100 | mul ecx | add eax 4000
 push D$StringsLanguage ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            call 'USER32.CreateDialogParamA' D$hinstance, eax, D$ConfigTabHandle,
+            Call 'USER32.CreateDialogParamA' D$hinstance, eax, D$ConfigTabHandle,
                                              ConfigTabProc, &NULL
-            mov D$ConfigTabbedDialogHandle eax
+            Mov D$ConfigTabbedDialogHandle eax
 pop D$StringsLanguage  ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             .If D$ConfigTabIndex = 0
-                call InittabTreeView
+                Call InittabTreeView
             .Else_If D$ConfigTabIndex = 1
-                call InitTabTextEditor
+                Call InitTabTextEditor
             .Else_If D$ConfigTabIndex = 2
-                call InitBadHabits
+                Call InitBadHabits
             .Else_If D$ConfigTabIndex = 3
-                call InitTabColors
+                Call InitTabColors
             .Else_If D$ConfigTabIndex = 4
-                call InitTabHelpFiles
+                Call InitTabHelpFiles
             .Else_If D$ConfigTabIndex = 5
-                call InitTabOtherFiles
+                Call InitTabOtherFiles
             .Else_If D$ConfigTabIndex = 6
-                call InitTabUserMenu
+                Call InitTabUserMenu
             .Else_If D$ConfigTabIndex = 7
-                call InitTabPos
+                Call InitTabPos
             .Else_If D$ConfigTabIndex = 8
-                call InitTabLang
+                Call InitTabLang
             .Else_If D$ConfigTabIndex = 9
-                call InitTabdbp
+                Call InitTabdbp
             .Else_If D$ConfigTabIndex = 10
 ; Tag Dialog 5000
-                call InitTabAPI
+                Call InitTabAPI
             .End_If
 
         ..End_If
 
-    ...Else_If D@Message = &WM_COMMAND
-        mov eax D@wParam | and D@wParam 0FFFF | shr eax 16
+    ...Else_If D@msg = &WM_COMMAND
+        Mov eax D@wParam | and D@wParam 0FFFF | shr eax 16
 
         ..If D@wParam = &IDCANCEL
             jmp L1>
 
         ..Else_If D@wParam = &IDOK
-            call UpdateRegistry
+            Call UpdateRegistry
 
             If D$UserPopUpHandle > 0
-                call 'USER32.DeleteMenu' D$MenuHandle 7 &MF_BYPOSITION
+                Call 'USER32.DeleteMenu' D$MenuHandle 7 &MF_BYPOSITION
             End_If
-            call AddUserMenu | call EnableMenutems | call EnableHelpMenutems
-            call 'USER32.DrawMenuBar' D$hwnd
-L1:         call 'User32.DestroyWindow' D@Adressee
-            mov D$ConfigDialogHandle 0
+            Call AddUserMenu | Call EnableMenutems | Call EnableHelpMenutems
+            Call 'USER32.DrawMenuBar' D$H.MainWindow
+L1:         Call 'User32.DestroyWindow' D@hwnd
+            Mov D$ConfigDialogHandle 0
 
         ..Else_If D@wParam = &IDHELP
-            call Help, B_U_AsmName, ConfigHelp, ContextHlpMessage
+            Call Help, B_U_AsmName, ConfigHelp, ContextHlpMessage
 
         ..Else_If eax = &BN_CLICKED
-            mov eax D@wParam
+            Mov eax D@wParam
             .If D$ConfigTabIndex = 0                ; Tree View.
                 If eax = 11                         ; Check Orphans
                     xor B$ShowOrphan &TRUE
-                Else_If eax = 12                    ; Check First call only
+                Else_If eax = 12                    ; Check First Call only
                     xor B$ShowLabelsOnce &TRUE
                 Else_If eax = 13                    ; Check Tree View Auto-Hide
-                    call CloseTree
+                    Call CloseTree
                     xor B$AutoHideTreeView &TRUE
                 Else_If eax = 14                    ; Rebuild tree after each Compilation
                     xor B$AutoRebuildTreeView &TRUE
                 End_If
 
             .Else_If D$ConfigTabIndex = 1           ; Text Editor.
-                call GetEditorConfig D@Adressee
+                Call GetEditorConfig D@hwnd
 
 
             .Else_If D$ConfigTabIndex = 2           ; Bad Habits.
@@ -352,31 +352,31 @@ L1:         call 'User32.DestroyWindow' D@Adressee
 L2:         .Else_If D$ConfigTabIndex = 3           ; Colors.
                 pushad
                     If eax = 20                     ;D$Color1Handle
-                        mov eax D$NormalBackColor | call SetColor
-                        mov D$NormalBackColor eax | call ResetBackGroundColors
+                        Mov eax D$NormalBackColor | Call SetColor
+                        Mov D$NormalBackColor eax | Call ResetBackGroundColors
                     Else_If eax = 10                ; Color 2
-                        mov eax D$StatementColor | call SetColor | mov D$StatementColor eax
+                        Mov eax D$StatementColor | Call SetColor | Mov D$StatementColor eax
                     Else_If eax = 11                ; Color 3
-                        mov eax D$CommentColor | call SetColor | mov D$CommentColor eax
+                        Mov eax D$CommentColor | Call SetColor | Mov D$CommentColor eax
                     Else_If eax = 12                ; Color 4
-                        mov eax D$TextColor | call SetColor | mov D$TextColor eax
+                        Mov eax D$TextColor | Call SetColor | Mov D$TextColor eax
                     Else_If eax = 13                ; Color 5
-                        mov eax D$BracketColor | call SetColor | mov D$BracketColor eax
+                        Mov eax D$BracketColor | Call SetColor | Mov D$BracketColor eax
                     Else_If eax = 21                ; Color of Edit Controls, List Boxes,...
-                        mov eax D$DialogsBackColor | call SetColor
-                        mov D$DialogsBackColor eax | call ResetBackGroundColors
+                        Mov eax D$DialogsBackColor | Call SetColor
+                        Mov D$DialogsBackColor eax | Call ResetBackGroundColors
                     Else_If eax = 30
                         xor B$WantSizeMarkerColor &TRUE
                     End_If
 
-                    call AskForRedrawNow
+                    Call AskForRedrawNow
                 popad
 
             .Else_If D$ConfigTabIndex = 4           ; Help Files.
                 If eax = 500
-                    call Help, B_U_AsmName, HelPFiles, ContextHlpMessage
+                    Call Help, B_U_AsmName, HelPFiles, ContextHlpMessage
                 Else
-                    call ConfigHelpFiles
+                    Call ConfigHelpFiles
                 End_If
 
             .Else_If D$ConfigTabIndex = 5           ; Other Files
@@ -384,26 +384,26 @@ L2:         .Else_If D$ConfigTabIndex = 3           ; Colors.
                 pushad
                     push eax
                         If eax = 14
-L1:                         call BrowseForFolder D@Adressee, PathTitle
-                            call VerifyEquatesPath | On eax = &FALSE, jmp L1<
+L1:                         Call BrowseForFolder D@hwnd, PathTitle
+                            Call VerifyEquatesPath | On eax = &FALSE, jmp L1<
                                                      On eax <> 0-1, jmp L1>
                             pop eax | jmp L2>
                         Else
-                            call ConfigSearchFile       ; returns Ptr or 0 in eax
+                            Call ConfigSearchFile       ; returns Ptr or 0 in eax
                         End_If
 L1:                 pop ebx
                     On eax = 0, jmp L2>>
-                    mov esi eax
+                    Mov esi eax
                     If ebx = 10
-                        mov edi CalcName
+                        Mov edi CalcName
                     Else_If ebx = 11
-                        mov edi ClipName
+                        Mov edi ClipName
                     Else_If ebx = 12
-                        mov edi B_U_AsmName
+                        Mov edi B_U_AsmName
                     Else_If ebx = 13
-                        mov edi F2Name
+                        Mov edi F2Name
                     Else_If ebx = 14
-                        mov edi EquatesName
+                        Mov edi EquatesName
                     Else
                         jmp L2>
                     End_If
@@ -412,44 +412,44 @@ L1:                 pop ebx
                         lodsb | stosb
                     Loop_Until al = 0
 
-                    call InitTabOtherFiles
+                    Call InitTabOtherFiles
 L2:             popad
 
             .Else_If D$ConfigTabIndex = 6           ; User Menu
                 On eax < 310, jmp L1>
                     On eax > 320, jmp L1>
-                        call StripOneMenuUserItem | jmp L7>>
+                        Call StripOneMenuUserItem | jmp L7>>
 
 L1:             pushad
-                    call CheckUserMenuItemText | On eax = 0, jmp L2>>
+                    Call CheckUserMenuItemText | On eax = 0, jmp L2>>
                 popad
                 pushad
                     push eax
-                        call ConfigSearchFile       ; returns Ptr or 0 in eax
+                        Call ConfigSearchFile       ; returns Ptr or 0 in eax
                     pop ebx
                     On eax = 0, jmp L2>>
-                    mov esi eax
+                    Mov esi eax
 
                     If ebx = 110
-                        mov edi UserMenu0Path
+                        Mov edi UserMenu0Path
                     Else_If ebx = 111
-                        mov edi UserMenu1Path
+                        Mov edi UserMenu1Path
                     Else_If ebx = 112
-                        mov edi UserMenu2Path
+                        Mov edi UserMenu2Path
                     Else_If ebx = 113
-                        mov edi UserMenu3Path
+                        Mov edi UserMenu3Path
                     Else_If ebx = 114
-                        mov edi UserMenu4Path | I9: jmp I9>    ; just because no more '.'If
+                        Mov edi UserMenu4Path | I9: jmp I9>    ; just because no more '.'If
                     Else_If ebx = 115
-                        mov edi UserMenu5Path
+                        Mov edi UserMenu5Path
                     Else_If ebx = 116
-                        mov edi UserMenu6Path
+                        Mov edi UserMenu6Path
                     Else_If ebx = 117
-                        mov edi UserMenu7Path
+                        Mov edi UserMenu7Path
                     Else_If ebx = 118
-                        mov edi UserMenu8Path
+                        Mov edi UserMenu8Path
                     Else_If ebx = 119
-                        mov edi UserMenu9Path
+                        Mov edi UserMenu9Path
                     Else
                         jmp L2>
                     End_If
@@ -457,48 +457,48 @@ L1:             pushad
                     Do
                         lodsb | stosb
                     Loop_Until al = 0
-                    call SaveUserMenuTab | call InitTabUserMenu
+                    Call SaveUserMenuTab | Call InitTabUserMenu
 L2:             popad
 
             .Else_If D$ConfigTabIndex = 7           ; Pos
                 If eax = 50
-                    On B$SaveMainPosFlag = &FALSE, call GetUserPosTab
+                    On B$SaveMainPosFlag = &FALSE, Call GetUserPosTab
                 Else_If eax = 51
-                    On B$SaveMainPosFlag = &FALSE, call SaveUserPosTab
+                    On B$SaveMainPosFlag = &FALSE, Call SaveUserPosTab
                 Else_If eax = 52
-                    call SetMaximized
+                    Call SetMaximized
                 Else_If eax = 20
-                    xor B$SaveMainPosFlag &TRUE | call InitTabPos
+                    xor B$SaveMainPosFlag &TRUE | Call InitTabPos
                 End_If
 
           ; Tag Dialog 4800
 
              .Else_If D$ConfigTabIndex = 8           ; Lang
-                call SetNationalLanguage
+                Call SetNationalLanguage
 
              .Else_If D$ConfigTabIndex = 9           ; DBPMenu
-                call SetDBPMenu
+                Call SetDBPMenu
 
              .Else_If D$ConfigTabIndex = 10          ; API verifications
-                sub eax 10 | mov D$ApiCheckFlag eax
+                sub eax 10 | Mov D$ApiCheckFlag eax
 
              .End_If
 
         ..End_If
 
-    ...Else_If D@Message = &WM_CTLCOLOREDIT
+    ...Else_If D@msg = &WM_CTLCOLOREDIT
         jmp L1>
 
-    ...Else_If D@Message = &WM_CTLCOLORLISTBOX
-L1:     call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+    ...Else_If D@msg = &WM_CTLCOLORLISTBOX
+L1:     Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
 
     ...Else
-L8:     popad | mov eax &FALSE | jmp L9>
+L8:     popad | Mov eax &FALSE | jmp L9>
 
     ...End_If
 
-L7: popad | mov eax &TRUE
+L7: popad | Mov eax &TRUE
 
 L9: EndP
 ____________________________________________________________________________________________
@@ -542,11 +542,11 @@ ________________________________________________________________________________
 
 GetNationalFont:
     move D$NATION_CHOOSEFONT@hwndOwner D$ConfigDialogHandle
-    call 'Comdlg32.ChooseFontA' NATION_CHOOSEFONT
+    Call 'Comdlg32.ChooseFontA' NATION_CHOOSEFONT
 
     If eax = &TRUE
-        On D$NationalFontHandle <> 0, call 'GDI32.DeleteObject' D$NationalFontHandle
-        call 'GDI32.CreateFontIndirectA' NATION_LOGFONT | mov D$NationalFontHandle eax
+        On D$NationalFontHandle <> 0, Call 'GDI32.DeleteObject' D$NationalFontHandle
+        Call 'GDI32.CreateFontIndirectA' NATION_LOGFONT | Mov D$NationalFontHandle eax
     End_If
 ret
 
@@ -554,40 +554,40 @@ ret
 ConfigHelpFiles:
     pushad
         push eax
-            call ConfigSearchFile       ; returns Ptr or 0 in eax
+            Call ConfigSearchFile       ; returns Ptr or 0 in eax
         pop ebx
         On eax = 0, jmp L2>>
-        mov esi eax
+        Mov esi eax
         .If ebx = 10
-        ;  mov edi Asm32TutName
+        ;  Mov edi Asm32TutName
         .Else_If ebx = 11
-            mov edi Win32HlpName
+            Mov edi Win32HlpName
         .Else_If ebx = 12
-            mov edi MmediaHlpName
+            Mov edi MmediaHlpName
         .Else_If ebx = 13
-            mov edi OpenGlHlpName
+            Mov edi OpenGlHlpName
         .Else_If ebx = 14
-        ; mov edi OpcodeHlpName
+        ; Mov edi OpcodeHlpName
         .Else_If ebx = 15
-        ;   mov edi WinDataFileName ;| I9: jmp I9>
+        ;   Mov edi WinDataFileName ;| I9: jmp I9>
     ; .Else_If ebx = 16
-    ;     mov edi B_U_AsmName    ; Now only in [Other Files]
+    ;     Mov edi B_U_AsmName    ; Now only in [Other Files]
         .Else_If ebx = 17
-            mov edi DxHlpName
+            Mov edi DxHlpName
         .Else_If ebx = 18
-            mov edi WinsockHlpName
+            Mov edi WinsockHlpName
         .Else_If ebx = 19
-            mov edi SDLRefName
+            Mov edi SDLRefName
         .Else_If ebx = 20
-            mov edi sqliteName
+            Mov edi sqliteName
         .Else_If ebx = 21
-            mov edi DevILName
+            Mov edi DevILName
         .End_If
 
         Do
             lodsb | stosb
         Loop_Until al = 0
-        call InitTabHelpFiles
+        Call InitTabHelpFiles
 L2: popad
 ret
 
@@ -596,26 +596,26 @@ Proc GetEditorConfig:
     Argument @Parent
 
         .If eax = 11                    ; Tab is 2 spaces
-            mov D$TabIs 2
+            Mov D$TabIs 2
         .Else_If eax = 12                    ; Tab is 4 spaces
-            mov D$TabIs 4
+            Mov D$TabIs 4
         .Else_If eax = 13                    ; Tab is 8 spaces
-            mov D$TabIs 8
+            Mov D$TabIs 8
 
         .Else_If eax = 50
-            call XorScrollBar
+            Call XorScrollBar
         .Else_If eax = 51
             xor B$SecurityWanted &TRUE
         .Else_If eax = 52
             xor B$DollarOnly &TRUE
         .Else_If eax = 53                         ; Indent
             xor D$AutoIndentFlag &TRUE
-            On B$AutoIndentFlag = &FALSE, mov D$AutoIndent 0
+            On B$AutoIndentFlag = &FALSE, Mov D$AutoIndent 0
         .Else_If eax = 54
             xor B$LoadMRU &TRUE
-           ; call 'USER32.CheckDlgButton' D@Parent 54 D$LoadMRU
+           ; Call 'USER32.CheckDlgButton' D@Parent 54 D$LoadMRU
         .Else_If eax = 55
-            call XorToolBar
+            Call XorToolBar
         .Else_If eax = 56
             xor B$SoundsWanted &TRUE
         .Else_If eax = 57
@@ -624,100 +624,100 @@ Proc GetEditorConfig:
        ;     xor B$WriteCheckerWanted &TRUE
         .Else_If eax = 58
             If B$ParagraphChar = 167    ; Paragraph
-                mov B$ParagraphChar 36  ; Dollar
+                Mov B$ParagraphChar 36  ; Dollar
             Else
-                mov B$ParagraphChar 167
+                Mov B$ParagraphChar 167
             End_If
         .Else_If eax = 201
-            call GetMaxBackUp
+            Call GetMaxBackUp
         .Else
-            call CheckFontAndBlink
+            Call CheckFontAndBlink
         .End_If
 EndP
 
 
 GetMaxBackUp:
-    mov D$MaxBackUp 0
-    call 'USER32.GetDlgItemTextA' D$ConfigTabbedDialogHandle, 200,
+    Mov D$MaxBackUp 0
+    Call 'USER32.GetDlgItemTextA' D$ConfigTabbedDialogHandle, 200,
                                   MaxBackUp, 5
 
-    On B$MaxBackUp = 0, mov D$MaxBackUp '0000'
+    On B$MaxBackUp = 0, Mov D$MaxBackUp '0000'
 
     While B$MaxBackUp+3 = 0
-        shl D$MaxBackUp 8 | mov B$MaxBackUp '0'
+        shl D$MaxBackUp 8 | Mov B$MaxBackUp '0'
     End_While
 
-    call UpDateRegistry
+    Call UpDateRegistry
 ret
 
 
 XorScrollBar:
-    xor D$ScrollBarWanted &TRUE | call RedrawInterface
+    xor D$ScrollBarWanted &TRUE | Call RedrawInterface
 ret
 
 
 XorToolBar:
-    xor D$ToolBarWanted &TRUE | call RedrawInterface
+    xor D$ToolBarWanted &TRUE | Call RedrawInterface
 ret
 
 
 InittabTreeView:
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 10, &WM_SETTEXT, 0, ITB1
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 11, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 10, &WM_SETTEXT, 0, ITB1
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 11, &BM_SETCHECK,
                                       D$ShowOrphan, 0
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 12, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 12, &BM_SETCHECK,
                                       D$ShowLabelsOnce, 0
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 13, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 13, &BM_SETCHECK,
                                       D$AutoHideTreeView, 0
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 14, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 14, &BM_SETCHECK,
                                       D$AutoRebuildTreeView, 0
 ret
 
 [NotYet: ' Will be available for next release...' 0]
 
 InitTabTextEditor:
-    mov ebx D$TabIs | and ebx 2 | shr ebx 1
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 11, &BM_SETCHECK, ebx, 0
-    mov ebx D$TabIs | and ebx 4 | shr ebx 2
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 12, &BM_SETCHECK, ebx, 0
-    mov ebx D$TabIs | and ebx 8 | shr ebx 3
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 13, &BM_SETCHECK, ebx, 0
+    Mov ebx D$TabIs | and ebx 2 | shr ebx 1
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 11, &BM_SETCHECK, ebx, 0
+    Mov ebx D$TabIs | and ebx 4 | shr ebx 2
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 12, &BM_SETCHECK, ebx, 0
+    Mov ebx D$TabIs | and ebx 8 | shr ebx 3
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 13, &BM_SETCHECK, ebx, 0
 
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 50, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 50, &BM_SETCHECK,
                                       D$ScrollBarWanted, 0
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 51, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 51, &BM_SETCHECK,
                                       D$SecurityWanted, 0
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 52, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 52, &BM_SETCHECK,
                                       D$DollarOnly, 0
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 53, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 53, &BM_SETCHECK,
                                       D$AutoIndentFlag, 0
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 54, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 54, &BM_SETCHECK,
                                       D$LoadMRU, 0
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 55, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 55, &BM_SETCHECK,
                                       D$ToolBarWanted, 0
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 56, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 56, &BM_SETCHECK,
                                       D$SoundsWanted, 0
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 57, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 57, &BM_SETCHECK,
                                       D$CompletionWanted, 0
-   ; call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 58, &BM_SETCHECK,
+   ; Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 58, &BM_SETCHECK,
    ;                                   D$WriteCheckerWanted, 0
     If B$ParagraphChar = 167
-        mov eax &TRUE
+        Mov eax &TRUE
     Else
-        mov eax &FALSE
+        Mov eax &FALSE
     End_If
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 58, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 58, &BM_SETCHECK,
                                       eax, 0
 
 
-    mov eax MaxBackUp | While B$eax = '0' | inc eax | End_While
+    Mov eax MaxBackUp | While B$eax = '0' | inc eax | End_While
     On B$eax = 0, dec eax
-    call 'USER32.SetDlgItemTextA' D$ConfigTabbedDialogHandle, 200, eax
-    call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 200, &EM_SETLIMITTEXT, 4, 0
+    Call 'USER32.SetDlgItemTextA' D$ConfigTabbedDialogHandle, 200, eax
+    Call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 200, &EM_SETLIMITTEXT, 4, 0
 
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 301, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 301, &BM_SETCHECK,
                                       D$BlinkingCaretWanted, 0
-    call 'User32.SetDlgItemInt' D$ConfigTabbedDialogHandle, 302, D$CaretTime, 0
+    Call 'User32.SetDlgItemInt' D$ConfigTabbedDialogHandle, 302, D$CaretTime, 0
 ret
 
 ____________________________________________________________________________________________
@@ -740,19 +740,19 @@ Do not use these Flags.
 These actions are incompatible with Assembly Edition, because they are going to help to corrupt your Sources.", 0]
 
 InitBadHabits:
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 10, &WM_SETTEXT,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 10, &WM_SETTEXT,
                                       0, BadHabittext
 
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 20, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 20, &BM_SETCHECK,
                                       D$CtrlYFlag, 0
 
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 21, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 21, &BM_SETCHECK,
                                       D$BlockAutoDelete, 0
 
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 22, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 22, &BM_SETCHECK,
                                       D$NoVirtualLimit, 0
 
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 23, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 23, &BM_SETCHECK,
                                       D$WithControlA, 0
 ret
 ____________________________________________________________________________________________
@@ -761,7 +761,7 @@ ________________________________________________________________________________
 CheckFontAndBlink:
     .If eax > 13
         If eax = 20
-            call SelectFont
+            Call SelectFont
 
         Else
             jmp CheckBlinkCaret
@@ -773,15 +773,15 @@ ret
 
 CheckBlinkCaret:
     If eax = 301
-        call KillBlinkCursor
+        Call KillBlinkCursor
         xor B$BlinkingCaretWanted &TRUE
-        On B$BlinkingCaretWanted = &TRUE, call InitBlinkCursor
-        call AskForRedraw
+        On B$BlinkingCaretWanted = &TRUE, Call InitBlinkCursor
+        Call AskForRedraw
 
     Else_If eax = 303
-        call 'User32.GetDlgItemInt' D$ConfigTabbedDialogHandle, 302, 0, 0
-        mov D$CaretTime eax
-        call ResetBlinkCursor
+        Call 'User32.GetDlgItemInt' D$ConfigTabbedDialogHandle, 302, 0, 0
+        Mov D$CaretTime eax
+        Call ResetBlinkCursor
 
     Else_If eax = 320
         xor B$CompletionWanted &TRUE
@@ -791,7 +791,7 @@ ret
 
 
 InitTabColors:
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 30, &BM_SETCHECK,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 30, &BM_SETCHECK,
                                       D$WantSizeMarkerColor, 0
 ret
 
@@ -800,26 +800,26 @@ ret
                      DxHlpName, WinsockHlpName, SDLRefName, sqliteName, DevILName, 0]
 
 InitTabHelpFiles:
-;    mov esi HelpFilesPathsPtrs, ebx 110
+;    Mov esi HelpFilesPathsPtrs, ebx 110
 ;L0: push ebx esi
-;        call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle ebx &WM_SETTEXT 0 D$esi
+;        Call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle ebx &WM_SETTEXT 0 D$esi
 ;    pop esi ebx
 ;    add esi 4 | inc ebx | cmp D$esi 0 | ja L0<
-    call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 111, &WM_SETTEXT 0,
+    Call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 111, &WM_SETTEXT 0,
                                       Win32HlpName
-    call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 112, &WM_SETTEXT 0,
+    Call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 112, &WM_SETTEXT 0,
                                       MmediaHlpName
-    call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 113, &WM_SETTEXT 0,
+    Call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 113, &WM_SETTEXT 0,
                                       OpenGlHlpName
-    call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 117, &WM_SETTEXT 0,
+    Call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 117, &WM_SETTEXT 0,
                                       DxHlpName
-    call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 118, &WM_SETTEXT 0,
+    Call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 118, &WM_SETTEXT 0,
                                       WinsockHlpName
-    call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 119, &WM_SETTEXT 0,
+    Call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 119, &WM_SETTEXT 0,
                                       SDLRefName
-    call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 120, &WM_SETTEXT 0,
+    Call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 120, &WM_SETTEXT 0,
                                       sqliteName
-    call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 121, &WM_SETTEXT 0,
+    Call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 121, &WM_SETTEXT 0,
                                       DevILName
 ret
 
@@ -827,24 +827,24 @@ ret
 [OthersFilesPathsPtrs: CalcName ClipName B_U_AsmName F2Name EquatesName 0]
 
 InitTabOtherFiles:
-    mov esi OthersFilesPathsPtrs, ebx 100
+    Mov esi OthersFilesPathsPtrs, ebx 100
 L0: push ebx esi
         If D$esi = EquatesName
             push esi
-                mov esi EquatesName
+                Mov esi EquatesName
                 While B$esi <> 0 | inc esi | End_While
                 While D$esi <> 'Equa' | dec esi | End_While
-                mov B$esi 0
+                Mov B$esi 0
             pop esi
         End_If
-        call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, ebx, &WM_SETTEXT, 0,
+        Call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, ebx, &WM_SETTEXT, 0,
                                           D$esi
     pop esi ebx
     add esi 4 | inc ebx | cmp D$esi 0 | ja L0<
 
-    mov esi EquatesName
+    Mov esi EquatesName
     While B$esi <> 0 | inc esi | End_While
-    On D$esi+1 = 'quat', mov B$esi 'E'
+    On D$esi+1 = 'quat', Mov B$esi 'E'
 ret
 
 ;;
@@ -864,13 +864,13 @@ ret
                     UserMenu8Path UserMenu9Path 0]
 
 InitTabUserMenu:
-    mov esi UserMenuItemsPtrs, edi UserMenuPathsPtrs, ebx 10, ecx 210
+    Mov esi UserMenuItemsPtrs, edi UserMenuPathsPtrs, ebx 10, ecx 210
 
 L0: push edi, ecx, esi, ebx
-        call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, ecx, &WM_SETTEXT,
+        Call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, ecx, &WM_SETTEXT,
                                           0, D$edi
         pop ebx, esi | push esi, ebx
-        call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, ebx, &WM_SETTEXT,
+        Call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, ebx, &WM_SETTEXT,
                                           0, D$esi
     pop ebx, esi, ecx, edi
     add esi 4 | add edi 4 | inc ebx | inc ecx
@@ -888,88 +888,88 @@ StripOneMenuUserItem:
 
     shl eax 5 ; * 32  (8 * dWord)
 
-    lea edi D$UserMenu0String+eax | mov esi edi | add esi (4*8)
-    mov ecx (8*8) | rep movsd
+    lea edi D$UserMenu0String+eax | Mov esi edi | add esi (4*8)
+    Mov ecx (8*8) | rep movsd
 
     shl eax 3  ; this is 3 more times > * 256 (64 * dWord)
 
-    lea edi D$UserMenu0Path+eax | mov esi edi | add esi (4*64)
-    mov ecx (64*8) | rep movsd
+    lea edi D$UserMenu0Path+eax | Mov esi edi | add esi (4*64)
+    Mov ecx (64*8) | rep movsd
 
-    call InitTabUserMenu
+    Call InitTabUserMenu
 ret
 
 
 ; Tag Dialog 4700 >>> Pos
 
 InitTabPos:
-     call 'USER32.SetDlgItemInt' D$ConfigTabbedDialogHandle, 10, D$WindowX, &NULL
-     call 'USER32.SetDlgItemInt' D$ConfigTabbedDialogHandle, 11, D$WindowY, &NULL
-     call 'USER32.SetDlgItemInt' D$ConfigTabbedDialogHandle, 12, D$WindowW, &NULL
-     call 'USER32.SetDlgItemInt' D$ConfigTabbedDialogHandle, 13, D$WindowH, &NULL
+     Call 'USER32.SetDlgItemInt' D$ConfigTabbedDialogHandle, 10, D$WindowX, &NULL
+     Call 'USER32.SetDlgItemInt' D$ConfigTabbedDialogHandle, 11, D$WindowY, &NULL
+     Call 'USER32.SetDlgItemInt' D$ConfigTabbedDialogHandle, 12, D$WindowW, &NULL
+     Call 'USER32.SetDlgItemInt' D$ConfigTabbedDialogHandle, 13, D$WindowH, &NULL
 
      If B$IsMaximizedFlag = &SW_MAXIMIZE
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 52,
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 52,
                                           &BM_SETCHECK &TRUE, 0
-        mov eax &FALSE
+        Mov eax &FALSE
 
      Else_If B$SaveMainPosFlag = &TRUE
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 20,
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 20,
                                           &BM_SETCHECK &TRUE, 0
-        mov eax &FALSE
+        Mov eax &FALSE
 
      End_If
 
      push eax
-     call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 10, &WM_ENABLE, eax, 0
+     Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 10, &WM_ENABLE, eax, 0
      pop eax | push eax
-     call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 11, &WM_ENABLE, eax, 0
+     Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 11, &WM_ENABLE, eax, 0
      pop eax | push eax
-     call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 12, &WM_ENABLE, eax, 0
+     Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 12, &WM_ENABLE, eax, 0
      pop eax
-     call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 13, &WM_ENABLE, eax, 0
+     Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 13, &WM_ENABLE, eax, 0
 ret
 
 
 SetMaximized:
      If B$IsMaximizedFlag = &SW_SHOWNORMAL
-        mov B$IsMaximizedFlag &SW_MAXIMIZE
+        Mov B$IsMaximizedFlag &SW_MAXIMIZE
      Else
-        mov B$IsMaximizedFlag &SW_SHOWNORMAL
+        Mov B$IsMaximizedFlag &SW_SHOWNORMAL
      End_If
 
-     call 'USER32.ShowWindow'  D$hwnd, D$IsMaximizedFlag
+     Call 'USER32.ShowWindow'  D$H.MainWindow, D$IsMaximizedFlag
 ret
 
 ; Tag Dialog 4800
 
 InitTabLang:
     .If D$StringsLanguage = '.en'
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 10, &BM_SETCHECK, 1, 0
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 10, &BM_SETCHECK, 1, 0
     .Else_If D$StringsLanguage = '.fr'
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 11, &BM_SETCHECK, 1, 0
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 11, &BM_SETCHECK, 1, 0
     .Else_If D$StringsLanguage = '.br'
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 12, &BM_SETCHECK, 1, 0
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 12, &BM_SETCHECK, 1, 0
     .Else_If D$StringsLanguage = '.sp'
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 13, &BM_SETCHECK, 1, 0
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 13, &BM_SETCHECK, 1, 0
     .Else_If D$StringsLanguage = '.zh'
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 14, &BM_SETCHECK, 1, 0
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 14, &BM_SETCHECK, 1, 0
     .Else_If D$StringsLanguage = '.it'
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 15, &BM_SETCHECK, 1, 0
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 15, &BM_SETCHECK, 1, 0
     .Else_If D$StringsLanguage = '.de'
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 16, &BM_SETCHECK, 1, 0
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 16, &BM_SETCHECK, 1, 0
     .Else_If D$StringsLanguage = '.no'
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 17, &BM_SETCHECK, 1, 0
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 17, &BM_SETCHECK, 1, 0
     .Else_If D$StringsLanguage = '.ca'
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 18, &BM_SETCHECK, 1, 0
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 18, &BM_SETCHECK, 1, 0
     .Else
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 10, &BM_SETCHECK, 1, 0
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 10, &BM_SETCHECK, 1, 0
     .End_If
 
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 100, &EM_SETMARGINS,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 100, &EM_SETMARGINS,
                                       &EC_LEFTMARGIN__&EC_RIGHTMARGIN, 0100010
 
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 100, &WM_SETTEXT, 0,
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 100, &WM_SETTEXT, 0,
     {"
 This Tab is for the definition of the Language to be used for displaying the Errors Messages given at Compile-Time, by the Assembler. The method will be generalized to the other Messages progressively.
 
@@ -997,11 +997,11 @@ ________________________________________________________________________________
 
 InitTabdbp:
     If D$DBPMenuOn = DOUBLE_CLICK_ACTION
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 11, &BM_SETCHECK, 1, 0
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 12, &BM_SETCHECK, 0, 0
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 11, &BM_SETCHECK, 1, 0
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 12, &BM_SETCHECK, 0, 0
     Else
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 11, &BM_SETCHECK, 0, 0
-        call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 12, &BM_SETCHECK, 1, 0
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 11, &BM_SETCHECK, 0, 0
+        Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 12, &BM_SETCHECK, 1, 0
     End_If
 ret
 
@@ -1020,19 +1020,19 @@ With the DONT_RESOLVE_DLL_REFERENCES Flag, the verifications of your calls will 
 The last Flag will completely skip your API calls verifications. You do not need to set it for WDM Drivers, because, in the case of .SYS files, no such verification, is done, anyway.", 0]
 
 InitTabAPI:
-    mov eax 10 | add eax D$ApiCheckFlag
+    Mov eax 10 | add eax D$ApiCheckFlag
 
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, eax, &BM_SETCHECK, 1, 0
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, eax, &BM_SETCHECK, 1, 0
 
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 100, &WM_SETTEXT, 0, ApiCheckInfo
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 100, &WM_SETTEXT, 0, ApiCheckInfo
 ret
 
 
 SetDBPMenu:
     If eax = 11
-        mov D$DBPMenuOn DOUBLE_CLICK_ACTION
+        Mov D$DBPMenuOn DOUBLE_CLICK_ACTION
     Else
-        mov D$DBPMenuOn RIGHT_CLICK_ACTION
+        Mov D$DBPMenuOn RIGHT_CLICK_ACTION
     End_If
 ret
 ____________________________________________________________________________________________
@@ -1066,12 +1066,12 @@ ________________________________________________________________________________
 ConfigSearchFile:
     move D$CONFIGOPENFILENAME@hWndOwner D$ConfigDialogHandle
     move D$CONFIGOPENFILENAME@hInstance D$hInstance
-    mov edi FullPathUserChoice, al 0, ecx 260 | rep stosb
-    call 'COMDLG32.GetOpenFileNameA' CONFIGOPENFILENAME
+    Mov edi FullPathUserChoice, al 0, ecx 260 | rep stosb
+    Call 'COMDLG32.GetOpenFileNameA' CONFIGOPENFILENAME
     If B$FullPathUserChoice <> 0
-        mov eax FullPathUserChoice
+        Mov eax FullPathUserChoice
     Else
-        mov eax 0
+        Mov eax 0
     End_If
 ret
 
@@ -1090,29 +1090,29 @@ CheckUserMenuItemText:
     pop eax
     push edi
         sub eax 100                             ; Menu Item Edit Control (First one = 10)
-        call 'USER32.GetDlgItem' D$ConfigTabbedDialogHandle eax
+        Call 'USER32.GetDlgItem' D$ConfigTabbedDialogHandle eax
     pop edi
-    call 'USER32.SendMessageA' eax &WM_GETTEXT 30 edi
+    Call 'USER32.SendMessageA' eax &WM_GETTEXT 30 edi
     If eax = 0
-        call 'USER32.MessageBoxA' D$hwnd, ErrorUserMenu, TitleErrorUserMenu, &MB_SYSTEMMODAL
-        mov eax &FALSE
+        Call 'USER32.MessageBoxA' D$H.MainWindow, ErrorUserMenu, TitleErrorUserMenu, &MB_SYSTEMMODAL
+        Mov eax &FALSE
     Else
-        mov eax &TRUE
+        Mov eax &TRUE
     End_If
 ret
 
 
 SaveUserMenuTab:
     pushad
-        mov edi UserMenu0String, eax 10
+        Mov edi UserMenu0String, eax 10
 L1:     push edi, eax
-            call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, eax,
+            Call 'USER32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, eax,
                                               &WM_GETTEXT, 30, edi
         pop eax, edi
         inc eax | add edi 32 | cmp edi UserMenu9String | jbe L1<
 
-        mov esi UserMenu0String, edi UserMenu0Path
-L1:     On B$esi = 0, mov B$edi 0
+        Mov esi UserMenu0String, edi UserMenu0Path
+L1:     On B$esi = 0, Mov B$edi 0
         add esi 32 | add edi 256 | cmp edi UserMenu9Path | jbe L1<
     popad
 ret
@@ -1120,40 +1120,40 @@ ret
 
 
 GetUserPosTab:
-    call 'User32.GetWindowRect' D$hwnd WindowX
+    Call 'User32.GetWindowRect' D$H.MainWindow WindowX
     If D$WindowX > 0FFF_FFFF
-        mov D$WindowX 0
-        mov D$WindowY 0
-        call 'USER32.GetSystemMetrics' &SM_CXSCREEN | mov D$WindowW eax
-        call 'USER32.GetSystemMetrics' &SM_CYSCREEN | mov D$WindowH eax
+        Mov D$WindowX 0
+        Mov D$WindowY 0
+        Call 'USER32.GetSystemMetrics' &SM_CXSCREEN | Mov D$WindowW eax
+        Call 'USER32.GetSystemMetrics' &SM_CYSCREEN | Mov D$WindowH eax
     Else
-        mov eax D$WindowX | sub D$WindowW eax
-        mov eax D$WindowY | sub D$WindowH eax
+        Mov eax D$WindowX | sub D$WindowW eax
+        Mov eax D$WindowY | sub D$WindowH eax
     End_If
-    call InitTabPos
+    Call InitTabPos
 ret
 
 SaveUserPosTab:
-    call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 20, &BM_GETCHECK, 0, 0
-    mov D$SaveMainPosFlag eax
-    call 'User32.GetDlgItemInt' D$ConfigTabbedDialogHandle, 10, &NULL, &NULL
-    mov D$WindowX eax
-    call 'User32.GetDlgItemInt' D$ConfigTabbedDialogHandle, 11, &NULL, &NULL
-    mov D$WindowY eax
-    call 'User32.GetDlgItemInt' D$ConfigTabbedDialogHandle, 12, &NULL, &NULL
-    mov D$WindowW eax
-    call 'User32.GetDlgItemInt' D$ConfigTabbedDialogHandle, 13, &NULL, &NULL
-    mov D$WindowH eax
+    Call 'User32.SendDlgItemMessageA' D$ConfigTabbedDialogHandle, 20, &BM_GETCHECK, 0, 0
+    Mov D$SaveMainPosFlag eax
+    Call 'User32.GetDlgItemInt' D$ConfigTabbedDialogHandle, 10, &NULL, &NULL
+    Mov D$WindowX eax
+    Call 'User32.GetDlgItemInt' D$ConfigTabbedDialogHandle, 11, &NULL, &NULL
+    Mov D$WindowY eax
+    Call 'User32.GetDlgItemInt' D$ConfigTabbedDialogHandle, 12, &NULL, &NULL
+    Mov D$WindowW eax
+    Call 'User32.GetDlgItemInt' D$ConfigTabbedDialogHandle, 13, &NULL, &NULL
+    Mov D$WindowH eax
 
-    call 'User32.MoveWindow' D$hwnd, D$WindowX, D$WindowY, D$WindowW, D$WindowH, &TRUE
+    Call 'User32.MoveWindow' D$H.MainWindow, D$WindowX, D$WindowY, D$WindowW, D$WindowH, &TRUE
 
-    mov eax D$WindowX | or eax D$WindowY
+    Mov eax D$WindowX | or eax D$WindowY
     ..If eax = 0
-        call 'USER32.GetSystemMetrics' &SM_CXSCREEN
+        Call 'USER32.GetSystemMetrics' &SM_CXSCREEN
         .If eax = D$WindowW
-            call 'USER32.GetSystemMetrics' &SM_CYSCREEN
+            Call 'USER32.GetSystemMetrics' &SM_CYSCREEN
             If eax = D$WindowH
-                call 'USER32.ShowWindow' D$hwnd, &SW_MAXIMIZE
+                Call 'USER32.ShowWindow' D$H.MainWindow, &SW_MAXIMIZE
             End_if
         .End_If
     ..End_If
@@ -1177,16 +1177,16 @@ ________________________________________________________________________________
 SetColor:
         move D$CHOOSECOLORAPI_hwndOwner D$ConfigDialogHandle
         move D$CHOOSECOLORAPI_hInstance D$hInstance
-        mov D$CHOOSECOLORAPI_rgbResult eax
+        Mov D$CHOOSECOLORAPI_rgbResult eax
 
         push eax                                          ; old color set by caller in eax
-            call 'COMDLG32.ChooseColorA' CHOOSECOLORAPI
+            Call 'COMDLG32.ChooseColorA' CHOOSECOLORAPI
         pop ebx
 
         If eax = &FALSE
-            mov eax ebx                                   ; restore old color if no choice.
+            Mov eax ebx                                   ; restore old color if no choice.
         Else
-            mov eax D$CHOOSECOLORAPI_rgbResult
+            Mov eax D$CHOOSECOLORAPI_rgbResult
         End_If
 ret
 
@@ -1416,7 +1416,7 @@ ________________________________________________________________________________
                 0]
 
 OpenRegistry:
-    call 'ADVAPI32.RegCreateKeyExA' &HKEY_CURRENT_USER, RosAsmKey, 0,
+    Call 'ADVAPI32.RegCreateKeyExA' &HKEY_CURRENT_USER, RosAsmKey, 0,
                                     RosAsmConfigClass, 0,
                                     &KEY_READ__&KEY_WRITE__&KEY_QUERY_VALUE,
                                     0, hRegKey, Result
@@ -1424,52 +1424,52 @@ ret
 
 
 ReadRegistry:
-    mov esi RegistryData
+    Mov esi RegistryData
 
     ...If D$Result = &REG_CREATED_NEW_KEY
       ; Case of new installation of the Registry:
 L1:     push esi
-            call GetFieldDataSize esi
-            call 'ADVAPI32.RegSetValueExA' D$hRegKey, D$esi, 0, D$esi+4, D$esi+8, eax
+            Call GetFieldDataSize esi
+            Call 'ADVAPI32.RegSetValueExA' D$hRegKey, D$esi, 0, D$esi+4, D$esi+8, eax
         pop esi
         On eax <> &ERROR_SUCCESS, jmp AutoInit
         add esi 12 | cmp D$esi 0 | ja L1<<
 
-        call AutoInit
+        Call AutoInit
 
     ...Else
       ; Case of existing Registry to be read:
 L1:     push esi
-            lea ebx D$esi+4 | mov D$RegistryDataSize 0FF
-            call 'ADVAPI32.RegQueryValueExA' D$hRegKey, D$esi, 0, ebx, D$esi+8,
+            lea ebx D$esi+4 | Mov D$RegistryDataSize 0FF
+            Call 'ADVAPI32.RegQueryValueExA' D$hRegKey, D$esi, 0, ebx, D$esi+8,
                                              RegistryDataSize
             .If eax <> &ERROR_SUCCESS
                 pop esi | push esi
-                call GetFieldDataSize esi
-                call 'ADVAPI32.RegSetValueExA' D$hRegKey, D$esi, 0, D$esi+4, D$esi+8, eax
+                Call GetFieldDataSize esi
+                Call 'ADVAPI32.RegSetValueExA' D$hRegKey, D$esi, 0, D$esi+4, D$esi+8, eax
             .End_If
         pop esi
         add esi 12 | cmp D$esi 0 | ja L1<<
     ...End_If
 
-    call CloseRegistry
+    Call CloseRegistry
 ret
 
 
 UpdateRegistry:
     On D$UserConfig = CONFIGFILE, jmp WriteConfigFile
 
-    call OpenRegistry
+    Call OpenRegistry
 
-    mov esi RegistryData
+    Mov esi RegistryData
   ; either &REG_BINARY // &REG_DWORD // &REG_SZ
 L1: push esi
-        call GetFieldDataSize esi
-        call 'ADVAPI32.RegSetValueExA' D$hRegKey, D$esi, 0, D$esi+4, D$esi+8, eax
+        Call GetFieldDataSize esi
+        Call 'ADVAPI32.RegSetValueExA' D$hRegKey, D$esi, 0, D$esi+4, D$esi+8, eax
     pop esi
     add esi 12 | cmp D$esi 0 | ja L1<<
 
-    call CloseRegistry
+    Call CloseRegistry
 ret
 
 
@@ -1477,26 +1477,26 @@ Proc GetFieldDataSize:
     Argument @Pointer
     Uses esi
 
-        mov esi D@Pointer
+        Mov esi D@Pointer
       ; esi >>> One Key in 'RegistryData': PointerToName // &FLAG // RosAsmData
       ; &FLAG can be: &REG_BINARY // &REG_DWORD // &REG_SZ
         If D$esi+4 = &REG_DWORD
-            mov eax 4
+            Mov eax 4
       ; cases of Fonts LOGFONT Structures:
         Else_If D$esi = PrinterFont
           ; Static size of cbbuffer (&REG_BINARY):
-            mov eax 60
+            Mov eax 60
         Else_If D$esi = SourceEditorFont
-            mov eax D$EditorLOGFONT.len
+            Mov eax D$EditorLOGFONT.len
         Else_If D$esi = NationalLanguageFont
-            mov eax D$NATION_LOGFONTlen
+            Mov eax D$NATION_LOGFONTlen
         Else_If D$esi = UnicodeEditorFont
             move eax D$UNICODE_EDITION_LOGFONTlen
       ; Cases of Strings (&REG_SZ):
         Else
             push edi
-                mov edi D$esi+8, ecx 0FFFF, al 0 | repne scasb
-                sub ecx 0FFFF | neg ecx | mov eax ecx
+                Mov edi D$esi+8, ecx 0FFFF, al 0 | repne scasb
+                sub ecx 0FFFF | neg ecx | Mov eax ecx
             pop edi
         End_If
       ; eax = Size of the Data to be saved into the Registry Key:
@@ -1504,7 +1504,7 @@ EndP
 
 
 CloseRegistry:
-    call 'ADVAPI32.RegCloseKey' D$hRegKey
+    Call 'ADVAPI32.RegCloseKey' D$hRegKey
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -1516,43 +1516,43 @@ ________________________________________________________________________________
 
 
 AutoInit:  ; 'RegistryData'
-    call GetDirectory ActualDir
+    Call GetDirectory ActualDir
 
-    mov edi ActualDir | While B$edi <> 0 | inc edi | End_While
+    Mov edi ActualDir | While B$edi <> 0 | inc edi | End_While
 
-    On B$edi-1 <> '\', mov B$edi '\' | inc edi
+    On B$edi-1 <> '\', Mov B$edi '\' | inc edi
   ; ...\RosAsmFiles\
-    mov D$edi 'RosA', D$edi+4 'smFi', D$edi+8 'les\' | add edi 12
-    mov D$ActualDirPointer edi
+    Mov D$edi 'RosA', D$edi+4 'smFi', D$edi+8 'les\' | add edi 12
+    Mov D$ActualDirPointer edi
 
   ; 'Equates.inc'
-    mov D$edi 'Equa', D$edi+4 'tes.', D$edi+8 'equ'
-    call 'KERNEL32.FindFirstFileA' ActualDir, WIN32_FIND_DATA
+    Mov D$edi 'Equa', D$edi+4 'tes.', D$edi+8 'equ'
+    Call 'KERNEL32.FindFirstFileA' ActualDir, WIN32_FIND_DATA
 
     .If eax <> &INVALID_HANDLE_VALUE
-        call 'KERNEL32.FindClose' eax
-        mov esi ActualDir, edi EquatesName
-        While B$esi <> 0 | movsb | End_While | mov B$edi 0
+        Call 'KERNEL32.FindClose' eax
+        Mov esi ActualDir, edi EquatesName
+        While B$esi <> 0 | movsb | End_While | Mov B$edi 0
 
       ; 'B_U_Asm.exe'
-        mov edi D$ActualDirPointer
-        mov D$edi 'B_U_', D$edi+4 'Asm.', D$edi+8 'exe', B$edi+12 0
-        call 'KERNEL32.FindFirstFileA' ActualDir, WIN32_FIND_DATA
+        Mov edi D$ActualDirPointer
+        Mov D$edi 'B_U_', D$edi+4 'Asm.', D$edi+8 'exe', B$edi+12 0
+        Call 'KERNEL32.FindFirstFileA' ActualDir, WIN32_FIND_DATA
 
         If eax <> &INVALID_HANDLE_VALUE
-            call 'KERNEL32.FindClose' eax
-            mov esi ActualDir, edi B_U_AsmName
-            While B$esi <> 0 | movsb | End_While | mov B$edi 0
+            Call 'KERNEL32.FindClose' eax
+            Mov esi ActualDir, edi B_U_AsmName
+            While B$esi <> 0 | movsb | End_While | Mov B$edi 0
         End_If
 
       ; 'Clip.txt
-        mov edi D$ActualDirPointer
-        mov D$edi 'Clip', D$edi+4 '.txt', B$edi+8 0
-        call 'KERNEL32.FindFirstFileA' ActualDir, WIN32_FIND_DATA
+        Mov edi D$ActualDirPointer
+        Mov D$edi 'Clip', D$edi+4 '.txt', B$edi+8 0
+        Call 'KERNEL32.FindFirstFileA' ActualDir, WIN32_FIND_DATA
         If eax <> &INVALID_HANDLE_VALUE
-            call 'KERNEL32.FindClose' eax
-            mov esi ActualDir, edi ClipName
-            While B$esi <> 0 | movsb | End_While | mov B$edi 0
+            Call 'KERNEL32.FindClose' eax
+            Mov esi ActualDir, edi ClipName
+            While B$esi <> 0 | movsb | End_While | Mov B$edi 0
         End_If
 
     .End_If
@@ -1583,38 +1583,38 @@ AddUserMenu:
     On B$UserMenu0Path = 0, jmp L9>>
     On B$UserMenu0String = 0, jmp L9>>
 
-    call 'USER32.CreatePopupMenu' | mov D$UserPopUpHandle eax
-    call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2000 UserMenu0String
+    Call 'USER32.CreatePopupMenu' | Mov D$UserPopUpHandle eax
+    Call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2000 UserMenu0String
 
     On B$UserMenu1Path = 0, jmp L8>>
     On B$UserMenu1String = 0, jmp L8>>
-        call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2001 UserMenu1String
+        Call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2001 UserMenu1String
     On B$UserMenu2Path = 0, jmp L8>>
     On B$UserMenu2String = 0, jmp L8>>
-        call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2002 UserMenu2String
+        Call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2002 UserMenu2String
     On B$UserMenu3Path = 0, jmp L8>>
     On B$UserMenu3String = 0, jmp L8>>
-        call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2003 UserMenu3String
+        Call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2003 UserMenu3String
     On B$UserMenu4Path = 0, jmp L8>>
     On B$UserMenu4String = 0, jmp L8>>
-        call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2004 UserMenu4String
+        Call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2004 UserMenu4String
     On B$UserMenu5Path = 0, jmp L8>>
     On B$UserMenu5String = 0, jmp L8>>
-        call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2005 UserMenu5String
+        Call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2005 UserMenu5String
     On B$UserMenu6Path = 0, jmp L8>>
     On B$UserMenu6String = 0, jmp L8>>
-        call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2006 UserMenu6String
+        Call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2006 UserMenu6String
     On B$UserMenu7Path = 0, jmp L8>>
     On B$UserMenu7String = 0, jmp L8>>
-        call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2007 UserMenu7String
+        Call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2007 UserMenu7String
     On B$UserMenu8Path = 0, jmp L8>>
     On B$UserMenu8String = 0, jmp L8>>
-        call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2008 UserMenu8String
+        Call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2008 UserMenu8String
     On B$UserMenu9Path = 0, jmp L8>>
     On B$UserMenu9String = 0, jmp L8>>
-        call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2009 UserMenu9String
+        Call 'USER32.AppendMenuA' D$UserPopUpHandle &MF_STRING 2009 UserMenu9String
 
- L8: call 'USER32.InsertMenuA' D$MenuHandle 7 &MF_BYPOSITION__&MF_STRING__&MF_POPUP,
+ L8: Call 'USER32.InsertMenuA' D$MenuHandle 7 &MF_BYPOSITION__&MF_STRING__&MF_POPUP,
                               D$UserPopUpHandle  UserPopMenu
 
 L9: ret
@@ -1631,14 +1631,14 @@ ________________________________________________________________________________
 
 SetMainConfigFilePath:
     push esi
-        call 'KERNEL32.GetCurrentDirectoryA' &MAX_PATH, ConfigFilePath
+        Call 'KERNEL32.GetCurrentDirectoryA' &MAX_PATH, ConfigFilePath
 
-        mov edi ConfigFilePath, eax 0, ecx 0-1
+        Mov edi ConfigFilePath, eax 0, ecx 0-1
         repne scasb | dec edi
 
-        On B$edi-1 <> '\', mov B$edi '\' | inc edi
+        On B$edi-1 <> '\', Mov B$edi '\' | inc edi
 
-        mov esi ConfigBinaryName, ecx 13
+        Mov esi ConfigBinaryName, ecx 13
         rep movsb
     pop esi
 ret
@@ -1647,24 +1647,24 @@ ret
 WriteConfigFile:
     push esi, edi
 
-    call 'KERNEL32.CreateFileA' ConfigFilePath, &GENERIC_READ+&GENERIC_WRITE,
+    Call 'KERNEL32.CreateFileA' ConfigFilePath, &GENERIC_READ+&GENERIC_WRITE,
                                 &FILE_SHARE_READ, &NULL,
                                 &CREATE_ALWAYS, &FILE_ATTRIBUTE_ARCHIVE, &NULL
-    mov D$ConfigFileHandle eax
+    Mov D$ConfigFileHandle eax
 
-    mov esi RegistryData
+    Mov esi RegistryData
 L1:
     push esi
-        call GetFieldDataSize esi
-        mov D$ConfigDataSize eax
-        call 'KERNEL32.WriteFile' D$ConfigFileHandle, ConfigDataSize, 4,
+        Call GetFieldDataSize esi
+        Mov D$ConfigDataSize eax
+        Call 'KERNEL32.WriteFile' D$ConfigFileHandle, ConfigDataSize, 4,
                                   ConfigSizeReadWrite, &NULL
-        call 'KERNEL32.WriteFile' D$ConfigFileHandle, D$esi+8, D$ConfigDataSize,
+        Call 'KERNEL32.WriteFile' D$ConfigFileHandle, D$esi+8, D$ConfigDataSize,
                                   ConfigSizeReadWrite, &NULL
     pop esi
     add esi 12 | cmp D$esi 0 | ja L1<
 
-    call 'KERNEL32.CloseHandle' D$ConfigFileHandle
+    Call 'KERNEL32.CloseHandle' D$ConfigFileHandle
 
     pop edi, esi
 ret
@@ -1673,28 +1673,28 @@ ret
 ReadConfigFile:
     push esi
 
-    call SetMainConfigFilePath
+    Call SetMainConfigFilePath
 
-    call 'KERNEL32.CreateFileA' ConfigFilePath, &GENERIC_READ+&GENERIC_WRITE,
+    Call 'KERNEL32.CreateFileA' ConfigFilePath, &GENERIC_READ+&GENERIC_WRITE,
                                 &FILE_SHARE_READ,
                                 &NULL &OPEN_EXISTING, &FILE_ATTRIBUTE_ARCHIVE &NULL
-    mov D$ConfigFileHandle eax
+    Mov D$ConfigFileHandle eax
 
-    mov esi RegistryData
+    Mov esi RegistryData
 L1:
     push esi
         ; The config is  structured like: [dword: sizeof data][data]
         ; So get the first dword and store it in >ConfigDataSize< :
-        call 'KERNEL32.ReadFile' D$ConfigFileHandle, ConfigDataSize, 4,
+        Call 'KERNEL32.ReadFile' D$ConfigFileHandle, ConfigDataSize, 4,
                                  ConfigSizeReadWrite, &NULL
         ; Read the block of data the sizeof >ConfigDataSize< and copy into
         ; RegistryData:
-        call 'KERNEL32.ReadFile' D$ConfigFileHandle, D$esi+8, D$ConfigDataSize,
+        Call 'KERNEL32.ReadFile' D$ConfigFileHandle, D$esi+8, D$ConfigDataSize,
                                  ConfigSizeReadWrite, &NULL
     pop esi
     add esi 12 | cmp D$esi 0 | ja L1<
 
-    call 'KERNEL32.CloseHandle' D$ConfigFileHandle
+    Call 'KERNEL32.CloseHandle' D$ConfigFileHandle
     pop esi
 ret
 ____________________________________________________________________________________________
@@ -1710,25 +1710,25 @@ ________________________________________________________________________________
 ;;
 
 CheckPaths:
-    mov al B$ConfigFilePath, bl B$EquatesName
+    Mov al B$ConfigFilePath, bl B$EquatesName
 
     .If al <> bl
         If D$EquatesName <> 'Equa'
-            mov B$EquatesName al
+            Mov B$EquatesName al
         End_If
 
         If D$B_U_AsmName <> 'B_U_'
-            mov B$B_U_AsmName al
+            Mov B$B_U_AsmName al
         End_If
 
         ;If D$CalcName <> 'Calc'
-        ;    On B$CalcName <> 0, mov B$CalcName al
+        ;    On B$CalcName <> 0, Mov B$CalcName al
         ;End_If
 
-        ;On B$F2Name <> 0, mov B$F2Name al
+        ;On B$F2Name <> 0, Mov B$F2Name al
 
         ;If D$Win32HlpName <> 'Win3'
-        ;    mov B$Win32HlpName al
+        ;    Mov B$Win32HlpName al
         ;End_If
 
     .End_If
@@ -1741,61 +1741,61 @@ ________________________________________________________________________________
 [WineDbgString: 'Debugger', 0]
 
 WineKey:
-    call 'ADVAPI32.RegCreateKeyExA' &HKEY_LOCAL_MACHINE, WineDebugKey, 0,
+    Call 'ADVAPI32.RegCreateKeyExA' &HKEY_LOCAL_MACHINE, WineDebugKey, 0,
                                     0, 0,
                                     &KEY_READ__&KEY_WRITE__&KEY_QUERY_VALUE,
                                     0, hRegKey, Result
 
-    call 'ADVAPI32.RegSetValueExA' D$hRegKey, WineDbgString, 0, &REG_SZ, WineDbg, 15
+    Call 'ADVAPI32.RegSetValueExA' D$hRegKey, WineDbgString, 0, &REG_SZ, WineDbg, 15
 ret
 ____________________________________________________________________________________________
 
 ; Regedit.exe: HKEY_CURRENT_USER / Software / RosAsm
 
 WhateverConfig:  ; 'Main'
-    call SetMainConfigFilePath
+    Call SetMainConfigFilePath
 
-    call 'KERNEL32.FindFirstFileA' ConfigFilePath, FindFile
+    Call 'KERNEL32.FindFirstFileA' ConfigFilePath, FindFile
     push eax
-        call 'KERNEL32.FindClose' eax
+        Call 'KERNEL32.FindClose' eax
     pop eax
 
     ..If eax = &INVALID_HANDLE_VALUE
-        call OpenRegistry
+        Call OpenRegistry
 
         .If D$Result = &REG_CREATED_NEW_KEY
          ; Tag Dialog 3
-            call 'USER32.DialogBoxParamA' D$hinstance, 3, &NULL,
+            Call 'USER32.DialogBoxParamA' D$hinstance, 3, &NULL,
                                            ConfigProc, &NULL
             If D$UserConfig = 0FF
-                call CloseRegistry
-                call 'ADVAPI32.RegDeleteKeyA' &HKEY_CURRENT_USER, RosAsmKey
-                call 'KERNEL32.ExitProcess', 0
+                Call CloseRegistry
+                Call 'ADVAPI32.RegDeleteKeyA' &HKEY_CURRENT_USER, RosAsmKey
+                Call 'KERNEL32.ExitProcess', 0
 
             Else_If D$UserConfig = REGISTRY
               ; "Read" assumes create when none:
-                call ReadRegistry
-                mov D$UserConfig REGISTRY
+                Call ReadRegistry
+                Mov D$UserConfig REGISTRY
 
             Else
-                call CloseRegistry
-                call 'ADVAPI32.RegDeleteKeyA' &HKEY_CURRENT_USER, RosAsmKey
-                mov D$UserConfig CONFIGFILE
-                call AutoInit
-                call WriteConfigFile
+                Call CloseRegistry
+                Call 'ADVAPI32.RegDeleteKeyA' &HKEY_CURRENT_USER, RosAsmKey
+                Mov D$UserConfig CONFIGFILE
+                Call AutoInit
+                Call WriteConfigFile
 
             End_If
 
         .Else
-            call ReadRegistry
-            mov D$UserConfig REGISTRY
+            Call ReadRegistry
+            Mov D$UserConfig REGISTRY
 
         .End_If
 
     ..Else
-        call ReadConfigFile
-        call CheckPaths
-        mov D$UserConfig CONFIGFILE
+        Call ReadConfigFile
+        Call CheckPaths
+        Mov D$UserConfig CONFIGFILE
 
     ..End_If
 ret
@@ -1816,50 +1816,50 @@ ________________________________________________________________________________
 ; Tag Dialog 3
 
 Proc ConfigProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ..If D@Message = &WM_COMMAND
+    ..If D@msg = &WM_COMMAND
         and D@wParam 0FFFF
 
         .If D@wParam = &IDCANCEL
-            mov D$UserConfig 0FF
-            call 'User32.EndDialog' D@Adressee, 0
+            Mov D$UserConfig 0FF
+            Call 'User32.EndDialog' D@hwnd, 0
 
         .Else_If D@wParam = &IDOK
-            call 'USER32.SendDlgItemMessageA' D@Adressee, 20, &BM_GETCHECK, 0, 0
+            Call 'USER32.SendDlgItemMessageA' D@hwnd, 20, &BM_GETCHECK, 0, 0
             If eax = &TRUE
-                mov D$UserConfig REGISTRY
+                Mov D$UserConfig REGISTRY
             Else
-                mov D$UserConfig CONFIGFILE
+                Mov D$UserConfig CONFIGFILE
             End_If
 
-            call 'User32.EndDialog' D@Adressee, 0
+            Call 'User32.EndDialog' D@hwnd, 0
         .End_If
 
-    ..Else_If D@Message = &WM_INITDIALOG
-        move D$ShowApiDialogHandle D@Adressee
-        call 'USER32.SetClassLongA' D@Adressee, &GCL_HICON, D$wc_hIcon
+    ..Else_If D@msg = &WM_INITDIALOG
+        move D$ShowApiDialogHandle D@hwnd
+        Call 'USER32.SetClassLongA' D@hwnd, &GCL_HICON, D$wc_hIcon
 
-        call 'User32.SetDlgItemTextA' D@Adressee, 10, ConfigMessage
+        Call 'User32.SetDlgItemTextA' D@hwnd, 10, ConfigMessage
 
-        call 'USER32.SendDlgItemMessageA' D@Adressee, 20, &BM_SETCHECK, 1, 0
+        Call 'USER32.SendDlgItemMessageA' D@hwnd, 20, &BM_SETCHECK, 1, 0
 
-    ..Else_If D@Message = &WM_CTLCOLOREDIT
+    ..Else_If D@msg = &WM_CTLCOLOREDIT
         If B$FirstCTLCOLOREDIT = &TRUE
-            call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0, 0
-            mov B$FirstCTLCOLOREDIT &FALSE
+            Call 'USER32.SendMessageA' D@lParam, &EM_SETSEL, 0, 0
+            Mov B$FirstCTLCOLOREDIT &FALSE
         End_If
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
 
     ..Else
-        popad | mov eax &FALSE | jmp L9>
+        popad | Mov eax &FALSE | jmp L9>
 
     ..End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 EndP
@@ -1867,11 +1867,11 @@ EndP
 ____________________________________________________________________________________________
 
 Create_Config_bin:
-    call 'USER32.MessageBoxA' 0, Config.Bin_Message, Config.Bin_Title, &MB_YESNO
+    Call 'USER32.MessageBoxA' 0, Config.Bin_Message, Config.Bin_Title, &MB_YESNO
 
     If eax = &IDYES
-        call SetMainConfigFilePath
-        call WriteConfigFile
+        Call SetMainConfigFilePath
+        Call WriteConfigFile
     End_If
 ret
 

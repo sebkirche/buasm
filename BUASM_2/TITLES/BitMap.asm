@@ -15,9 +15,9 @@ ________________________________________________________________________________
 ;Reads Bitmaps, if any, in new load RosAsm PE (just like "ReadRosAsmMenus" / "ReadRosAsmDialogs":
 
 ReadRosAsmBitMaps:
-    mov edi BitMapList, eax 0, ecx 300 | rep stosd
-    mov ebx &RT_BITMAP | call SearchResourceType | On eax = 0, ret
-    mov D$BitMapListPtr BitMapList, ebx BitMapListPtr | call ReadResourcesRecord
+    Mov edi BitMapList, eax 0, ecx 300 | rep stosd
+    Mov ebx &RT_BITMAP | Call SearchResourceType | On eax = 0, ret
+    Mov D$BitMapListPtr BitMapList, ebx BitMapListPtr | Call ReadResourcesRecord
 ret
 
 
@@ -39,62 +39,62 @@ ret
 
 LoadBitMap:
   ; Opening a .bmp file:
-    call SearchEmptyBitMapListRecord
+    Call SearchEmptyBitMapListRecord
 
-    mov edi BmSaveFilter, ecx 260, eax 0 | rep stosd
-    call 'Comdlg32.GetOpenFileNameA' BmOpenStruc | On D$BmSaveFilter = 0,  ret
+    Mov edi BmSaveFilter, ecx 260, eax 0 | rep stosd
+    Call 'Comdlg32.GetOpenFileNameA' BmOpenStruc | On D$BmSaveFilter = 0,  ret
 
-    On D$BmFileHandle > 0, call 'KERNEL32.CloseHandle' D$BmFileHandle
+    On D$BmFileHandle > 0, Call 'KERNEL32.CloseHandle' D$BmFileHandle
 
-    call 'KERNEL32.CreateFileA' BmSaveFilter, &GENERIC_READ,
+    Call 'KERNEL32.CreateFileA' BmSaveFilter, &GENERIC_READ,
                                 &FILE_SHARE_READ, 0, &OPEN_EXISTING,
                                 &FILE_ATTRIBUTE_NORMAL, 0
     If eax = &INVALID_HANDLE_VALUE
-        mov eax D$BusyFilePtr | call MessageBox | ret
+        Mov eax D$BusyFilePtr | Call MessageBox | ret
     Else
-        mov D$BmFileHandle eax
+        Mov D$BmFileHandle eax
     End_If
 
-    call 'KERNEL32.GetFileSize' eax 0 | sub eax 14
-    mov edi D$BitMapListPtr | add edi 8 | stosd         ; write BitMap lenght in List
+    Call 'KERNEL32.GetFileSize' eax 0 | sub eax 14
+    Mov edi D$BitMapListPtr | add edi 8 | stosd         ; write BitMap lenght in List
     add eax 14
-    mov D$BmFileLen eax                                 ; > eax = adress for asked memory
+    Mov D$BmFileLen eax                                 ; > eax = adress for asked memory
     VirtualAlloc TempoMemPointer eax
-    mov edi D$BitMapListPtr | add edi 4 | mov D$edi eax ; write BitMap mem adress in List
+    Mov edi D$BitMapListPtr | add edi 4 | Mov D$edi eax ; write BitMap mem adress in List
     push edi
-        mov D$NumberOfReadBytes 0
-        call 'KERNEL32.ReadFile' D$BmFileHandle D$TempoMemPointer,
+        Mov D$NumberOfReadBytes 0
+        Call 'KERNEL32.ReadFile' D$BmFileHandle D$TempoMemPointer,
                               14 NumberOfReadBytes 0    ; jump over BitMapFile header.
     pop edi
 
-    mov esi D$edi
+    Mov esi D$edi
     lodsw | cmp ax 'BM' | jne BadBitMapFileHeader
     lodsd | cmp eax D$BmFileLen | jne BadBitMapFileHeader
     lodsd | cmp eax 0 | jne BadBitMapFileHeader
-    lodsd | mov D$PointerToData eax
+    lodsd | Mov D$PointerToData eax
 
   ; Load BitMap Data in same table (overwrite no more use header):
-    mov ecx D$BmFileLen | sub ecx 14  ; 14 Bytes = len of File Header
+    Mov ecx D$BmFileLen | sub ecx 14  ; 14 Bytes = len of File Header
   ; (File header is: W$ Style // D$ Size // D$ 0 // D$ Ptr to Data).
 
     push edi
-        call 'KERNEL32.ReadFile' D$BmFileHandle D$edi ecx NumberOfReadBytes 0
+        Call 'KERNEL32.ReadFile' D$BmFileHandle D$edi ecx NumberOfReadBytes 0
     pop edi
 
   ; Ajust image size if this record is missing:
-    mov edi D$edi
+    Mov edi D$edi
     If D$edi+20 = 0
-        mov eax D$BmFileLen | sub eax D$PointerToData
-        mov D$edi+20 eax
+        Mov eax D$BmFileLen | sub eax D$PointerToData
+        Mov D$edi+20 eax
     End_If
 
   ; Ask user for what BitMap ID number:
-L1: call 'USER32.DialogBoxIndirectParamA' D$hinstance  BMIDDialog  0  BMIDDialogProc  0
+L1: Call 'USER32.DialogBoxIndirectParamA' D$hinstance  BMIDDialog  0  BMIDDialogProc  0
 
     If B$UserValidateBitMap = &TRUE
-        call ReOrderBitMapList
+        Call ReOrderBitMapList
     Else
-        mov edi D$BitMapListPtr, eax 0 | stosd | stosd | stosd
+        Mov edi D$BitMapListPtr, eax 0 | stosd | stosd | stosd
     End_If
 ret
 
@@ -102,13 +102,13 @@ ret
 [ConflictIDs: B$ 'This ID number is already in Use', 0  ReorderFlag: 0]
 
 ReOrderBitMapList:
-    mov B$ReorderFlag &FALSE
-    mov esi BitMapList, edi esi | add edi 12
+    Mov B$ReorderFlag &FALSE
+    Mov esi BitMapList, edi esi | add edi 12
     While D$edi > 0
-        mov eax D$esi
+        Mov eax D$esi
         If eax > D$edi
             Exchange D$esi D$edi, D$esi+4 D$edi+4, D$esi+8 D$edi+8
-            mov B$ReorderFlag &TRUE
+            Mov B$ReorderFlag &TRUE
         End_If
         add esi 12 | add edi 12
     End_While
@@ -117,11 +117,11 @@ ret
 
 SearchEmptyBitMapListRecord:
     push esi
-        mov esi BitMapList
+        Mov esi BitMapList
         While D$esi > 0
             add esi 12
         End_While
-        mov D$BitMapListPtr esi
+        Mov D$BitMapListPtr esi
     pop esi
 ret
 
@@ -129,8 +129,8 @@ ret
 [BadBitMapFile: 'Bad BitMap file header', 0]
 
 BadBitMapFileHeader:
-    call 'USER32.MessageBoxA' D$hwnd, BadBitMapFile, Argh, &MB_SYSTEMMODAL
-L8: mov edi D$BitMapListPtr, eax 0, ecx 3 | rep stosd
+    Call 'USER32.MessageBoxA' D$H.MainWindow, BadBitMapFile, Argh, &MB_SYSTEMMODAL
+L8: Mov edi D$BitMapListPtr, eax 0, ecx 3 | rep stosd
 ret
 
 
@@ -170,60 +170,60 @@ ret
 ; Suppress...
 
 Proc BMIDDialogProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_COMMAND
+    ...If D@msg = &WM_COMMAND
        ..If D@wParam = &IDCANCEL
-            call 'User32.EndDialog' D@Adressee 0
+            Call 'User32.EndDialog' D@hwnd 0
 
        ..Else_If D@wParam = &IDOK
-           call 'User32.GetDlgItem' D@Adressee 3 | mov D$BMIDeditHandle eax
-           call 'User32.SendMessageA' D$BMIDeditHandle &WM_GETTEXTLENGTH 0 0 | inc eax
-           call 'User32.SendMessageA' D$BMIDeditHandle &WM_GETTEXT eax uBitMapID
+           Call 'User32.GetDlgItem' D@hwnd 3 | Mov D$BMIDeditHandle eax
+           Call 'User32.SendMessageA' D$BMIDeditHandle &WM_GETTEXTLENGTH 0 0 | inc eax
+           Call 'User32.SendMessageA' D$BMIDeditHandle &WM_GETTEXT eax uBitMapID
            TranslateAsciiToDword uBitMapID
-           mov D$uBitMapID 0                         ; just for abort tests in callers:
+           Mov D$uBitMapID 0                         ; just for abort tests in callers:
            .If eax > 0FFFF    ; 32000                 ; 'StoreMenuEdition' / 'MenuEditProc'
-             mov eax D$IdTooBigPtr | call MessageBox
+             Mov eax D$IdTooBigPtr | Call MessageBox
            .Else_If eax < 1   ; 000
-             mov eax D$IdTooSmallPtr | call MessageBox
+             Mov eax D$IdTooSmallPtr | Call MessageBox
            .Else
-                mov esi BitMapList
+                Mov esi BitMapList
                 While D$esi > 0
-                    On D$esi = eax, mov eax 0
+                    On D$esi = eax, Mov eax 0
                     add esi 12
                 End_While
                 If eax = 0
-                    call 'USER32.MessageBoxA' D$hwnd, ConflictIDs, Argh, &MB_SYSTEMMODAL
+                    Call 'USER32.MessageBoxA' D$H.MainWindow, ConflictIDs, Argh, &MB_SYSTEMMODAL
                 Else
-                    mov edi D$BitMapListPtr, D$edi eax
-                    mov B$UserValidateBitMap &TRUE
-                    call 'User32.EndDialog' D@Adressee 0
+                    Mov edi D$BitMapListPtr, D$edi eax
+                    Mov B$UserValidateBitMap &TRUE
+                    Call 'User32.EndDialog' D@hwnd 0
                 End_If
            .End_If
 
        ..End_If
 
-    ...Else_If D@Message = &WM_INITDIALOG
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
-        mov B$UserValidateBitMap &FALSE
-        call 'User32.GetDlgItem' D@Adressee 3
-        call 'User32.SendMessageA' eax &EM_SETLIMITTEXT 5  0
-           mov esi D$BitMapListPtr | On esi > BitMapList, sub esi 12
+    ...Else_If D@msg = &WM_INITDIALOG
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
+        Mov B$UserValidateBitMap &FALSE
+        Call 'User32.GetDlgItem' D@hwnd 3
+        Call 'User32.SendMessageA' eax &EM_SETLIMITTEXT 5  0
+           Mov esi D$BitMapListPtr | On esi > BitMapList, sub esi 12
            If D$esi = 0
-             mov eax 1   ; 30000
+             Mov eax 1   ; 30000
            Else
              lodsd | inc eax
            End_If
-           call 'USER32.SetDlgItemInt' D@Adressee 3 eax 0
+           Call 'USER32.SetDlgItemInt' D@hwnd 3 eax 0
 
     ...Else
-       popad | mov eax &FALSE | jmp L9>
+       popad | Mov eax &FALSE | jmp L9>
 
     ...End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
@@ -236,10 +236,10 @@ L9: EndP
 
 BitMapViewer:
     .If D$BitMapListPtr > BitMapList
-        mov W$BitMapDialogControlsNumber 2
-        call 'USER32.DialogBoxIndirectParamA' D$hinstance BitMapDialog  0  BitMapProc  0
+        Mov W$BitMapDialogControlsNumber 2
+        Call 'USER32.DialogBoxIndirectParamA' D$hinstance BitMapDialog  0  BitMapProc  0
         If B$UserValidateBitMap = &FALSE
-            mov edi D$BitMapListPtr, eax 0 | stosd | stosd | stosd
+            Mov edi D$BitMapListPtr, eax 0 | stosd | stosd | stosd
         End_If
     .End_If
 ret
@@ -250,11 +250,11 @@ ret
 [DeleteBitMapTitle: U$ 'Delete'  ShowBitMapTitle: 'Exit  ']
 
 DeleteBitMap:
-    mov edi BMPEXIT, esi DeleteBitMapTitle, ecx 12 | rep movsb
-    mov W$BitMapDialogControlsNumber 5 | call BitMapView
+    Mov edi BMPEXIT, esi DeleteBitMapTitle, ecx 12 | rep movsb
+    Mov W$BitMapDialogControlsNumber 5 | Call BitMapView
 
     If B$UserValidateBitMap = &TRUE
-        mov edi D$BitMapListPtr, esi edi | add esi 12
+        Mov edi D$BitMapListPtr, esi edi | add esi 12
         While D$edi > 0
             movsd | movsd |movsd
         End_While
@@ -263,19 +263,19 @@ ret
 
 
 ShowBitMapsIds:
-    mov edi BMPEXIT, esi ShowBitMapTitle, ecx 12 | rep movsb
-    mov W$BitMapDialogControlsNumber 4 | call BitMapView
+    Mov edi BMPEXIT, esi ShowBitMapTitle, ecx 12 | rep movsb
+    Mov W$BitMapDialogControlsNumber 4 | Call BitMapView
 ret
 
 
 BitMapView:
-    mov D$BitMapListPtr BitMapList, eax D$BitMapListPtr
+    Mov D$BitMapListPtr BitMapList, eax D$BitMapListPtr
 
     If D$eax = 0
-        mov B$UserValidateBitMap &FALSE
-        call 'USER32.MessageBoxA' D$hwnd, NoBitMap, Argh, &MB_SYSTEMMODAL
+        Mov B$UserValidateBitMap &FALSE
+        Call 'USER32.MessageBoxA' D$H.MainWindow, NoBitMap, Argh, &MB_SYSTEMMODAL
     Else
-        call 'USER32.DialogBoxIndirectParamA' D$hinstance, BitMapDialog, 0, BitMapProc, 0
+        Call 'USER32.DialogBoxIndirectParamA' D$hinstance, BitMapDialog, 0, BitMapProc, 0
     End_If
 ret
 
@@ -283,26 +283,26 @@ ret
 [UserValidateBitMap: ?] [BitMapIdText: ? ? ? ?]
 
 Proc BitMapProc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_COMMAND
+    ...If D@msg = &WM_COMMAND
          ..If D@wParam = &IDOK
-             mov B$UserValidateBitMap &TRUE
-             call 'User32.EndDialog' D@Adressee 0
+             Mov B$UserValidateBitMap &TRUE
+             Call 'User32.EndDialog' D@hwnd 0
 
          ..Else_If D@wParam = &IDCANCEL
-             mov B$UserValidateBitMap &FALSE
-             call 'User32.EndDialog' D@Adressee 0
+             Mov B$UserValidateBitMap &FALSE
+             Call 'User32.EndDialog' D@hwnd 0
 
          ..Else_If D@wParam = 3                        ; >>>>
-             mov eax D$BitMapListPtr | add eax 12
-             mov ebx MAXBITMAP | shl ebx 2 | add ebx BitMapList
+             Mov eax D$BitMapListPtr | add eax 12
+             Mov ebx MAXBITMAP | shl ebx 2 | add ebx BitMapList
              .If eax < ebx                             ; ebx = end of BitMapList
                 If D$eax > 0
-                    mov D$BitMapListPtr eax
-                    call 'USER32.RedrawWindow' D@Adressee 0  0,
+                    Mov D$BitMapListPtr eax
+                    Call 'USER32.RedrawWindow' D@hwnd 0  0,
                                            &RDW_ERASE+&RDW_INVALIDATE+&RDW_INTERNALPAINT
                 End_If
              .End_If
@@ -310,61 +310,61 @@ Proc BitMapProc:
          ..Else_If D@wParam = 4                        ; <<<<
              If D$BitMapListPtr > BitMapList
                  sub D$BitMapListPtr 12
-                 call 'USER32.RedrawWindow' D@Adressee 0  0,
+                 Call 'USER32.RedrawWindow' D@hwnd 0  0,
                                            &RDW_ERASE+&RDW_INVALIDATE+&RDW_INTERNALPAINT
              End_If
        ..End_If
 
-    ...Else_If D@Message = &WM_PAINT
+    ...Else_If D@msg = &WM_PAINT
 
-         call 'User32.BeginPaint'  D@Adressee  PAINTSTRUCT
-             mov D$hdc eax
-             call 'GDI32.CreateCompatibleDC' D$hdc | mov D$hMemDC eax
+         Call 'User32.BeginPaint'  D@hwnd  PAINTSTRUCT
+             Mov D$hdc eax
+             Call 'GDI32.CreateCompatibleDC' D$hdc | Mov D$hMemDC eax
 
-             mov esi D$BitMapListPtr | lodsd          ; ID
-             call SetBitMapIdText D@Adressee
-             lodsd | mov edi eax                      ; > edi > adress
+             Mov esi D$BitMapListPtr | lodsd          ; ID
+             Call SetBitMapIdText D@hwnd
+             lodsd | Mov edi eax                      ; > edi > adress
              lodsd                                    ; eax = lenght
-             mov esi edi, ebx D$esi+20                ; ebx = image size
+             Mov esi edi, ebx D$esi+20                ; ebx = image size
              sub eax ebx | add eax edi                ; eax > ptr to bmp data
 
-             call 'GDI32.CreateDIBitmap' D$hdc  edi  &CBM_INIT  eax  edi  &DIB_RGB_COLORS
-                 mov D$hBitmap eax
-                 call 'GDI32.SelectObject' D$hMemDC D$hBitmap
-                 call 'User32.GetClientRect' D@Adressee RECT
-                 call 'GDI32.BitBlt' D$hdc 0 0 D$Rect_Right D$Rect_bottom D$hMemDC 0 0 &SRCCOPY
-             call 'GDI32.DeleteDC' D$hMemDC
-         call 'User32.EndPaint' D@Adressee PAINTSTRUCT
-         call 'GDI32.DeleteObject' D$hBitmap
+             Call 'GDI32.CreateDIBitmap' D$hdc  edi  &CBM_INIT  eax  edi  &DIB_RGB_COLORS
+                 Mov D$hBitmap eax
+                 Call 'GDI32.SelectObject' D$hMemDC D$hBitmap
+                 Call 'User32.GetClientRect' D@hwnd RECT
+                 Call 'GDI32.BitBlt' D$hdc 0 0 D$Rect_Right D$Rect_bottom D$hMemDC 0 0 &SRCCOPY
+             Call 'GDI32.DeleteDC' D$hMemDC
+         Call 'User32.EndPaint' D@hwnd PAINTSTRUCT
+         Call 'GDI32.DeleteObject' D$hBitmap
 
-    ...Else_If D@Message = &WM_INITDIALOG
-        mov D$BitMapListPtr BitMapList
-        call 'USER32.SetClassLongA' D@Adressee &GCL_HICON D$wc_hIcon
+    ...Else_If D@msg = &WM_INITDIALOG
+        Mov D$BitMapListPtr BitMapList
+        Call 'USER32.SetClassLongA' D@hwnd &GCL_HICON D$wc_hIcon
 
     ...Else
-       popad | mov eax &FALSE | jmp L9>
+       popad | Mov eax &FALSE | jmp L9>
 
     ...End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
 
 Proc SetBitMapIdText:
-    Argument @Adressee
+    Argument @hwnd
 
     pushad
         push 0_FFFF_FFFF
-        mov edi BitMapIdText, ecx 10
-L0:     mov edx 0 | div ecx | cmp eax 0 | je L2>
+        Mov edi BitMapIdText, ecx 10
+L0:     Mov edx 0 | div ecx | cmp eax 0 | je L2>
             push edx | jmp L0<
 L2:         push edx
 L2:     pop eax | cmp eax 0_FFFF_FFFF | je L3>
             add al '0' | stosb | jmp L2<
-L3:     mov al 0 | stosb
-        call 'USER32.GetDlgItem' D@Adressee 5
-        call 'USER32.SetWindowTextA' eax BitMapIdText
+L3:     Mov al 0 | stosb
+        Call 'USER32.GetDlgItem' D@hwnd 5
+        Call 'USER32.SetWindowTextA' eax BitMapIdText
     popad
 EndP
 

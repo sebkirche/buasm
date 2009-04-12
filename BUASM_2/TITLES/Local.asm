@@ -42,14 +42,14 @@ TITLE Local
   So, all Mother-Memories hold 128 Local Chunks.
   
   The Mother Chunks (like the 'LocalChunksTable' Memories) are never released
-  (no call to VirtualFree). In cases of call to 'LocalFree', the concerned Bit
+  (no Call to VirtualFree). In cases of Call to 'LocalFree', the concerned Bit
   is set to zero.
   
   To fasten the LocalFree operation, each Local Chunk begins with two dWOrds:
   The Address, inside one of the "Follow-Up Tables", the bit position of the
   Local Chunk and the indice of chunk size(this last two in the last dword)
   
-  So, when calling, for example, a call for a 100 Bytes Local Chunk, the real
+  So, when calling, for example, a Call for a 100 Bytes Local Chunk, the real
   size will be 108 Bytes. Then, the 'LocalAlloc' Routine will align that Value
   on the closer possible Size, that is, 128 Bytes, and return a to the caller
   a Pointer to the third dWord on that boundary.
@@ -66,9 +66,9 @@ Proc CreateLocalChunksTable:
     Argument @Indice
 
         VirtualAlloc NewMem, PAGESIZE
-        mov eax D@Indice, ebx D$NewMem
-        mov D$LocalChunksTable+eax*4 ebx
-        mov D$LocalChunksTablePages+eax*4 1
+        Mov eax D@Indice, ebx D$NewMem
+        Mov D$LocalChunksTable+eax*4 ebx
+        Mov D$LocalChunksTablePages+eax*4 1
 EndP
 
 ;;
@@ -83,15 +83,15 @@ Proc ExtendLocalChunksTable:
     Argument @Indice
     Uses ecx, edx
 
-        mov edx D@Indice
+        Mov edx D@Indice
 
         inc D$LocalChunksTablePages+edx*4
-        mov ecx D$LocalChunksTablePages+edx*4 | shl ecx 12 ; 001000000000000 = 01000
+        Mov ecx D$LocalChunksTablePages+edx*4 | shl ecx 12 ; 001000000000000 = 01000
         push ecx edx
             VirtualAlloc NewMem ecx
         pop edx ecx
         sub ecx PAGESIZE
-        shr ecx 2 | mov esi D$LocalChunksTable+edx*4, edi D$NewMem | rep movsd
+        shr ecx 2 | Mov esi D$LocalChunksTable+edx*4, edi D$NewMem | rep movsd
         VirtualFree D$LocalChunksTable+edx*4
         move D$FreeLocalChunkPointer+edx*4 D$NewMem | add D$FreeLocalChunkPointer+edx*4  PAGESIZE
         move D$LocalChunksTable+edx*4 D$NewMem
@@ -99,7 +99,7 @@ Proc ExtendLocalChunksTable:
 EndP
 ____________________________________________________________________________________________
 
-[LocalAlloc | call LocAlloc #1, #2 | #+2]
+[LocalAlloc | Call LocAlloc #1, #2 | #+2]
 ; Evocation: LocalAlloc Pointer, Size
 
 Proc LocAlloc:
@@ -111,68 +111,68 @@ Proc LocAlloc:
         add D@Size 8
 
         If D@Size < 32
-            mov D@Size 32
+            Mov D@Size 32
         Else_If D@Size > (PAGESIZE/2)
             VirtualAlloc D@Pointer, D@Size
-            mov D$eax eax, D$eax+4 0-1 | add eax 8
-            mov ecx D@Pointer | mov D$ecx eax
+            Mov D$eax eax, D$eax+4 0-1 | add eax 8
+            Mov ecx D@Pointer | Mov D$ecx eax
             ExitP
         End_If
 
-        mov eax D@Size | bsr ecx eax | mov eax 1 | shl eax cl
+        Mov eax D@Size | bsr ecx eax | Mov eax 1 | shl eax cl
         If D@Size > eax
             shl eax 1 | inc ecx
         End_If
         sub ecx 5
       ; ecx = Zero Based Indice for the 'LocalChunksTable' // eax = Aligned Chunk Size
         shl eax 7 ; * 128
-        mov D@Indice ecx, D@FollowUpTableSize eax
+        Mov D@Indice ecx, D@FollowUpTableSize eax
 
         If D$FreeLocalChunkPointer+ecx*4 = 0
-            mov esi D$LocalChunksTable+ecx*4
+            Mov esi D$LocalChunksTable+ecx*4
         Else
-            mov esi D$FreeLocalChunkPointer+ecx*4
+            Mov esi D$FreeLocalChunkPointer+ecx*4
         End_If
 
         If esi = 0
             push ecx
-                call CreateLocalChunksTable ecx
+                Call CreateLocalChunksTable ecx
             pop ecx
-            mov esi D$LocalChunksTable+ecx*4
+            Mov esi D$LocalChunksTable+ecx*4
         End_If
 
       ; esi = Follow-Up Tables List
-L0:     lodsd | mov ebx eax
+L0:     lodsd | Mov ebx eax
         .If ebx = 0
             push esi ecx
               ; Allocation of a Mother Chunk. (Size * 128)
                 VirtualAlloc NewMem, D@FollowUpTableSize
             pop ecx esi
-            mov D$esi-4 eax, ebx eax
+            Mov D$esi-4 eax, ebx eax
 
             ; If at the end of the 'LocalChunksTable', extend it for next allocations:
-            mov edx D$LocalChunksTablePages+ecx*4 | shl edx 12 | add edx D$LocalChunksTable+ecx*4
+            Mov edx D$LocalChunksTablePages+ecx*4 | shl edx 12 | add edx D$LocalChunksTable+ecx*4
             sub edx 40
             If esi >= edx
                 sub esi D$LocalChunksTable+ecx*4
                 push esi
-                    call ExtendLocalChunksTable ecx
+                    Call ExtendLocalChunksTable ecx
                 pop edx
-                mov esi D$LocalChunksTable+ecx*4 | add esi edx
+                Mov esi D$LocalChunksTable+ecx*4 | add esi edx
             End_If
         .End_If
 
         If D$esi <> 0-1
-            mov eax D$esi, edx 0
+            Mov eax D$esi, edx 0
         Else_If D$esi+4 <> 0-1
-            mov eax D$esi+4, edx 4
+            Mov eax D$esi+4, edx 4
         Else_If D$esi+8 <> 0-1
-            mov eax D$esi+8, edx 8
+            Mov eax D$esi+8, edx 8
         Else_If D$esi+12 <> 0-1
-            mov eax D$esi+12, edx 12
+            Mov eax D$esi+12, edx 12
         Else
             add esi (4*4)
-            mov D$FreeLocalChunkPointer+ecx*4 esi
+            Mov D$FreeLocalChunkPointer+ecx*4 esi
             jmp L0<<
         End_If
 
@@ -186,24 +186,24 @@ L0:     lodsd | mov ebx eax
       ; eax = bit position in the Follow-Up Table (0 to 127)
 
       ; Keep (esi+edx), eax and D@Indice value for LocFree
-        add esi edx | mov edx eax | shl edx 16 | mov dx W@Indice
+        add esi edx | Mov edx eax | shl edx 16 | Mov dx W@Indice
       ; Multiplication by ChunkSize
-        mov ecx D@Indice | add ecx 5 | shl eax cl | add eax ebx
+        Mov ecx D@Indice | add ecx 5 | shl eax cl | add eax ebx
       ; eax is now the Address of the new Local Chunk (example: 030510000+(BitIndice*ChunkSize)
-        mov D$eax esi, D$eax+4 edx | add eax 8
-        mov ecx D@Pointer | mov D$ecx eax
+        Mov D$eax esi, D$eax+4 edx | add eax 8
+        Mov ecx D@Pointer | Mov D$ecx eax
 EndP
 ____________________________________________________________________________________________
 
-[LocalFree  | cmp #1 0 | je V9> | mov eax #1
-                    call LocFree
-               mov #1 0 | V9: | #+1]
+[LocalFree  | cmp #1 0 | je V9> | Mov eax #1
+                    Call LocFree
+               Mov #1 0 | V9: | #+1]
 ; Evocation: LocalFree D$Pointer (>>> D$Pointer = 0, when back).
 
 LocFree: ; eax = Pointer to mem
     push ebx ecx edx
         If D$eax-4 <> 0-1
-            movzx ecx W$eax-4 | movzx edx W$eax-2 | mov ebx D$eax-8
+            movzx ecx W$eax-4 | movzx edx W$eax-2 | Mov ebx D$eax-8
             ; ebx: Follow-Up Table address of this chunk (points to the proper DWord in the table)
             ; ecx: Zero Based Indice for the 'LocalChunksTable'
             ; edx: bit position in the Follow-Up Table (0 to 127)
@@ -211,9 +211,9 @@ LocFree: ; eax = Pointer to mem
             and edx 31 | btr D$ebx edx
             ; we compute the byte in which this bit is from edx
             movzx edx W$eax-2 | and edx 0-32 | shr edx 3 | sub ebx edx | sub ebx 4
-            mov D$FreeLocalChunkPointer+ecx*4 ebx
+            Mov D$FreeLocalChunkPointer+ecx*4 ebx
         Else
-            mov eax D$eax-8 | call VirtFree
+            Mov eax D$eax-8 | Call VirtFree
         End_If
     pop edx ecx ebx
 ret
@@ -225,17 +225,17 @@ ________________________________________________________________________________
 ; 'LocalChunksTable'
 [MemAddrList: ? #5000 ]
 TestLocals:
-    call 'USER32.MessageBoxA' 0, {'Ready to test Local Engine', 0}, {'TestLocals', 0}, 0
+    Call 'USER32.MessageBoxA' 0, {'Ready to test Local Engine', 0}, {'TestLocals', 0}, 0
 
     LocalAlloc LocalTest1, 25
     LocalAlloc LocalTest2, 250
-    mov ecx 5000
+    Mov ecx 5000
     .While ecx > 0
         LocalAlloc LocalTest3, 504
-        mov D$MemAddrList+ecx*4 eax
-        mov ebx 0
+        Mov D$MemAddrList+ecx*4 eax
+        Mov ebx 0
         While ebx < 504
-            mov B$eax cl
+            Mov B$eax cl
             inc eax
             inc ebx
         End_While
@@ -246,7 +246,7 @@ TestLocals:
 
     LocalFree D$LocalTest2
    ; int3
-    mov ecx 5000
+    Mov ecx 5000
     While ecx > 0
         push ecx | LocalFree D$MemAddrList+ecx*4 | pop ecx
         dec ecx
@@ -255,7 +255,7 @@ TestLocals:
     LocalFree D$LocalTest1
    ; int3
 
-    call 'USER32.MessageBoxA' 0, {'test done', 0}, {'TestLocals', 0}, 0
+    Call 'USER32.MessageBoxA' 0, {'test done', 0}, {'TestLocals', 0}, 0
 ret
 
 
@@ -264,82 +264,82 @@ ret
 ; Tag Dialog 15
 
 Proc TestLocalTables:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message = &WM_COMMAND                  ; User action
+    ...If D@msg = &WM_COMMAND                  ; User action
         ..If D@wParam = &IDCANCEL                   ; User clicks on upper right [X]
             VirtualFree D$AllocTestMem
-            mov D$FileTypeChoice 0-1
-            call 'User32.EndDialog' D@Adressee 0
+            Mov D$FileTypeChoice 0-1
+            Call 'User32.EndDialog' D@hwnd 0
 
         ..Else_If D@wParam = &IDOK
             VirtualFree D$AllocTestMem
-            call 'User32.EndDialog' D@Adressee 0
+            Call 'User32.EndDialog' D@hwnd 0
 
       ;  ..Else_If D@wParam = &IDHELP
-      ;      call Help B_U_AsmName, DisassemblerHelp, ...
+      ;      Call Help B_U_AsmName, DisassemblerHelp, ...
 
         ..Else
             movzx eax W@wParam
             If ax = 10
-                mov D$TestLocalSize 32
+                Mov D$TestLocalSize 32
             Else_If ax = 11
-                mov D$TestLocalSize 64
+                Mov D$TestLocalSize 64
             Else_If ax = 12
-                mov D$TestLocalSize 128
+                Mov D$TestLocalSize 128
 
             Else_If ax = 200 ; Allocate
-                call AllocationTest
+                Call AllocationTest
 
             Else_If ax = 201 ; Release
-                call ReleaseTest
+                Call ReleaseTest
             End_If
 
         ..End_If
 
-    ...Else_If D@Message = &WM_INITDIALOG          ; Win ready to build the Dialog
-       call 'USER32.CheckDlgButton' D@Adressee, 10, &TRUE
-       mov D$TestLocalSize 32
-       move D$TestLocalTableHandle D@Adressee
+    ...Else_If D@msg = &WM_INITDIALOG          ; Win ready to build the Dialog
+       Call 'USER32.CheckDlgButton' D@hwnd, 10, &TRUE
+       Mov D$TestLocalSize 32
+       move D$TestLocalTableHandle D@hwnd
        VirtualAlloc AllocTestMem, 010000
 
   ;  ...Else_If D$Message = &WM_CTLCOLOREDIT        ; Win ready to paint the Dialog
           ;      ; Control of output
 
     ...Else
-        popad | mov eax &FALSE | ExitP               ; Non processed
+        popad | Mov eax &FALSE | ExitP               ; Non processed
 
     ...End_If
 
-    popad | mov eax &TRUE                           ; Processed
+    popad | Mov eax &TRUE                           ; Processed
 EndP
 
 
 [AllocTestMem: ?]
 
 AllocationTest:
-    call 'USER32.GetDlgItemInt' D$TestLocalTableHandle, 20, 0, 0
+    Call 'USER32.GetDlgItemInt' D$TestLocalTableHandle, 20, 0, 0
 
     If eax = 0
-        call 'USER32.MessageBoxA' 0, {'Set some number of Chunks (1 to 1024)', 0},
+        Call 'USER32.MessageBoxA' 0, {'Set some number of Chunks (1 to 1024)', 0},
                                      {'LocalTests', 0}, &MB_SYSTEMMODAL
     Else_If eax > (01000/4)
-        call 'USER32.MessageBoxA' 0, {'Set some number of Chunks (1 to 1024)', 0},
+        Call 'USER32.MessageBoxA' 0, {'Set some number of Chunks (1 to 1024)', 0},
                                      {'LocalTests', 0}, &MB_SYSTEMMODAL
     Else
-        mov ecx eax
+        Mov ecx eax
 
 L0:     push ecx
             LocalAlloc LocalTest1, D$TestLocalSize
-            mov edi D$AllocTestMem
+            Mov edi D$AllocTestMem
             While D$edi <> 0 | add edi 4 | End_While
             move D$edi D$LocalTest1
         pop ecx | loop L0<
     End_If
 
-    call ShowLocalTest
+    Call ShowLocalTest
 ret
 
 
@@ -353,61 +353,61 @@ ret
 ShowLocalTest: ;ret ; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     VirtualAlloc ShowLocalTestMem 0FFFF
 
-        mov edi D$ShowLocalTestMem
+        Mov edi D$ShowLocalTestMem
 
-        mov esi D$LocalChunksTable | On esi = 0, jmp L1>
-
-        If D$esi = 0
-L1:         mov D$edi 'None', W$edi+4 CRLF | add edi 6
-        Else
-            While D$esi <> 0
-                lodsd | call WriteEax | mov W$edi ': ' | add edi 2
-                lodsd | call WriteEax | mov W$edi ', ' | add edi 2
-                lodsd | call WriteEax | mov W$edi ', ' | add edi 2
-                lodsd | call WriteEax | mov W$edi ', ' | add edi 2
-                lodsd | call WriteEax | mov D$edi ' // ' | add edi 4
-            End_While
-            mov W$edi CRLF | add edi 2
-        End_If
-
-        mov esi D$LocalChunksTable+4 | On esi = 0, jmp L1>
+        Mov esi D$LocalChunksTable | On esi = 0, jmp L1>
 
         If D$esi = 0
-L1:         mov D$edi 'None', W$edi+4 CRLF | add edi 6
+L1:         Mov D$edi 'None', W$edi+4 CRLF | add edi 6
         Else
             While D$esi <> 0
-                lodsd | call WriteEax | mov W$edi ': ' | add edi 2
-                lodsd | call WriteEax | mov W$edi ', ' | add edi 2
-                lodsd | call WriteEax | mov D$edi ' // ' | add edi 4
+                lodsd | Call WriteEax | Mov W$edi ': ' | add edi 2
+                lodsd | Call WriteEax | Mov W$edi ', ' | add edi 2
+                lodsd | Call WriteEax | Mov W$edi ', ' | add edi 2
+                lodsd | Call WriteEax | Mov W$edi ', ' | add edi 2
+                lodsd | Call WriteEax | Mov D$edi ' // ' | add edi 4
             End_While
-            mov W$edi CRLF | add edi 2
+            Mov W$edi CRLF | add edi 2
         End_If
 
-        mov esi D$LocalChunksTable+8 | On esi = 0, jmp L1>
+        Mov esi D$LocalChunksTable+4 | On esi = 0, jmp L1>
 
         If D$esi = 0
-L1:         mov D$edi 'None', W$edi+4 CRLF | add edi 6
+L1:         Mov D$edi 'None', W$edi+4 CRLF | add edi 6
         Else
             While D$esi <> 0
-                lodsd | call WriteEax | mov W$edi ': ' | add edi 2
-                lodsd | call WriteEax | mov D$edi ' // ' | add edi 4
+                lodsd | Call WriteEax | Mov W$edi ': ' | add edi 2
+                lodsd | Call WriteEax | Mov W$edi ', ' | add edi 2
+                lodsd | Call WriteEax | Mov D$edi ' // ' | add edi 4
             End_While
-            mov W$edi CRLF | add edi 2
+            Mov W$edi CRLF | add edi 2
         End_If
 
-        mov esi D$LocalChunksTable+12 | On esi = 0, jmp L1>
+        Mov esi D$LocalChunksTable+8 | On esi = 0, jmp L1>
 
         If D$esi = 0
-L1:         mov D$edi 'None', W$edi+4 CRLF | add edi 6
+L1:         Mov D$edi 'None', W$edi+4 CRLF | add edi 6
         Else
             While D$esi <> 0
-                lodsd | call WriteEax | mov W$edi ': ' | add edi 2
-                lodsd | call WriteEax | mov D$edi ' // ' | add edi 4
+                lodsd | Call WriteEax | Mov W$edi ': ' | add edi 2
+                lodsd | Call WriteEax | Mov D$edi ' // ' | add edi 4
             End_While
-            mov W$edi CRLF | add edi 2
+            Mov W$edi CRLF | add edi 2
         End_If
 
-    call 'USER32.SendDlgItemMessageA' D$TestLocalTableHandle, 100,
+        Mov esi D$LocalChunksTable+12 | On esi = 0, jmp L1>
+
+        If D$esi = 0
+L1:         Mov D$edi 'None', W$edi+4 CRLF | add edi 6
+        Else
+            While D$esi <> 0
+                lodsd | Call WriteEax | Mov W$edi ': ' | add edi 2
+                lodsd | Call WriteEax | Mov D$edi ' // ' | add edi 4
+            End_While
+            Mov W$edi CRLF | add edi 2
+        End_If
+
+    Call 'USER32.SendDlgItemMessageA' D$TestLocalTableHandle, 100,
                                       &WM_SETTEXT, 0, D$ShowLocalTestMem
 
     VirtualFree D$ShowLocalTestMem

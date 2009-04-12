@@ -81,8 +81,8 @@ ________________________________________________________________________________
  
  If you need to insert some Labels of yours when Parsing, you may :
  
- > call CreateNoMeanLabel
- > call WriteNoMeanLabel
+ > Call CreateNoMeanLabel
+ > Call WriteNoMeanLabel
  
  Then, at 'NoMeanLabel', you have a String that you may copy in your output. In case
  of problem, first see how they are used in 'ParaMacrosParser', for example...
@@ -118,7 +118,7 @@ ________________________________________________________________________________
 
 NewParser: RET  ; <<<<<<<<<<<<<<<<<!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    mov esi D$CodeSourceA, edi D$CodeSourceB | mov ecx esi | add ecx D$StripLen
+    Mov esi D$CodeSourceA, edi D$CodeSourceB | Mov ecx esi | add ecx D$StripLen
 
     .While esi < ecx
         ;
@@ -129,7 +129,7 @@ NewParser: RET  ; <<<<<<<<<<<<<<<<<!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     .End_While
 
-    sub edi D$CodeSourceB | mov D$StripLen edi
+    sub edi D$CodeSourceB | Mov D$StripLen edi
     Exchange D$CodeSourceA D$CodeSourceB
 ret
 

@@ -154,12 +154,12 @@ Procedures to the Data belonging to the object:
 >Proc SetValue:
 >    arguments @NamePtr, @Value
 >    
->        mov esi D@NamePtr, eax D@Value, D$esi eax
+>        Mov esi D@NamePtr, eax D@Value, D$esi eax
 >EndP
 
 > i.SetValue 1    ; <<<<<<<<<<
 
-; (Instead of "call D$i.SetValue D$i.Int, 1", or something like this).
+; (Instead of "Call D$i.SetValue D$i.Int, 1", or something like this).
 
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -180,15 +180,15 @@ in Memory, when the Objects creations statements are executed:
 If "Integer i" was not unfolded by the CLASS Parser, but by yourself, 'by Hand',
 it would look like this:
 
-> call GetvTable i, 16                      ; Parameters = ObjectHandleRoom, Size.
+> Call GetvTable i, 16                      ; Parameters = ObjectHandleRoom, Size.
 > push eax, ebx
->   mov D$eax SetValue                      ; store METHOD
->   lea ebx D$eax+24 | mov D$eax+4 ebx      ; 'Int' Pointer default Parameter
->   mov D$eax+8 AddValue                    ; store METHOD
->   lea ebx D$eax+24 | mov D$eax+12 ebx     ; 'Int' Pointer default Parameter
->   mov D$eax+16 ShowValue                  ; store METHOD
->   lea ebx D$eax+24 | mov D$eax+20 ebx     ; 'Int' Pointer default Parameter
->   mov D$eax+24 0                          ; Store Data initial Value(s).
+>   Mov D$eax SetValue                      ; store METHOD
+>   lea ebx D$eax+24 | Mov D$eax+4 ebx      ; 'Int' Pointer default Parameter
+>   Mov D$eax+8 AddValue                    ; store METHOD
+>   lea ebx D$eax+24 | Mov D$eax+12 ebx     ; 'Int' Pointer default Parameter
+>   Mov D$eax+16 ShowValue                  ; store METHOD
+>   lea ebx D$eax+24 | Mov D$eax+20 ebx     ; 'Int' Pointer default Parameter
+>   Mov D$eax+24 0                          ; Store Data initial Value(s).
 > pop ebx, eax
 
 "GetvTable" (like "GetMultiplevTable") is a Main Procedure of the OOA Memory Manager. 
@@ -197,13 +197,13 @@ Not only the CLASS Parser replaces your "Integer i" statement by the previous Co
 Chunk, but, at the same time, it creates a set of pseudo-Macros, in order to make
 your OOP programing friendly. Those Macros could look like this:
 
-> [i.SetValue | mov eax D$i | call D$eax+0 D$eax+4, #1]
-> [i.AddValue | mov eax D$i | call D$eax+8 D$eax+12, #1]
-> [i.ShowValue | mov eax D$i | call D$eax+16 D$eax+20, #1]
+> [i.SetValue | Mov eax D$i | Call D$eax+0 D$eax+4, #1]
+> [i.AddValue | Mov eax D$i | Call D$eax+8 D$eax+12, #1]
+> [i.ShowValue | Mov eax D$i | Call D$eax+16 D$eax+20, #1]
 
 You may consider them usual RosAsm syntax Macros, written for you for free by the
 CLASS Parser, and immidiately unfolded by the ClASS Parser *before* all other
-downward computations. If an implicit Parameter is to be given in the call to a
+downward computations. If an implicit Parameter is to be given in the Call to a
 "Call-Table-Procedure", you just have to declare it in the CLASS, after the Procedure
 Name. The upper Macros examples cover this with "D$eax+4" and friends, what will 
 effectively be unfolded under the usual form of a "push D$i+12".
@@ -242,13 +242,13 @@ nothing more:
 >Proc SetValue:
 >    arguments @NamePtr, @Value
 >    
->        mov esi D@NamePtr, eax D@Value, D$esi eax
+>        Mov esi D@NamePtr, eax D@Value, D$esi eax
 >EndP
 
 >Proc AddValue:
 >    arguments @NamePtr, @Value
 >    
->        mov esi D@NamePtr, eax D@Value | add D$esi eax
+>        Mov esi D@NamePtr, eax D@Value | add D$esi eax
 >EndP
 
 >Proc ShowValue:
@@ -272,7 +272,7 @@ If, for example, in "InstanceOne", a Function has been run, in order to allocate
 memory, and to save this memory Pointer into its object Data, the "InstanceTwo" Member
 holding this allocated memory Pointer *will* point to the same Memory as the one in
 "InstanceOne". If you plan to have different Memories allocated for each Instance,
-call the new created one Function for reinitializing the Memory Allocation and its
+Call the new created one Function for reinitializing the Memory Allocation and its
 object Data Pointer. If you plan to have the same dynamic Data (Pointers) in several
 Instances, this is the helpfull way. Of course, if your plan is to have two copies
 of the Pointed Data, you have to implement a Procedure performing the allocated Data 
@@ -285,15 +285,15 @@ your "Interger i" Statement, instead of:
 
 > Integer j                                 ; what will, again, add to your Code:
 
-> call GetvTable j, 16                      ; Parameters = ObjectHandleRoom, Size.
+> Call GetvTable j, 16                      ; Parameters = ObjectHandleRoom, Size.
 > push eax, ebx
->   mov D$eax SetValue                      ; store METHOD
->   lea ebx D$eax+24 | mov D$eax+4 ebx      ; 'Int' Pointer default Parameter
->   mov D$eax+8 AddValue                    ; store METHOD
->   lea ebx D$eax+24 | mov D$eax+12 ebx     ; 'Int' Pointer default Parameter
->   mov D$eax+16 ShowValue                  ; store METHOD
->   lea ebx D$eax+24 | mov D$eax+20 ebx     ; 'Int' Pointer default Parameter
->   mov D$eax+24 0                          ; Store Data initial Value(s).
+>   Mov D$eax SetValue                      ; store METHOD
+>   lea ebx D$eax+24 | Mov D$eax+4 ebx      ; 'Int' Pointer default Parameter
+>   Mov D$eax+8 AddValue                    ; store METHOD
+>   lea ebx D$eax+24 | Mov D$eax+12 ebx     ; 'Int' Pointer default Parameter
+>   Mov D$eax+16 ShowValue                  ; store METHOD
+>   lea ebx D$eax+24 | Mov D$eax+20 ebx     ; 'Int' Pointer default Parameter
+>   Mov D$eax+24 0                          ; Store Data initial Value(s).
 > pop ebx, eax
 
 You can do:
@@ -302,7 +302,7 @@ You can do:
 
 ; That will be unfolded as one single "call" instead of Bloatware:
 
-> call GetvTableFrom D$i, j, 16
+> Call GetvTableFrom D$i, j, 16
 
 As this formulation may save much of Code Bloat, it is silently applied by the CLASS
 Parser, when encounting Multiple Declarations:
@@ -311,23 +311,23 @@ Parser, when encounting Multiple Declarations:
 >
 > ; First shot:
 > push eax, ebx
->   mov D$eax SetValue                      ; store METHOD
->   lea ebx D$eax+24 | mov D$eax+4 ebx      ; 'Int' Pointer default Parameter
->   mov D$eax+8 AddValue                    ; store METHOD
->   lea ebx D$eax+24 | mov D$eax+12 ebx     ; 'Int' Pointer default Parameter
->   mov D$eax+16 ShowValue                  ; store METHOD
->   lea ebx D$eax+24 | mov D$eax+20 ebx     ; 'Int' Pointer default Parameter
->   mov D$eax+24 0                          ; Store Data initial Value(s).
+>   Mov D$eax SetValue                      ; store METHOD
+>   lea ebx D$eax+24 | Mov D$eax+4 ebx      ; 'Int' Pointer default Parameter
+>   Mov D$eax+8 AddValue                    ; store METHOD
+>   lea ebx D$eax+24 | Mov D$eax+12 ebx     ; 'Int' Pointer default Parameter
+>   Mov D$eax+16 ShowValue                  ; store METHOD
+>   lea ebx D$eax+24 | Mov D$eax+20 ebx     ; 'Int' Pointer default Parameter
+>   Mov D$eax+24 0                          ; Store Data initial Value(s).
 > pop ebx, eax
 
 >
 > ; Next shots:
-> call GetvTableFrom D$i, j, 16
-> call GetvTableFrom D$i, k, 16
+> Call GetvTableFrom D$i, j, 16
+> Call GetvTableFrom D$i, k, 16
 
 ____________________________________________________________________________________
 
-        (> [i.SetValue | mov eax D$i | call D$eax+0 D$eax+12, #1])
+        (> [i.SetValue | Mov eax D$i | Call D$eax+0 D$eax+12, #1])
 
 Now, let us suppose you want a Table of 200 Integers Objects.
 
@@ -353,22 +353,22 @@ Will be unfolded as:
 
 > [IntegersHandleTable: ? #200]
 > ...
-> call GetvTable IntegersHandleTable, 16
+> Call GetvTable IntegersHandleTable, 16
 > push eax, ebx
->   mov D$eax SetValue                      ; store METHOD
->   lea ebx D$eax+24 | mov D$eax+4 ebx      ; 'Int' Pointer default Parameter
->   mov D$eax+8 AddValue                    ; store METHOD
->   lea ebx D$eax+24 | mov D$eax+12 ebx     ; 'Int' Pointer default Parameter
->   mov D$eax+16 ShowValue                  ; store METHOD
->   lea ebx D$eax+24 | mov D$eax+20 ebx     ; 'Int' Pointer default Parameter
->   mov D$eax+24 0                          ; Store Data initial Value(s).
+>   Mov D$eax SetValue                      ; store METHOD
+>   lea ebx D$eax+24 | Mov D$eax+4 ebx      ; 'Int' Pointer default Parameter
+>   Mov D$eax+8 AddValue                    ; store METHOD
+>   lea ebx D$eax+24 | Mov D$eax+12 ebx     ; 'Int' Pointer default Parameter
+>   Mov D$eax+16 ShowValue                  ; store METHOD
+>   lea ebx D$eax+24 | Mov D$eax+20 ebx     ; 'Int' Pointer default Parameter
+>   Mov D$eax+24 0                          ; Store Data initial Value(s).
 > pop ebx, eax
 > 
-> call GetMultiplevTableFrom D$IntegersHandleTable, IntegersHandleTable, 16, 199
+> Call GetMultiplevTableFrom D$IntegersHandleTable, IntegersHandleTable, 16, 199
 > ...
 > lea esi D$IntegershandleTable+(3*4)
-> mov eax D$esi
-> call D$eax+0 D$eax+4, 012345
+> Mov eax D$esi
+> Call D$eax+0 D$eax+4, 012345
 
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -382,7 +382,7 @@ Polymorphism formulations look like this:
 >Proc SetValue:
 >    arguments @NamePtr, @Value
 >    
->        mov esi D@NamePtr, eax D@Value, D$esi eax
+>        Mov esi D@NamePtr, eax D@Value, D$esi eax
 >
 >        If eax > 0FFF
 >            i.addValue = SubValue
@@ -419,7 +419,7 @@ this is to give *two* Names to your default Procedure:
 > Proc AddValue: Modify:             ; <<<<<< 2 Names !!!
 >     arguments @NamePtr, @Value
 >    
->         mov esi D@NamePtr, eax D@Value | add D$esi eax
+>         Mov esi D@NamePtr, eax D@Value | add D$esi eax
 > EndP
 
 And to provide the general meaning default Name inside the CLASS Declaration:
@@ -441,21 +441,21 @@ moving on the screen. You want this ball to grow and decrease repeatitly without
 taking care of how the Robot "Ball" does this, in your 'normal' Code. Then, it
 would be, simply:
 
-> If D@Message = &WM_PAINT
+> If D@msg = &WM_PAINT
 >     ....
 >     Ball.Size.Modify 1
 >     ...
 
 Instead of (without Polymorphism):
 
-> If D@Message = &WM_PAINT
+> If D@msg = &WM_PAINT
 >     ....
 >     Ball.GetSize
 >
 >     If B$TheBallIsGrowingUpFlag = &TRUE
 >         If eax >= MAX
 >             Ball.Size.SubValue 1
->             mov B$TheBallIsGrowingUpFlag &FALSE
+>             Mov B$TheBallIsGrowingUpFlag &FALSE
 >         Else
 >             Ball.Size.AddValue 1
 >         End_If
@@ -463,7 +463,7 @@ Instead of (without Polymorphism):
 >     Else
 >         If eax =< MIN
 >             Ball.Size.AddValue 1
->             mov B$TheBallIsGrowingUpFlag &TRUE
+>             Mov B$TheBallIsGrowingUpFlag &TRUE
 >         Else
 >             Ball.Size.SubValue 1
 >         End_If
@@ -485,8 +485,8 @@ the Declarations in the Source.
 ;;
 
 ClassParser:
-    mov esi D$CodeSourceA, edi D$CodeSourceB | mov ecx esi | add ecx D$StripLen
-    mov B$ErrorLevel 11  ; 'error11'
+    Mov esi D$CodeSourceA, edi D$CodeSourceB | Mov ecx esi | add ecx D$StripLen
+    Mov B$ErrorLevel 11  ; 'error11'
 
     move D$StatementsPtr D$StatementsTable | sub D$StatementsPtr 4
 ;;
@@ -504,11 +504,11 @@ ClassParser:
             cmp B$esi-1 OpenBracket | jne L1>
             cmp B$esi+4 'S' | jne L1>
             cmp B$esi+5 Space | jne L1>
-                mov al B$esi-2, B$PreviousSeparator al
+                Mov al B$esi-2, B$PreviousSeparator al
               ; Suppress the last written '[':
                 dec edi
 
-                call StoreOneCLASS | mov B$OOAinside &TRUE
+                Call StoreOneCLASS | Mov B$OOAinside &TRUE
 
         End_If
 
@@ -518,29 +518,29 @@ L1:     movsb
 If Some CLASS Declaration has been found, we do all the job, CLASS by CLASS:
 ;;
     .If B$OOAinside = &TRUE
-        sub edi D$CodeSourceB | mov D$StripLen edi
+        sub edi D$CodeSourceB | Mov D$StripLen edi
         Exchange D$CodeSourceA D$CodeSourceB
 
         VirtualAlloc UnfoldedCLASS 10_000, TempoUnfoldedCLASS 10_000
 
         move D$ClassListPtr D$MacroList | add D$ClassListPtr 5
 
-L0:     mov esi D$ClassListPtr, edi OneCLASSname
+L0:     Mov esi D$ClassListPtr, edi OneCLASSname
 
         If B$esi > 0
-            While B$esi > EOI | movsb | End_While | mov B$edi 0     ; Name
-            mov D$OneClassNamePtr edi
+            While B$esi > EOI | movsb | End_While | Mov B$edi 0     ; Name
+            Mov D$OneClassNamePtr edi
             inc esi                                                 ; EOI
-            mov D$OriginalClassDataPointer esi
+            Mov D$OriginalClassDataPointer esi
             lodsd                                                   ; Pointer to 'MacroData'
-            mov ecx D$esi                                           ; Size
+            Mov ecx D$esi                                           ; Size
             add esi 5                                               ;( + EOI)
-            mov D$ClassListPtr esi                                  ; Ready for Next Record.
+            Mov D$ClassListPtr esi                                  ; Ready for Next Record.
 
-            mov esi eax, edi D$UnfoldedCLASS | rep movsb | mov B$edi 0
+            Mov esi eax, edi D$UnfoldedCLASS | rep movsb | Mov B$edi 0
 
-            call UnfoldIncludedCLASSES | call UnfoldMethods
-            call UnfoldPrivateData | call UnfoldOneOOA | jmp L0<    ; Loop each CLASS.
+            Call UnfoldIncludedCLASSES | Call UnfoldMethods
+            Call UnfoldPrivateData | Call UnfoldOneOOA | jmp L0<    ; Loop each CLASS.
         End_If
 
         VirtualFree D$UnfoldedCLASS, D$TempoUnfoldedCLASS
@@ -555,18 +555,18 @@ ret
 
 StoreOneCLASS:
     push edi, ecx
-        mov edi D$MacroListPtr
+        Mov edi D$MacroListPtr
       ; esi > 'CLASS Name'
         add esi 6
 
         On B$esi < '.', error D$MissingCLASSnamePtr
       ; Store the Name into MacroList:
         While B$esi > LowSigns | movsb | End_While
-        mov B$edi EOI | inc edi | inc esi
+        Mov B$edi EOI | inc edi | inc esi
 
       ; Write Pointer to Body Data:
-        mov eax D$MacroDataPtr | stosd | mov ebx edi
-        mov edi eax
+        Mov eax D$MacroDataPtr | stosd | Mov ebx edi
+        Mov edi eax
 ; [CLASS X = Integer]
       ; Now write the Data Body for the instruction > Name i
 ;;
@@ -591,35 +591,35 @@ StoreOneCLASS:
 If "Integer i" was not unfolded by the CLASS Parser, but by yourself, 'by Hand',
 it would look like this:
 
-> call GetvTable i, 16              ; Parameters = ObjectHandleRoom, Size.
-> mov D$eax SetValue | add eax 4    ; store METHOD(s).
-> mov D$eax AddValue | add eax 4    ; ...
-> mov D$eax ShowValue | add eax 4   ; ...
-> mov D$eax 0                       ; Store Data initial Value(s).
+> Call GetvTable i, 16              ; Parameters = ObjectHandleRoom, Size.
+> Mov D$eax SetValue | add eax 4    ; store METHOD(s).
+> Mov D$eax AddValue | add eax 4    ; ...
+> Mov D$eax ShowValue | add eax 4   ; ...
+> Mov D$eax 0                       ; Store Data initial Value(s).
 ;;
-        mov edx esi, ecx 0
+        Mov edx esi, ecx 0
 
         While B$esi <> CloseBracket
             lodsb
             If al = EOI
-                mov al meEOI
+                Mov al meEOI
             Else_If al = '{' | inc ecx
-                mov al OpenVirtual
+                Mov al OpenVirtual
             Else_If al = '}' | dec ecx
-                mov al CloseVirtual
+                Mov al CloseVirtual
             End_If
             stosb
         End_While
         On ecx <> 0, error D$UnPairedNestedBracketsPtr
 
-        mov D$MacroDataPtr edi
+        Mov D$MacroDataPtr edi
 
       ; Write size into MacroList:
-        mov ecx esi | sub ecx edx
-        mov D$ebx ecx | add ebx 4 | mov B$ebx EOI | inc ebx | mov D$MacroListPtr ebx
+        Mov ecx esi | sub ecx edx
+        Mov D$ebx ecx | add ebx 4 | Mov B$ebx EOI | inc ebx | Mov D$MacroListPtr ebx
 
       ; Adjust Source Pointer:
-        inc esi | mov al B$esi
+        inc esi | Mov al B$esi
         On al = B$PreviousSeparator, inc esi
 
     pop ecx, edi
@@ -651,13 +651,13 @@ This is to say, if this is stored:
 
 UnfoldIncludedCLASSES:
 
-L0: mov B$ClassUnfoldingOver &TRUE
+L0: Mov B$ClassUnfoldingOver &TRUE
 
-    mov esi D$UnfoldedCLASS, edi D$TempoUnfoldedCLASS
+    Mov esi D$UnfoldedCLASS, edi D$TempoUnfoldedCLASS
 
   ; Case ot [CLASS X ISA Integer]:
   ;  If D$esi = 03415349
-  ;      call ClassSubstitute    ; 'ISA ' >>> 03415349
+  ;      Call ClassSubstitute    ; 'ISA ' >>> 03415349
   ;      jmp L0<
   ;  End_If
 
@@ -665,19 +665,19 @@ L1: .While B$esi > 0
         lodsb
 
         ..If al = OpenVirtual
-            mov ebx esi | While B$ebx > LowSigns | inc ebx | End_While
+            Mov ebx esi | While B$ebx > LowSigns | inc ebx | End_While
 
             .If B$ebx = CloseVirtual
               ; Cases of {InHeritance}
                 push ebx
-                    call AppendThisClassName esi
-                    call CopyThisCLASS | mov B$ClassUnfoldingOver &FALSE
+                    Call AppendThisClassName esi
+                    Call CopyThisCLASS | Mov B$ClassUnfoldingOver &FALSE
                     If B$NestedClassInside = &TRUE
                         While B$esi-1 > 0 | movsb | End_While
                         Exchange D$UnfoldedCLASS D$TempoUnfoldedCLASS
                         pop ebx | jmp L0<<
                     End_If
-                    call StripThisClassName
+                    Call StripThisClassName
                 pop esi
                 inc esi
 
@@ -693,10 +693,10 @@ L2:             stosb
         ..End_If
     .End_While
 
-    mov B$edi 0 | Exchange D$UnfoldedCLASS D$TempoUnfoldedCLASS
+    Mov B$edi 0 | Exchange D$UnfoldedCLASS D$TempoUnfoldedCLASS
 
     If B$ClassUnfoldingOver = &FALSE
-      ;  call UpdateMacroData |
+      ;  Call UpdateMacroData |
       jmp L0<<
     End_If
 ret
@@ -709,25 +709,25 @@ ret
 ClassSubstitute:
   ; D$OriginalClassDataPointer yet points to this Class Pointer to macroList.
 L0: add esi 4
-    call SearchMacroListClassName
+    Call SearchMacroListClassName
   ; >>> eax = Pointer to MacroData // ecx = Size.
 ;    If D$eax = 03415349   ; 'ISA ' !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-;        mov esi eax | jmp L0<
+;        Mov esi eax | jmp L0<
 ;    Else
-;        mov ebx D$OriginalClassDataPointer, D$ebx eax, D$ebx+4 ecx
-;        mov esi eax, edi D$UnfoldedCLASS | rep movsb | mov B$edi 0
+;        Mov ebx D$OriginalClassDataPointer, D$ebx eax, D$ebx+4 ecx
+;        Mov esi eax, edi D$UnfoldedCLASS | rep movsb | Mov B$edi 0
 ;    End_If
 ret
 
 
 UpdateMacroData:
-    mov esi D$UnfoldedCLASS, edi D$MacroDataPtr, ecx 0
+    Mov esi D$UnfoldedCLASS, edi D$MacroDataPtr, ecx 0
   ; New Pointer to MacroData, in MacroList:
-    mov ebx D$OriginalClassDataPointer,  D$ebx edi | add ebx 4
+    Mov ebx D$OriginalClassDataPointer,  D$ebx edi | add ebx 4
   ; Copy the new Body at end of MacroData:
     While B$esi <> 0 | movsb | inc ecx | End_While
   ; New Body Length in MacroList and adjust the Writing Pointer:
-    mov D$ebx ecx, D$MacroDataPtr edi
+    Mov D$ebx ecx, D$MacroDataPtr edi
 ret
 
 
@@ -735,27 +735,27 @@ Proc AppendThisClassName:
     Argument @Source
     Uses esi, edi
 
-        mov esi D@Source, edi D$OneClassNamePtr, B$edi '.' | inc edi
-        While B$esi > LowSigns | movsb | End_While | mov B$edi 0
-        mov D$OneClassNamePtr edi
+        Mov esi D@Source, edi D$OneClassNamePtr, B$edi '.' | inc edi
+        While B$esi > LowSigns | movsb | End_While | Mov B$edi 0
+        Mov D$OneClassNamePtr edi
 EndP
 
 
 StripThisClassName:
-  ;  mov eax D$OneClassNamePtr
+  ;  Mov eax D$OneClassNamePtr
   ;  While B$eax <> '.' | dec eax | End_While
-  ;  mov B$eax 0, D$OneClassNamePtr eax
-    mov eax OneCLASSname
+  ;  Mov B$eax 0, D$OneClassNamePtr eax
+    Mov eax OneCLASSname
     While B$eax <> '.' | inc eax | End_While
-    mov B$eax 0, D$OneClassNamePtr eax
+    Mov B$eax 0, D$OneClassNamePtr eax
 ret
 
 
 SearchMacroListClassName:
     push edi, esi
-        mov edi D$MacroList | add edi 5
+        Mov edi D$MacroList | add edi 5
 
-L0:     mov edx edi | lodsb
+L0:     Mov edx edi | lodsb
         While al = B$edi
             On al < LowSigns, jmp L1>
             lodsb | inc edi
@@ -765,8 +765,8 @@ L0:     mov edx edi | lodsb
 L1:         .If B$edi < Separators
               ; Found:
                 inc edi
-                mov eax D$edi           ; Pointer to MacroData.
-                mov ecx D$edi+4   ; Size.
+                Mov eax D$edi           ; Pointer to MacroData.
+                Mov ecx D$edi+4   ; Size.
                 jmp L9>
 
             .Else
@@ -774,8 +774,8 @@ L2:             pop esi | push esi
 
                 While B$edi > Separators | inc edi | End_While | add edi 10
                 If B$edi = 0
-                    mov ebx esi | While B$ebx <> CloseVirtual | inc ebx | End_While
-                    mov B$ebx 0 | Error D$NoParentClassPtr
+                    Mov ebx esi | While B$ebx <> CloseVirtual | inc ebx | End_While
+                    Mov B$ebx 0 | Error D$NoParentClassPtr
                 Else
                     jmp L0<
                 End_If
@@ -791,18 +791,18 @@ ret                 ; eax = Pointer to MacroData // ecx = Size.
 [NestedClassInside: ?]
 
 CopyThisCLASS:
-    call SearchMacroListClassName
-    mov B$NestedClassInside &FALSE
+    Call SearchMacroListClassName
+    Mov B$NestedClassInside &FALSE
   ; Copy Parent CLASS Body, and add the actual CLASS Name before all Components, but
   ; nested Inheritances:
     push esi
-        mov esi eax
+        Mov esi eax
 
 L0:     ..If B$esi = OpenVirtual
 
             Do
                 .If B$esi > LowSigns
-                    mov ebx esi | While B$ebx > LowSigns | inc ebx | End_While
+                    Mov ebx esi | While B$ebx > LowSigns | inc ebx | End_While
                   ; Cases of Data Declaration: Add the Actual Class Name:
                     If B$ebx = ColonSign
                         Call CopyActualClassName
@@ -812,7 +812,7 @@ L0:     ..If B$esi = OpenVirtual
                         End_While
 
                     Else
-                        mov B$NestedClassInside &TRUE
+                        Mov B$NestedClassInside &TRUE
 
                     End_If
                 .End_If
@@ -830,7 +830,7 @@ L0:     ..If B$esi = OpenVirtual
                 jmp L0<
 
             Else
-                call CopyActualClassName
+                Call CopyActualClassName
 
                 While B$esi > Space
                     movsb | dec ecx | jz L9>
@@ -847,8 +847,8 @@ ret
 
 CopyActualClassName:
     push esi
-        mov esi OneCLASSname
-        While B$esi > 0 | movsb | End_While | mov al '.' | stosb
+        Mov esi OneCLASSname
+        While B$esi > 0 | movsb | End_While | Mov al '.' | stosb
     pop esi
 ret
 

@@ -107,32 +107,32 @@ ________________________________________________________________________________
 [LibFileHandle: ?    LibFileLength: ?    LibFileMemory: ?   LibFileMemoryEnd: ?]
 
 Proc OpenLibFile:
-    Arguments @Adressee
+    Arguments @hwnd
 
-    call 'KERNEL32.CreateFileA' LibSaveFilter, &GENERIC_READ,
+    Call 'KERNEL32.CreateFileA' LibSaveFilter, &GENERIC_READ,
                                 &FILE_SHARE_READ, 0, &OPEN_EXISTING,
                                 &FILE_ATTRIBUTE_NORMAL, 0
-    mov D$LibFileHandle eax
+    Mov D$LibFileHandle eax
 
-    call 'KERNEL32.GetFileSize' eax, 0 | mov D$LibFileLength eax
+    Call 'KERNEL32.GetFileSize' eax, 0 | Mov D$LibFileLength eax
 
-    call LibScanDisplayFileSize D@Adressee
+    Call LibScanDisplayFileSize D@hwnd
 
     If eax = 0
-        call LibScanDialog_EnableContinueMenu &FALSE
-        call 'USER32.MessageBoxA' 0, {B$ "Dumping process aborted !!!", D$ CRLF2, B$ "The file you are trying to load is empty (The size of the file is Zero).", 0}, {'LibScan', 0},
+        Call LibScanDialog_EnableContinueMenu &FALSE
+        Call 'USER32.MessageBoxA' 0, {B$ "Dumping process aborted !!!", D$ CRLF2, B$ "The file you are trying to load is empty (The size of the file is Zero).", 0}, {'LibScan', 0},
                                   &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
     Else
         add eax 10
 
         VirtualAlloc LibFileMemory, eax | add D$LibFileMemory 10
 
-        call 'KERNEL32.ReadFile' D$LibFileHandle, D$LibFileMemory,
+        Call 'KERNEL32.ReadFile' D$LibFileHandle, D$LibFileMemory,
                                  D$LibFileLength, NumberOfReadBytes, 0
 
-        call 'KERNEL32.CloseHandle' D$LibFileHandle
+        Call 'KERNEL32.CloseHandle' D$LibFileHandle
 
-        mov eax D$LibFileMemory | add eax D$LibFileLength | mov D$LibFileMemoryEnd eax
+        Mov eax D$LibFileMemory | add eax D$LibFileLength | Mov D$LibFileMemoryEnd eax
     End_If
 EndP
 ____________________________________________________________________________________________
@@ -168,50 +168,50 @@ Proc LibSignatureCheck:
     pushad
 
   ; Valid Tag?
-    mov esi D$LibFileMemory
+    Mov esi D$LibFileMemory
 
     .If D$esi+2 = 'arch'
         ; Valid .lib
-        mov D$ValidLib COFF_LIB_FILE
+        Mov D$ValidLib COFF_LIB_FILE
 
     .Else_If D$esi = 0F21F148C ; Borland Kylix 1.0 unit file (DCU). Ver=100
-        mov D$ValidLib DCU1_KILYX_OBJ_FILE
+        Mov D$ValidLib DCU1_KILYX_OBJ_FILE
 
     .Else_If D$esi = 0E1011DD ; Borland Kylix 2.0 unit file (DCU). Ver=101
-        mov D$ValidLib DCU2_KILYX_OBJ_FILE
+        Mov D$ValidLib DCU2_KILYX_OBJ_FILE
 
     .Else_If D$esi = 0E0001DD ; Borland Kylix 2.0 unit file (kind $00) (DCU). Ver=101
-        mov D$ValidLib DCU2_KILYX_OBJ_FILE
+        Mov D$ValidLib DCU2_KILYX_OBJ_FILE
 
     .Else_If D$esi = 0F1001DD ; Borland Kylix 3.0 unit file (DCU). Ver=102
-        mov D$ValidLib DCU3_KILYX_OBJ_FILE
+        Mov D$ValidLib DCU3_KILYX_OBJ_FILE
 
     .Else_If D$esi = 050505348 ; Borland Delphi 2.0 unit file (DCU). Ver=2
-        mov D$ValidLib DCU2_OBJ_FILE
+        Mov D$ValidLib DCU2_OBJ_FILE
 
     .Else_If D$esi = 044518641 ; Borland Delphi 3.0 unit file (DCU). Ver=3
-        mov D$ValidLib DCU3_OBJ_FILE
+        Mov D$ValidLib DCU3_OBJ_FILE
 
     .Else_If D$esi = 04768A6D8 ; Borland Delphi 4.0 unit file (DCU). Ver=4
-        mov D$ValidLib DCU4_OBJ_FILE
+        Mov D$ValidLib DCU4_OBJ_FILE
 
     .Else_If D$esi = 0F21F148B ; Borland Delphi 5.0 unit file (DCU). Ver=5
-        mov D$ValidLib DCU5_OBJ_FILE
+        Mov D$ValidLib DCU5_OBJ_FILE
 
     .Else_If D$esi = 0E0000DD ; Borland Delphi 6.0 unit file (DCU). Ver=6
-        mov D$ValidLib DCU6_OBJ_FILE
+        Mov D$ValidLib DCU6_OBJ_FILE
 
     .Else_If D$esi = 0E8000DD ; Borland Delphi 6.0 unit file (kind $80) (DCU). Ver=6
-        mov D$ValidLib DCU6_OBJ_FILE
+        Mov D$ValidLib DCU6_OBJ_FILE
 
     .Else_If D$esi = 0FF80FFFF ; Borland Delphi 7.0 (Free) (DCU). Ver=7
-        mov D$ValidLib DCU7_OBJ_FILE
+        Mov D$ValidLib DCU7_OBJ_FILE
 
     .Else_If D$esi = 0FF0000DF ; Borland Delphi 7.0 unit file (DCU). Ver=7
-        mov D$ValidLib DCU7_OBJ_FILE
+        Mov D$ValidLib DCU7_OBJ_FILE
 
     .Else_If D$esi = 0F0000DF ; Borland Delphi 7.0 unit file (DCU). Ver=7
-        mov D$ValidLib DCU7_OBJ_FILE
+        Mov D$ValidLib DCU7_OBJ_FILE
 
     .Else_If_Or W$esi = &IMAGE_FILE_MACHINE_UNKNOWN, W$esi = &IMAGE_FILE_MACHINE_ALPHA,
                 W$esi = &IMAGE_FILE_MACHINE_ALPHA64, W$esi = &IMAGE_FILE_MACHINE_ARM,
@@ -232,26 +232,26 @@ Proc LibSignatureCheck:
                 W$esi = &IMAGE_FILE_MACHINE_TRICORE
 
         ; Valid .obj, if here:
-        mov D$ValidLib COFF_OBJ_FILE
+        Mov D$ValidLib COFF_OBJ_FILE
 
     .Else_If_And B$esi = 080, W$esi+1 < 1024, W$esi+1 > 0 ; the W$esi+1 is the record lenght. The max size of the record len is 1024(The entire record, inclusind the magic signature), and it must not be 0
         ; Valid OMF .obj
-        mov D$ValidLib OMF_OBJ_FILE
+        Mov D$ValidLib OMF_OBJ_FILE
 
     .Else_If D$esi+40 = 0474A
         ; Valid Pdb file
-        mov D$ValidLib PDB_OBJ_FILE
+        Mov D$ValidLib PDB_OBJ_FILE
 
     .Else_If D$esi = 04944
         ; Possible dbg file found
-        mov D$ValidLib DBG_OBJ_FILE
+        Mov D$ValidLib DBG_OBJ_FILE
 
     .Else
 ;;
         cmp B$esi 0F0; LibHdr
         jnz @TestFileType2
         
-            mov eax eax
+            Mov eax eax
         @TestFileType2: ; Object File Found
 
         cmp B$esi 080; THEADDR ; Object OMF Sig
@@ -267,7 +267,7 @@ Proc LibSignatureCheck:
             
 @TestFileType4: ; Not OMF
 ;;
-        mov D$ValidLib UNKNOWN_LIB_FILE
+        Mov D$ValidLib UNKNOWN_LIB_FILE
     .End_If
     popad
 EndP
@@ -276,103 +276,103 @@ ________________________________________________________________________________
 ; All Identified Libs and Objects are identified by this function.
 
 Proc ParseIdentifiedLibs:
-    Arguments @Adressee
+    Arguments @hwnd
     pushad
 
-    mov esi D$LibFileMemory
+    Mov esi D$LibFileMemory
 
     .If D$ValidLib = COFF_LIB_FILE
-        call WriteObjectTypeinTitle D@Adressee, {"Library COFF", 0}
-        call CoffLibFound
-        call GetLibListing D@Adressee, hLibReportEdit, hLibReportEditLength
+        Call WriteObjectTypeinTitle D@hwnd, {"Library COFF", 0}
+        Call CoffLibFound
+        Call GetLibListing D@hwnd, hLibReportEdit, hLibReportEditLength
 
     .Else_If D$ValidLib = COFF_OBJ_FILE
-         call WriteObjectTypeinTitle D@Adressee, {"Object COFF", 0}
-         call GetOneCoffListing D@Adressee, hLibReportEdit, hLibReportEditLength
+         Call WriteObjectTypeinTitle D@hwnd, {"Object COFF", 0}
+         Call GetOneCoffListing D@hwnd, hLibReportEdit, hLibReportEditLength
 
 
     .Else_If D$ValidLib = DCU1_KILYX_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
-        call LibScanDialog_EnableContinueMenu &FALSE
-        call WriteObjectTypeinTitle D@Adressee, {"Delphi Kilyx 1", 0}
-        call 'USER32.MessageBoxA' D@Adressee, {B$ "Delphi Kilyx 1 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
+        Call LibScanDialog_EnableContinueMenu &FALSE
+        Call WriteObjectTypeinTitle D@hwnd, {"Delphi Kilyx 1", 0}
+        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi Kilyx 1 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
                                   &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
 
     .Else_If D$ValidLib = DCU2_KILYX_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
-        call LibScanDialog_EnableContinueMenu &FALSE
-        call WriteObjectTypeinTitle D@Adressee, {"Delphi Kilyx 2", 0}
-        call 'USER32.MessageBoxA' D@Adressee, {B$ "Delphi Kilyx2 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
+        Call LibScanDialog_EnableContinueMenu &FALSE
+        Call WriteObjectTypeinTitle D@hwnd, {"Delphi Kilyx 2", 0}
+        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi Kilyx2 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
                                   &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
 
     .Else_If D$ValidLib = DCU3_KILYX_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
-        call LibScanDialog_EnableContinueMenu &FALSE
-        call WriteObjectTypeinTitle D@Adressee, {"Delphi Kilyx 3", 0}
-        call 'USER32.MessageBoxA' D@Adressee, {B$ "Delphi Kilyx3 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
+        Call LibScanDialog_EnableContinueMenu &FALSE
+        Call WriteObjectTypeinTitle D@hwnd, {"Delphi Kilyx 3", 0}
+        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi Kilyx3 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
                                   &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
 
     .Else_If D$ValidLib = DCU2_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
-        call LibScanDialog_EnableContinueMenu &FALSE
-        call WriteObjectTypeinTitle D@Adressee, {"Delphi 2", 0}
-        call 'USER32.MessageBoxA' D@Adressee, {B$ "Delphi 2 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
+        Call LibScanDialog_EnableContinueMenu &FALSE
+        Call WriteObjectTypeinTitle D@hwnd, {"Delphi 2", 0}
+        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi 2 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
                                   &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
 
     .Else_If D$ValidLib = DCU3_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
-        call LibScanDialog_EnableContinueMenu &FALSE
-        call WriteObjectTypeinTitle D@Adressee, {"Delphi 3", 0}
-        call 'USER32.MessageBoxA' D@Adressee, {B$ "Delphi 3 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
+        Call LibScanDialog_EnableContinueMenu &FALSE
+        Call WriteObjectTypeinTitle D@hwnd, {"Delphi 3", 0}
+        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi 3 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
                                   &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
 
     .Else_If D$ValidLib = DCU4_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
-        call LibScanDialog_EnableContinueMenu &FALSE
-        call WriteObjectTypeinTitle D@Adressee, {"Delphi 4", 0}
-        call 'USER32.MessageBoxA' D@Adressee, {B$ "Delphi 4 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
+        Call LibScanDialog_EnableContinueMenu &FALSE
+        Call WriteObjectTypeinTitle D@hwnd, {"Delphi 4", 0}
+        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi 4 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
                                   &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
 
     .Else_If D$ValidLib = DCU5_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
-        call LibScanDialog_EnableContinueMenu &FALSE
-        call WriteObjectTypeinTitle D@Adressee, {"Delphi 5", 0}
-        call 'USER32.MessageBoxA' D@Adressee, {B$ "Delphi 5 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
+        Call LibScanDialog_EnableContinueMenu &FALSE
+        Call WriteObjectTypeinTitle D@hwnd, {"Delphi 5", 0}
+        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi 5 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
                                   &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
 
     .Else_If D$ValidLib = DCU6_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
-        call LibScanDialog_EnableContinueMenu &FALSE
-        call WriteObjectTypeinTitle D@Adressee, {"Delphi 6", 0}
-        call 'USER32.MessageBoxA' D@Adressee, {B$ "Delphi 6 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
+        Call LibScanDialog_EnableContinueMenu &FALSE
+        Call WriteObjectTypeinTitle D@hwnd, {"Delphi 6", 0}
+        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi 6 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
                                   &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
 
     .Else_If D$ValidLib = DCU7_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
-        call LibScanDialog_EnableContinueMenu &FALSE
-        call WriteObjectTypeinTitle D@Adressee, {"Delphi 7", 0}
-        call 'USER32.MessageBoxA' D@Adressee, {B$ "Delphi 7 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
+        Call LibScanDialog_EnableContinueMenu &FALSE
+        Call WriteObjectTypeinTitle D@hwnd, {"Delphi 7", 0}
+        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Delphi 7 (DCU) Signature was Found..", D$ CRLF2, B$ "Sorry, but delphi objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
                                   &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
 
     .Else_If D$ValidLib = OMF_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
-        call LibScanDialog_EnableContinueMenu &FALSE
-        call WriteObjectTypeinTitle D@Adressee, {"OMF Object", 0}
-        call 'USER32.MessageBoxA' D@Adressee, {B$ "Object Module Format (OMF) Signature was Found..", D$ CRLF2, B$ "Sorry, but OMF objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
+        Call LibScanDialog_EnableContinueMenu &FALSE
+        Call WriteObjectTypeinTitle D@hwnd, {"OMF Object", 0}
+        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Object Module Format (OMF) Signature was Found..", D$ CRLF2, B$ "Sorry, but OMF objects are not handled by this dumper yet.", 0}, {'LibScan', 0},
                                   &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
 
     .Else_If D$ValidLib = PDB_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
-        call LibScanDialog_EnableContinueMenu &FALSE
-        call WriteObjectTypeinTitle D@Adressee, {"Pdb File", 0}
-        call 'USER32.MessageBoxA' D@Adressee, {B$ "Program DataBase (Pdb) Signature was Found..", D$ CRLF2, B$ "Sorry, but PDB files are not handled by this dumper yet.", 0}, {'LibScan', 0},
+        Call LibScanDialog_EnableContinueMenu &FALSE
+        Call WriteObjectTypeinTitle D@hwnd, {"Pdb File", 0}
+        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Program DataBase (Pdb) Signature was Found..", D$ CRLF2, B$ "Sorry, but PDB files are not handled by this dumper yet.", 0}, {'LibScan', 0},
                                   &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
 
     .Else_If D$ValidLib = DBG_OBJ_FILE
         ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
-        call LibScanDialog_EnableContinueMenu &FALSE
-        call WriteObjectTypeinTitle D@Adressee, {"Dbg File", 0}
-        call 'USER32.MessageBoxA' D@Adressee, {B$ "Degug Format (dbg) Signature was Found..", D$ CRLF2, B$ "Sorry, but dbg files are not handled by this dumper yet.", 0}, {'LibScan', 0},
+        Call LibScanDialog_EnableContinueMenu &FALSE
+        Call WriteObjectTypeinTitle D@hwnd, {"Dbg File", 0}
+        Call 'USER32.MessageBoxA' D@hwnd, {B$ "Degug Format (dbg) Signature was Found..", D$ CRLF2, B$ "Sorry, but dbg files are not handled by this dumper yet.", 0}, {'LibScan', 0},
                                   &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
 
     .End_If
@@ -388,7 +388,7 @@ Proc CoffLibFound:
   ; First Lib Header:
     If W$esi = '/ '
         push esi
-            lea esi D$esi+48 | call GetMemberSize
+            lea esi D$esi+48 | Call GetMemberSize
         pop esi
         add esi 03C | add esi eax | On B$esi = 0A, inc esi
     End_If
@@ -396,7 +396,7 @@ Proc CoffLibFound:
   ; Second Optional Lib Header:
     If W$esi = '/ '
         push esi
-            lea esi D$esi+48 | call GetMemberSize
+            lea esi D$esi+48 | Call GetMemberSize
         pop esi
         add esi 03C | add esi eax | On B$esi = 0A, inc esi
     End_If
@@ -404,13 +404,13 @@ Proc CoffLibFound:
   ; Third optional Lib Header:
     If W$esi = '//'
         push esi
-            lea esi D$esi+48 | call GetMemberSize
+            lea esi D$esi+48 | Call GetMemberSize
         pop esi
         add esi 03C | add esi eax | On B$esi = 0A, inc esi
     End_If
    ____________________________________________
   ; Coff Files:
-L5: call InitCoffIndice
+L5: Call InitCoffIndice
 ;;
   We overwrite the "UserID", at +28. We will use this Ordinal to build Synthetic
   Labels (in replacement of the real Names), to save from Duplications, when we
@@ -418,14 +418,14 @@ L5: call InitCoffIndice
   (Asm Source Form version).
 ;;
     While B$esi <> 0
-        mov eax D$LibObjIndice, D$esi+LIB_USER_ID eax
-        mov ax W$LibObjIndice+4, W$esi+LIB_USER_ID+4 ax
+        Mov eax D$LibObjIndice, D$esi+LIB_USER_ID eax
+        Mov ax W$LibObjIndice+4, W$esi+LIB_USER_ID+4 ax
 
-        call IncrementLibCoffIndice
+        Call IncrementLibCoffIndice
 
         push esi
             lea esi D$esi+LIB_MEMBER_SIZE
-            call GetMemberSize
+            Call GetMemberSize
         pop esi
 
         add esi COFF_HEADER_SIZE | add esi D$MemberSize
@@ -439,23 +439,23 @@ EndP
 Proc LibCoffMarking:
 
   ; Valid Tag?
-    mov esi D$LibFileMemory
+    Mov esi D$LibFileMemory
 
     .If D$esi+2 = 'arch'
         ; Valid .lib
-        mov D$ValidLib COFF_LIB_FILE
+        Mov D$ValidLib COFF_LIB_FILE
 
     .Else
-        call IsIMAGE_FILE_MACHINE D$esi
+        Call IsIMAGE_FILE_MACHINE D$esi
 
         If eax = &TRUE
           ; Valid .obj, if here:
-            mov D$ValidLib COFF_OBJ_FILE | ExitP
+            Mov D$ValidLib COFF_OBJ_FILE | ExitP
 
         Else
-            call 'USER32.MessageBoxA' 0, {B$ "The 'arch' Magic Signature Tag was not found.", D$ CRLF2, B$ "This is not a COFF Object File", 0}, {'LibScan', 0},
+            Call 'USER32.MessageBoxA' 0, {B$ "The 'arch' Magic Signature Tag was not found.", D$ CRLF2, B$ "This is not a COFF Object File", 0}, {'LibScan', 0},
                                       &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL
-            mov D$ValidLib UNKNOWN_LIB_FILE | ExitP
+            Mov D$ValidLib UNKNOWN_LIB_FILE | ExitP
         End_If
 
     .End_If
@@ -466,7 +466,7 @@ Proc LibCoffMarking:
   ; First Lib Header:
     If W$esi = '/ '
         push esi
-            lea esi D$esi+48 | call GetMemberSize
+            lea esi D$esi+48 | Call GetMemberSize
         pop esi
         add esi 03C | add esi eax | On B$esi = 0A, inc esi
     End_If
@@ -474,7 +474,7 @@ Proc LibCoffMarking:
   ; Second Optional Lib Header:
     If W$esi = '/ '
         push esi
-            lea esi D$esi+48 | call GetMemberSize
+            lea esi D$esi+48 | Call GetMemberSize
         pop esi
         add esi 03C | add esi eax | On B$esi = 0A, inc esi
     End_If
@@ -482,13 +482,13 @@ Proc LibCoffMarking:
   ; Third optional Lib Header:
     If W$esi = '//'
         push esi
-            lea esi D$esi+48 | call GetMemberSize
+            lea esi D$esi+48 | Call GetMemberSize
         pop esi
         add esi 03C | add esi eax | On B$esi = 0A, inc esi
     End_If
    ____________________________________________
   ; Coff Files:
-L5: call InitCoffIndice
+L5: Call InitCoffIndice
 
 ;  We overwrite the "UserID", at +28. We will use this Ordinal to build Synthetic
  ; Labels (in replacement of the real Names), to save from Duplications, when we
@@ -496,14 +496,14 @@ L5: call InitCoffIndice
 ;  (Asm Source Form version).
 
     While B$esi <> 0
-        mov eax D$LibObjIndice, D$esi+LIB_USER_ID eax
-        mov ax W$LibObjIndice+4, W$esi+LIB_USER_ID+4 ax
+        Mov eax D$LibObjIndice, D$esi+LIB_USER_ID eax
+        Mov ax W$LibObjIndice+4, W$esi+LIB_USER_ID+4 ax
 
-        call IncrementLibCoffIndice
+        Call IncrementLibCoffIndice
 
         push esi
             lea esi D$esi+LIB_MEMBER_SIZE
-            call GetMemberSize
+            Call GetMemberSize
         pop esi
 
         add esi COFF_HEADER_SIZE | add esi D$MemberSize
@@ -520,12 +520,12 @@ ________________________________________________________________________________
   To save from Duplications, the Ordinal Coff Indice are stored inside each Heasder
   upon the LIB_USER_ID.
   
-  Before writing each Names, we call for 'CopyCoffIndice'.
+  Before writing each Names, we Call for 'CopyCoffIndice'.
 ;;
 
 CopyCoffIndice:
-    mov D$edi 'Obj_'
-    mov eax D$esi+LIB_USER_ID, D$edi+4 eax,
+    Mov D$edi 'Obj_'
+    Mov eax D$esi+LIB_USER_ID, D$edi+4 eax,
         ax W$esi+LIB_USER_ID+4, W$edi+8 ax,
         D$edi+10 ' ; '
     add edi 13
@@ -534,46 +534,46 @@ ________________________________________________________________________________
 
 ;[@LibHexaMem: ?    @COFFnumber: ?    @Base: ?]
 Proc GetLibListing:
-    Argument @Handle, @OutPut, @OutputSize
+    Argument @hwnd, @OutPut, @OutputSize
 
     pushad
 
-        On D$LookUpValidNameCharsTable = 0, call InitLookUpValidNameCharsTable
+        On D$LookUpValidNameCharsTable = 0, Call InitLookUpValidNameCharsTable
 
         ; The Parsed Data will be stored in edi
-        mov edi D@OutPut
+        Mov edi D@OutPut
 
-        mov ecx D$LibFileLength | shl ecx 6 | VirtualAlloc edi ecx
+        Mov ecx D$LibFileLength | shl ecx 6 | VirtualAlloc edi ecx
 
-        call GetLongNamesBase
+        Call GetLongNamesBase
 
-        mov esi D$LibFileMemory, edi D$edi
+        Mov esi D$LibFileMemory, edi D$edi
 
         ____________________________________________
         ; RosAsm Notice
-        mov esi WriteNotice | While B$esi <> 0 | movsb | End_While
+        Mov esi WriteNotice | While B$esi <> 0 | movsb | End_While
         ____________________________________________
         ; Tag:
-        call WriteLibTag
+        Call WriteLibTag
 
-        mov D$ARCHIVE_MEMBER_HEADER_Indice '0000', W$ARCHIVE_MEMBER_HEADER_Indice+4 '01'
+        Mov D$ARCHIVE_MEMBER_HEADER_Indice '0000', W$ARCHIVE_MEMBER_HEADER_Indice+4 '01'
        ____________________________________________
       ; First Lib Header:
         If W$esi = '/ '
-            call Write_IMAGE_ARCHIVE_MEMBER_HEADER_1
+            Call Write_IMAGE_ARCHIVE_MEMBER_HEADER_1
           ; First Lib Member:
             push esi
-                call WriteHeaderMember1
+                Call WriteHeaderMember1
             pop esi
             add esi D$MemberSize | On B$esi = 0A, inc esi
         End_If
        ____________________________________________
       ; Second optional Lib Header:
         If W$esi = '/ '
-            call WriteSecondLibHeaderComment
-            call Write_IMAGE_ARCHIVE_MEMBER_HEADER_2
+            Call WriteSecondLibHeaderComment
+            Call Write_IMAGE_ARCHIVE_MEMBER_HEADER_2
             push esi
-                call WriteHeaderMember2
+                Call WriteHeaderMember2
             pop esi
             add esi D$MemberSize | On B$esi = 0A, inc esi
         End_If
@@ -581,52 +581,52 @@ Proc GetLibListing:
       ; Third optional Lib Header:
         If W$esi = '//'
 
-            call WriteThirdLibHeaderComment
+            Call WriteThirdLibHeaderComment
 
-            call GetLongNamesPointer
-            call Write_IMAGE_ARCHIVE_MEMBER_HEADER_3
+            Call GetLongNamesPointer
+            Call Write_IMAGE_ARCHIVE_MEMBER_HEADER_3
             push esi
-                call WriteHeaderMember3
+                Call WriteHeaderMember3
             pop esi
             add esi D$MemberSize | On B$esi = 0A, inc esi
         End_If
        ____________________________________________
       ; Coff Files:
         push esi
-            mov esi CoffComment
+            Mov esi CoffComment
             While B$esi <> 0 | movsb | End_While
         pop esi
 
-        call InitCoffIndice
+        Call InitCoffIndice
 
         sub D$LibFileMemoryEnd 20
 
         While esi < D$LibFileMemoryEnd
-            call WriteCoffTitle
-            call Write_Obj_IMAGE_ARCHIVE_MEMBER_HEADER
-            call ParseLibObj
+            Call WriteCoffTitle
+            Call Write_Obj_IMAGE_ARCHIVE_MEMBER_HEADER
+            Call ParseLibObj
             ; To be used in the listview control
-            call AddListviewItem, D$hList
+            Call AddListviewItem, D$hList
 
             add esi D$MemberSize | On esi >= D$LibFileMemoryEnd, jmp L2>
             On B$esi = 0A, inc esi
-            call IncrementLibCoffIndice
+            Call IncrementLibCoffIndice
 
         End_While
 
 L2:
         ; The Parsed Data, must be displayed in the edit box
-        mov eax D@OutPut    ;   Initial Address of the parsed data
-        mov eax D$eax       ;   eax is now at the start of the address
+        Mov eax D@OutPut    ;   Initial Address of the parsed data
+        Mov eax D$eax       ;   eax is now at the start of the address
 
-        call 'USER32.SetDlgItemTextA' D$hTabDlg1, IDC_LIB_SOURCE, eax
+        Call 'USER32.SetDlgItemTextA' D$hTabDlg1, IDC_LIB_SOURCE, eax
 
         ; Computed and store the outputed size of the Parsed Data displayed in the edit control
-        mov eax D@OutputSize
-        mov ecx D@OutPut
-        mov ecx D$ecx
+        Mov eax D@OutputSize
+        Mov ecx D@OutPut
+        Mov ecx D$ecx
         sub edi ecx
-        mov D$eax edi
+        Mov D$eax edi
 
     popad
 
@@ -638,43 +638,43 @@ ________________________________________________________________________________
 [hLibReportEditLength: D$ 0]
 
 Proc GetOneCoffListing:
-    Argument @Handle, @OutPut, @OutputSize
+    Argument @hwnd, @OutPut, @OutputSize
 
     pushad
 
     ; The Parsed Data will be stored in edi
-    mov edi D@OutPut
+    Mov edi D@OutPut
 
-    call InitCoffIndice
+    Call InitCoffIndice
 
-    mov ecx D$LibFileLength | shl ecx 6 | VirtualAlloc edi ecx
+    Mov ecx D$LibFileLength | shl ecx 6 | VirtualAlloc edi ecx
 
-    mov esi D$LibFileMemory, edi D$edi
+    Mov esi D$LibFileMemory, edi D$edi
 
     ____________________________________________
     ; RosAsm Notice
     push esi
-    mov esi WriteNotice | While B$esi <> 0 | movsb | End_While
+    Mov esi WriteNotice | While B$esi <> 0 | movsb | End_While
     pop esi
 
-    call ParseLibObj
+    Call ParseLibObj
 
-    call ParseOpenedFilePath LibSaveFilter
+    Call ParseOpenedFilePath LibSaveFilter
 
     move D$MemberSize D$LibFileLength
-    call AddListviewItem, D$hList
+    Call AddListviewItem, D$hList
 
     ; The Parsed Data, must be displayed in the edit box
-    mov eax D@OutPut    ;   Initial Address of the parsed data
-    mov eax D$eax       ;   eax is now at the start of the address
-    call 'USER32.SetDlgItemTextA' D$hTabDlg1 , IDC_LIB_SOURCE, eax; SHOW ALL Parsed Data in the 1st Tab dialog...
+    Mov eax D@OutPut    ;   Initial Address of the parsed data
+    Mov eax D$eax       ;   eax is now at the start of the address
+    Call 'USER32.SetDlgItemTextA' D$hTabDlg1 , IDC_LIB_SOURCE, eax; SHOW ALL Parsed Data in the 1st Tab dialog...
 
     ; Computed and store the outpued size of the Parsed Data displayed in the edit control
-    mov eax D@OutputSize
-    mov ecx D@OutPut
-    mov ecx D$ecx
+    Mov eax D@OutputSize
+    Mov ecx D@OutPut
+    Mov ecx D$ecx
     sub edi ecx
-    mov D$eax edi
+    Mov D$eax edi
 
     popad
 EndP
@@ -693,37 +693,37 @@ Proc ParseOpenedFilePath:
     pushad
 
     ; Always clear the loaded data before use.
-    call ClearBuffer ObjectName, 256
-    call ClearBuffer ObjExtensionStr, 16
-    call ClearBuffer ObjPathStr, 256
+    Call ClearBuffer ObjectName, 256
+    Call ClearBuffer ObjExtensionStr, 16
+    Call ClearBuffer ObjPathStr, 256
 
     ; Initialize all the data
-    mov D$ObjFileNameType 0
-    mov D$UseObjPath 0
-    mov D$UseObjExtension 0
-    mov D@TempStartAddr 0
-    mov D@TempEndAddr 0
-    mov D@StartExportObjAddr 0
-    mov D@UseExportedLibrary 0
+    Mov D$ObjFileNameType 0
+    Mov D$UseObjPath 0
+    Mov D$UseObjExtension 0
+    Mov D@TempStartAddr 0
+    Mov D@TempEndAddr 0
+    Mov D@StartExportObjAddr 0
+    Mov D@UseExportedLibrary 0
 
-    mov esi D@StartAddress
+    Mov esi D@StartAddress
 
     While B$esi <> 0
         inc esi
     End_While
-    mov D@TempEndAddr esi
+    Mov D@TempEndAddr esi
 
     ; 1st Step. Now that we have our full string, we need to see if it have any path inside.
     ; We must start from the end to the beginning of the string to find the path chars.
-    mov esi D@StartAddress
-    mov ecx D@TempEndAddr
+    Mov esi D@StartAddress
+    Mov ecx D@TempEndAddr
 
     .While esi <> ecx
 
         If_Or B$ecx = '/', B$ecx = '\'
 
-            mov D@EndObjPathAddr ecx
-            mov D$UseObjPath 1
+            Mov D@EndObjPathAddr ecx
+            Mov D$UseObjPath 1
             jmp L1>
         End_If
 
@@ -736,15 +736,15 @@ Proc ParseOpenedFilePath:
 
     .If D$UseObjPath = 1
         ; Here esi is already defined as the starting point. We don't need to change it now.
-        mov ecx D@EndObjPathAddr
-        mov edi ObjPathStr
+        Mov ecx D@EndObjPathAddr
+        Mov edi ObjPathStr
 
         .While esi <> ecx
             movsb
             ;inc esi
         .End_While
         inc esi ; Bypass the last "/" or "\" char preceeding the object name.
-        mov D@StartAddress esi ; Will points to the beginning of the object name only
+        Mov D@StartAddress esi ; Will points to the beginning of the object name only
 
     .End_If
 
@@ -752,13 +752,13 @@ Proc ParseOpenedFilePath:
     ; 3rd Step. Chekc the file name Type. If the len of the object name is equal or bigger then 16 bytes, it is a LongName.
     ; Otherwise it is short name.
 
-    mov eax D@TempEndAddr
+    Mov eax D@TempEndAddr
     sub eax D@StartAddress
 
     If eax <= 16
-        mov D$ObjFileNameType 0
+        Mov D$ObjFileNameType 0
     Else
-        mov D$ObjFileNameType 1
+        Mov D$ObjFileNameType 1
     End_If
 
 
@@ -766,15 +766,15 @@ Proc ParseOpenedFilePath:
     ; 4th Step. At this point we have only the name of the object and it's extension (if any).
     ; So we must find and copy the object extension.
 
-    mov esi D@StartAddress
-    mov ecx D@TempEndAddr
-    mov edi ObjectName
+    Mov esi D@StartAddress
+    Mov ecx D@TempEndAddr
+    Mov edi ObjectName
 
     .Do
 
         .If B$esi = '.'
-            mov D$UseObjExtension 1
-            mov edi ObjExtensionStr
+            Mov D$UseObjExtension 1
+            Mov edi ObjExtensionStr
             inc esi ; Bypass the "." char
             While esi <> ecx
                 movsb
@@ -814,67 +814,67 @@ SymbolTableText: 'ImgSym000001 - IMAGE_FILE_HEADER_', 0]
 
 GetCoffIMAGE_FILE_HEADER:
     push esi
-        mov esi CoffListingTitle
+        Mov esi CoffListingTitle
         While B$esi <> 0 | movsb | End_While
-        call WriteIndiceOnly
-        mov B$edi ':', W$edi+1 CRLF | add edi 3
+        Call WriteIndiceOnly
+        Mov B$edi ':', W$edi+1 CRLF | add edi 3
     pop esi
 
     ; To be used in AddListviewItem
     push esi
-        mov D$LvOffsetCOFF 0 ; always initialize at 0 1st, due to the several loopings for each object.
+        Mov D$LvOffsetCOFF 0 ; always initialize at 0 1st, due to the several loopings for each object.
         sub esi D$LibFileMemory
-        mov D$LvOffsetCOFF esi
+        Mov D$LvOffsetCOFF esi
     pop esi
 
-    call WriteLibImportObjItem ObjMachineText, &FALSE | sub edi 2
+    Call WriteLibImportObjItem ObjMachineText, &FALSE | sub edi 2
         ; To be used in AddListviewItem
-        mov W$CoffMachineType 0 ; always initialize at 0 1st, due to the several loopings for each object.
+        Mov W$CoffMachineType 0 ; always initialize at 0 1st, due to the several loopings for each object.
         move W$CoffMachineType W$esi
-    call Write_IMAGE_FILE_MACHINE D$esi | mov W$edi CRLF | add edi 2
+    Call Write_IMAGE_FILE_MACHINE D$esi | Mov W$edi CRLF | add edi 2
 
-    add esi 2 | movzx eax W$esi | mov D$ObjNumberOfSections eax
+    add esi 2 | movzx eax W$esi | Mov D$ObjNumberOfSections eax
 
-    call WriteLibImportObjItem ObjNumberOfSectionsText, &TRUE
+    Call WriteLibImportObjItem ObjNumberOfSectionsText, &TRUE
 
-    add esi 2 | mov eax D$esi
-    call WriteLibImportObjItem ObjTimeDateStampText, &TRUE
-    call WriteLinkerMemberTimeDateStamp D$esi
+    add esi 2 | Mov eax D$esi
+    Call WriteLibImportObjItem ObjTimeDateStampText, &TRUE
+    Call WriteLinkerMemberTimeDateStamp D$esi
 
-    add esi 4 | mov eax D$esi
-    mov D$CoffSymbolsPointer eax ; To be used in WriteImageSymbolTable
-    call WriteLibImportObjItem ObjPointerToSymbolTableText, &FALSE | sub edi 2
+    add esi 4 | Mov eax D$esi
+    Mov D$CoffSymbolsPointer eax ; To be used in WriteImageSymbolTable
+    Call WriteLibImportObjItem ObjPointerToSymbolTableText, &FALSE | sub edi 2
 
     If eax <> 0
-        call WriteLibImportObjItem SymbolTableText, &FALSE | sub edi 2
-        call WriteIndiceOnly
+        Call WriteLibImportObjItem SymbolTableText, &FALSE | sub edi 2
+        Call WriteIndiceOnly
         push esi
-            mov esi {' ; Hex Value:  ', 0}
+            Mov esi {' ; Hex Value:  ', 0}
             While B$esi <> 0 | movsb | End_While
         pop esi
     End_If
 
-    call Writeeax | mov W$edi CRLF | add edi 2 ; Write the Value of the SymbolTable Pointer in Hexadecimal string
+    Call Writeeax | Mov W$edi CRLF | add edi 2 ; Write the Value of the SymbolTable Pointer in Hexadecimal string
 
 
-    add esi 4 | mov eax D$esi
-    mov D$CoffSymbolsNumber eax ; To be used in WriteImageSymbolTable
-    mov D$ObjSymbolsNumber eax ; To be used in AddListviewItem
-    call WriteLibImportObjItem ObjPbjNumberOfSymbolsText, &TRUE
+    add esi 4 | Mov eax D$esi
+    Mov D$CoffSymbolsNumber eax ; To be used in WriteImageSymbolTable
+    Mov D$ObjSymbolsNumber eax ; To be used in AddListviewItem
+    Call WriteLibImportObjItem ObjPbjNumberOfSymbolsText, &TRUE
 
-    add esi 4 | movzx eax W$esi | mov D$SizeOfOptionalHeaderInObj eax
-    call WriteLibImportObjItem ObjSizeOfOptionalHeaderText, &TRUE
+    add esi 4 | movzx eax W$esi | Mov D$SizeOfOptionalHeaderInObj eax
+    Call WriteLibImportObjItem ObjSizeOfOptionalHeaderText, &TRUE
 
     add esi 2 | movzx eax W$esi
-    call WriteLibImportObjItem ObjCharacteristicsText, &TRUE | sub edi 2
+    Call WriteLibImportObjItem ObjCharacteristicsText, &TRUE | sub edi 2
     movzx eax W$esi
     If eax <> 0
-        call WriteObjCharacteristics
+        Call WriteObjCharacteristics
     End_If
 
-    mov W$edi CRLF
-    mov B$edi+2 ']'
-    mov D$edi+3 CRLF2 | add edi 7
+    Mov W$edi CRLF
+    Mov B$edi+2 ']'
+    Mov D$edi+3 CRLF2 | add edi 7
 
     add esi 2
 ret
@@ -950,13 +950,13 @@ ret
 
 
 Write_IMAGE_DATA_DIRECTORY_Title:
-    mov W$edi CRLF | add edi 2
+    Mov W$edi CRLF | add edi 2
 
     push esi
         zCopy IMAGE_DATA_DIRECTORY_Title
     pop esi
 
-    mov D$edi CRLF2 | add edi 4
+    Mov D$edi CRLF2 | add edi 4
 ret
 
 
@@ -971,7 +971,7 @@ WriteObjMagic:
         End_If
     pop esi
 
-    mov W$edi CRLF | add edi 2
+    Mov W$edi CRLF | add edi 2
 ret
 
 
@@ -1004,14 +1004,14 @@ WriteObjSubSystem:
         .End_If
     pop esi
 
-    mov W$edi CRLF | add edi 2
+    Mov W$edi CRLF | add edi 2
 ret
 
 
 WriteDllCharacteristics:
     .If eax <> 0
         push esi
-            mov D$edi ' ; ' | add edi 3
+            Mov D$edi ' ; ' | add edi 3
 
             test eax &IMAGE_DLLCHARACTERISTICS_PPROCESS_LIB_INIT | jz L1>
                 zCopy {'&IMAGE_DLLCHARACTERISTICS_PPROCESS_LIB_INIT__', 0}
@@ -1038,168 +1038,168 @@ L1:         While B$edi = '_' | dec edi | End_While
         pop esi
     .End_If
 
-    mov W$edi CRLF | add edi 2
+    Mov W$edi CRLF | add edi 2
 ret
 
 
 GetCoffIMAGE_OPTIONAL_HEADER:
     push esi
-        mov esi CoffListingIMAGE_OPTIONAL_HEADERTitle
+        Mov esi CoffListingIMAGE_OPTIONAL_HEADERTitle
         While B$esi <> 0 | movsb | End_While
-        call WriteIndiceOnly
-        mov B$edi ':', W$edi+1 CRLF | add edi 3
+        Call WriteIndiceOnly
+        Mov B$edi ':', W$edi+1 CRLF | add edi 3
     pop esi
 
     movzx eax W$esi
     push eax
-    call WriteLibImportObjItem ImgOptHdr.Magic, &TRUE | sub edi 2
+    Call WriteLibImportObjItem ImgOptHdr.Magic, &TRUE | sub edi 2
     pop eax
-    call WriteObjMagic
+    Call WriteObjMagic
 
     add esi 2 | movzx eax B$esi
-    call WriteLibImportObjItem ImgOptHdr.MajorLinkerVersion, &TRUE
+    Call WriteLibImportObjItem ImgOptHdr.MajorLinkerVersion, &TRUE
 
     inc esi | movzx eax B$esi
-    call WriteLibImportObjItem ImgOptHdr.MinorLinkerVersion, &TRUE
+    Call WriteLibImportObjItem ImgOptHdr.MinorLinkerVersion, &TRUE
 
     inc esi
-    lodsd | call WriteLibImportObjItem ImgOptHdr.SizeOfCode, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.SizeOfCode, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgOptHdr.SizeOfInitializedData, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.SizeOfInitializedData, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgOptHdr.SizeOfUninitializedData, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.SizeOfUninitializedData, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgOptHdr.AddressOfEntryPoint, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.AddressOfEntryPoint, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgOptHdr.BaseOfCode, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.BaseOfCode, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgOptHdr.BaseOfData, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.BaseOfData, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgOptHdr.ImageBase, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.ImageBase, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgOptHdr.SectionAlignment, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.SectionAlignment, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgOptHdr.FileAlignment, &TRUE
-
-    lodsw | and eax 0FFFF
-    call WriteLibImportObjItem ImgOptHdr.MajorOperatingSystemVersion, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.FileAlignment, &TRUE
 
     lodsw | and eax 0FFFF
-    call WriteLibImportObjItem ImgOptHdr.MinorOperatingSystemVersion, &TRUE
+    Call WriteLibImportObjItem ImgOptHdr.MajorOperatingSystemVersion, &TRUE
 
     lodsw | and eax 0FFFF
-    call WriteLibImportObjItem ImgOptHdr.MajorImageVersion, &TRUE
+    Call WriteLibImportObjItem ImgOptHdr.MinorOperatingSystemVersion, &TRUE
 
     lodsw | and eax 0FFFF
-    call WriteLibImportObjItem ImgOptHdr.MinorImageVersion, &TRUE
+    Call WriteLibImportObjItem ImgOptHdr.MajorImageVersion, &TRUE
 
     lodsw | and eax 0FFFF
-    call WriteLibImportObjItem ImgOptHdr.MajorSubsystemVersion, &TRUE
+    Call WriteLibImportObjItem ImgOptHdr.MinorImageVersion, &TRUE
 
     lodsw | and eax 0FFFF
-    call WriteLibImportObjItem ImgOptHdr.MinorSubsystemVersion, &TRUE
-
-    lodsd | call WriteLibImportObjItem ImgOptHdr.Win32VersionValue, &TRUE
-
-    lodsd | call WriteLibImportObjItem ImgOptHdr.SizeOfImage, &TRUE
-
-    lodsd | call WriteLibImportObjItem ImgOptHdr.SizeOfHeaders, &TRUE
-
-    lodsd | call WriteLibImportObjItem ImgOptHdr.CheckSum, &TRUE
+    Call WriteLibImportObjItem ImgOptHdr.MajorSubsystemVersion, &TRUE
 
     lodsw | and eax 0FFFF
-    push eax
-    call WriteLibImportObjItem ImgOptHdr.Subsystem, &TRUE | sub edi 2
-    pop eax
-    call WriteObjSubSystem
+    Call WriteLibImportObjItem ImgOptHdr.MinorSubsystemVersion, &TRUE
+
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.Win32VersionValue, &TRUE
+
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.SizeOfImage, &TRUE
+
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.SizeOfHeaders, &TRUE
+
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.CheckSum, &TRUE
 
     lodsw | and eax 0FFFF
     push eax
-    call WriteLibImportObjItem ImgOptHdr.DllCharacteristics, &TRUE | sub edi 2
+    Call WriteLibImportObjItem ImgOptHdr.Subsystem, &TRUE | sub edi 2
     pop eax
-    call WriteDllCharacteristics
+    Call WriteObjSubSystem
 
-    lodsd | call WriteLibImportObjItem ImgOptHdr.SizeOfStackReserve, &TRUE
+    lodsw | and eax 0FFFF
+    push eax
+    Call WriteLibImportObjItem ImgOptHdr.DllCharacteristics, &TRUE | sub edi 2
+    pop eax
+    Call WriteDllCharacteristics
 
-    lodsd | call WriteLibImportObjItem ImgOptHdr.SizeOfStackCommit, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.SizeOfStackReserve, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgOptHdr.SizeOfHeapReserve, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.SizeOfStackCommit, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgOptHdr.SizeOfHeapCommit, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.SizeOfHeapReserve, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgOptHdr.LoaderFlags, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.SizeOfHeapCommit, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgOptHdr.NumberOfRvaAndSizes, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.LoaderFlags, &TRUE
+
+    lodsd | Call WriteLibImportObjItem ImgOptHdr.NumberOfRvaAndSizes, &TRUE
 
 
-    call Write_IMAGE_DATA_DIRECTORY_Title
+    Call Write_IMAGE_DATA_DIRECTORY_Title
 
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.Export, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.Export, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.ExportSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.ExportSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.Import, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.Import, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.ImportSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.ImportSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.Resource, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.Resource, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.ResourceSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.ResourceSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.Exception, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.Exception, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.ExceptionSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.ExceptionSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.Certificate, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.Certificate, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.CertificateSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.CertificateSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.Relocation, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.Relocation, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.RelocationSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.RelocationSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.Debug, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.Debug, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.DebugSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.DebugSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.Architecture, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.Architecture, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.ArchitectureSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.ArchitectureSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.GPReg, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.GPReg, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.GPRegSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.GPRegSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.Thread, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.Thread, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.ThreadSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.ThreadSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.ConfigTable, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.ConfigTable, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.ConfigTableSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.ConfigTableSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.BoundIAT, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.BoundIAT, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.BoundIATSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.BoundIATSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.IAT, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.IAT, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.IATSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.IATSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.DelayID, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.DelayID, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.DelayIDSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.DelayIDSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.COM, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.COM, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.COMSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.COMSize, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.Reserved, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.Reserved, &TRUE
 
-    lodsd | call WriteLibImportObjItem ImgDataDir.ReservedSize, &TRUE
+    lodsd | Call WriteLibImportObjItem ImgDataDir.ReservedSize, &TRUE
 
-    sub edi 2 | mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+    sub edi 2 | Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
 
 ret
 ____________________________________________________________________________________________
@@ -1222,7 +1222,7 @@ IMAGE_SECTION_HEADER Structure
 [SectionHeaderNumber: '001', 0]
 
 InitSectionHeaderNumber:
-    mov D$SectionHeaderNumber '001'
+    Mov D$SectionHeaderNumber '001'
 ret
 
 
@@ -1234,7 +1234,7 @@ IncrementSectionHeaderNumber:
 
         inc B$ebx
         While B$ebx > '9'
-            mov B$ebx '0' | dec ebx | inc B$ebx
+            Mov B$ebx '0' | dec ebx | inc B$ebx
         End_While
     pop ebx
 ret
@@ -1254,72 +1254,72 @@ Proc WriteObjSectionHeaderItem:
     Argument @Text1, @Text2
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {'ImgSecHdr', 0}
             zCopy SectionHeaderNumber
-            mov B$edi '.' | inc edi
+            Mov B$edi '.' | inc edi
             zCopy D@Text1
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text2, al B$eax+2
+        Mov eax D@Text2, al B$eax+2
 
         ...If al = 'B'
-            mov edx esi | add edx 8
-            mov B$edi "'" | inc edi
+            Mov edx esi | add edx 8
+            Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:         mov B$edi "'" | inc edi
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+L1:         Mov B$edi "'" | inc edi
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ...Else_If al = 'W'
-            lodsw | and eax 0FFFF | call WriteEax
+            lodsw | and eax 0FFFF | Call WriteEax
 
         ...Else
 
             ..If D$esi <> 0
-                mov eax D@Text1
+                Mov eax D@Text1
 
                 .If D$eax = 'Size' ; from "SizeOfRawData" string
 
-                    call WriteSectionHeaderRawSizeDiffLabel
+                    Call WriteSectionHeaderRawSizeDiffLabel
                     push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
 
                 .Else_If D$eax+8 = 'oRaw'; From "PointerToRawData" string
                     ;mov eax D$esi-4
                     If D$esi-4 = 0
-                        mov D$esi 0
+                        Mov D$esi 0
                     Else
 
-                        call WriteSectionHeaderPointerToDataDiffLabel
+                        Call WriteSectionHeaderPointerToDataDiffLabel
                         push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
                     End_If
                 .Else_If D$eax+9 = 'Relo'; From "PointerToRelocations" string
-                    call InitSectionRelocNumber
+                    Call InitSectionRelocNumber
                     ;movzx eax W$esi+4+4
                     ; Fix the value at esi when the Reloc Number is 0, but it is pointing somewhere
                     If W$esi+4+4 = 0
-                        mov D$esi 0
+                        Mov D$esi 0
                     Else
-                        call WriteSectionHeaderPointerToRelocDiffLabel
+                        Call WriteSectionHeaderPointerToRelocDiffLabel
                         push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
                     End_If
                 .Else_If D$eax+9 = 'Line'; From "PointerToLinenumbers" string
-                    call InitSectionLineNumber
+                    Call InitSectionLineNumber
                     ;movzx eax W$esi+4+2
                     If W$esi+4+2 = 0
-                        mov D$esi 0
+                        Mov D$esi 0
                     Else
-                        call WriteSectionHeaderPointerToLineNumberDiffLabel
+                        Call WriteSectionHeaderPointerToLineNumberDiffLabel
                         push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
                     End_If
 ;;
                 Else_If D$eax = 'Misc'; From "MiscVirtualSize" string
 
-                    call WriteSectionHeaderVirtualSizeDiffLabel
+                    Call WriteSectionHeaderVirtualSizeDiffLabel
                     push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
 ;;
 
@@ -1327,18 +1327,18 @@ L1:         mov B$edi "'" | inc edi
 
             ..End_If
 
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ...End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 EndP
 
 
 WriteCharacteristicsEquates:
 
     If eax <> 0
-        mov D$edi ' ; ' | add edi 3
+        Mov D$edi ' ; ' | add edi 3
     End_If
 
     test eax &IMAGE_SCN_TYPE_REG | jz L1>
@@ -1380,7 +1380,7 @@ L1: test eax &IMAGE_SCN_MEM_LOCKED | jz L1>
 L1: test eax &IMAGE_SCN_MEM_PRELOAD | jz L1>
         zCopy {'&IMAGE_SCN_MEM_PRELOAD__', 0}
 
-L1: mov ebx eax | and ebx 0FF_0000
+L1: Mov ebx eax | and ebx 0FF_0000
 
     .If ebx = &IMAGE_SCN_ALIGN_1BYTES                ; 010_0000
         zCopy {'&IMAGE_SCN_ALIGN_1BYTES__', 0}
@@ -1442,16 +1442,16 @@ ________________________________________________________________________________
 Proc GetName1Offset:
     pushad
         ; edi  is used as a Byte Counter
-        mov edi 8 ; Size of the Name1 member
+        Mov edi 8 ; Size of the Name1 member
         inc esi ; ByPass the 1st '/'
-        mov ecx 10, ebx 0, eax 0
+        Mov ecx 10, ebx 0, eax 0
 
         Do
             On B$esi = 0, jmp L0> ; If we reach 0 jmp over
             On B$esi = ' ', jmp L0> ; If we reach ' ' jmp over
             mul ecx
             push eax
-                lodsb | sub al '0' | mov bl al
+                lodsb | sub al '0' | Mov bl al
             pop eax
             add eax ebx
             dec edi
@@ -1459,7 +1459,7 @@ Proc GetName1Offset:
 
 L0:
 
-        mov D$MemberName1Offset eax
+        Mov D$MemberName1Offset eax
 
     popad
 EndP
@@ -1473,26 +1473,26 @@ Proc WriteSectionNameStringTablePointerComment:
 
 
     ; Initialize the String Record Counter
-    call InitStringTableRecord
+    Call InitStringTableRecord
 
     ; eax is pointing to the Offset of the String on the String Table
-    mov eax D$MemberName1Offset
-    mov edx D$PointerToStringTable
-    mov esi edx ; esi is pointing to the Beginning of the String Table
+    Mov eax D$MemberName1Offset
+    Mov edx D$PointerToStringTable
+    Mov esi edx ; esi is pointing to the Beginning of the String Table
     add edx eax ; edx will be using as a counter of the total amount of strings untill we reach the String where we are.
     add esi 4   ; Bypass the String Table Size. and Point to the beginning of the 1st String
 
     .Do
 
-        While B$esi <> 0 | inc esi | End_While | inc esi | On B$esi = 0, mov edx 0
+        While B$esi <> 0 | inc esi | End_While | inc esi | On B$esi = 0, Mov edx 0
 
-        call IncrementStringTableRecord
+        Call IncrementStringTableRecord
 
     .Loop_Until esi >= edx
 
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {'StringData', 0}
             zCopy StringTableRecord
         pop esi
@@ -1500,7 +1500,7 @@ Proc WriteSectionNameStringTablePointerComment:
 
     ; Restore the Value of StringTableRecord
 
-    call InitStringTableRecord
+    Call InitStringTableRecord
 
 
 EndP
@@ -1516,27 +1516,27 @@ ___________________________________________
 Proc WriteIndirectSectionName:
     Uses esi
 
-        call GetName1Offset ; convert the Offset to hexadecimal
-        call GetStringTablePointer
+        Call GetName1Offset ; convert the Offset to hexadecimal
+        Call GetStringTablePointer
 
         ;zCopy SymbolTableTitle
-        mov esi D$CoffSectionBase
+        Mov esi D$CoffSectionBase
         add esi D$CoffSymbolsPointer
 
         push esi
             zCopy SectionNameIndirectMessage
         pop esi
 
-            mov ecx D$PointerToStringTable
+            Mov ecx D$PointerToStringTable
 
         push esi
-            add ecx D$MemberName1Offset | mov esi ecx
+            add ecx D$MemberName1Offset | Mov esi ecx
             While B$esi <> 0 | movsb | End_While
         pop esi
 
         push esi
             zCopy {W$ CRLF, B$ "; Referenced in String Table data at: ", 0}
-            call WriteSectionNameStringTablePointerComment
+            Call WriteSectionNameStringTablePointerComment
             zCopy {W$ CRLF, B$ "________________________________________________________________________", D$ CRLF2 0}
         pop esi
 
@@ -1747,12 +1747,12 @@ INIT 0E2000020 &IMAGE_SCN_CNT_CODE &IMAGE_SCN_MEM_EXECUTE &IMAGE_SCN_MEM_READ &I
 Proc IdentifyRawDataType:
     Uses eax, esi, ecx
 
-    mov eax D$esi+36 ; eax points to the Characteristics member
+    Mov eax D$esi+36 ; eax points to the Characteristics member
 
     ; Reinitialize the Raw Data to make sure it always will be set to 0 when the below
     ; checkings fails.
 
-    mov D$RawDataType 0
+    Mov D$RawDataType 0
 
     ; Check if it is .text or .code or any other section that is related to code only
     .Test_If eax &IMAGE_SCN_CNT_CODE
@@ -1760,9 +1760,9 @@ Proc IdentifyRawDataType:
     .Test_Else_If eax &IMAGE_SCN_MEM_EXECUTE
     L0:
             Test_If eax &IMAGE_SCN_CNT_UNINITIALIZED_DATA
-                mov D$RawDataType RDT_VIRTUALDATA
+                Mov D$RawDataType RDT_VIRTUALDATA
             Test_Else
-                mov D$RawDataType RDT_CODE
+                Mov D$RawDataType RDT_CODE
             Test_End
 
     .Test_Else
@@ -1772,19 +1772,19 @@ Proc IdentifyRawDataType:
         ; Guga Note: Look at CTLFWR32.LIB we will need a Virtual data. Like we did for the raw data.
 
         Test_If eax &IMAGE_SCN_CNT_UNINITIALIZED_DATA
-            mov D$RawDataType RDT_VIRTUALDATA
+            Mov D$RawDataType RDT_VIRTUALDATA
             ExitP
         Test_End
 
         ; Check for long section names (KSGUID.LIB)
         If B$esi = '/'
             ; Similar to what we found at WriteIndirectSectionName
-            call GetName1Offset ; convert the Offset to hexadecimal
-            call GetStringTablePointer
-            mov esi D$CoffSectionBase
+            Call GetName1Offset ; convert the Offset to hexadecimal
+            Call GetStringTablePointer
+            Mov esi D$CoffSectionBase
             add esi D$CoffSymbolsPointer
-            mov ecx D$PointerToStringTable
-            add ecx D$MemberName1Offset | mov esi ecx
+            Mov ecx D$PointerToStringTable
+            add ecx D$MemberName1Offset | Mov esi ecx
         End_If
 
         ; Find Virtual Data
@@ -1799,26 +1799,26 @@ Proc IdentifyRawDataType:
         .Else_If D$esi = '.bss'
 
         L0:
-            mov D$RawDataType RDT_VIRTUALDATA
+            Mov D$RawDataType RDT_VIRTUALDATA
 
         ; Find Debug Data. It will use the proper Debug structures to display in the raw data.
         .Else_If D$esi = '.deb'
 
             If D$esi+4 = 'ug$s' ; .debug$s , .debug$S or Big caps
-                mov D$RawDataType RDT_DEBUGS
+                Mov D$RawDataType RDT_DEBUGS
             Else_If D$esi+4 = 'ug$f' ; .debug$f , .debug$F or Big caps
-                mov D$RawDataType RDT_DEBUGF
+                Mov D$RawDataType RDT_DEBUGF
             Else_If D$esi+4 = 'ug$t' ; .debug$t , .debug$T or Big caps
-                mov D$RawDataType RDT_DEBUGT
+                Mov D$RawDataType RDT_DEBUGT
             Else_If D$esi+4 = 'ug$p' ; .debug$p , .debug$P or Big caps
-                mov D$RawDataType RDT_DEBUGP
+                Mov D$RawDataType RDT_DEBUGP
             Else
-                mov D$RawDataType RDT_ERROR
+                Mov D$RawDataType RDT_ERROR
             End_If
 
         ; Find NetFramework Stab Structure. It will use the proper Debug structures to display in the raw data.
         .Else_If_And D$esi = '.sta', D$esi+4 = 'bstr'
-            mov D$RawDataType RDT_STABSTR
+            Mov D$RawDataType RDT_STABSTR
 
         ; Check for Linker Directive data. esi points to the Characteristics member.
 
@@ -1828,50 +1828,50 @@ Proc IdentifyRawDataType:
                 ; PointerToRelocations and PointerToLinenumbers must be 0, because
                 ; the section must not have relocations or line numbers.
                 If_And D$esi+24 = 0, D$esi+28 = 0
-                    mov D$RawDataType RDT_LNKDIRECTIVE
+                    Mov D$RawDataType RDT_LNKDIRECTIVE
                 Else
-                    mov D$RawDataType RDT_ERROR
+                    Mov D$RawDataType RDT_ERROR
                 End_If
 
             Test_Else
-                mov D$RawDataType RDT_ERROR
+                Mov D$RawDataType RDT_ERROR
             Test_End
 
         ; Find Common Data. (.data; .idata; .rdata; .xdata; .pdata; .edata)
 
         .Else_If_And D$esi = '.dat', B$esi+4 = 'a'
-            mov D$RawDataType RDT_DATA
+            Mov D$RawDataType RDT_DATA
 
         .Else_If D$esi+2 = 'data'
 
             If W$esi = '.i' ; Import Data Tables. Need to use proper structures or Data arrays.
                             ; Using IMAGE_IMPORT_DESCRIPTOR structure. Take a look at ACLCLS.LIB to we identify the proper structures and Data Bytes
-                mov D$RawDataType RDT_IDATA
+                Mov D$RawDataType RDT_IDATA
             Else_If W$esi = '.r' ; Read Only Data. In general, it is a series of Dwords, but it can be anything, like a serie of structures etc.
-                mov D$RawDataType RDT_RDATA
+                Mov D$RawDataType RDT_RDATA
             Else_If W$esi = '.x' ; Exception information Data Tables. Need to use proper structures EXCEPTION_RECORD. _msExcept _msExcInfo
-                mov D$RawDataType RDT_XDATA
+                Mov D$RawDataType RDT_XDATA
             Else_If W$esi = '.p' ; Exception information Data Tables. Need to use proper structures (EXCEPTION_RECORD ?)
-                mov D$RawDataType RDT_PDATA
+                Mov D$RawDataType RDT_PDATA
             Else_If W$esi = '.e' ; Export Data Tables. Need to use proper structures or Data arrays (IMAGE_EXPORT_DIRECTORY ?)
-                mov D$RawDataType RDT_EDATA
+                Mov D$RawDataType RDT_EDATA
             Else
-                mov D$RawDataType RDT_ERROR
+                Mov D$RawDataType RDT_ERROR
             End_If
 
         .Else_If D$esi = '.tls' ; Thread-local storage Data. Some section uses the IMAGE_TLS_DIRECTORY32 to point to
                                 ; some data inside this .tls section. See MSVCRT.LIB, MSVCRTD.LIB, LIBCMT.LIB, LIBCMTD.LIB
-            mov D$RawDataType RDT_TLSDATA
+            Mov D$RawDataType RDT_TLSDATA
 
         .Else_If_And D$esi = '.rel', W$esi+4 = 'oc' ; Image relocations. We must use the (IMAGE_RELOCATION ?) for this
-            mov D$RawDataType RDT_RELOCDATA
+            Mov D$RawDataType RDT_RELOCDATA
 
         .Else_If_And D$esi = '.rsr', B$esi+4 = 'c' ; Resource Section. We must use the IMAGE_RESOURCE_DIRECTORY structure.
-            mov D$RawDataType RDT_RSRCDATA
+            Mov D$RawDataType RDT_RSRCDATA
 
         .Else
             ; When everything else fails or we have some unknown section names, we always set to DATA
-            mov D$RawDataType RDT_DATA
+            Mov D$RawDataType RDT_DATA
         .End_If
 
         pop D$esi+4, D$esi
@@ -1892,37 +1892,37 @@ GetCoffSectionHeader:
     ; Yes, do next line. No, jmp over. Example: KSGUID.LIB
 
     If B$esi = '/'
-        call WriteIndirectSectionName
+        Call WriteIndirectSectionName
     End_If
 
     push esi
-        mov B$edi '[' | inc edi
-        call WriteObjIndice
+        Mov B$edi '[' | inc edi
+        Call WriteObjIndice
         zCopy {'ImgSecHdr', 0}
         zCopy SectionHeaderNumber
-        mov B$edi ':', W$edi+1 CRLF | add edi 3
+        Mov B$edi ':', W$edi+1 CRLF | add edi 3
     pop esi
 
-;    call IdentifyRawDataType
+;    Call IdentifyRawDataType
 
-    call WriteObjSectionHeaderItem CoffSectionHeaderName, {': B$ ', 0}
+    Call WriteObjSectionHeaderItem CoffSectionHeaderName, {': B$ ', 0}
 
     If B$esi-8 = '/'
-        call WriteLinkerMemberSizeHex D$MemberName1Offset
+        Call WriteLinkerMemberSizeHex D$MemberName1Offset
     End_If
 
-    call WriteObjSectionHeaderItem CoffSectionHeaderVirtualSize, {': D$ ', 0}
-    call WriteObjSectionHeaderItem CoffSectionHeaderRVA, {': D$ ', 0}
-    call WriteObjSectionHeaderItem CoffSectionHeaderSize, {': D$ ', 0}
-    call WriteObjSectionHeaderItem CoffSectionHeaderPointerToData, {': D$ ', 0}
-    call WriteObjSectionHeaderItem CoffSectionHeaderPointerToReloc, {': D$ ', 0}
-    call WriteObjSectionHeaderItem CoffSectionHeaderPointerToLinesNumbers, {': D$ ', 0}
-    call WriteObjSectionHeaderItem CoffSectionHeaderNumberOfRelocations, {': W$ ', 0}
-    call WriteObjSectionHeaderItem CoffSectionHeaderNumberOfLinesNumbers, {': W$ ', 0}
-    call WriteObjSectionHeaderItem CoffSectionHeaderCharacteristics, {': D$ ', 0}
+    Call WriteObjSectionHeaderItem CoffSectionHeaderVirtualSize, {': D$ ', 0}
+    Call WriteObjSectionHeaderItem CoffSectionHeaderRVA, {': D$ ', 0}
+    Call WriteObjSectionHeaderItem CoffSectionHeaderSize, {': D$ ', 0}
+    Call WriteObjSectionHeaderItem CoffSectionHeaderPointerToData, {': D$ ', 0}
+    Call WriteObjSectionHeaderItem CoffSectionHeaderPointerToReloc, {': D$ ', 0}
+    Call WriteObjSectionHeaderItem CoffSectionHeaderPointerToLinesNumbers, {': D$ ', 0}
+    Call WriteObjSectionHeaderItem CoffSectionHeaderNumberOfRelocations, {': W$ ', 0}
+    Call WriteObjSectionHeaderItem CoffSectionHeaderNumberOfLinesNumbers, {': W$ ', 0}
+    Call WriteObjSectionHeaderItem CoffSectionHeaderCharacteristics, {': D$ ', 0}
     push esi
-        sub edi 2 | mov eax D$esi-4 | call WriteCharacteristicsEquates
-        mov W$edi CRLF, B$edi+2 ']', D$edi+3 CRLF2 | add edi 7
+        sub edi 2 | Mov eax D$esi-4 | Call WriteCharacteristicsEquates
+        Mov W$edi CRLF, B$edi+2 ']', D$edi+3 CRLF2 | add edi 7
     pop esi
 ret
 ____________________________________________________________________________________________
@@ -1930,13 +1930,13 @@ ________________________________________________________________________________
 WriteSectionHeaderVirtualSizeDiffLabel:
     push esi
 
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {"VirtualDataEnd", 0}
         zCopy SectionHeaderNumber
 
-        mov D$edi ' - ' | add edi 3
+        Mov D$edi ' - ' | add edi 3
 
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {"VirtualData", 0}
         zCopy SectionHeaderNumber
     pop esi
@@ -1946,19 +1946,19 @@ ret
 WriteSectionHeaderRawSizeDiffLabel:
 
     If D$esi+4 = 0 ; Is PointerToRawData = 0 ? If so, it means we are dealing with Virtual data. Do next line
-        push esi | lodsd | call WriteEax | pop esi | ret
+        push esi | lodsd | Call WriteEax | pop esi | ret
     End_If
 
     push esi
 
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".RawDataEnd", 0}
 
-        mov D$edi ' - ' | add edi 3
+        Mov D$edi ' - ' | add edi 3
 
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".RawData", 0}
@@ -1971,15 +1971,15 @@ ret
 WriteSectionHeaderPointerToDataDiffLabel:
     push esi
 
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".RawData", 0}
 
-        mov D$edi ' - ' | add edi 3
+        Mov D$edi ' - ' | add edi 3
 
         zCopy IMAGE_FILE_HEADER_Comment1
-        call WriteIndiceOnly
+        Call WriteIndiceOnly
 
     pop esi
 ret
@@ -1989,11 +1989,11 @@ Proc FixRelocDiffLabel:
     uses eax, ebx, ecx, esi, edi
 
     ; reinitialize the sectino counter
-    call InitSectionHeaderNumber
+    Call InitSectionHeaderNumber
 
     movzx ecx W$ObjNumberOfSections
-    mov ebx D$FirstSectionPointer
-    mov edi D$esi ; edi hold the value of our PointerToRelocations to be compared
+    Mov ebx D$FirstSectionPointer
+    Mov edi D$esi ; edi hold the value of our PointerToRelocations to be compared
 
 L0:
 
@@ -2004,7 +2004,7 @@ L0:
         End_If
    .End_If
 
-   call IncrementSectionHeaderNumber
+   Call IncrementSectionHeaderNumber
    add ebx 028 ; go to the next section
    Loop L0<
 
@@ -2018,21 +2018,21 @@ WriteSectionHeaderPointerToRelocDiffLabel:
 
     If W$esi+4+4 = 0 ; Points to NumberOfRelocations. aclcls.lib
         ; Check how many relocs we have. If we have 0, it means that the pointer is being referenced by another section.
-         call FixRelocDiffLabel
+         Call FixRelocDiffLabel
     End_If
 
     push esi
 
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".ImgReloc", 0}
         zCopy RelocNumber
 
-        mov D$edi ' - ' | add edi 3
+        Mov D$edi ' - ' | add edi 3
 
         zCopy IMAGE_FILE_HEADER_Comment1
-        call WriteIndiceOnly
+        Call WriteIndiceOnly
 
     pop esi
 
@@ -2044,16 +2044,16 @@ ret
 WriteSectionHeaderPointerToLineNumberDiffLabel:
     push esi
 
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".LineNumber", 0}
         zCopy CoffLineNumber
 
-        mov D$edi ' - ' | add edi 3
+        Mov D$edi ' - ' | add edi 3
 
         zCopy IMAGE_FILE_HEADER_Comment1
-        call WriteIndiceOnly
+        Call WriteIndiceOnly
 
     pop esi
 ret
@@ -2066,37 +2066,37 @@ Proc WriteSectionHeaderPointerToStringTableDiffLabel:
 
     ; Initialize the String Record Counter
 
-    call InitStringTableRecord
+    Call InitStringTableRecord
 
     ; On this case, the Stringtable must be initialized with 0. Otherwise our counter will already start at 01
     ; So, we must reset the counter to '000000'.
 
-    mov D$StringTableRecord+4 '00'
+    Mov D$StringTableRecord+4 '00'
 
     lodsd ; eax is pointing to the Offset of the String on the String Table
-    mov edx D$PointerToStringTable
+    Mov edx D$PointerToStringTable
     add edx 4 ; Bypass the String Table Size. and Point to the beginning of the 1st String
-    mov esi edx ; esi is pointing to the 1st string
+    Mov esi edx ; esi is pointing to the 1st string
     add edx eax ; edx will be using as a counter of the total amount of strings untill we reach the String where we are.
 
     .Do
 
-        While B$esi <> 0 | inc esi | End_While | inc esi | On B$esi = 0, mov edx 0
+        While B$esi <> 0 | inc esi | End_While | inc esi | On B$esi = 0, Mov edx 0
 
-        call IncrementStringTableRecord
+        Call IncrementStringTableRecord
 
     .Loop_Until esi >= edx
 
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {'StringData', 0}
             zCopy StringTableRecord
         pop esi
 
-        mov D$edi ' - ' | add edi 3
+        Mov D$edi ' - ' | add edi 3
 
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {'StringTableSize', 0}
         zCopy {' ; Hex Value:  ', 0}
 
@@ -2109,34 +2109,34 @@ ________________________________________________________________________________
 Proc WriteSectionHeaderSymbolConstantIndex:
     uses eax, ecx, ebx, esi
 
-    call InitSymbolIndexRecord
-    call WriteObjIndice
+    Call InitSymbolIndexRecord
+    Call WriteObjIndice
 
     ; Fix the label to show in Caps and replace the '." with an "_"
     ; The 1st char in "Obj000000." is in Caps, so we don't need to overwrite the "O" char
 
     push edi
-    mov B$edi-1 '_', W$edi-9 'BJ'
+    Mov B$edi-1 '_', W$edi-9 'BJ'
     pop edi
 
     push esi
     zCopy {'SYMBOLINDEX', 0}
     pop esi
 
-    mov ecx D$esi
+    Mov ecx D$esi
 
     ; Note to René: Replacing this with a hex to decimal ascii string is better,
     ; but i couldn't make it be on the same style as SymbolTableIndex
 
     While ecx <> 0
-        call IncrementSymbolIndexRecord
+        Call IncrementSymbolIndexRecord
         dec ecx
     End_While
 
     zCopy SymbolTableIndex
 
     ; restore the SymbolTableIndex
-    call InitSymbolIndexRecord
+    Call InitSymbolIndexRecord
 
 EndP
 ____________________________________________________________________________________________
@@ -2154,38 +2154,38 @@ Proc WriteObjRelocHeaderItem:
     Argument @Text1, @Text2
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
 
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
 
             zCopy {'.ImgReloc', 0}
             zCopy RelocNumber;SectionHeaderNumber
-            mov B$edi '.' | inc edi
+            Mov B$edi '.' | inc edi
             zCopy D@Text1
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text2, al B$eax+2
+        Mov eax D@Text2, al B$eax+2
 
         ..If al = 'D'
 
             .If D$esi <> 0
 
-                mov eax D@Text1
+                Mov eax D@Text1
 
                 If D$eax = 'Virt' ; from "VirtualAddress" string
 
-                    lodsd | call WriteEax
+                    lodsd | Call WriteEax
                     push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
 
                 ;Else_If D$eax = 'Relo'; From "RelocCount" string
 
-                    ;call WriteSectionHeaderPointerToDataDiffLabel
+                    ;Call WriteSectionHeaderPointerToDataDiffLabel
                     ;push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
 
                 Else_If D$eax = 'Symb'; From "SymbolTableIndex" string
-                    call WriteSectionHeaderSymbolConstantIndex
+                    Call WriteSectionHeaderSymbolConstantIndex
                     add esi 4 ; we need to increment esi by 4 to we adjust at the end of the End_If macro
                     push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
 
@@ -2197,16 +2197,16 @@ Proc WriteObjRelocHeaderItem:
 
             .End_If
             ; We need to subtract esi by 4 (01 Dword) to we get back to the path again. It was increased above.
-            sub esi 4 | lodsd | call WriteEax
+            sub esi 4 | lodsd | Call WriteEax
 
         ..Else_If al = 'W'
-            lodsw | and eax 0FFFF | call WriteEax
+            lodsw | and eax 0FFFF | Call WriteEax
 
         ;..Else
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 EndP
 
 _________________________________________________________
@@ -2341,9 +2341,9 @@ equates are:
 WriteRelocHeaderTypeEquate:
     push esi
 
-    movzx eax W$esi-2 | mov ebx D$CoffSectionBase | movzx ebx W$ebx
+    movzx eax W$esi-2 | Mov ebx D$CoffSectionBase | movzx ebx W$ebx
 
-    mov D$edi ' ; ' | add edi 3
+    Mov D$edi ' ; ' | add edi 3
 
     ; Intel Compatible: IMAGE_FILE_MACHINE_I386, IMAGE_FILE_MACHINE_I486,
     ; IMAGE_FILE_MACHINE_I586,  IMAGE_FILE_MACHINE_IA64
@@ -2625,28 +2625,28 @@ Proc GetCoffRelocHeader:
 
     push esi
         zCopy CoffRelocHeaderTitle
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {"ImgSecHdr", 0}
         zCopy SectionHeaderNumber
         zCopy {".PointerToRelocations", 0}
         zCopy {" Member", CRLF2, "[", 0}
 
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".ImgReloc", 0}
         zCopy RelocNumber
-        mov B$edi ':', W$edi+1 CRLF | add edi 3
+        Mov B$edi ':', W$edi+1 CRLF | add edi 3
     pop esi
 
-    call WriteObjRelocHeaderItem CoffRelocHeaderRelocRVA, {': D$ ', 0}
-    call WriteObjRelocHeaderItem CoffRelocHeaderSymbolTableIndex, {': D$ ', 0}
-    call WriteObjRelocHeaderItem CoffRelocHeaderType, {': W$ ', 0}
-    sub edi 2 | call WriteRelocHeaderTypeEquate
-    mov W$edi CRLF | add edi 2
+    Call WriteObjRelocHeaderItem CoffRelocHeaderRelocRVA, {': D$ ', 0}
+    Call WriteObjRelocHeaderItem CoffRelocHeaderSymbolTableIndex, {': D$ ', 0}
+    Call WriteObjRelocHeaderItem CoffRelocHeaderType, {': W$ ', 0}
+    sub edi 2 | Call WriteRelocHeaderTypeEquate
+    Mov W$edi CRLF | add edi 2
 
     push esi
-        mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+        Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
     pop esi
 EndP
 ____________________________________________________________
@@ -2655,14 +2655,14 @@ ____________________________________________________________
 
 
 InitSectionRelocNumber:
-    mov D$RelocNumber '0000', D$RelocNumber+4 '01'
+    Mov D$RelocNumber '0000', D$RelocNumber+4 '01'
 ret
 
 
 IncrementSectionRelocNumber:
     lea ebx D$RelocNumber+5 | inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx | inc B$ebx
+        Mov B$ebx '0' | dec ebx | inc B$ebx
     End_While
 ret
 
@@ -2676,7 +2676,7 @@ Proc WriteObjLineHeaderItem:
     Uses edx
 
         push esi
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".LineNumber", 0}
@@ -2687,24 +2687,24 @@ Proc WriteObjLineHeaderItem:
         pop esi
 
 
-                mov eax D@Text1
+                Mov eax D@Text1
 
                 .If D$eax = 'Symb' ; from "SymbolTableIndex" string
-                    call WriteSectionHeaderSymbolConstantIndex
+                    Call WriteSectionHeaderSymbolConstantIndex
                     push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
-                    lodsd | call WriteEax
+                    lodsd | Call WriteEax
 
                 .Else_If D$eax = 'Virt'; From "VirtualAddress" string
-                    lodsd | call WriteEax
+                    lodsd | Call WriteEax
 
                 .Else_If D$eax = 'Line'; From "Linenumber" string
                     xor eax eax
-                    lodsw | call WriteEax
+                    lodsw | Call WriteEax
 
                 .End_If
 
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 EndP
 
 ;;
@@ -2728,13 +2728,13 @@ Proc GetCoffLineHeader:
 
     push esi
         zCopy CoffLineNumberTitle
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {"ImgSecHdr", 0}
         zCopy SectionHeaderNumber
         zCopy {".PointerToLinenumbers Member", 0}
     pop esi
 
-    mov D$edi CRLF2 | add edi 4
+    Mov D$edi CRLF2 | add edi 4
 
     If W$esi+4 <> 0
         push esi
@@ -2746,33 +2746,33 @@ Proc GetCoffLineHeader:
 
 
     push esi
-        mov B$edi "[" | inc edi
-        call WriteObjIndice
+        Mov B$edi "[" | inc edi
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".LineNumber", 0}
         zCopy CoffLineNumber
-        mov B$edi ':', W$edi+1 CRLF | add edi 3
+        Mov B$edi ':', W$edi+1 CRLF | add edi 3
     pop esi
 
     ; problem in ATLDLOAD.LIB
 
     If W$esi+4 = 0
 
-        call WriteObjLineHeaderItem CoffLineHeaderSymbolTableIndex, {': D$ ', 0}
+        Call WriteObjLineHeaderItem CoffLineHeaderSymbolTableIndex, {': D$ ', 0}
     Else
 
-        call WriteObjLineHeaderItem CoffLineHeaderVirtualAddress, {': D$ ', 0}
+        Call WriteObjLineHeaderItem CoffLineHeaderVirtualAddress, {': D$ ', 0}
 
     End_If
 
-    call WriteObjLineHeaderItem CoffLineHeaderLinenumber, {': W$ ', 0}
+    Call WriteObjLineHeaderItem CoffLineHeaderLinenumber, {': W$ ', 0}
 
-;    sub edi 2 | call WriteRelocHeaderTypeEquate
- ;   mov W$edi CRLF | add edi 2
+;    sub edi 2 | Call WriteRelocHeaderTypeEquate
+ ;   Mov W$edi CRLF | add edi 2
 
     push esi
-        mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+        Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
     pop esi
 EndP
 
@@ -2782,14 +2782,14 @@ EndP
 
 
 InitSectionLineNumber:
-    mov D$CoffLineNumber '0000', D$CoffLineNumber+4 '01'
+    Mov D$CoffLineNumber '0000', D$CoffLineNumber+4 '01'
 ret
 
 
 IncrementSectionLineNumber:
     lea ebx D$CoffLineNumber+5 | inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx | inc B$ebx
+        Mov B$ebx '0' | dec ebx | inc B$ebx
     End_While
 ret
 
@@ -2839,24 +2839,24 @@ ret
 
 GetImageSymbolsVariables:
     push esi
-        mov esi D$CoffSectionBase
-        mov eax D$esi+8
+        Mov esi D$CoffSectionBase
+        Mov eax D$esi+8
         If eax <> 0
-            add eax esi | mov D$CoffSymbolsPointer eax
+            add eax esi | Mov D$CoffSymbolsPointer eax
         Else
-            mov D$CoffSymbolsPointer 0
+            Mov D$CoffSymbolsPointer 0
         End_If
 
         move D$CoffSymbolsNumber D$esi+12
 
         If D$CoffSymbolsPointer <> 0
           ; Search the Pointer to the Symbols Strings Table (18 is the Size of one Symbol Record):
-            mov ecx D$CoffSymbolsNumber, eax 18
+            Mov ecx D$CoffSymbolsNumber, eax 18
             mul ecx
             add eax D$CoffSymbolsPointer
-            mov D$PointerToSymbolsStringTable eax
+            Mov D$PointerToSymbolsStringTable eax
             move D$SizeOfSymbolsStringsTable D$eax
-            add eax D$eax | mov D$EndOfSymbolsStringsTable eax
+            add eax D$eax | Mov D$EndOfSymbolsStringsTable eax
         End_If
     pop esi
 ret
@@ -2868,15 +2868,15 @@ Proc WriteAuxSymFmt1DiffLabel:
 
     push esi
 
-    mov ebx D$FirstSectionPointer
+    Mov ebx D$FirstSectionPointer
 
     movzx ecx W$esi-14 ; ecx is pointing to the previous section value
     ; we need to recompute the sectionheader number
 
-    call InitSectionHeaderNumber
-    call InitSectionLineNumber
+    Call InitSectionHeaderNumber
+    Call InitSectionLineNumber
 
-    mov edx edi ; for keeping the path to edi, let's save it at edx
+    Mov edx edi ; for keeping the path to edi, let's save it at edx
 
     ; Guga note this is the errros on DX9SDKSampleFramework.lib We have an 0 previous section
 
@@ -2886,7 +2886,7 @@ Proc WriteAuxSymFmt1DiffLabel:
         push ecx
 
             Do
-                call IncrementSectionHeaderNumber
+                Call IncrementSectionHeaderNumber
                 dec ecx
             Loop_Until ecx = 1
 
@@ -2899,7 +2899,7 @@ Proc WriteAuxSymFmt1DiffLabel:
     push edx
 
     If ecx <> 1     ; If we are pointing to the 1st Section, we don´ need to add it to the offset of the IMAGE_SECTION_HEADER
-        mov eax 40  ; eax is the Size of the IMAGE_SECTON_HEADER
+        Mov eax 40  ; eax is the Size of the IMAGE_SECTON_HEADER
         imul ecx    ; multiply by the section where we must go
         add ebx eax
         sub ebx 40  ; need to subtract from the Size of IMAGE_SECTION_HEADER to get back to the proper path.
@@ -2912,9 +2912,9 @@ Proc WriteAuxSymFmt1DiffLabel:
 
     ; we must point to the proper Section (IMAGE_SECTION_HEADER)
     add ebx 28 ; we are pointing to PointerToLinenumbers
-    mov eax D$ebx ; eax points to the value of linenumber in the ImgSec where we are
+    Mov eax D$ebx ; eax points to the value of linenumber in the ImgSec where we are
 
-    mov edi D$esi ; edi is pointing to the LineNumber value to be compare
+    Mov edi D$esi ; edi is pointing to the LineNumber value to be compare
 
     .If eax <> edi ; is the pointer where we are is equal to the value found in the linenumber ?
                    ; Yes, jmp over.
@@ -2928,7 +2928,7 @@ Proc WriteAuxSymFmt1DiffLabel:
 
             On eax = edi, jmp @OutLoop
             add eax 6 ; we need to add the value in edi (IMAGE_SECTION_HEADER where we are) 6 that is the size of the line number structure
-            call IncrementSectionLineNumber
+            Call IncrementSectionLineNumber
         Loop L0<
 
 @OutLoop:
@@ -2937,20 +2937,20 @@ Proc WriteAuxSymFmt1DiffLabel:
     .End_If
 
 
-        mov edi edx ; retore the path to edi
+        Mov edi edx ; retore the path to edi
 
         push esi
 
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".LineNumber", 0}
         zCopy CoffLineNumber
 
-        mov D$edi ' - ' | add edi 3
+        Mov D$edi ' - ' | add edi 3
 
         zCopy IMAGE_FILE_HEADER_Comment1
-        call WriteIndiceOnly
+        Call WriteIndiceOnly
         zcopy {" ; Hex Value:  ", 0}
         pop esi
 
@@ -2963,49 +2963,49 @@ Proc WriteAuxiliarySymbolsRecordsFormat1Item:
     Uses edx,  D$SymbolTableIndex , D$SymbolTableIndex+4
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {'ImgAuxFmt1.Ind', 0}
             zCopy SymbolTableRecord
-            mov B$edi '.' | inc edi
+            Mov B$edi '.' | inc edi
             zCopy D@Text1
             zCopy D@Text2
         pop esi
 
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         .If D$eax = 'TagI' ; from "TagIndex" string
-            ;call WriteAuxSymFmt5DiffLabel
-            call WriteSectionHeaderSymbolConstantIndex
+            ;Call WriteAuxSymFmt5DiffLabel
+            Call WriteSectionHeaderSymbolConstantIndex
             push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         .Else_If D$eax = 'Tota'; From "TotalSize" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         .Else_If D$eax+9 = 'Line'; From "PointerToLinenumber" string
             If D$esi <> 0
-                call WriteAuxSymFmt1DiffLabel
+                Call WriteAuxSymFmt1DiffLabel
              End_If
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         .Else_If D$eax+9 = 'Next'; From "PointerToNextFunction" string
 
             If D$esi <> 0
-                call WriteSectionHeaderSymbolConstantIndex
+                Call WriteSectionHeaderSymbolConstantIndex
                 push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
             End_If
 
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         .Else_If D$eax = 'Rese'; From "Reserved" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         .End_If
 
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 
 EndP
@@ -3023,17 +3023,17 @@ EndP
 Proc WriteAuxiliarySymbolsRecordsFormat1:
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {B$ 'ImgAuxFmt1.Ind', 0}
             zCopy SymbolTableRecord
-            mov B$edi ':', W$edi+1 CRLF | add edi 3
+            Mov B$edi ':', W$edi+1 CRLF | add edi 3
         pop esi
 
-        call WriteAuxiliarySymbolsRecordsFormat1Item Fmt1TagIndex, {': D$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat1Item Fmt1TotalSize, {': D$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat1Item Fmt1PointerToLinenumber, {': D$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat1Item Fmt1PointerToNextFunction, {': D$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat1Item Fmt1Reserved, {': W$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat1Item Fmt1TagIndex, {': D$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat1Item Fmt1TotalSize, {': D$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat1Item Fmt1PointerToLinenumber, {': D$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat1Item Fmt1PointerToNextFunction, {': D$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat1Item Fmt1Reserved, {': W$ ', 0}
         sub edi 2
 
 EndP
@@ -3045,51 +3045,51 @@ Proc WriteAuxiliarySymbolsRecordsFormat2Item:
     Uses edx, ecx, D$SymbolTableIndex, D$SymbolTableIndex+4
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {'ImgAuxFmt2.Ind', 0}
             zCopy SymbolTableRecord
-            mov B$edi '.' | inc edi
+            Mov B$edi '.' | inc edi
             zCopy D@Text1
             zCopy D@Text2
         pop esi
 
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
 
         .If D$eax+5 = 'ved1' ; from "Reserved1" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         .Else_If D$eax = 'Line'; From "LineNumber" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
             push esi | zcopy {" ; Base Line Number", 0} | pop esi
 
         .Else_If D$eax+5 = 'ved2'; From "Reserved2" string
             xor eax eax
-            mov ecx 6
+            Mov ecx 6
             L0:
-                lodsb | call WriteEax
-                mov W$edi ", " | add edi 2
+                lodsb | Call WriteEax
+                Mov W$edi ", " | add edi 2
             Loop L0<
             sub edi 2
 
         .Else_If D$eax = 'Poin'; From "PointerToNextFunction" string
 
             If D$esi <> 0
-                call WriteSectionHeaderSymbolConstantIndex
+                Call WriteSectionHeaderSymbolConstantIndex
                 push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
             End_If
 
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         .Else_If D$eax+5 = 'ved3'; From "Reserved3" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         .End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -3104,17 +3104,17 @@ EndP
 Proc WriteAuxiliarySymbolsRecordsFormat2:
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {B$ 'ImgAuxFmt2.Ind', 0}
             zCopy SymbolTableRecord
-            mov B$edi ':', W$edi+1 CRLF | add edi 3
+            Mov B$edi ':', W$edi+1 CRLF | add edi 3
         pop esi
 
-        call WriteAuxiliarySymbolsRecordsFormat2Item Fmt2Reserved1, {': D$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat2Item Fmt2LineNumber, {': W$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat2Item Fmt2Reserved2, {': B$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat2Item Fmt2PointerToNextFunction, {': D$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat2Item Fmt2Reserved3, {': W$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat2Item Fmt2Reserved1, {': D$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat2Item Fmt2LineNumber, {': W$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat2Item Fmt2Reserved2, {': B$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat2Item Fmt2PointerToNextFunction, {': D$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat2Item Fmt2Reserved3, {': W$ ', 0}
         sub edi 2
 
 EndP
@@ -3142,43 +3142,43 @@ Proc WriteAuxiliarySymbolsRecordsFormat3Item:
     Uses edx, ecx, D$SymbolTableIndex, D$SymbolTableIndex+4
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {'ImgAuxFmt3.Ind', 0}
             zCopy SymbolTableRecord
-            mov B$edi '.' | inc edi
+            Mov B$edi '.' | inc edi
             zCopy D@Text1
             zCopy D@Text2
         pop esi
 
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
 
         .If D$eax = 'TagI' ; from "TagIndex" string
             If D$esi <> 0
-               call WriteSectionHeaderSymbolConstantIndex
+               Call WriteSectionHeaderSymbolConstantIndex
                push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
             End_If
 
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         .Else_If D$eax = 'Char'; From "Characteristics" string
-            ;lodsd | call WriteEax
-            call WriteAuxSymFmt3CharacteristicEquates
-            lodsd | call WriteEax
+            ;lodsd | Call WriteEax
+            Call WriteAuxSymFmt3CharacteristicEquates
+            lodsd | Call WriteEax
 
         .Else_If D$eax = 'Rese'; From "Reserved" string
             xor eax eax
-            mov ecx 10
+            Mov ecx 10
             L0:
-                lodsb | call WriteEax
-                mov W$edi ", " | add edi 2
+                lodsb | Call WriteEax
+                Mov W$edi ", " | add edi 2
             Loop L0<
             sub edi 2
 
         .End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -3191,15 +3191,15 @@ EndP
 Proc WriteAuxiliarySymbolsRecordsFormat3:
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {B$ 'ImgAuxFmt3.Ind', 0}
             zCopy SymbolTableRecord
-            mov B$edi ':', W$edi+1 CRLF | add edi 3
+            Mov B$edi ':', W$edi+1 CRLF | add edi 3
         pop esi
 
-        call WriteAuxiliarySymbolsRecordsFormat3Item Fmt3TagIndex, {': D$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat3Item Fmt3Characteristics, {': D$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat3Item Fmt3Reserved, {': B$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat3Item Fmt3TagIndex, {': D$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat3Item Fmt3Characteristics, {': D$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat3Item Fmt3Reserved, {': B$ ', 0}
         sub edi 2
 
 EndP
@@ -3211,33 +3211,33 @@ _________________________________________________________
 Proc WriteAuxiliarySymbolsRecordsFormat4:
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {B$ 'ImgAuxFmt4.Ind', 0}
             zCopy SymbolTableRecord
-            mov B$edi ':', W$edi+1 CRLF | add edi 3
-            call WriteObjIndice
+            Mov B$edi ':', W$edi+1 CRLF | add edi 3
+            Call WriteObjIndice
             zCopy {'ImgAuxFmt4.Ind', 0}
             zCopy SymbolTableRecord
             zCopy {'.FileName: B$ ', 0}
         pop esi
 
-        mov edx esi | add edx 18
+        Mov edx esi | add edx 18
 
         .If B$esi = 0
-            mov B$edi '0' | inc edi | inc esi
+            Mov B$edi '0' | inc edi | inc esi
         .Else
 
-        mov B$edi "'" | inc edi
+        Mov B$edi "'" | inc edi
 L0:     lodsb
             If al = 0
                 dec esi | jmp L1>
             End_If
         stosb | On esi < edx, jmp L0<
-L1:     mov B$edi "'" | inc edi
+L1:     Mov B$edi "'" | inc edi
 
         .End_If
 
-        While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+        While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ;mov W$edi CRLF | add edi 2
 
@@ -3252,14 +3252,14 @@ __________________________________________________________
 Proc WriteAuxSymFmt5DiffLabel:
     Uses esi, ebx, ecx, eax, edx
 
-    mov ebx D$FirstSectionPointer
+    Mov ebx D$FirstSectionPointer
 
     movzx ecx W$esi-18+12 ; ecx is pointing to the previous section value
     ; we need to recompute the sectionheader number
 
-    call InitSectionHeaderNumber
+    Call InitSectionHeaderNumber
 
-    mov edx edi ; for keeping the path to edi, let's save it at edx
+    Mov edx edi ; for keeping the path to edi, let's save it at edx
 
     ; Guga note this is the errros on DX9SDKSampleFramework.lib We have an 0 previous section
 
@@ -3269,7 +3269,7 @@ Proc WriteAuxSymFmt5DiffLabel:
         push ecx
 
             Do
-                call IncrementSectionHeaderNumber
+                Call IncrementSectionHeaderNumber
                 dec ecx
             Loop_Until ecx = 1
 
@@ -3282,7 +3282,7 @@ Proc WriteAuxSymFmt5DiffLabel:
     push edx
 
     If ecx <> 1     ; If we are pointing to the 1st Section, we don´ need to add it to the offset of the IMAGE_SECTION_HEADER
-        mov eax 40  ; eax is the Size of the IMAGE_SECTON_HEADER
+        Mov eax 40  ; eax is the Size of the IMAGE_SECTON_HEADER
         imul ecx    ; multiply by the section where we must go
         add ebx eax
         sub ebx 40  ; need to subtract from the Size of IMAG_SECTION_HEADER to get back to the proper path.
@@ -3292,28 +3292,28 @@ Proc WriteAuxSymFmt5DiffLabel:
 
     ; we must point to the proper Section (IMAGE_SECTION_HEADER)
 
-    mov eax ebx ; The 1st String where we are (The Section in IMAGE_SECTION_HEADER)
-    mov edi esi ; edi is pointing to the beginning of the previous section. (Our string to be compared)
+    Mov eax ebx ; The 1st String where we are (The Section in IMAGE_SECTION_HEADER)
+    Mov edi esi ; edi is pointing to the beginning of the previous section. (Our string to be compared)
 
-    mov ecx 8   ;how many bytes in the string...char= one byte
+    Mov ecx 8   ;how many bytes in the string...char= one byte
     repe cmpsb
     jne C2>
 
-        mov edi edx ; retore the path to edi
+        Mov edi edx ; retore the path to edi
 
         add eax 20 ; eax is pointing to PointerToRawData on IMAGE_SECTION_HEADER from the structure we label
-        mov esi D$eax ; now we point it to esi
+        Mov esi D$eax ; now we point it to esi
 
         .If D$eax <> 0 ; Is PointerToRawData = 0 ? Is it Virtual data ? No, do next line.
 
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".RawDataEnd", 0}
 
-            mov D$edi ' - ' | add edi 3
+            Mov D$edi ' - ' | add edi 3
 
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".RawData ; Hex Value:  ", 0}
@@ -3324,7 +3324,7 @@ Proc WriteAuxSymFmt5DiffLabel:
 
     C2:
 
-    mov edi edx ; retore the path to edi
+    Mov edi edx ; retore the path to edi
 
 EndP
 
@@ -3332,7 +3332,7 @@ EndP
 Proc WriteAuxSymFmt5TypeEquates:
     Uses esi, ebx
 
-    mov ebx esi
+    Mov ebx esi
 
 
     .If B$ebx = &IMAGE_COMDAT_SELECT_NODUPLICATES
@@ -3366,56 +3366,56 @@ Proc WriteAuxiliarySymbolsRecordsFormat5Item:
     Uses edx, ecx;, D$SymbolTableIndex, D$SymbolTableIndex+4
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {'ImgAuxFmt5.Ind', 0}
             zCopy SymbolTableRecord
-            mov B$edi '.' | inc edi
+            Mov B$edi '.' | inc edi
             zCopy D@Text1
             zCopy D@Text2
         pop esi
 
 
-                mov eax D@Text1
+                Mov eax D@Text1
 
                 .If D$eax = 'Leng' ; from "Length" string
-                    call WriteAuxSymFmt5DiffLabel
-                    lodsd | call WriteEax
+                    Call WriteAuxSymFmt5DiffLabel
+                    lodsd | Call WriteEax
 
                 .Else_If D$eax+8 = 'Relo'; From "NumberOfRelocations" string
                     xor eax eax
-                    lodsw | call WriteEax
+                    lodsw | Call WriteEax
 
                 .Else_If D$eax+8 = 'Line'; From "NumberOfLinenumbers" string
                     xor eax eax
-                    lodsw | call WriteEax
+                    lodsw | Call WriteEax
 
                 .Else_If D$eax = 'Chec'; From "CheckSum" string
-                    lodsd | call WriteEax
+                    lodsd | Call WriteEax
 
                 .Else_If D$eax = 'Numb'; From "Number" string
 
                     xor eax eax
-                    lodsw | call WriteEax
+                    lodsw | Call WriteEax
 
                 .Else_If D$eax = 'Sele'; From "Selection" string
-                    call WriteAuxSymFmt5TypeEquates
+                    Call WriteAuxSymFmt5TypeEquates
                     xor eax eax
-                    lodsb | call WriteEax
+                    lodsb | Call WriteEax
 
                 .Else_If D$eax = 'Rese'; From "Reserved" string
                     xor eax eax
-                    mov ecx 3
+                    Mov ecx 3
                     L0:
                         xor eax eax
-                        lodsb | call WriteEax
-                        mov W$edi ", " | add edi 2
+                        lodsb | Call WriteEax
+                        Mov W$edi ", " | add edi 2
                     Loop L0<
                     sub edi 2
 
                 .End_If
 
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 
 EndP
@@ -3424,19 +3424,19 @@ EndP
 Proc WriteAuxiliarySymbolsRecordsFormat5:
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {B$ 'ImgAuxFmt5.Ind', 0}
             zCopy SymbolTableRecord
-            mov B$edi ':', W$edi+1 CRLF | add edi 3
+            Mov B$edi ':', W$edi+1 CRLF | add edi 3
         pop esi
 
-        call WriteAuxiliarySymbolsRecordsFormat5Item Fmt5Length, {': D$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat5Item Fmt5NumberOfRelocations, {': W$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat5Item Fmt5NumberOfLinenumbers, {': W$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat5Item Fmt5CheckSum, {': D$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat5Item Fmt5Number, {': W$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat5Item Fmt5Selection, {': B$ ', 0}
-        call WriteAuxiliarySymbolsRecordsFormat5Item Fmt5Reserved, {': B$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat5Item Fmt5Length, {': D$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat5Item Fmt5NumberOfRelocations, {': W$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat5Item Fmt5NumberOfLinenumbers, {': W$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat5Item Fmt5CheckSum, {': D$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat5Item Fmt5Number, {': W$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat5Item Fmt5Selection, {': B$ ', 0}
+        Call WriteAuxiliarySymbolsRecordsFormat5Item Fmt5Reserved, {': B$ ', 0}
         sub edi 2
 
 EndP
@@ -3452,17 +3452,17 @@ Proc WriteAuxiliarySymbolsRecordsFormatUnknown:
     ;Argument @Pointer
 
     push esi
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {'ImgAuxSym', 0}
         zCopy SymbolTableRecord
         zCopy {'FormatUnknwon: B$ ', 0}
     pop esi
 
-;        mov esi D@Pointer, ecx 18
-        mov ecx 18
+;        Mov esi D@Pointer, ecx 18
+        Mov ecx 18
 
-L0:     lodsb | and eax 0FF | call WriteEax
-        mov W$edi ', ' | add edi 2 | loop L0<
+L0:     lodsb | and eax 0FF | Call WriteEax
+        Mov W$edi ', ' | add edi 2 | loop L0<
         sub edi 2
         ;mov B$edi-2 "'" | dec edi
 EndP
@@ -3475,13 +3475,13 @@ Proc WriteAuxiliarySymbolsRecords:
 
     .Do
 
-        call WriteSymbolConstantIndex
-        call IncrementSymbolIndexRecord
+        Call WriteSymbolConstantIndex
+        Call IncrementSymbolIndexRecord
 
-        mov W$edi CRLF | add edi 2
-        mov B$edi '[' | inc edi
+        Mov W$edi CRLF | add edi 2
+        Mov B$edi '[' | inc edi
 
-        call IncrementSymbolTableRecord
+        Call IncrementSymbolTableRecord
 
             ..If D$SymbolStorageClass = &IMAGE_SYM_CLASS_EXTERNAL
             ; example at libgccguga.a
@@ -3489,34 +3489,34 @@ Proc WriteAuxiliarySymbolsRecords:
                 .If B$esi-4 = (&IMAGE_SYM_DTYPE_FUNCTION shl 4) + &IMAGE_SYM_TYPE_NULL ; Type1Complex = 020
                     ;If W$esi-6 >= 0  ;
                     ; SectionNumber >= 0. Once again the documentation lied. We can have a 0 section number
-                        call WriteAuxiliarySymbolsRecordsFormat1
+                        Call WriteAuxiliarySymbolsRecordsFormat1
                     ;End_If
                 .End_If
 
             ..Else_If D$SymbolStorageClass = &IMAGE_SYM_CLASS_FUNCTION
             ; example at shit.obj
-                call WriteAuxiliarySymbolsRecordsFormat2
+                Call WriteAuxiliarySymbolsRecordsFormat2
 
             ..Else_If D$SymbolStorageClass = &IMAGE_SYM_CLASS_WEAK_EXTERNAL
             ; example at stats.lib ; Libdc.lib
                 .If W$esi-6 = &IMAGE_SYM_UNDEFINED  ; SectionNumber = &IMAGE_SYM_UNDEFINED
                     If D$esi-10 = 0 ; Value member = 0
-                        call WriteAuxiliarySymbolsRecordsFormat3
+                        Call WriteAuxiliarySymbolsRecordsFormat3
                     End_If
                 .End_If
 
             ..Else_If D$SymbolStorageClass = &IMAGE_SYM_CLASS_FILE
-                call WriteAuxiliarySymbolsRecordsFormat4
+                Call WriteAuxiliarySymbolsRecordsFormat4
 
             ..Else_If D$SymbolStorageClass = &IMAGE_SYM_CLASS_STATIC
-                call WriteAuxiliarySymbolsRecordsFormat5
+                Call WriteAuxiliarySymbolsRecordsFormat5
 
             ..Else
-                call WriteAuxiliarySymbolsRecordsFormatUnknown
+                Call WriteAuxiliarySymbolsRecordsFormatUnknown
 
             ..End_If
 
-        mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+        Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
         dec D$CoffSymbolsNumber ; decrement our counter from the total amount symbols
         dec D@Number ; decrement the total amount of Auxiliary Symbols
 
@@ -3552,14 +3552,14 @@ SymbolTableNumberOfAuxSymbols: 'NumberOfAuxSymbols', 0]
 
 
 InitSymbolTableRecord:
-    mov D$SymbolTableRecord '0000', D$SymbolTableRecord+4 '01'
+    Mov D$SymbolTableRecord '0000', D$SymbolTableRecord+4 '01'
 ret
 
 
 IncrementSymbolTableRecord:
     lea ebx D$SymbolTableRecord+5 | inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx | inc B$ebx
+        Mov B$ebx '0' | dec ebx | inc B$ebx
     End_While
 ret
 
@@ -3569,11 +3569,11 @@ Proc WriteImageSymbolTableFieldName:
     Uses esi, ecx, ebx
 
    ; If D@String2 < SymbolTableShortName1
-   ;      mov eax D@String1, ebx D@String2
+   ;      Mov eax D@String1, ebx D@String2
    ;      int3
    ; End_If
 
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy D@String1
         zCopy SymbolTableRecord
         zCopy D@String2
@@ -3609,7 +3609,7 @@ ret
 ;;
 WriteRelocSectionNumberEquate_Old:
     push esi
-        mov ebx D$PointerToSymbolsRecords
+        Mov ebx D$PointerToSymbolsRecords
 
         If W$ebx = &IMAGE_SYM_UNDEFINED
             zCopy {' ; &IMAGE_SYM_UNDEFINED', 0}
@@ -3656,14 +3656,14 @@ The less signfiicative byte are:
 ;;
         .If_And eax >= 32, eax <= 65535 ; Check for Corrupted library. Reserved Bits are not 0
 
-            call LibScan_ErrManager IMP_OBJ_RESBIT_ERR
+            Call LibScan_ErrManager IMP_OBJ_RESBIT_ERR
 
             If eax = &FALSE ; The user pressed No
                 ExitP
 
             Else_If eax = &TRUE ; The user pressed Yes. We will Zero all reserved bits for him continue the parsing.
-                mov eax D@Flags ; Restore the original value of eax to be fixed
-                mov ah 0 ; Clear High Bits Flags
+                Mov eax D@Flags ; Restore the original value of eax to be fixed
+                Mov ah 0 ; Clear High Bits Flags
                 btr eax 5 | btr eax 6 | btr eax 7 ; Clear Bits 5 to 7
 
             End_If
@@ -3678,7 +3678,7 @@ Proc WriteSymbolTypeEquates:
 
         .If B$esi > 63 ; Check for Corrupted library. The actual maximum value is 63 (03F)
 
-            call LibScan_ErrManager IMP_OBJ_RESBIT_ERR
+            Call LibScan_ErrManager IMP_OBJ_RESBIT_ERR
 
             If eax = &FALSE ; The user pressed No
                 ExitP
@@ -3687,12 +3687,12 @@ Proc WriteSymbolTypeEquates:
 
                 ; Clear all high flags, returning only in the targeting Byte
                 xor eax eax | lodsb | btr eax 6 | btr eax 7 ; Clear Bits 6 and , that are what exceed the limit of 63
-                mov ebx eax
+                Mov ebx eax
             End_If
 
         .Else
 
-            xor eax eax | lodsb | mov ebx eax
+            xor eax eax | lodsb | Mov ebx eax
 
         .End_If
 
@@ -3785,7 +3785,7 @@ EndP
 WriteRelocStorageClassEquate:
     push esi
 
-        movzx eax B$esi | mov D$SymbolStorageClass eax
+        movzx eax B$esi | Mov D$SymbolStorageClass eax
 
         .If eax = &IMAGE_SYM_CLASS_ARGUMENT
             zCopy {'&IMAGE_SYM_CLASS_ARGUMENT ; Hex Value:  ', 0}
@@ -3853,49 +3853,49 @@ Proc WriteSymbolTableHeaderItem:
     Uses edx;, eax
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {'ImgSym', 0}
             zCopy SymbolTableRecord
-            mov B$edi '.' | inc edi
+            Mov B$edi '.' | inc edi
             zCopy D@Text1
             zCopy D@Text2
         pop esi
 
 
-                mov eax D@Text1
+                Mov eax D@Text1
 
                 ..If D$eax+4 = 'Shor' ; from "NameShort" string
 
-                    mov edx esi | add edx 8
-                    mov B$edi "'" | inc edi
+                    Mov edx esi | add edx 8
+                    Mov B$edi "'" | inc edi
 L0:                 lodsb
                     If al = 0
                         dec esi | jmp L1>
                     End_If
                     stosb | On esi < edx, jmp L0<
-L1:                 mov B$edi "'" | inc edi
-                    While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+L1:                 Mov B$edi "'" | inc edi
+                    While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
                 ..Else_If D$eax+4 = 'Zero'; From "NameZero" string
-                    lodsd | call WriteEax
+                    lodsd | Call WriteEax
 
                 ..Else_If D$eax+8 = 'Offs'; From "NameLongOffset" string
 
-                    call WriteSectionHeaderPointerToStringTableDiffLabel
-                    lodsd | call WriteEax
+                    Call WriteSectionHeaderPointerToStringTableDiffLabel
+                    lodsd | Call WriteEax
 
                 ..Else_If D$eax = 'Valu'; From "Value" string
 
-                    ;call WriteCharacteristicsEquates
-                    lodsd | call WriteEax
+                    ;Call WriteCharacteristicsEquates
+                    lodsd | Call WriteEax
 
                         .If D$esi-4 <> 0 ; If the Value member is not Zero, do next line
                             If B$esi+4 = &IMAGE_SYM_CLASS_SECTION ; If StorageClass member is IMAGE_SYM_CLASS_SECTION, do next line
                                 push esi
                                 push D$esi-4
                                 push eax
-                                mov eax D$esi-4
-                                call WriteCharacteristicsEquates
+                                Mov eax D$esi-4
+                                Call WriteCharacteristicsEquates
                                 pop eax
                                 pop D$esi-4
                                 pop esi
@@ -3904,45 +3904,45 @@ L1:                 mov B$edi "'" | inc edi
                         .End_If
 
                 ..Else_If D$eax = 'Sect'; From "SectionNumber" string
-                    call WriteRelocSectionNumberEquate
+                    Call WriteRelocSectionNumberEquate
                     xor eax eax
-                    lodsw | call WriteEax
+                    lodsw | Call WriteEax
 
                 ..Else_If D$eax = 'Type'; From "Type1Complex" string
-                    call WriteSymbolTypeEquates
+                    Call WriteSymbolTypeEquates
                     xor eax eax
-                    lodsb | call WriteEax
+                    lodsb | Call WriteEax
 
                 ..Else_If D$eax = '1Bas'; From "Type1Base" string
-                    call WriteSymbolTypeEquates
+                    Call WriteSymbolTypeEquates
                     xor eax eax
-                    lodsb | call WriteEax
+                    lodsb | Call WriteEax
 
                 ..Else_If D$eax = 'Stor'; From "StorageClass" string
 
-                    call WriteRelocStorageClassEquate
+                    Call WriteRelocStorageClassEquate
                     xor eax eax
-                    lodsb | call WriteEax
+                    lodsb | Call WriteEax
 
                 ..Else_If D$eax+8 = 'AuxS'; From "NumberOfAuxSymbols" string
                     xor eax eax
-                    lodsb | call WriteEax
+                    lodsb | Call WriteEax
 
 ;;
                 ..Else_If D$eax = 'Misc'; From "MiscVirtualSize" string
 
-                    call WriteSectionHeaderVirtualSizeDiffLabel
+                    Call WriteSectionHeaderVirtualSizeDiffLabel
                     push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
 ;;
 
                 ;..Else
 
-                    ;lodsd | call WriteEax
+                    ;lodsd | Call WriteEax
 
                 ..End_If
 
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 EndP
 
 ____________________________________________________________
@@ -3951,42 +3951,42 @@ ____________________________________________________________
 
 
 InitSymbolIndexRecord:
-    mov D$SymbolTableIndex '0000', D$SymbolTableIndex+4 '00'
+    Mov D$SymbolTableIndex '0000', D$SymbolTableIndex+4 '00'
 ret
 
 
 IncrementSymbolIndexRecord:
     lea ebx D$SymbolTableIndex+5 | inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx | inc B$ebx
+        Mov B$ebx '0' | dec ebx | inc B$ebx
     End_While
 ret
 
 Proc WriteSymbolConstantIndex:
     Uses esi, ecx
 
-            mov B$edi '[' | inc edi
-            call WriteObjIndice
+            Mov B$edi '[' | inc edi
+            Call WriteObjIndice
 
             ; Fix the label to show in Caps and replace the '." with an "_"
             ; The 1st char in "Obj000000." is in Caps, so we don't need to overwrite the "O" char
 
             push edi
-                mov B$edi-1 '_', W$edi-9 'BJ'
+                Mov B$edi-1 '_', W$edi-9 'BJ'
             pop edi
 
             zCopy {'SYMBOLINDEX', 0}
             zCopy SymbolTableIndex
-            mov B$edi ' ' | inc edi
+            Mov B$edi ' ' | inc edi
 
-            mov esi SymbolTableIndex
+            Mov esi SymbolTableIndex
 
             .If_And D$esi = '0000', D$SymbolTableIndex+4 = '00'
 
-                mov B$edi '0' | inc edi
+                Mov B$edi '0' | inc edi
             .Else
 
-                mov ecx 6 ; Size of the SymbolTable String
+                Mov ecx 6 ; Size of the SymbolTable String
             L0:
 
                 While B$esi <> '0'
@@ -4031,13 +4031,13 @@ WriteImageSymbolTable:
 
     ; Initialise the String Table Checking.
 
-    mov D$StringtableCheckFlag &FALSE
+    Mov D$StringtableCheckFlag &FALSE
 
-    call InitSymbolTableRecord
-    call InitSymbolIndexRecord
+    Call InitSymbolTableRecord
+    Call InitSymbolIndexRecord
 
     zCopy SymbolTableTitle
-    mov esi D$CoffSectionBase
+    Mov esi D$CoffSectionBase
     add esi D$CoffSymbolsPointer
 
 .Do
@@ -4048,19 +4048,19 @@ WriteImageSymbolTable:
             zCopy SymbolTableNameLongMessage
         pop esi
 
-            mov ecx D$PointerToStringTable
+            Mov ecx D$PointerToStringTable
 
         push esi
-            add ecx D$esi+4 | mov esi ecx
+            add ecx D$esi+4 | Mov esi ecx
             While B$esi <> 0 | movsb | End_While
             zCopy {W$ CRLF, B$ "________________________________________________________________________", D$ CRLF2 0}
         pop esi
 
     End_If
 
-        call WriteSymbolConstantIndex
-        call IncrementSymbolIndexRecord ; Increment it for the next Normal Symbol or Auxiliary Symbol
-        mov W$edi CRLF | add edi 2
+        Call WriteSymbolConstantIndex
+        Call IncrementSymbolIndexRecord ; Increment it for the next Normal Symbol or Auxiliary Symbol
+        Mov W$edi CRLF | add edi 2
 
     .If_And W$esi+12 = &IMAGE_SYM_UNDEFINED, B$esi+16 = &IMAGE_SYM_CLASS_EXTERNAL
         push esi
@@ -4081,55 +4081,55 @@ WriteImageSymbolTable:
     .End_If
 
         push esi
-            mov B$edi '[' | inc edi
-            call WriteObjIndice
+            Mov B$edi '[' | inc edi
+            Call WriteObjIndice
             zCopy {'ImgSym', 0}
             zCopy SymbolTableRecord
-            mov B$edi ':', W$edi+1 CRLF | add edi 3
+            Mov B$edi ':', W$edi+1 CRLF | add edi 3
         pop esi
 
     .If B$esi = 0
 
         If D$esi+4 <> 0 ; need this flag to check if we have String Table pointer or not.
-            mov D$StringtableCheckFlag &TRUE
+            Mov D$StringtableCheckFlag &TRUE
         End_If
 
-        call WriteSymbolTableHeaderItem SymbolTableLongNameZero, {': D$ ', 0}
-        call WriteSymbolTableHeaderItem SymbolTableLongNameOffset, {': D$ ', 0}
+        Call WriteSymbolTableHeaderItem SymbolTableLongNameZero, {': D$ ', 0}
+        Call WriteSymbolTableHeaderItem SymbolTableLongNameOffset, {': D$ ', 0}
 
     .Else
 
-        call WriteSymbolTableHeaderItem SymbolTableShortName, {': B$ ', 0}
+        Call WriteSymbolTableHeaderItem SymbolTableShortName, {': B$ ', 0}
 
     .End_If
 
 
-    call WriteSymbolTableHeaderItem SymbolTableValue, {': D$ ', 0}
-    call WriteSymbolTableHeaderItem SymbolTableSectionNumber, {': W$ ', 0}
-    call WriteSymbolTableHeaderItem SymbolTableTypeComplex, {': B$ ', 0}
-    call WriteSymbolTableHeaderItem SymbolTableTypeBase, {': B$ ', 0}
-    call WriteSymbolTableHeaderItem SymbolTableStorageClass, {': B$ ', 0}
-    call WriteSymbolTableHeaderItem SymbolTableNumberOfAuxSymbols, {': B$ ', 0}
+    Call WriteSymbolTableHeaderItem SymbolTableValue, {': D$ ', 0}
+    Call WriteSymbolTableHeaderItem SymbolTableSectionNumber, {': W$ ', 0}
+    Call WriteSymbolTableHeaderItem SymbolTableTypeComplex, {': B$ ', 0}
+    Call WriteSymbolTableHeaderItem SymbolTableTypeBase, {': B$ ', 0}
+    Call WriteSymbolTableHeaderItem SymbolTableStorageClass, {': B$ ', 0}
+    Call WriteSymbolTableHeaderItem SymbolTableNumberOfAuxSymbols, {': B$ ', 0}
 
     sub edi 2
-    mov B$edi ']' | inc edi ; Close the bracket
+    Mov B$edi ']' | inc edi ; Close the bracket
 
     dec D$CoffSymbolsNumber ; decrement our counter
 
     If B$esi-1 <> 0 ; Is Auxiliary Value = 0 ? No, do next line.
 
-        movzx eax B$esi-1 | mov D$AuxSymbolCount eax
-        mov D$edi CRLF2 | add edi 4
-        call WriteAuxiliarySymbolsRecords eax
+        movzx eax B$esi-1 | Mov D$AuxSymbolCount eax
+        Mov D$edi CRLF2 | add edi 4
+        Call WriteAuxiliarySymbolsRecords eax
 
     Else
         ; To prevent adding extra Paragraphs (8 Bytes) we need this else macro, because the end of the
         ; auxiliary record before, already is adding 4 bytes (CRLF2) on exit.
-        mov D$edi CRLF2 | add edi 4
+        Mov D$edi CRLF2 | add edi 4
 
     End_If
 
-        call IncrementSymbolTableRecord
+        Call IncrementSymbolTableRecord
 
     .Loop_Until D$CoffSymbolsNumber = 0
 
@@ -4144,17 +4144,17 @@ ret
 GetStringTablePointer:
     pushad
 
-    mov esi D$CoffSectionBase
+    Mov esi D$CoffSectionBase
     add esi D$CoffSymbolsPointer
-    mov ecx D$CoffSymbolsNumber
+    Mov ecx D$CoffSymbolsNumber
 
     .Do
         add esi 18 ; The size of each IMAGE_SYMBOL Structure
         dec ecx
 
         If B$esi-1 <> 0 ; Is Auxiliary Value = 0 ? No, do next line.
-            movzx eax B$esi-1; | mov D$AuxSymbolCount eax The amount of auxiliary symbols found on this Symbol structure
-                ;call WriteAuxiliarySymbolsRecords eax
+            movzx eax B$esi-1; | Mov D$AuxSymbolCount eax The amount of auxiliary symbols found on this Symbol structure
+                ;Call WriteAuxiliarySymbolsRecords eax
 
             Do
                 add esi 18 ; Add to the size of each Auxiliary Symbol
@@ -4166,7 +4166,7 @@ GetStringTablePointer:
 
     .Loop_Until ecx = 0
 
-    mov D$PointerToStringTable esi
+    Mov D$PointerToStringTable esi
 
     popad
 
@@ -4178,14 +4178,14 @@ ret
 
 
 InitStringTableRecord:
-    mov D$StringTableRecord '0000', D$StringTableRecord+4 '01'
+    Mov D$StringTableRecord '0000', D$StringTableRecord+4 '01'
 ret
 
 
 IncrementStringTableRecord:
     lea ebx D$StringTableRecord+5 | inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx | inc B$ebx
+        Mov B$ebx '0' | dec ebx | inc B$ebx
     End_While
 ret
 
@@ -4204,59 +4204,59 @@ WriteImageSymbolStringsTable:
 
     ; Initialize the String Record Counter
 
-    call InitStringTableRecord
+    Call InitStringTableRecord
 
     push esi
         zCopy StringTableTitle
-        mov B$edi '[' | inc edi
-        call WriteObjIndice
+        Mov B$edi '[' | inc edi
+        Call WriteObjIndice
         zCopy {'StringTableSize: D$ ', 0}
 
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {'StringDataEnd - ', 0}
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {'StringTableSize] ; Hex Value:  ', 0}
 
     pop esi
 
-    mov edx esi | add edx D$esi ; We will use edx as a counter delimiter for the strings
+    Mov edx esi | add edx D$esi ; We will use edx as a counter delimiter for the strings
 
-    lodsd | call WriteEax
+    lodsd | Call WriteEax
     push esi | zCopy {D$ CRLF2, B$ "; Strings Array", D$ CRLF2 0} | pop esi
 
 
     push esi
-        mov B$edi '[' | inc edi
-        call WriteObjIndice
+        Mov B$edi '[' | inc edi
+        Call WriteObjIndice
         zCopy {'StringData', 0}
-        mov B$edi ':', W$edi+1 CRLF | add edi 3
+        Mov B$edi ':', W$edi+1 CRLF | add edi 3
     pop esi
 
 
    .Do
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {'StringData', 0}
             zCopy StringTableRecord
             zCopy {": B$ '", 0}
         pop esi
 
 
-        While B$esi <> 0 | movsb | End_While | inc esi | On B$esi = 0, mov edx 0
+        While B$esi <> 0 | movsb | End_While | inc esi | On B$esi = 0, Mov edx 0
 
-        mov D$edi "', 0" | add edi 4
-        mov W$edi CRLF | add edi 2
+        Mov D$edi "', 0" | add edi 4
+        Mov W$edi CRLF | add edi 2
 
-        call IncrementStringTableRecord
+        Call IncrementStringTableRecord
 
     .Loop_Until esi >= edx
 
     sub edi 2
 
        push esi
-            mov W$edi CRLF | add edi 2
-            call WriteObjIndice
+            Mov W$edi CRLF | add edi 2
+            Call WriteObjIndice
             zCopy {B$ "StringDataEnd: ]", W$ CRLF, 0}
         pop esi
 
@@ -4268,66 +4268,66 @@ ________________________________________________________________________________
 [CoffSectionBase: ?]
 
 GetCoffListing:
-    mov D$CoffSectionBase esi
+    Mov D$CoffSectionBase esi
 
-    call GetCoffIMAGE_FILE_HEADER
+    Call GetCoffIMAGE_FILE_HEADER
 
     If D$SizeOfOptionalHeaderInObj <> 0
         push esi
-            call GetCoffIMAGE_OPTIONAL_HEADER
+            Call GetCoffIMAGE_OPTIONAL_HEADER
         pop esi
         add esi D$SizeOfOptionalHeaderInObj
     End_If
 
-    call InitSectionHeaderNumber
-    mov ecx D$ObjNumberOfSections
+    Call InitSectionHeaderNumber
+    Mov ecx D$ObjNumberOfSections
 
     .If ecx <> 0 ; If Section NUmber is not 0, do all checkings
 
-        mov D$FirstSectionPointer esi
+        Mov D$FirstSectionPointer esi
 
         push esi, ecx
         L0:
             push ecx
-            call GetCoffSectionHeader
-            call IncrementSectionHeaderNumber
+            Call GetCoffSectionHeader
+            Call IncrementSectionHeaderNumber
             pop ecx
         loop L0<
         pop ecx, esi
 
-        call InitSectionHeaderNumber
-        call InitSectionRelocNumber
-        mov esi D$FirstSectionPointer
+        Call InitSectionHeaderNumber
+        Call InitSectionRelocNumber
+        Mov esi D$FirstSectionPointer
 
         If D$ObjNumberOfSections <> 0
             L0:
                 push ecx, esi
-                call IdentifyRawDataType
-                call GetCoffSectionsVariables
-                call WriteCoffSectionData
-                On W$NumberOfRelocations <> 0, call WriteCoffReloc
-                On W$NumberOfLineNumbers <> 0, call WriteCoffLineNumber
-                call IncrementSectionHeaderNumber
+                Call IdentifyRawDataType
+                Call GetCoffSectionsVariables
+                Call WriteCoffSectionData
+                On W$NumberOfRelocations <> 0, Call WriteCoffReloc
+                On W$NumberOfLineNumbers <> 0, Call WriteCoffLineNumber
+                Call IncrementSectionHeaderNumber
                 pop esi, ecx
                 add esi 40
             loop L0<
         End_If
 
         If D$CoffSymbolsPointer <> 0
-            call GetStringTablePointer
-            call WriteImageSymbolTable
+            Call GetStringTablePointer
+            Call WriteImageSymbolTable
             ; When we don´t have any StringTable pointers, we bypass the next call
-            On D$StringtableCheckFlag = &TRUE, call WriteImageSymbolStringsTable
+            On D$StringtableCheckFlag = &TRUE, Call WriteImageSymbolStringsTable
         End_If
 
     .Else ; Else, if section number is 0, perform only the checkings for the Symbol Pointer. Only this because the Optional
           ; Header check were already performed. This was because a problem like this in corelibc.lib (Pelles file)
 
         If D$CoffSymbolsPointer <> 0
-            call GetStringTablePointer
-            call WriteImageSymbolTable
+            Call GetStringTablePointer
+            Call WriteImageSymbolTable
             ; When we don´t have any StringTable pointers, we bypass the next call
-            On D$StringtableCheckFlag = &TRUE, call WriteImageSymbolStringsTable
+            On D$StringtableCheckFlag = &TRUE, Call WriteImageSymbolStringsTable
         End_If
 
 
@@ -4347,19 +4347,19 @@ __________________________________________________________________
 Proc WriteRawDataLinkerDirectiveReport:
     Uses esi, eax, edx
 
-        mov edx esi | add edx ecx
+        Mov edx esi | add edx ecx
 
         .If B$esi = 0
-            mov B$edi '0' | inc edi | inc esi
+            Mov B$edi '0' | inc edi | inc esi
         .Else
 
-            mov D$edi '    ' | add edi 4
+            Mov D$edi '    ' | add edi 4
 L0:         lodsb
             If al = 0
                 dec esi | jmp L1>
 
             Else_If al = ' '
-                mov W$edi CRLF, D$edi+2 '    ' | add edi 6
+                Mov W$edi CRLF, D$edi+2 '    ' | add edi 6
 
             Else
                 stosb
@@ -4381,7 +4381,7 @@ __________________________________________________________________
 WriteDebugSIndexEquate:
     push esi
 
-        movzx eax W$esi | mov D$DebugSIndexValue eax
+        movzx eax W$esi | Mov D$DebugSIndexValue eax
 
         .If eax = &S_COMPILE
             zCopy {'&S_COMPILE ; Hex Value:  ', 0}
@@ -4545,8 +4545,8 @@ Proc WriteRawDataDebugSItem:
     uses eax
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
 
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
@@ -4557,20 +4557,20 @@ Proc WriteRawDataDebugSItem:
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         If D$eax = 'Leng' ; from "Length" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         Else_If D$eax = 'Inde'; From "Index" string
-            call WriteDebugSIndexEquate
+            Call WriteDebugSIndexEquate
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 EndP
 
 __________________________________________________________________
@@ -4579,8 +4579,8 @@ __________________________________________________________________
 Proc WriteCVdataTitle:
     Uses esi, ecx
 
-    mov D$edi '    ' | add edi 4
-    call WriteObjIndice
+    Mov D$edi '    ' | add edi 4
+    Call WriteObjIndice
     zCopy {"Sec", 0}
     zCopy SectionHeaderNumber
     zCopy {".Index", 0}
@@ -4591,7 +4591,7 @@ Proc WriteCVdataTitle:
         zCopy {'.Arr', 0}
         zCopy LeafTypeArrayObjIndice
     End_If
-    mov D$edi ': B$', B$edi+4 ' ' | add edi 5
+    Mov D$edi ': B$', B$edi+4 ' ' | add edi 5
 
 EndP
 __________________________________________________________________
@@ -4600,14 +4600,14 @@ __________________________________________________________________
 
 
 InitSectionDebugNumber:
-    mov D$DebugNumber '0000', D$DebugNumber+4 '01'
+    Mov D$DebugNumber '0000', D$DebugNumber+4 '01'
 ret
 
 
 IncrementSectionDebugNumber:
     lea ebx D$DebugNumber+5 | inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx | inc B$ebx
+        Mov B$ebx '0' | dec ebx | inc B$ebx
     End_While
 ret
 
@@ -4663,7 +4663,7 @@ AmbientData :3      Uses bits 5, 6, 7 . The equates used are:
 Proc WriteCVCompileFlag1Equates:
     Uses esi, ebx, eax
 
-    xor eax eax | lodsb | mov ebx eax
+    xor eax eax | lodsb | Mov ebx eax
 
     push ebx
     push eax
@@ -4783,9 +4783,9 @@ Proc WriteCVCompileFlag2Equates:
     If B$esi > 15
         xor eax eax
         lodsb | btr eax 4 | btr eax 5 | btr eax 6 | btr eax 7 ; Clear Bits 4 to 7, that are what exceed the limit of 15
-        mov ebx eax
+        Mov ebx eax
     Else
-        xor eax eax | lodsb | mov ebx eax
+        xor eax eax | lodsb | Mov ebx eax
     End_If
 
     and eax 07 ; This is to calculate AmbientCode.
@@ -4924,8 +4924,8 @@ Proc WriteRawDataDebugSCompileItem:
     uses eax, ecx
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -4936,93 +4936,93 @@ Proc WriteRawDataDebugSCompileItem:
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Mach' ; from "Machine" string
-            call WriteCVCompileMachineEquates
+            Call WriteCVCompileMachineEquates
             If D@DataSize = 4
-                lodsd | call WriteEax
+                lodsd | Call WriteEax
             Else
                 xor eax eax
-                lodsb | call WriteEax
+                lodsb | Call WriteEax
             End_If
         ..Else_If D$eax = 'Lang'; From "Language" string
-            call WriteCVCompileLanguageEquates
+            Call WriteCVCompileLanguageEquates
             If D@DataSize = 4
-                lodsd | call WriteEax
+                lodsd | Call WriteEax
             Else
                 xor eax eax
-                lodsb | call WriteEax
+                lodsb | Call WriteEax
             End_If
 
         ..Else_If D$eax+2 = 'ags1'; From "Flags1" string
-            call WriteCVCompileFlag1Equates
+            Call WriteCVCompileFlag1Equates
             If D@DataSize = 4
-                lodsd | call WriteEax
+                lodsd | Call WriteEax
             Else
                 xor eax eax
-                lodsb | call WriteEax
+                lodsb | Call WriteEax
             End_If
 
         ..Else_If D$eax+2 = 'ags2'; From "Flags2" string
-            call WriteCVCompileFlag2Equates
+            Call WriteCVCompileFlag2Equates
             If D@DataSize = 4
-                lodsd | call WriteEax
+                lodsd | Call WriteEax
             Else
                 xor eax eax
-                lodsb | call WriteEax
+                lodsb | Call WriteEax
             End_If
 
         ..Else_If D$eax = 'Unkn'; From "Unknown" string
             If D@DataSize = 4
-                lodsd | call WriteEax
+                lodsd | Call WriteEax
             Else
                 xor eax eax
-                lodsw | call WriteEax
+                lodsw | Call WriteEax
             End_If
 
         ..Else_If D$eax = 'Comp'; From "CompilerID" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             If D@DataSize = 2 ; this happens only in S_COMPILE_CV2. It´' size is not 2, but we use this to identify this type.
                 push eax
-                    call StrLenProc esi
-                    mov ecx eax
+                    Call StrLenProc esi
+                    Mov ecx eax
                     inc ecx ; The size is increased to we alow including the zero byte
                 pop eax
             Else
                 movzx ecx B$esi-1
             End_If
 
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 EndP
 
 _________________________________________
@@ -5036,61 +5036,61 @@ _________________________________________
 Proc WriteRawDataDebugSNonLeafIndexPad03:
     Uses ecx, eax, ebx
     ; This is to avoid that the Structure have dummy bytes at the end.
-   ; mov ebx esi
+   ; Mov ebx esi
   ;  sub ebx 2
- ;   mov ecx D$SizeAdd
+ ;   Mov ecx D$SizeAdd
 ;    add ebx ecx
 
 ;    push ebx
 
-    call WriteRawDataDebugSNonLeafIndexPad03Item CVNonLeafIndexPad03Unknown01, {': B$ ', 0}
-    call WriteRawDataDebugSNonLeafIndexPad03Item CVNonLeafIndexPad03Unknown02, {': B$ ', 0}
-    call WriteRawDataDebugSNonLeafIndexPad03Item CVNonLeafIndexPad03Unknown03, {': B$ ', 0}
-    call WriteRawDataDebugSNonLeafIndexPad03Item CVNonLeafIndexPad03NameLenght, {': D$ ', 0}
+    Call WriteRawDataDebugSNonLeafIndexPad03Item CVNonLeafIndexPad03Unknown01, {': B$ ', 0}
+    Call WriteRawDataDebugSNonLeafIndexPad03Item CVNonLeafIndexPad03Unknown02, {': B$ ', 0}
+    Call WriteRawDataDebugSNonLeafIndexPad03Item CVNonLeafIndexPad03Unknown03, {': B$ ', 0}
+    Call WriteRawDataDebugSNonLeafIndexPad03Item CVNonLeafIndexPad03NameLenght, {': D$ ', 0}
 
-    mov ebx esi
-    mov ecx D$SizeAdd
+    Mov ebx esi
+    Mov ecx D$SizeAdd
     add ebx ecx
     add ebx D$esi-4
 
     If D$esi-4 <> 0 ; is the Name Lenght = 0 ? jmp over.
 
         push ebx
-            call WriteRawDataDebugSNonLeafIndexPad03Item CVNonLeafIndexPad03Name, {': B$ ', 0}
+            Call WriteRawDataDebugSNonLeafIndexPad03Item CVNonLeafIndexPad03Name, {': B$ ', 0}
         pop ebx
 
     End_If
     ; Is the end of this structure ends on the proper place ?
 
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -5102,8 +5102,8 @@ Proc WriteRawDataDebugSNonLeafIndexPad03Item:
     uses eax, ecx, ebx
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -5114,40 +5114,40 @@ Proc WriteRawDataDebugSNonLeafIndexPad03Item:
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Unkn' ; from "Unknown01", "Unknown02", "Unknown03" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-4
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 EndP
 
 ________________________
@@ -5165,35 +5165,35 @@ ________________________
 Proc WriteRawDataDebugSCompile:
     Uses ecx, eax, ebx
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
 
     .If W$esi-2 = &S_COMPILE
-        call WriteRawDataDebugSCompileItem CVCompileMachine, {': B$ ', 0}, 1
-        call WriteRawDataDebugSCompileItem CVCompileLanguage, {': B$ ', 0}, 1
-        call WriteRawDataDebugSCompileItem CVCompileFlags1, {': B$ ', 0}, 1
-        call WriteRawDataDebugSCompileItem CVCompileFlags2, {': B$ ', 0}, 1
-        call WriteRawDataDebugSCompileItem CVCompileNameLenght, {': B$ ', 0}, 1
-        call WriteRawDataDebugSCompileItem CVCompileName, {': B$ ', 0}, 1
+        Call WriteRawDataDebugSCompileItem CVCompileMachine, {': B$ ', 0}, 1
+        Call WriteRawDataDebugSCompileItem CVCompileLanguage, {': B$ ', 0}, 1
+        Call WriteRawDataDebugSCompileItem CVCompileFlags1, {': B$ ', 0}, 1
+        Call WriteRawDataDebugSCompileItem CVCompileFlags2, {': B$ ', 0}, 1
+        Call WriteRawDataDebugSCompileItem CVCompileNameLenght, {': B$ ', 0}, 1
+        Call WriteRawDataDebugSCompileItem CVCompileName, {': B$ ', 0}, 1
     .Else_If W$esi-2 = &S_COMPILE_CV3
-        call WriteRawDataDebugSCompileItem CVCompileLanguage, {': D$ ', 0}, 4
-        call WriteRawDataDebugSCompileItem CVCompileMachine, {': D$ ', 0}, 4
-        call WriteRawDataDebugSCompileItem CVCompileFlags2, {': D$ ', 0}, 4
-        call WriteRawDataDebugSCompileItem CVCompileFlags1, {': D$ ', 0}, 4
-        call WriteRawDataDebugSCompileItem CVCompileCompilerID, {': W$ ', 0}, 2
-        call WriteRawDataDebugSCompileItem CVCompileNameLenght, {': B$ ', 0}, 1
-        call WriteRawDataDebugSCompileItem CVCompileName, {': B$ ', 0}, 1
+        Call WriteRawDataDebugSCompileItem CVCompileLanguage, {': D$ ', 0}, 4
+        Call WriteRawDataDebugSCompileItem CVCompileMachine, {': D$ ', 0}, 4
+        Call WriteRawDataDebugSCompileItem CVCompileFlags2, {': D$ ', 0}, 4
+        Call WriteRawDataDebugSCompileItem CVCompileFlags1, {': D$ ', 0}, 4
+        Call WriteRawDataDebugSCompileItem CVCompileCompilerID, {': W$ ', 0}, 2
+        Call WriteRawDataDebugSCompileItem CVCompileNameLenght, {': B$ ', 0}, 1
+        Call WriteRawDataDebugSCompileItem CVCompileName, {': B$ ', 0}, 1
 
     .Else_If W$esi-2 = &S_COMPILE_CV2
         ; The members below seems to be a variation of the S_OBJNAME structured data.
         ; The Unknown seems to be the Signature
         ; The name is the object name, with full path. (And not the name of the object only as in S_OBJECT)
-        call WriteRawDataDebugSCompileItem CVCompileUnknown, {': D$ ', 0}, 4
-        call WriteRawDataDebugSCompileItem CVCompileName, {': B$ ', 0}, 2
+        Call WriteRawDataDebugSCompileItem CVCompileUnknown, {': D$ ', 0}, 4
+        Call WriteRawDataDebugSCompileItem CVCompileName, {': B$ ', 0}, 2
     .End_If
 
     pop ebx
@@ -5201,34 +5201,34 @@ Proc WriteRawDataDebugSCompile:
     ; Is the end of this structure ends on the proper place ?
 
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -5252,25 +5252,25 @@ Proc WriteRawDataDebugSMsTool:
     Uses ecx, eax, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
 
     .If W$esi-2 = &S_MSTOOL_CV2
-        call WriteRawDataDebugSMsToolItem CVMsToolMachine, {': B$ ', 0}
-        call WriteRawDataDebugSMsToolItem CVMsToolLanguage, {': B$ ', 0}
-        call WriteRawDataDebugSMsToolItem CVMsToolUnknown1, {': W$ ', 0}
-        call WriteRawDataDebugSMsToolItem CVMsToolUnknown2, {': W$ ', 0}
-        call WriteRawDataDebugSMsToolItem CVMsToolUnknown3, {': W$ ', 0}
-        call WriteRawDataDebugSMsToolItem CVMsToolUnknown4, {': W$ ', 0}
-        call WriteRawDataDebugSMsToolItem CVMsToolUnknown5, {': W$ ', 0}
-        call WriteRawDataDebugSMsToolItem CVMsToolUnknown6, {': W$ ', 0}
-        call WriteRawDataDebugSMsToolItem CVMsToolUnknown7, {': W$ ', 0}
-        call WriteRawDataDebugSMsToolItem CVMsToolUnknown8, {': W$ ', 0}
-        call WriteRawDataDebugSMsToolItem CVMsToolName, {': B$ ', 0}
+        Call WriteRawDataDebugSMsToolItem CVMsToolMachine, {': B$ ', 0}
+        Call WriteRawDataDebugSMsToolItem CVMsToolLanguage, {': B$ ', 0}
+        Call WriteRawDataDebugSMsToolItem CVMsToolUnknown1, {': W$ ', 0}
+        Call WriteRawDataDebugSMsToolItem CVMsToolUnknown2, {': W$ ', 0}
+        Call WriteRawDataDebugSMsToolItem CVMsToolUnknown3, {': W$ ', 0}
+        Call WriteRawDataDebugSMsToolItem CVMsToolUnknown4, {': W$ ', 0}
+        Call WriteRawDataDebugSMsToolItem CVMsToolUnknown5, {': W$ ', 0}
+        Call WriteRawDataDebugSMsToolItem CVMsToolUnknown6, {': W$ ', 0}
+        Call WriteRawDataDebugSMsToolItem CVMsToolUnknown7, {': W$ ', 0}
+        Call WriteRawDataDebugSMsToolItem CVMsToolUnknown8, {': W$ ', 0}
+        Call WriteRawDataDebugSMsToolItem CVMsToolName, {': B$ ', 0}
     .End_If
 
     pop ebx
@@ -5278,34 +5278,34 @@ Proc WriteRawDataDebugSMsTool:
     ; Is the end of this structure ends on the proper place ?
 
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -5316,8 +5316,8 @@ Proc WriteRawDataDebugSMsToolItem:
     uses eax, ecx
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -5328,80 +5328,80 @@ Proc WriteRawDataDebugSMsToolItem:
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Mach' ; from "Machine" string
-            call WriteCVCompileMachineEquates
+            Call WriteCVCompileMachineEquates
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Lang'; From "Language" string
-            call WriteCVCompileLanguageEquates
+            Call WriteCVCompileLanguageEquates
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax+4 = 'own1'; From "Unknown1" string
                 xor eax eax
-                lodsw | call WriteEax
+                lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'own2'; From "Unknown2" string
                 xor eax eax
-                lodsw | call WriteEax
+                lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'own3'; From "Unknown3" string
                 xor eax eax
-                lodsw | call WriteEax
+                lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'own4'; From "Unknown4" string
                 xor eax eax
-                lodsw | call WriteEax
+                lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'own5'; From "Unknown5" string
                 xor eax eax
-                lodsw | call WriteEax
+                lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'own6'; From "Unknown6" string
                 xor eax eax
-                lodsw | call WriteEax
+                lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'own7'; From "Unknown7" string
                 xor eax eax
-                lodsw | call WriteEax
+                lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'own8'; From "Unknown8" string
                 xor eax eax
-                lodsw | call WriteEax
+                lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name. On this case (S_MSTOOL_CV2) The name is a null terminated string
                 push eax
-                    call StrLenProc esi
-                    mov ecx eax
+                    Call StrLenProc esi
+                    Mov ecx eax
                     inc ecx ; The size is increased to we alow including the zero byte
                 pop eax
 
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 EndP
 
 ________________________________________________________________________________
@@ -5417,32 +5417,32 @@ Proc WriteRawDataDebugSRegister:
     Local @EndPos, @OldCodeView
     Uses ecx, eax
 
-    mov D@OldCodeView &FALSE
+    Mov D@OldCodeView &FALSE
     If W$esi-2 = &S_REGISTER_CV3
-        mov D@OldCodeView &TRUE
+        Mov D@OldCodeView &TRUE
     End_If
 
 
     ; 1st find start of symbol (Address of index -> S_REGISTER)
-    mov ecx esi
+    Mov ecx esi
     sub ecx 2 ; at ecx we point to the Index value
     movzx eax W$esi-4 ; find the len of the symbol
     add ecx eax
-    mov D@EndPos ecx
+    Mov D@EndPos ecx
 
     If D@OldCodeView = &TRUE
         Call WriteRawDataDebugSRegisterItem CVRegisterOldCVType , {': W$ ', 0}
     End_If
-    call WriteRawDataDebugSRegisterItem CVRegisterType, {': W$ ', 0}
-    call WriteRawDataDebugSRegisterItem CVRegisterRegister, {': W$ ', 0}
-    call WriteRawDataDebugSRegisterItem CVRegisterNameLenght, {': B$ ', 0}
-    call WriteRawDataDebugSRegisterItem CVRegisterName, {': B$ ', 0}
+    Call WriteRawDataDebugSRegisterItem CVRegisterType, {': W$ ', 0}
+    Call WriteRawDataDebugSRegisterItem CVRegisterRegister, {': W$ ', 0}
+    Call WriteRawDataDebugSRegisterItem CVRegisterNameLenght, {': B$ ', 0}
+    Call WriteRawDataDebugSRegisterItem CVRegisterName, {': B$ ', 0}
 
     ..If esi <> D@EndPos ; is esi ending at EndPos ? No, do next line. Yes, jmp over
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -5451,26 +5451,26 @@ Proc WriteRawDataDebugSRegister:
             zCopy {'Register.TrackingInfo: B$ ', 0}
         pop esi
 
-        mov ecx D@EndPos
+        Mov ecx D@EndPos
         sub ecx esi
 
         .Do
             push ecx
             xor eax eax
-            lodsb | call WriteEax
-            mov W$edi ', ' | add edi 2
+            lodsb | Call WriteEax
+            Mov W$edi ', ' | add edi 2
             pop ecx
             dec ecx
         .Loop_Until ecx = 0
             sub edi 2
-            mov W$edi CRLF | add edi 2
+            Mov W$edi CRLF | add edi 2
     ..End_If
 
     ; bypass esi. Need to review this stuff
-;    call WriteRawDataDebugSRegisterItem CVRegisterTrackingInfo, {': B$ ', 0}
+;    Call WriteRawDataDebugSRegisterItem CVRegisterTrackingInfo, {': B$ ', 0}
 
 ; type equates here: WriteCVBPRel32TypeEquates
-; call Write_IMAGE_FILE_MACHINE D$CoffMachineType
+; Call Write_IMAGE_FILE_MACHINE D$CoffMachineType
 EndP
 ________________________________________________________________________________
 
@@ -5479,8 +5479,8 @@ Proc WriteRawDataDebugSRegisterItem:
     uses eax, ecx
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -5491,58 +5491,58 @@ Proc WriteRawDataDebugSRegisterItem:
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Type' ; from "Type" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'OldC' ; from "OldCVType" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Regi'; From "Register" string
             .If_Or D$CoffMachineType = &IMAGE_FILE_MACHINE_I386, D$CoffMachineType = &IMAGE_FILE_MACHINE_I486, D$CoffMachineType = &IMAGE_FILE_MACHINE_I586
-                call WriteCVRegisterIntelRegEquates
+                Call WriteCVRegisterIntelRegEquates
             .Else_If D$CoffMachineType = &IMAGE_FILE_MACHINE_M68K
-                call WriteCVRegisterM68KRegEquates
+                Call WriteCVRegisterM68KRegEquates
             .Else_If_Or D$CoffMachineType = &IMAGE_FILE_MACHINE_MIPS16, D$CoffMachineType = &IMAGE_FILE_MACHINE_MIPSFPU, D$CoffMachineType = &IMAGE_FILE_MACHINE_MIPSFPU16
-                call WriteCVRegisterMipsRegEquates
+                Call WriteCVRegisterMipsRegEquates
             .End_If
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 EndP
 
 ________________________________________________________________________________
@@ -5967,8 +5967,8 @@ Proc WriteRawDataDebugSContantLeafTypeStructureItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -5979,69 +5979,69 @@ Proc WriteRawDataDebugSContantLeafTypeStructureItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Coun'; From "Count" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
         ..Else_If D$eax = 'Fiel'; From "Field" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'OldC'; From "OldCVType" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
         ..Else_If D$eax+13 = 'own1'; From "OldCVTypeUnknown1" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
         ..Else_If D$eax+13 = 'own2'; From "OldCVTypeUnknown2" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
          ..Else_If D$eax = 'Prop'; From "Property" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
         ..Else_If D$eax = 'dLis'; From "dList" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
         ..Else_If D$eax = 'vSha'; From "vShape" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
         ..Else_If D$eax = 'Stru'; From "StructLen" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 ___________________________________________________
@@ -6060,67 +6060,67 @@ Proc WriteRawDataDebugSContantLeafTypeStructure:
     Local @OldCodeView
     Uses eax, ecx
 
-    mov D@OldCodeView &FALSE
+    Mov D@OldCodeView &FALSE
     If W$esi-2 = &LF_STRUCTURE_CV3
-        mov D@OldCodeView &TRUE
+        Mov D@OldCodeView &TRUE
     End_If
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
 
-        call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructureCount, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructureField, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructureCount, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructureField, {': W$ ', 0}
         If D@OldCodeView = &TRUE
-            call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeUnionOldCVType, {': W$ ', 0}
-            call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructureOldCVTypeUnkn1, {': W$ ', 0}
-            call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructureOldCVTypeUnkn2, {': W$ ', 0}
+            Call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeUnionOldCVType, {': W$ ', 0}
+            Call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructureOldCVTypeUnkn1, {': W$ ', 0}
+            Call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructureOldCVTypeUnkn2, {': W$ ', 0}
         End_If
-        call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructureProperty, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructuredList, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructurevshape, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructuredStructLen, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructureProperty, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructuredList, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructurevshape, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeStructureItem CVLeafTypeStructuredStructLen, {': W$ ', 0}
 
-        call WriteRawDataDebugSContantLeafTypeStructureItem CVCompileNameLenght, {': B$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeStructureItem CVCompileName, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeStructureItem CVCompileNameLenght, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeStructureItem CVCompileName, {': B$ ', 0}
         sub edi 2
 
     pop ebx
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 
@@ -6139,62 +6139,62 @@ Proc WriteRawDataDebugSContantLeafTypeUnion:
     Uses eax, ecx
 
 
-    mov D@OldCodeView &FALSE
+    Mov D@OldCodeView &FALSE
     If W$esi-2 = &LF_UNION_CV3
-        mov D@OldCodeView &TRUE
+        Mov D@OldCodeView &TRUE
     End_If
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
 
-        call WriteRawDataDebugSContantLeafTypeUnionItem CVLeafTypeUnionCount, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeUnionItem CVLeafTypeUnionField, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeUnionItem CVLeafTypeUnionCount, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeUnionItem CVLeafTypeUnionField, {': W$ ', 0}
         If D@OldCodeView = &TRUE
-            call WriteRawDataDebugSContantLeafTypeUnionItem CVLeafTypeUnionOldCVType, {': W$ ', 0}
+            Call WriteRawDataDebugSContantLeafTypeUnionItem CVLeafTypeUnionOldCVType, {': W$ ', 0}
         End_If
-        call WriteRawDataDebugSContantLeafTypeUnionItem CVLeafTypeUnionProperty, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeUnionItem CVLeafTypeUnionUnionLen, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeUnionItem CVCompileNameLenght, {': B$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeUnionItem CVCompileName, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeUnionItem CVLeafTypeUnionProperty, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeUnionItem CVLeafTypeUnionUnionLen, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeUnionItem CVCompileNameLenght, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeUnionItem CVCompileName, {': B$ ', 0}
         sub edi 2
 
     pop ebx
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 
@@ -6206,8 +6206,8 @@ Proc WriteRawDataDebugSContantLeafTypeUnionItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -6218,56 +6218,56 @@ Proc WriteRawDataDebugSContantLeafTypeUnionItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Coun'; From "Count" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
         ..Else_If D$eax = 'Fiel'; From "Field" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
         ..Else_If D$eax = 'OldC'; From "OldCVType" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
         ..Else_If D$eax = 'Prop'; From "Property" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
         ..Else_If D$eax = 'Unio'; From "UnionLength" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 ________________________________________________________________________________
@@ -6278,8 +6278,8 @@ Proc WriteRawDataDebugSContantLeafTypePointerItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -6290,25 +6290,25 @@ Proc WriteRawDataDebugSContantLeafTypePointerItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'OldC'; From "OldCVType" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Attr'; From "Attribute" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Type'; From "Type" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 _______________________________________________________________________
@@ -6321,57 +6321,57 @@ Proc WriteRawDataDebugSContantLeafTypeModifier:
     Local @OldCodeView
     Uses eax, ecx
 
-    mov D@OldCodeView &FALSE
+    Mov D@OldCodeView &FALSE
     If W$esi-2 = &LF_MODIFIER_CV3
-        mov D@OldCodeView &TRUE
+        Mov D@OldCodeView &TRUE
     End_If
 
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
         If D@OldCodeView = &TRUE
-            call WriteRawDataDebugSContantLeafTypeModifierItem CVLeafTypeModifierOldCVType, {': W$ ', 0}
+            Call WriteRawDataDebugSContantLeafTypeModifierItem CVLeafTypeModifierOldCVType, {': W$ ', 0}
         End_If
-        call WriteRawDataDebugSContantLeafTypeModifierItem CVLeafTypeModifierAttribute, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeModifierItem CVLeafTypeModifierIndex, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeModifierItem CVLeafTypeModifierAttribute, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeModifierItem CVLeafTypeModifierIndex, {': W$ ', 0}
         sub edi 2
     pop ebx
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 
@@ -6383,8 +6383,8 @@ Proc WriteRawDataDebugSContantLeafTypeModifierItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -6395,25 +6395,25 @@ Proc WriteRawDataDebugSContantLeafTypeModifierItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'OldC'; From "OldCVType" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Attr'; From "Attribute" string
             ; same as in WriteCVCompileFlag2Equates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Inde'; From "Type" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -6428,57 +6428,57 @@ Proc WriteRawDataDebugSContantLeafTypePointer:
     Local @OldCodeView
     Uses eax, ecx
 
-    mov D@OldCodeView &FALSE
+    Mov D@OldCodeView &FALSE
     If W$esi-2 = &LF_POINTER_CV3
-        mov D@OldCodeView &TRUE
+        Mov D@OldCodeView &TRUE
     End_If
 
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
         If D@OldCodeView = &TRUE
-            call WriteRawDataDebugSContantLeafTypePointerItem CVLeafTypePointerOldCVType, {': W$ ', 0}
+            Call WriteRawDataDebugSContantLeafTypePointerItem CVLeafTypePointerOldCVType, {': W$ ', 0}
         End_If
-        call WriteRawDataDebugSContantLeafTypePointerItem CVLeafTypePointerAttribute, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypePointerItem CVLeafTypePointerType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypePointerItem CVLeafTypePointerAttribute, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypePointerItem CVLeafTypePointerType, {': W$ ', 0}
         sub edi 2
     pop ebx
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 
@@ -6497,9 +6497,9 @@ Proc WriteRawDataDebugSContantLeafTypeArray:
 
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
@@ -6513,34 +6513,34 @@ Proc WriteRawDataDebugSContantLeafTypeArray:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -6550,8 +6550,8 @@ Proc WriteRawDataDebugSContantLeafTypeArrayItem:
     uses eax, ecx
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -6562,51 +6562,51 @@ Proc WriteRawDataDebugSContantLeafTypeArrayItem:
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Elem' ; from "ElemType" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'IdxT'; From "IdxType" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Leng'; From "Lenght" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -6616,8 +6616,8 @@ Proc WriteRawDataDebugSContantLeafTypeProcedureItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -6628,34 +6628,34 @@ Proc WriteRawDataDebugSContantLeafTypeProcedureItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
          ..If D$eax = 'rvTy'; From "rvType" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Call'; From "Call" string
-            call WriteCVLF_ProcCallConvTypeEquates
+            Call WriteCVLF_ProcCallConvTypeEquates
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Rese'; From "Reserved" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Parm'; From "Parms" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'ArgL'; From "ArgList" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -6672,50 +6672,50 @@ Proc WriteRawDataDebugSContantLeafTypeProcedure:
 
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
-        call WriteRawDataDebugSContantLeafTypeProcedureItem CVLeafTypeProcrvType, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeProcedureItem CVLeafTypeProcCall, {': B$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeProcedureItem CVLeafTypeProcrvReserved, {': B$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeProcedureItem CVLeafTypeProcrvParms, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeProcedureItem CVLeafTypeProcrvArgList, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeProcedureItem CVLeafTypeProcrvType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeProcedureItem CVLeafTypeProcCall, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeProcedureItem CVLeafTypeProcrvReserved, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeProcedureItem CVLeafTypeProcrvParms, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeProcedureItem CVLeafTypeProcrvArgList, {': W$ ', 0}
         sub edi 2
     pop ebx
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -6737,71 +6737,71 @@ Proc WriteRawDataDebugSContantLeafTypeMFunction:
     Uses eax, ecx
 
 
-    mov D@OldCodeView &FALSE
+    Mov D@OldCodeView &FALSE
     If W$esi-2 = &LF_MFUNCTION_CV3
-        mov D@OldCodeView &TRUE
+        Mov D@OldCodeView &TRUE
     End_If
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
 
         If D@OldCodeView = &TRUE
-            call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionRvType, {': D$ ', 0}, &TRUE
-            call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionClass, {': D$ ', 0}, &TRUE
-            call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionThis, {': D$ ', 0}, &TRUE
+            Call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionRvType, {': D$ ', 0}, &TRUE
+            Call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionClass, {': D$ ', 0}, &TRUE
+            Call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionThis, {': D$ ', 0}, &TRUE
         Else
-            call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionRvType, {': W$ ', 0}, &FALSE
-            call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionClass, {': W$ ', 0}, &FALSE
-            call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionThis, {': W$ ', 0}, &FALSE
+            Call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionRvType, {': W$ ', 0}, &FALSE
+            Call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionClass, {': W$ ', 0}, &FALSE
+            Call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionThis, {': W$ ', 0}, &FALSE
 
         End_If
-        call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionCall, {': B$ ', 0}, &FALSE
-        call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionRes, {': B$ ', 0}, &FALSE
-        call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionParms, {': W$ ', 0}, &FALSE
+        Call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionCall, {': B$ ', 0}, &FALSE
+        Call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionRes, {': B$ ', 0}, &FALSE
+        Call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionParms, {': W$ ', 0}, &FALSE
         If D@OldCodeView = &TRUE
-            call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionOldCVType, {': W$ ', 0}, &TRUE
+            Call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionOldCVType, {': W$ ', 0}, &TRUE
         End_If
-        call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionArglist, {': W$ ', 0}, &FALSE
-        call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionThisAdjust, {': D$ ', 0}, &FALSE
+        Call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionArglist, {': W$ ', 0}, &FALSE
+        Call WriteRawDataDebugSContantLeafTypeMFunctionItem CVLeafTypeMFunctionThisAdjust, {': D$ ', 0}, &FALSE
         sub edi 2
 
     pop ebx
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -6812,8 +6812,8 @@ Proc WriteRawDataDebugSContantLeafTypeMFunctionItem:
     uses eax, ecx, ebx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -6824,56 +6824,56 @@ Proc WriteRawDataDebugSContantLeafTypeMFunctionItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'RvTy'; From "RvType" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             If D@UseOldCVType = &TRUE
-                lodsd | call WriteEax
+                lodsd | Call WriteEax
             Else
                 xor eax eax
-                lodsw | call WriteEax
+                lodsw | Call WriteEax
             End_If
         ..Else_If D$eax = 'Clas'; From "Class" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             If D@UseOldCVType = &TRUE
-                lodsd | call WriteEax
+                lodsd | Call WriteEax
             Else
                 xor eax eax
-                lodsw | call WriteEax
+                lodsw | Call WriteEax
             End_If
         ..Else_If D$eax = 'This'; From "This" string
             .If D$eax+4 = 'Adju'; From "ThisAdjust" string
-                lodsd | call WriteEax
+                lodsd | Call WriteEax
             .Else   ; From "This" string
-                call WriteCVBPRel32TypeEquates
+                Call WriteCVBPRel32TypeEquates
                 If D@UseOldCVType = &TRUE
-                    lodsd | call WriteEax
+                    lodsd | Call WriteEax
                 Else
                     xor eax eax
-                    lodsw | call WriteEax
+                    lodsw | Call WriteEax
                 End_If
             .End_If
         ..Else_If D$eax = 'Call'; From "Call" string
-            call WriteCVLF_ProcCallConvTypeEquates
+            Call WriteCVLF_ProcCallConvTypeEquates
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
         ..Else_If W$eax = 'Re'; From "Res" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
         ..Else_If D$eax = 'Parm'; From "Parms" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
         ..Else_If D$eax = 'OldC'; From "OldCVType" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
         ..Else_If D$eax = 'Argl'; From "Arglist" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -6891,23 +6891,23 @@ Proc WriteCVLF_ProcCallConvTypeEquates:
     ..Else_If W$esi = &CV4_CALL_FAR_PASCAL
         zCopy {'&CV4_CALL_FAR_PASCAL; Far Pascal - Hex Value:  ', 0}
     ..Else_If W$esi = &CV4_CALL_NEAR_FASTCALL
-        zCopy {'&CV4_CALL_NEAR_FASTCALL; Near fastcall - Hex Value:  ', 0}
+        zCopy {'&CV4_CALL_NEAR_FASTCALL; Near fastCall - Hex Value:  ', 0}
     ..Else_If W$esi = &CV4_CALL_FAR_FASTCALL
-        zCopy {'&CV4_CALL_FAR_FASTCALL; Far fastcall - Hex Value:  ', 0}
+        zCopy {'&CV4_CALL_FAR_FASTCALL; Far fastCall - Hex Value:  ', 0}
     ..Else_If W$esi = &CV4_CALL_RESERVED6
         zCopy {'&CV4_CALL_RESERVED6; Reserved - Hex Value:  ', 0}
     ..Else_If W$esi = &CV4_CALL_NEAR_STDCALL
-        zCopy {'&CV4_CALL_NEAR_STDCALL; Near stdcall - Hex Value:  ', 0}
+        zCopy {'&CV4_CALL_NEAR_STDCALL; Near stdCall - Hex Value:  ', 0}
     ..Else_If W$esi = &CV4_CALL_FAR_STDCALL
-        zCopy {'&CV4_CALL_FAR_STDCALL; Far stdcall - Hex Value:  ', 0}
+        zCopy {'&CV4_CALL_FAR_STDCALL; Far stdCall - Hex Value:  ', 0}
     ..Else_If W$esi = &CV4_CALL_NEAR_SYSCALL
-        zCopy {'&CV4_CALL_NEAR_SYSCALL; Near syscall - Hex Value:  ', 0}
+        zCopy {'&CV4_CALL_NEAR_SYSCALL; Near sysCall - Hex Value:  ', 0}
     ..Else_If W$esi = &CV4_CALL_FAR_SYSCALL
-        zCopy {'&CV4_CALL_FAR_SYSCALL; Far syscall - Hex Value:  ', 0}
+        zCopy {'&CV4_CALL_FAR_SYSCALL; Far sysCall - Hex Value:  ', 0}
     ..Else_If W$esi = &CV4_CALL_THIS_CALL
-        zCopy {'&CV4_CALL_THIS_CALL; This call - Hex Value:  ', 0}
+        zCopy {'&CV4_CALL_THIS_CALL; This Call - Hex Value:  ', 0}
     ..Else_If W$esi = &CV4_CALL_MIPS_CALL
-        zCopy {'&CV4_CALL_MIPS_CALL; MIPS call - Hex Value:  ', 0}
+        zCopy {'&CV4_CALL_MIPS_CALL; MIPS Call - Hex Value:  ', 0}
     ..Else_If W$esi = &CV4_CALL_GENERIC
         zCopy {'&CV4_CALL_GENERIC; Generic - Hex Value:  ', 0}
     ..Else_If W$esi = &CV4_CALL_RESERVED14
@@ -7405,8 +7405,8 @@ Proc WriteRawDataDebugSContantLeafTypeArgListItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -7420,10 +7420,10 @@ Proc WriteRawDataDebugSContantLeafTypeArgListItem:
         zCopy D@Text2
     pop esi
 
-    call WriteCVBPRel32TypeEquates
+    Call WriteCVBPRel32TypeEquates
     xor eax eax
-    lodsw | call WriteEax
-    mov W$edi CRLF | add edi 2
+    lodsw | Call WriteEax
+    Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -7433,15 +7433,15 @@ _________________________________________________
 CVLeafTypeArgListOldCVType: 'OldCVType', 0]
 
 
-;    mov D$LeafTypeArgListIndice '0000', D$LeafTypeArgListIndice+4 '01'
-;            call IncrementLeafTypeArgListIndex
+;    Mov D$LeafTypeArgListIndice '0000', D$LeafTypeArgListIndice+4 '01'
+;            Call IncrementLeafTypeArgListIndex
 
 [LeafTypeArgListIndice: '000001', 0]
 
 IncrementLeafTypeArgListIndex:
     lea ebx D$LeafTypeArgListIndice+5 | inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx | inc B$ebx
+        Mov B$ebx '0' | dec ebx | inc B$ebx
     End_While
 ret
 
@@ -7451,22 +7451,22 @@ Proc WriteRawDataDebugSContantLeafTypeArgList:
     Local @OldCodeView
     Uses eax, ecx, ebx
 
-    mov D@OldCodeView &FALSE
+    Mov D@OldCodeView &FALSE
     If W$esi-2 = &LF_ARGLIST_CV3
-        mov D@OldCodeView &TRUE
+        Mov D@OldCodeView &TRUE
     End_If
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
         push ecx
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -7476,24 +7476,24 @@ Proc WriteRawDataDebugSContantLeafTypeArgList:
             zCopy {'ArgCount: W$ ', 0}
         pop esi
         xor eax eax
-        lodsw | call WriteEax
-        mov W$edi CRLF | add edi 2
+        lodsw | Call WriteEax
+        Mov W$edi CRLF | add edi 2
         pop ecx
 
         movzx ecx W$esi-2
 
-    mov D$ArgListIndexCount ecx
-    mov D$LeafTypeArgListIndice '0000', D$LeafTypeArgListIndice+4 '01'
+    Mov D$ArgListIndexCount ecx
+    Mov D$LeafTypeArgListIndice '0000', D$LeafTypeArgListIndice+4 '01'
 
     .If ecx <> 0 ; if the amount of bytes is 0 jmp over
 
         L0:
-            call WriteRawDataDebugSContantLeafTypeArgListItem CVLeafTypeArgListIndice, {': W$ ', 0}
+            Call WriteRawDataDebugSContantLeafTypeArgListItem CVLeafTypeArgListIndice, {': W$ ', 0}
             If D@OldCodeView = &TRUE
-                call WriteRawDataDebugSContantLeafTypeArgListItem CVLeafTypeArgListOldCVType, {': W$ ', 0}
+                Call WriteRawDataDebugSContantLeafTypeArgListItem CVLeafTypeArgListOldCVType, {': W$ ', 0}
             End_If
 
-            call IncrementLeafTypeArgListIndex
+            Call IncrementLeafTypeArgListIndex
         Loop L0<
 
     .End_If
@@ -7502,34 +7502,34 @@ Proc WriteRawDataDebugSContantLeafTypeArgList:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -7543,22 +7543,22 @@ Proc WriteRawDataDebugSContantLeafTypeFieldList:
     Uses eax, ecx, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
     ;mov D@EndAddr ebx
 
 
-    mov D$NestedLeafType &TRUE
-    mov D$LeafTypeArrayObjIndice '0000', D$LeafTypeArrayObjIndice+4 '01'
+    Mov D$NestedLeafType &TRUE
+    Mov D$LeafTypeArrayObjIndice '0000', D$LeafTypeArrayObjIndice+4 '01'
 
     .Do
 
         push esi
-            mov W$edi CRLF | add edi 2
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov W$edi CRLF | add edi 2
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -7572,79 +7572,79 @@ Proc WriteRawDataDebugSContantLeafTypeFieldList:
 
         ..If W$esi = &LF_BCLASS
             push esi | zCopy {'.BClass.Arr', 0} | pop esi
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_BCLASS', 0}
-            call WriteRawDataDebugSContantLeafTypeBClass &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_BCLASS', 0}
+            Call WriteRawDataDebugSContantLeafTypeBClass &FALSE
 
         ..Else_If W$esi = &LF_VBCLASS
             push esi | zCopy {'.VBClass.Arr', 0} | pop esi
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VBCLASS', 0}
-            call WriteRawDataDebugSContantLeafTypeVBClass &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VBCLASS', 0}
+            Call WriteRawDataDebugSContantLeafTypeVBClass &FALSE
 
         ..Else_If W$esi = &LF_IVBCLASS
             push esi | zCopy {'.IVBClass.Arr', 0} | pop esi
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_IVBCLASS', 0}
-            call WriteRawDataDebugSContantLeafTypeIVBClass &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_IVBCLASS', 0}
+            Call WriteRawDataDebugSContantLeafTypeIVBClass &FALSE
 
         ..Else_If W$esi = &LF_ENUMERATE
             push esi | zCopy {'.Enumerate.Arr', 0} | pop esi
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ENUMERATE', 0}
-            call WriteRawDataDebugSContantLeafTypeEnumerate &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ENUMERATE', 0}
+            Call WriteRawDataDebugSContantLeafTypeEnumerate &FALSE
 
         ..Else_If W$esi = &LF_FRIENDFCN
             push esi | zCopy {'.FriendFcn.Arr', 0} | pop esi
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_FRIENDFCN', 0}
-            call WriteRawDataDebugSContantLeafTypeFriendFcn &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_FRIENDFCN', 0}
+            Call WriteRawDataDebugSContantLeafTypeFriendFcn &FALSE
 
         ..Else_If W$esi = &LF_INDEX
             push esi | zCopy {'.Index.Arr', 0} | pop esi
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_INDEX', 0}
-            call WriteRawDataDebugSContantLeafTypeIndex &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_INDEX', 0}
+            Call WriteRawDataDebugSContantLeafTypeIndex &FALSE
 
         ..Else_If W$esi = &LF_MEMBER;, W$esi = 01405
             ;WriteRawDataDebugSRegister
             ;push ebx
             push esi | zCopy {'.Member.Arr', 0} | pop esi
                 If W$esi = &LF_MEMBER
-                    call WriteRawDataDebugSContantLeafTypeEquate {'&LF_MEMBER', 0}
+                    Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_MEMBER', 0}
                 Else
-                    ;call WriteRawDataDebugSContantLeafTypeEquate {'&LF_MEMBER_CV3', 0}
+                    ;Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_MEMBER_CV3', 0}
                 End_If
-                call WriteRawDataDebugSContantLeafTypeMember &FALSE
+                Call WriteRawDataDebugSContantLeafTypeMember &FALSE
             ;pop ebx
         ..Else_If W$esi = &LF_STMEMBER
             push esi | zCopy {'.STMember.Arr', 0} | pop esi
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_STMEMBER', 0}
-            call WriteRawDataDebugSContantLeafTypeSTMember &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_STMEMBER', 0}
+            Call WriteRawDataDebugSContantLeafTypeSTMember &FALSE
 
         ..Else_If W$esi = &LF_METHOD
             push esi | zCopy {'.Method.Arr', 0} | pop esi
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_METHOD', 0}
-            call WriteRawDataDebugSContantLeafTypeMethod &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_METHOD', 0}
+            Call WriteRawDataDebugSContantLeafTypeMethod &FALSE
 
         ..Else_If W$esi = &LF_NESTTYPE
             push esi | zCopy {'.NestType.Arr', 0} | pop esi
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_NESTTYPE', 0}
-            call WriteRawDataDebugSContantLeafTypeNestType &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_NESTTYPE', 0}
+            Call WriteRawDataDebugSContantLeafTypeNestType &FALSE
 
         ..Else_If W$esi = &LF_VFUNCTAB
             push esi | zCopy {'.VFuncTab.Arr', 0} | pop esi
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VFUNCTAB', 0}
-            call WriteRawDataDebugSContantLeafTypeVFuncTab &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VFUNCTAB', 0}
+            Call WriteRawDataDebugSContantLeafTypeVFuncTab &FALSE
 
         ..Else_If W$esi = &LF_FRIENDCLS
             push esi | zCopy {'.FriendCls.Arr', 0} | pop esi
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_FRIENDCLS', 0}
-            call WriteRawDataDebugSContantLeafTypeFriendCls &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_FRIENDCLS', 0}
+            Call WriteRawDataDebugSContantLeafTypeFriendCls &FALSE
 
         ..Else_If W$esi = &LF_ONEMETHOD
             push esi | zCopy {'.OneMethod.Arr', 0} | pop esi
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ONEMETHOD', 0}
-            call WriteRawDataDebugSContantLeafTypeOneMethod &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ONEMETHOD', 0}
+            Call WriteRawDataDebugSContantLeafTypeOneMethod &FALSE
 
         ..Else_If W$esi = &LF_VFUNCOFF
             push esi | zCopy {'.VFuncOffset.Arr', 0} | pop esi
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VFUNCOFF', 0}
-            call WriteRawDataDebugSContantLeafTypeVFuncOffset &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VFUNCOFF', 0}
+            Call WriteRawDataDebugSContantLeafTypeVFuncOffset &FALSE
 
         ..End_If
 ;            push ebx
@@ -7652,41 +7652,41 @@ Proc WriteRawDataDebugSContantLeafTypeFieldList:
 
                 movzx ecx B$esi
                 sub ecx 0F0
-                mov W$edi CRLF | add edi 2
-                call WriteCVdataTitle
+                Mov W$edi CRLF | add edi 2
+                Call WriteCVdataTitle
 
-                    mov edx 0
+                    Mov edx 0
                     xor eax eax
 
                 L0:
 
                     movzx eax B$esi
-                    push ebx | call WriteEax | pop ebx
+                    push ebx | Call WriteEax | pop ebx
 
-                    mov W$edi ', ' | add edi 2 | inc esi
+                    Mov W$edi ', ' | add edi 2 | inc esi
                     inc edx
                     If edx > 15
-                        mov W$edi CRLF | add edi 2 | mov edx 0
-                        mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                        Mov W$edi CRLF | add edi 2 | Mov edx 0
+                        Mov D$edi '    ', D$edi+4 '    ' | add edi 8
                     End_If
                 Loop L0<
                 sub edi 2
                 dec edi
-                mov W$edi+1 CRLF | add edi 2
+                Mov W$edi+1 CRLF | add edi 2
                 inc edi
 
             .End_If
 
-            call IncrementLeafTypeArrayIndex
+            Call IncrementLeafTypeArrayIndex
 ;            pop ebx
             ;pop ebx
         .Loop_Until esi = ebx
 ;L2:
-    mov D$NestedLeafType &FALSE
-    mov W$edi CRLF | add edi 2
+    Mov D$NestedLeafType &FALSE
+    Mov W$edi CRLF | add edi 2
 ;    sub edi 2
  ;   dec edi
-  ;  mov W$edi+1 CRLF | add edi 2
+  ;  Mov W$edi+1 CRLF | add edi 2
    ; inc edi
 
 EndP
@@ -7702,7 +7702,7 @@ Proc IncrementLeafTypeArrayIndex:
 
     lea ebx D$LeafTypeArrayObjIndice+5 | inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx | inc B$ebx
+        Mov B$ebx '0' | dec ebx | inc B$ebx
     End_While
 
     popad
@@ -7715,8 +7715,8 @@ Proc WriteRawDataDebugSContantLeafTypeBClassItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -7731,23 +7731,23 @@ Proc WriteRawDataDebugSContantLeafTypeBClassItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Type'; From "Type" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Attr'; From "Attribute" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Offs'; From "Offset" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -7762,15 +7762,15 @@ Proc WriteRawDataDebugSContantLeafTypeBClass:
     Uses eax, ecx, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
-        call WriteRawDataDebugSContantLeafTypeBClassItem CVLeafTypeVFuncTypeBClassType, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeBClassItem CVLeafTypeVFuncTypeBClassAttribute, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeBClassItem CVLeafTypeVFuncTypeBClassOffset, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeBClassItem CVLeafTypeVFuncTypeBClassType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeBClassItem CVLeafTypeVFuncTypeBClassAttribute, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeBClassItem CVLeafTypeVFuncTypeBClassOffset, {': W$ ', 0}
         sub edi 2
     pop ebx
 
@@ -7785,34 +7785,34 @@ Proc WriteRawDataDebugSContantLeafTypeBClass:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -7824,8 +7824,8 @@ Proc WriteRawDataDebugSContantLeafTypeVBClassItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -7840,35 +7840,35 @@ Proc WriteRawDataDebugSContantLeafTypeVBClassItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Inde'; From "Index" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'bTyp'; From "bType" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'VbTy'; From "VbType" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Attr'; From "Attribute" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Vbpo'; From "Vbpoff" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Vbof'; From "Vboff" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -7886,18 +7886,18 @@ Proc WriteRawDataDebugSContantLeafTypeVBClass:
     Uses eax, ecx, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
-        call WriteRawDataDebugSContantLeafTypeVBClassItem CVLeafTypeVFuncTypeVBClassType, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeVBClassItem CVLeafTypeVFuncTypeVBClassbType, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeVBClassItem CVLeafTypeVFuncTypeVBClassvbType, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeVBClassItem CVLeafTypeVFuncTypeVBClassAttribute, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeVBClassItem CVLeafTypeVFuncTypeVBClassvbpoff, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeVBClassItem CVLeafTypeVFuncTypeVBClassvboff, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeVBClassItem CVLeafTypeVFuncTypeVBClassType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeVBClassItem CVLeafTypeVFuncTypeVBClassbType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeVBClassItem CVLeafTypeVFuncTypeVBClassvbType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeVBClassItem CVLeafTypeVFuncTypeVBClassAttribute, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeVBClassItem CVLeafTypeVFuncTypeVBClassvbpoff, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeVBClassItem CVLeafTypeVFuncTypeVBClassvboff, {': W$ ', 0}
         sub edi 2
     pop ebx
 
@@ -7912,34 +7912,34 @@ Proc WriteRawDataDebugSContantLeafTypeVBClass:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -7951,8 +7951,8 @@ Proc WriteRawDataDebugSContantLeafTypeIVBClassItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -7967,35 +7967,35 @@ Proc WriteRawDataDebugSContantLeafTypeIVBClassItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Inde'; From "Index" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'bTyp'; From "bType" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'VbTy'; From "VbType" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Attr'; From "Attribute" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Vbpo'; From "Vbpoff" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Vbof'; From "Vboff" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -8014,18 +8014,18 @@ Proc WriteRawDataDebugSContantLeafTypeIVBClass:
     Uses eax, ecx, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
-        call WriteRawDataDebugSContantLeafTypeIVBClassItem CVLeafTypeVFuncTypeIVBClassType, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeIVBClassItem CVLeafTypeVFuncTypeIVBClassbType, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeIVBClassItem CVLeafTypeVFuncTypeIVBClassvbType, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeIVBClassItem CVLeafTypeVFuncTypeIVBClassAttribute, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeIVBClassItem CVLeafTypeVFuncTypeIVBClassvbpoff, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeIVBClassItem CVLeafTypeVFuncTypeIVBClassvboff, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeIVBClassItem CVLeafTypeVFuncTypeIVBClassType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeIVBClassItem CVLeafTypeVFuncTypeIVBClassbType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeIVBClassItem CVLeafTypeVFuncTypeIVBClassvbType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeIVBClassItem CVLeafTypeVFuncTypeIVBClassAttribute, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeIVBClassItem CVLeafTypeVFuncTypeIVBClassvbpoff, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeIVBClassItem CVLeafTypeVFuncTypeIVBClassvboff, {': W$ ', 0}
         sub edi 2
     pop ebx
 
@@ -8040,34 +8040,34 @@ Proc WriteRawDataDebugSContantLeafTypeIVBClass:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -8079,8 +8079,8 @@ Proc WriteRawDataDebugSContantLeafTypeEnumerateItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -8095,46 +8095,46 @@ Proc WriteRawDataDebugSContantLeafTypeEnumerateItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
 
         ..If D$eax = 'Attr'; From "Attribute" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Valu'; From "Value" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -8150,16 +8150,16 @@ Proc WriteRawDataDebugSContantLeafTypeEnumerate:
     Uses eax, ecx, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
-        call WriteRawDataDebugSContantLeafTypeEnumerateItem CVLeafTypeVFuncTypeEnumerateAttribute, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeEnumerateItem CVLeafTypeVFuncTypeEnumerateValue, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeEnumerateItem CVLeafTypeVFuncTypeEnumerateNameLenght, {': B$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeEnumerateItem CVLeafTypeVFuncTypeEnumerateName, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeEnumerateItem CVLeafTypeVFuncTypeEnumerateAttribute, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeEnumerateItem CVLeafTypeVFuncTypeEnumerateValue, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeEnumerateItem CVLeafTypeVFuncTypeEnumerateNameLenght, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeEnumerateItem CVLeafTypeVFuncTypeEnumerateName, {': B$ ', 0}
         sub edi 2
     pop ebx
 
@@ -8174,34 +8174,34 @@ Proc WriteRawDataDebugSContantLeafTypeEnumerate:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -8213,8 +8213,8 @@ Proc WriteRawDataDebugSContantLeafTypeFriendFcnItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -8229,41 +8229,41 @@ Proc WriteRawDataDebugSContantLeafTypeFriendFcnItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Type'; From "Type" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -8278,15 +8278,15 @@ Proc WriteRawDataDebugSContantLeafTypeFriendFcn:
     Uses eax, ecx, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
-        call WriteRawDataDebugSContantLeafTypeFriendFcnItem CVLeafTypeVFuncTypeFriendFcnType, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeFriendFcnItem CVLeafTypeVFuncTypeFriendFcnNameLenght, {': B$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeFriendFcnItem CVLeafTypeVFuncTypeFriendFcnName, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeFriendFcnItem CVLeafTypeVFuncTypeFriendFcnType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeFriendFcnItem CVLeafTypeVFuncTypeFriendFcnNameLenght, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeFriendFcnItem CVLeafTypeVFuncTypeFriendFcnName, {': B$ ', 0}
         sub edi 2
     pop ebx
 
@@ -8301,34 +8301,34 @@ Proc WriteRawDataDebugSContantLeafTypeFriendFcn:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -8340,8 +8340,8 @@ Proc WriteRawDataDebugSContantLeafTypeIndexItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -8356,12 +8356,12 @@ Proc WriteRawDataDebugSContantLeafTypeIndexItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         xor eax eax
-        lodsw | call WriteEax
+        lodsw | Call WriteEax
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -8374,13 +8374,13 @@ Proc WriteRawDataDebugSContantLeafTypeIndex:
     Uses eax, ecx, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
-        call WriteRawDataDebugSContantLeafTypeIndexItem CVLeafTypeVFuncTypeTypeIndex, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeIndexItem CVLeafTypeVFuncTypeTypeIndex, {': W$ ', 0}
         sub edi 2
     pop ebx
 
@@ -8395,34 +8395,34 @@ Proc WriteRawDataDebugSContantLeafTypeIndex:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -8434,8 +8434,8 @@ Proc WriteRawDataDebugSContantLeafTypeMemberItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -8450,55 +8450,55 @@ Proc WriteRawDataDebugSContantLeafTypeMemberItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'OldC' ; from "OldCVType" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Type'; From "Type" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Attr'; From "Attribute" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Offs'; From "Offset" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -8516,25 +8516,25 @@ Proc WriteRawDataDebugSContantLeafTypeMember:
     Local @OldCodeView
     Uses eax, ecx, ebx
 
-    mov D@OldCodeView &FALSE
+    Mov D@OldCodeView &FALSE
     If W$esi-2 = 01405
-        mov D@OldCodeView &TRUE
+        Mov D@OldCodeView &TRUE
     End_If
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
         If D@OldCodeView = &TRUE
             Call WriteRawDataDebugSContantLeafTypeMemberItem CVLeafTypeVFuncTypeMemberOldCVType , {': W$ ', 0}
         End_If
-        call WriteRawDataDebugSContantLeafTypeMemberItem CVLeafTypeVFuncTypeMemberType, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeMemberItem CVLeafTypeVFuncTypeMemberAttribute, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeMemberItem CVLeafTypeVFuncTypeMemberOffset, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeMemberItem CVLeafTypeVFuncTypeMemberNameLenght, {': B$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeMemberItem CVLeafTypeVFuncTypeMemberName, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeMemberItem CVLeafTypeVFuncTypeMemberType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeMemberItem CVLeafTypeVFuncTypeMemberAttribute, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeMemberItem CVLeafTypeVFuncTypeMemberOffset, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeMemberItem CVLeafTypeVFuncTypeMemberNameLenght, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeMemberItem CVLeafTypeVFuncTypeMemberName, {': B$ ', 0}
         sub edi 2
     pop ebx
 
@@ -8549,34 +8549,34 @@ Proc WriteRawDataDebugSContantLeafTypeMember:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -8588,8 +8588,8 @@ Proc WriteRawDataDebugSContantLeafTypeSTMemberItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -8604,45 +8604,45 @@ Proc WriteRawDataDebugSContantLeafTypeSTMemberItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Type'; From "Type" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Attr'; From "Attribute" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -8658,16 +8658,16 @@ Proc WriteRawDataDebugSContantLeafTypeSTMember:
     Uses eax, ecx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
-        call WriteRawDataDebugSContantLeafTypeSTMemberItem CVLeafTypeVFuncTypeStMemberType, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeSTMemberItem CVLeafTypeVFuncTypeStMemberAttribute, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeSTMemberItem CVLeafTypeVFuncTypeStMemberNameLenght, {': B$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeSTMemberItem CVLeafTypeVFuncTypeStMemberName, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeSTMemberItem CVLeafTypeVFuncTypeStMemberType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeSTMemberItem CVLeafTypeVFuncTypeStMemberAttribute, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeSTMemberItem CVLeafTypeVFuncTypeStMemberNameLenght, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeSTMemberItem CVLeafTypeVFuncTypeStMemberName, {': B$ ', 0}
         sub edi 2
     pop ebx
 
@@ -8682,34 +8682,34 @@ Proc WriteRawDataDebugSContantLeafTypeSTMember:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -8721,8 +8721,8 @@ Proc WriteRawDataDebugSContantLeafTypeMethodItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -8737,45 +8737,45 @@ Proc WriteRawDataDebugSContantLeafTypeMethodItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Coun'; From "Count" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'mLis'; From "mList" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -8791,16 +8791,16 @@ Proc WriteRawDataDebugSContantLeafTypeMethod:
     Uses eax, ecx, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
-        call WriteRawDataDebugSContantLeafTypeMethodItem CVLeafTypeVFuncTypeMethodCount, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeMethodItem CVLeafTypeVFuncTypeMethodmList, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeMethodItem CVLeafTypeVFuncTypeMethodNameLenght, {': B$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeMethodItem CVLeafTypeVFuncTypeMethodTypeName, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeMethodItem CVLeafTypeVFuncTypeMethodCount, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeMethodItem CVLeafTypeVFuncTypeMethodmList, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeMethodItem CVLeafTypeVFuncTypeMethodNameLenght, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeMethodItem CVLeafTypeVFuncTypeMethodTypeName, {': B$ ', 0}
         sub edi 2
     pop ebx
 
@@ -8815,34 +8815,34 @@ Proc WriteRawDataDebugSContantLeafTypeMethod:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -8853,8 +8853,8 @@ Proc WriteRawDataDebugSContantLeafTypeNestTypeItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -8869,41 +8869,41 @@ Proc WriteRawDataDebugSContantLeafTypeNestTypeItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Inde'; From "Index" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -8918,15 +8918,15 @@ Proc WriteRawDataDebugSContantLeafTypeNestType:
     Uses eax, ecx, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
-        call WriteRawDataDebugSContantLeafTypeNestTypeItem CVLeafTypeVFuncTypeNestTypeIndex, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeNestTypeItem CVLeafTypeVFuncTypeNestTypeNameLenght, {': B$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeNestTypeItem CVLeafTypeVFuncTypeNestTypeName, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeNestTypeItem CVLeafTypeVFuncTypeNestTypeIndex, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeNestTypeItem CVLeafTypeVFuncTypeNestTypeNameLenght, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeNestTypeItem CVLeafTypeVFuncTypeNestTypeName, {': B$ ', 0}
         sub edi 2
     pop ebx
 
@@ -8941,34 +8941,34 @@ Proc WriteRawDataDebugSContantLeafTypeNestType:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -8979,8 +8979,8 @@ Proc WriteRawDataDebugSContantLeafTypeVFuncTabItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -8995,12 +8995,12 @@ Proc WriteRawDataDebugSContantLeafTypeVFuncTabItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         xor eax eax
-        lodsw | call WriteEax
+        lodsw | Call WriteEax
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -9013,13 +9013,13 @@ Proc WriteRawDataDebugSContantLeafTypeVFuncTab:
     Uses eax, ecx, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
-        call WriteRawDataDebugSContantLeafTypeVFuncTabItem CVLeafTypeVFuncTypeVFuncTabType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeVFuncTabItem CVLeafTypeVFuncTypeVFuncTabType, {': W$ ', 0}
         sub edi 2
     pop ebx
 
@@ -9034,34 +9034,34 @@ Proc WriteRawDataDebugSContantLeafTypeVFuncTab:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -9073,8 +9073,8 @@ Proc WriteRawDataDebugSContantLeafTypeFriendClsItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -9089,12 +9089,12 @@ Proc WriteRawDataDebugSContantLeafTypeFriendClsItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         xor eax eax
-        lodsw | call WriteEax
+        lodsw | Call WriteEax
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -9107,13 +9107,13 @@ Proc WriteRawDataDebugSContantLeafTypeFriendCls:
     Uses eax, ecx, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
-        call WriteRawDataDebugSContantLeafTypeFriendClsItem CVLeafTypeVFuncTypeFriendClsType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeFriendClsItem CVLeafTypeVFuncTypeFriendClsType, {': W$ ', 0}
         sub edi 2
     pop ebx
 
@@ -9128,34 +9128,34 @@ Proc WriteRawDataDebugSContantLeafTypeFriendCls:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -9167,8 +9167,8 @@ Proc WriteRawDataDebugSContantLeafTypeOneMethodItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -9183,48 +9183,48 @@ Proc WriteRawDataDebugSContantLeafTypeOneMethodItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Attr'; From "Attribute" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Type'; From "Type" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'vBas'; From "vBaseOffset" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -9241,17 +9241,17 @@ Proc WriteRawDataDebugSContantLeafTypeOneMethod:
     Uses eax, ecx, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
-        call WriteRawDataDebugSContantLeafTypeOneMethodItem CVLeafTypeVFuncTypeOneMethodattribute, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeOneMethodItem CVLeafTypeVFuncTypeOneMethodType, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeOneMethodItem CVLeafTypeVFuncTypeOneMethodvBaseOffset, {': D$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeOneMethodItem CVLeafTypeVFuncTypeOneMethodNameLenght, {': B$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeOneMethodItem CVLeafTypeVFuncTypeOneMethodName, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeOneMethodItem CVLeafTypeVFuncTypeOneMethodattribute, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeOneMethodItem CVLeafTypeVFuncTypeOneMethodType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeOneMethodItem CVLeafTypeVFuncTypeOneMethodvBaseOffset, {': D$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeOneMethodItem CVLeafTypeVFuncTypeOneMethodNameLenght, {': B$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeOneMethodItem CVLeafTypeVFuncTypeOneMethodName, {': B$ ', 0}
         sub edi 2
     pop ebx
 
@@ -9266,34 +9266,34 @@ Proc WriteRawDataDebugSContantLeafTypeOneMethod:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -9305,8 +9305,8 @@ Proc WriteRawDataDebugSContantLeafTypeVFuncOffsetItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -9321,18 +9321,18 @@ Proc WriteRawDataDebugSContantLeafTypeVFuncOffsetItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
          ..If D$eax = 'Type'; From "Type" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Offs'; From "Offset" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -9346,14 +9346,14 @@ Proc WriteRawDataDebugSContantLeafTypeVFuncOffset:
     Uses eax, ecx, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
-        call WriteRawDataDebugSContantLeafTypeVFuncOffsetItem CVLeafTypeVFuncType, {': W$ ', 0}
-        call WriteRawDataDebugSContantLeafTypeVFuncOffsetItem CVLeafTypeVFuncOffset, {': D$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeVFuncOffsetItem CVLeafTypeVFuncType, {': W$ ', 0}
+        Call WriteRawDataDebugSContantLeafTypeVFuncOffsetItem CVLeafTypeVFuncOffset, {': D$ ', 0}
         sub edi 2
     pop ebx
 
@@ -9368,34 +9368,34 @@ Proc WriteRawDataDebugSContantLeafTypeVFuncOffset:
 
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -9406,14 +9406,14 @@ Proc WriteRawDataDebugSContantLeafTypeComplexNumber:
     Argument @Text, @Size
     Uses eax, ecx
 
-    mov ebx esi
-    mov ecx D@Size
+    Mov ebx esi
+    Mov ecx D@Size
     add ebx ecx
 
     .If esi <> ebx
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -9426,30 +9426,30 @@ Proc WriteRawDataDebugSContantLeafTypeComplexNumber:
 
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
         sub edi 2
         dec edi
-        mov W$edi+1 CRLF | add edi 2
+        Mov W$edi+1 CRLF | add edi 2
         pop ecx
         inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -9460,8 +9460,8 @@ Proc WriteRawDataDebugSContantLeafTypeVarStrItem:
     uses eax, ecx
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -9472,37 +9472,37 @@ Proc WriteRawDataDebugSContantLeafTypeVarStrItem:
         zCopy D@Text2
     pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx W$esi-2
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -9511,8 +9511,8 @@ ______________________________________________
 Proc WriteRawDataDebugSContantLeafTypeVarStr:
     Uses eax, ecx
 
-    call WriteRawDataDebugSContantLeafTypeVarStrItem CVCompileNameLenght, {': W$ ', 0}
-    call WriteRawDataDebugSContantLeafTypeVarStrItem CVCompileName, {': B$ ', 0}
+    Call WriteRawDataDebugSContantLeafTypeVarStrItem CVCompileNameLenght, {': W$ ', 0}
+    Call WriteRawDataDebugSContantLeafTypeVarStrItem CVCompileName, {': B$ ', 0}
     sub edi 2
 
 EndP
@@ -9532,8 +9532,8 @@ Proc WriteRawDataDebugSContantLeafTypeEquate:
         zCopy {' ; Hex Value:  ', 0}
     pop esi
     xor eax eax
-    lodsw | call WriteEax
-    mov W$edi CRLF | add edi 2
+    lodsw | Call WriteEax
+    Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -9547,11 +9547,11 @@ ___________________________________________
 Proc WriteRawDataDebugSContantLeafTypeItem:
     Uses eax, ecx
 
-    mov D$LeafTypeError &TRUE ; In Any case, the default is True, meaning that we have no errors.
+    Mov D$LeafTypeError &TRUE ; In Any case, the default is True, meaning that we have no errors.
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -9573,10 +9573,10 @@ Proc WriteRawDataDebugSContantLeafTypeItem:
     ...Else_If W$esi >= 0F000
 L0:     push esi | zCopy {': W$ ', 0} | pop esi
         xor eax eax
-        lodsw | call WriteEax
+        lodsw | Call WriteEax
         zCopy {' ; No Defined Type', 0}
 
-        mov D$LeafTypeError &FALSE ; Set the error case
+        Mov D$LeafTypeError &FALSE ; Set the error case
 
     ...Else_If B$esi >= 0F0
 
@@ -9621,13 +9621,13 @@ L0:     push esi | zCopy {': W$ ', 0} | pop esi
         pop esi
 
         xor eax eax
-        lodsb | call WriteEax
+        lodsb | Call WriteEax
 
         push esi
             zCopy {' - No Defined Type', 0}
-            mov W$edi CRLF | add edi 2
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov W$edi CRLF | add edi 2
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -9637,10 +9637,10 @@ L0:     push esi | zCopy {': W$ ', 0} | pop esi
         pop esi
 
         xor eax eax
-        lodsb | call WriteEax
+        lodsb | Call WriteEax
         zCopy {' ; No Defined Type', 0}
 
-        mov D$LeafTypeError &FALSE ; Set the error case
+        Mov D$LeafTypeError &FALSE ; Set the error case
 
     ; 2nd We must now identify the known defined Types.
 
@@ -9648,306 +9648,306 @@ L0:     push esi | zCopy {': W$ ', 0} | pop esi
 
         ..If_Or W$esi = &LF_MODIFIER, W$esi = &LF_MODIFIER_CV3
             If W$esi = &LF_MODIFIER
-                call WriteRawDataDebugSContantLeafTypeEquate {'&LF_MODIFIER', 0}
+                Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_MODIFIER', 0}
             Else
-                call WriteRawDataDebugSContantLeafTypeEquate {'&LF_MODIFIER_CV3', 0}
+                Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_MODIFIER_CV3', 0}
             End_If
-            call WriteRawDataDebugSContantLeafTypeModifier
+            Call WriteRawDataDebugSContantLeafTypeModifier
 
         ..Else_If_Or W$esi = &LF_POINTER, W$esi = &LF_POINTER_CV3 ; see sdkutil.lib to we handle the equates for the different Bits (A true hell)
             If W$esi = &LF_POINTER
-                call WriteRawDataDebugSContantLeafTypeEquate {'&LF_POINTER', 0}
+                Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_POINTER', 0}
             Else
-                call WriteRawDataDebugSContantLeafTypeEquate {'&LF_POINTER_CV3', 0}
+                Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_POINTER_CV3', 0}
             End_If
-            call WriteRawDataDebugSContantLeafTypePointer
+            Call WriteRawDataDebugSContantLeafTypePointer
 
         ..Else_If W$esi = &LF_ARRAY
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ARRAY', 0}
-            call WriteRawDataDebugSContantLeafTypeArray
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ARRAY', 0}
+            Call WriteRawDataDebugSContantLeafTypeArray
 
         ..Else_If W$esi = &LF_CLASS
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_CLASS', 0}
-            call WriteRawDataDebugSContantLeafTypeStructure
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_CLASS', 0}
+            Call WriteRawDataDebugSContantLeafTypeStructure
 
         ..Else_If_Or W$esi = &LF_STRUCTURE, W$esi = &LF_STRUCTURE_CV3
             If W$esi = &LF_STRUCTURE
-                call WriteRawDataDebugSContantLeafTypeEquate {'&LF_STRUCTURE', 0}
+                Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_STRUCTURE', 0}
             Else
-                call WriteRawDataDebugSContantLeafTypeEquate {'&LF_STRUCTURE_CV3', 0}
+                Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_STRUCTURE_CV3', 0}
             End_If
-            call WriteRawDataDebugSContantLeafTypeStructure
+            Call WriteRawDataDebugSContantLeafTypeStructure
 
         ..Else_If_Or W$esi = &LF_UNION, W$esi = &LF_UNION_CV3
             If W$esi = &LF_UNION
-                call WriteRawDataDebugSContantLeafTypeEquate {'&LF_UNION', 0}
+                Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_UNION', 0}
             Else
-                call WriteRawDataDebugSContantLeafTypeEquate {'&LF_UNION_CV3', 0}
+                Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_UNION_CV3', 0}
             End_If
-            call WriteRawDataDebugSContantLeafTypeUnion
+            Call WriteRawDataDebugSContantLeafTypeUnion
 
         ..Else_If W$esi = &LF_ENUM
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ENUM', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ENUM', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_PROCEDURE
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_PROCEDURE', 0}
-            call WriteRawDataDebugSContantLeafTypeProcedure
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_PROCEDURE', 0}
+            Call WriteRawDataDebugSContantLeafTypeProcedure
 
         ..Else_If_Or W$esi = &LF_MFUNCTION, W$esi = &LF_MFUNCTION_CV3
             If W$esi = &LF_MFUNCTION
-                call WriteRawDataDebugSContantLeafTypeEquate {'&LF_MFUNCTION', 0}
+                Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_MFUNCTION', 0}
             Else
-                call WriteRawDataDebugSContantLeafTypeEquate {'&LF_MFUNCTION_CV3', 0}
+                Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_MFUNCTION_CV3', 0}
             End_If
-                call WriteRawDataDebugSContantLeafTypeMFunction
+                Call WriteRawDataDebugSContantLeafTypeMFunction
 
         ..Else_If W$esi = &LF_VTSHAPE
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VTSHAPE', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VTSHAPE', 0}
             sub esi 2
             jmp L0>>
             ; Note to Guga. The error in sdkutil is here. Missing this parse
 
         ..Else_If W$esi = &LF_COBOL0
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_COBOL0', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_COBOL0', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_COBOL1
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_COBOL1', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_COBOL1', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_BARRAY
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_BARRAY', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_BARRAY', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_LABEL
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_LABEL', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_LABEL', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_NULL
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_NULL', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_NULL', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_NOTTRAN
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_NOTTRAN', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_NOTTRAN', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_DIMARRAY
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_DIMARRAY', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_DIMARRAY', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_VFTPATH
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VFTPATH', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VFTPATH', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_PRECOMP
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_PRECOMP', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_PRECOMP', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_ENDPRECOMP
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ENDPRECOMP', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ENDPRECOMP', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_OEM
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_OEM', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_OEM', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_RESERVED
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_RESERVED', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_RESERVED', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_SKIP
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_SKIP', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_SKIP', 0}
             jmp L0>>
 
         ..Else_If_Or W$esi = &LF_ARGLIST, W$esi = &LF_ARGLIST_CV3
             If W$esi = &LF_ARGLIST
-                call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ARGLIST', 0}
+                Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ARGLIST', 0}
             Else
-                call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ARGLIST_CV3', 0}
+                Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ARGLIST_CV3', 0}
             End_If
-            call WriteRawDataDebugSContantLeafTypeArgList
+            Call WriteRawDataDebugSContantLeafTypeArgList
 
         ..Else_If W$esi = &LF_DEFARG
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_DEFARG', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_DEFARG', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_LIST
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_LIST', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_LIST', 0}
             jmp L0>>
 
         ..Else_If_Or W$esi = &LF_FIELDLIST;, W$esi = 01203
         ;WriteRawDataDebugSRegister
             If W$esi = &LF_FIELDLIST
-                call WriteRawDataDebugSContantLeafTypeEquate {'&LF_FIELDLIST', 0}
+                Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_FIELDLIST', 0}
             Else
-                ;call WriteRawDataDebugSContantLeafTypeEquate {'&LF_FIELDLIST_CV3', 0}
+                ;Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_FIELDLIST_CV3', 0}
             End_If
-            call WriteRawDataDebugSContantLeafTypeFieldList
+            Call WriteRawDataDebugSContantLeafTypeFieldList
 
         ..Else_If W$esi = &LF_DERIVED
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_DERIVED', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_DERIVED', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_BITFIELD
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_BITFIELD', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_BITFIELD', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_METHODLIST
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_METHODLIST', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_METHODLIST', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_DIMCONU
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_DIMCONU', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_DIMCONU', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_DIMCONLU
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_DIMCONLU', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_DIMCONLU', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_DIMVARU
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_DIMVARU', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_DIMVARU', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_DIMVARLU
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_DIMVARLU', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_DIMVARLU', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_REFSYM
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_REFSYM', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_REFSYM', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_BCLASS
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_BCLASS', 0}
-            call WriteRawDataDebugSContantLeafTypeBClass &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_BCLASS', 0}
+            Call WriteRawDataDebugSContantLeafTypeBClass &FALSE
 
         ..Else_If W$esi = &LF_VBCLASS
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VBCLASS', 0}
-            call WriteRawDataDebugSContantLeafTypeVBClass &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VBCLASS', 0}
+            Call WriteRawDataDebugSContantLeafTypeVBClass &FALSE
 
         ..Else_If W$esi = &LF_IVBCLASS
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_IVBCLASS', 0}
-            call WriteRawDataDebugSContantLeafTypeIVBClass &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_IVBCLASS', 0}
+            Call WriteRawDataDebugSContantLeafTypeIVBClass &FALSE
 
         ..Else_If W$esi = &LF_ENUMERATE
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ENUMERATE', 0}
-            call WriteRawDataDebugSContantLeafTypeEnumerate &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ENUMERATE', 0}
+            Call WriteRawDataDebugSContantLeafTypeEnumerate &FALSE
 
         ..Else_If W$esi = &LF_FRIENDFCN
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_FRIENDFCN', 0}
-            call WriteRawDataDebugSContantLeafTypeFriendFcn &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_FRIENDFCN', 0}
+            Call WriteRawDataDebugSContantLeafTypeFriendFcn &FALSE
 
         ..Else_If W$esi = &LF_INDEX
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_INDEX', 0}
-            call WriteRawDataDebugSContantLeafTypeIndex &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_INDEX', 0}
+            Call WriteRawDataDebugSContantLeafTypeIndex &FALSE
 
         ..Else_If W$esi = &LF_MEMBER
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_MEMBER', 0}
-            call WriteRawDataDebugSContantLeafTypeMember &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_MEMBER', 0}
+            Call WriteRawDataDebugSContantLeafTypeMember &FALSE
 
         ..Else_If W$esi = &LF_STMEMBER
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_STMEMBER', 0}
-            call WriteRawDataDebugSContantLeafTypeSTMember &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_STMEMBER', 0}
+            Call WriteRawDataDebugSContantLeafTypeSTMember &FALSE
 
         ..Else_If W$esi = &LF_METHOD
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_METHOD', 0}
-            call WriteRawDataDebugSContantLeafTypeMethod &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_METHOD', 0}
+            Call WriteRawDataDebugSContantLeafTypeMethod &FALSE
 
         ..Else_If W$esi = &LF_NESTTYPE
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_NESTTYPE', 0}
-            call WriteRawDataDebugSContantLeafTypeNestType &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_NESTTYPE', 0}
+            Call WriteRawDataDebugSContantLeafTypeNestType &FALSE
 
         ..Else_If W$esi = &LF_VFUNCTAB
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VFUNCTAB', 0}
-            call WriteRawDataDebugSContantLeafTypeVFuncTab &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VFUNCTAB', 0}
+            Call WriteRawDataDebugSContantLeafTypeVFuncTab &FALSE
 
         ..Else_If W$esi = &LF_FRIENDCLS
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_FRIENDCLS', 0}
-            call WriteRawDataDebugSContantLeafTypeFriendCls &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_FRIENDCLS', 0}
+            Call WriteRawDataDebugSContantLeafTypeFriendCls &FALSE
 
         ..Else_If W$esi = &LF_ONEMETHOD
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ONEMETHOD', 0}
-            call WriteRawDataDebugSContantLeafTypeOneMethod &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ONEMETHOD', 0}
+            Call WriteRawDataDebugSContantLeafTypeOneMethod &FALSE
 
         ..Else_If W$esi = &LF_VFUNCOFF
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VFUNCOFF', 0}
-            call WriteRawDataDebugSContantLeafTypeVFuncOffset &FALSE
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VFUNCOFF', 0}
+            Call WriteRawDataDebugSContantLeafTypeVFuncOffset &FALSE
 
         ..Else_If W$esi = &LF_NUMERIC
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_NUMERIC', 0}
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_NUMERIC', 0}
             jmp L0>>
 
         ..Else_If W$esi = &LF_CHAR
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_CHAR', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Char', 0}, 1
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_CHAR', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Char', 0}, 1
 
         ..Else_If W$esi = &LF_SHORT
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_SHORT', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Short', 0}, 2
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_SHORT', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Short', 0}, 2
 
         ..Else_If W$esi = &LF_USHORT
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_USHORT', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'UShort', 0}, 2
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_USHORT', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'UShort', 0}, 2
 
         ..Else_If W$esi = &LF_LONG
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_LONG', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Long', 0}, 4
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_LONG', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Long', 0}, 4
 
         ..Else_If W$esi = &LF_ULONG
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ULONG', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'ULong', 0}, 4
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_ULONG', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'ULong', 0}, 4
 
         ..Else_If W$esi = &LF_REAL32
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_REAL32', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Float32Bit', 0}, 4
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_REAL32', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Float32Bit', 0}, 4
 
         ..Else_If W$esi = &LF_REAL64
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_REAL64', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Float64Bit', 0}, 8
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_REAL64', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Float64Bit', 0}, 8
 
         ..Else_If W$esi = &LF_REAL80
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_REAL80', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Float80Bit', 0}, 10
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_REAL80', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Float80Bit', 0}, 10
 
         ..Else_If W$esi = &LF_REAL128
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_REAL128', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Float128Bit', 0}, 16
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_REAL128', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Float128Bit', 0}, 16
 
         ..Else_If W$esi = &LF_QUADWORD
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_QUADWORD', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Quadword', 0}, 8
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_QUADWORD', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Quadword', 0}, 8
 
         ..Else_If W$esi = &LF_UQUADWORD
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_UQUADWORD', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'UQuadword', 0}, 8
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_UQUADWORD', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'UQuadword', 0}, 8
 
         ..Else_If W$esi = &LF_REAL48
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_REAL48', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Real48Bit', 0}, 6
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_REAL48', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Real48Bit', 0}, 6
 
         ..Else_If W$esi = &LF_COMPLEX32
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_COMPLEX32', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex32BitReal', 0}, 4
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex32BitImaginary', 0}, 4
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_COMPLEX32', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex32BitReal', 0}, 4
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex32BitImaginary', 0}, 4
 
         ..Else_If W$esi = &LF_COMPLEX64
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_COMPLEX64', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex64BitReal', 0}, 8
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex64BitImaginary', 0}, 8
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_COMPLEX64', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex64BitReal', 0}, 8
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex64BitImaginary', 0}, 8
 
         ..Else_If W$esi = &LF_COMPLEX80
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_COMPLEX80', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex80BitReal', 0}, 10
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex80BitImaginary', 0}, 10
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_COMPLEX80', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex80BitReal', 0}, 10
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex80BitImaginary', 0}, 10
 
         ..Else_If W$esi = &LF_COMPLEX128
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_COMPLEX128', 0}
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex128BitReal', 0}, 16
-            call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex128BitImaginary', 0}, 16
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_COMPLEX128', 0}
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex128BitReal', 0}, 16
+            Call WriteRawDataDebugSContantLeafTypeComplexNumber {'Complex128BitImaginary', 0}, 16
 
         ..Else_If W$esi = &LF_VARSTRING
-            call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VARSTRING', 0}
-            call WriteRawDataDebugSContantLeafTypeVarStr
+            Call WriteRawDataDebugSContantLeafTypeEquate {'&LF_VARSTRING', 0}
+            Call WriteRawDataDebugSContantLeafTypeVarStr
 
         ..Else
 L0:
@@ -9961,16 +9961,16 @@ L0:
                 zCopy {'.TypeUnknown: W$ ', 0}
             pop esi
             xor eax eax
-            lodsw | call WriteEax
-            mov W$edi CRLF | add edi 2
+            lodsw | Call WriteEax
+            Mov W$edi CRLF | add edi 2
             pop eax
             pop ecx
             sub D$SizeAdd 2
 
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -9980,14 +9980,14 @@ L0:
         pop esi
 
 
-            call WriteRawDataDebugSContantLeafTypeUnkown
-            mov D$LeafTypeError &FALSE ; Set the error case
+            Call WriteRawDataDebugSContantLeafTypeUnkown
+            Mov D$LeafTypeError &FALSE ; Set the error case
 
         ..End_If
 
     ...End_If
 
-    mov W$edi CRLF | add edi 2
+    Mov W$edi CRLF | add edi 2
 
 EndP
 __________________________________________________________________
@@ -9997,16 +9997,16 @@ Proc WriteRawDataDebugSContantLeafTypeUnkown:
 
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
 ;    sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 ;;
     push ebx
 
                     push esi
-                        mov D$edi '    ' | add edi 4
-                        call WriteObjIndice
+                        Mov D$edi '    ' | add edi 4
+                        Call WriteObjIndice
                         zCopy {"Sec", 0}
                         zCopy SectionHeaderNumber
                         zCopy {".Index", 0}
@@ -10030,11 +10030,11 @@ Proc WriteRawDataDebugSContantLeafTypeUnkown:
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
 ;;
-        mov W$edi CRLF | add edi 2
-        ;call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        ;Call WriteCVdataTitle
                     push esi
-                        mov D$edi '    ' | add edi 4
-                        call WriteObjIndice
+                        Mov D$edi '    ' | add edi 4
+                        Call WriteObjIndice
                         zCopy {"Sec", 0}
                         zCopy SectionHeaderNumber
                         zCopy {".Index", 0}
@@ -10048,30 +10048,30 @@ Proc WriteRawDataDebugSContantLeafTypeUnkown:
 
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -10082,8 +10082,8 @@ Proc WriteRawDataDebugSContantItem:
     uses eax, ecx, edx
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -10094,57 +10094,57 @@ Proc WriteRawDataDebugSContantItem:
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Type' ; from "Type" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'OldC' ; from "OldCVType" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             If D@UseLen = &TRUE ; this happens only in S_CONSTANT_CV2.
                 push eax
-                    call StrLenProc esi
-                    mov ecx eax
+                    Call StrLenProc esi
+                    Mov ecx eax
                     inc ecx ; The size is increased to we alow including the zero byte
                 pop eax
             Else
                 movzx ecx B$esi-1
             End_If
 
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 _______________________________________
@@ -10189,30 +10189,30 @@ Proc WriteRawDataDebugSContant:
     Uses ecx, eax
 
 
-    mov D@OldCodeView &FALSE
+    Mov D@OldCodeView &FALSE
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
 
     If W$esi-2 = &S_CONSTANT_CV3
-        call WriteRawDataDebugSContantItem CVConstantOldCVType, {': W$ ', 0}, &FALSE
+        Call WriteRawDataDebugSContantItem CVConstantOldCVType, {': W$ ', 0}, &FALSE
     Else_If W$esi-2 = &S_CONSTANT_CV2
-        call WriteRawDataDebugSContantItem CVConstantOldCVType, {': W$ ', 0}, &FALSE
-        mov D@OldCodeView &TRUE
+        Call WriteRawDataDebugSContantItem CVConstantOldCVType, {': W$ ', 0}, &FALSE
+        Mov D@OldCodeView &TRUE
     End_If
 
-    call WriteRawDataDebugSContantItem CVConstantType, {': W$ ', 0}, &FALSE
+    Call WriteRawDataDebugSContantItem CVConstantType, {': W$ ', 0}, &FALSE
 
     .If W$esi-2 = &T_NOTYPE
         push ecx
         push eax
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -10221,22 +10221,22 @@ Proc WriteRawDataDebugSContant:
             zCopy {'Constant.EnumerationValue: W$ ', 0}
         pop esi
         xor eax eax
-        lodsw | call WriteEax
+        lodsw | Call WriteEax
 
         push esi | zCopy {' ; This symbol is an enumeration constant type.', 0} | pop esi
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
         pop eax
         pop ecx
     .Else
-        call WriteRawDataDebugSContantLeafTypeItem
+        Call WriteRawDataDebugSContantLeafTypeItem
     .End_If
 
     .If D$LeafTypeError <> &FALSE ; No Errors. Do next Line. Jmp otherwise
         If D@OldCodeView = &FALSE
-            call WriteRawDataDebugSContantItem CVCompileNameLenght, {': B$ ', 0}, &FALSE
-            call WriteRawDataDebugSContantItem CVCompileName, {': B$ ', 0}, &FALSE
+            Call WriteRawDataDebugSContantItem CVCompileNameLenght, {': B$ ', 0}, &FALSE
+            Call WriteRawDataDebugSContantItem CVCompileName, {': B$ ', 0}, &FALSE
         Else
-            call WriteRawDataDebugSContantItem CVCompileName, {': B$ ', 0}, &TRUE
+            Call WriteRawDataDebugSContantItem CVCompileName, {': B$ ', 0}, &TRUE
         End_If
     .End_If
 
@@ -10246,34 +10246,34 @@ Proc WriteRawDataDebugSContant:
     ; Is the end of this structure ends on the proper place ?
 
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -10289,11 +10289,11 @@ Proc WriteRawDataDebugSUDT:
     Local @OldCodeView
     Uses ecx
 
-    mov D@OldCodeView 0
+    Mov D@OldCodeView 0
     If W$esi-2 = &S_UDT_CV3
-        mov D@OldCodeView 1
+        Mov D@OldCodeView 1
     Else_If W$esi-2 = &S_UDT_CV2
-        mov D@OldCodeView 2
+        Mov D@OldCodeView 2
     End_If
 
     If D@OldCodeView <> 0
@@ -10316,8 +10316,8 @@ Proc WriteRawDataDebugSUDTItem:
     uses eax, ecx
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -10328,56 +10328,56 @@ Proc WriteRawDataDebugSUDTItem:
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'OldC'; From "OldCVType" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Type'; From "Type" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             If D@UseLen = &TRUE ; this happens only in S_CONSTANT_CV2.
                 push eax
-                    call StrLenProc esi
-                    mov ecx eax
+                    Call StrLenProc esi
+                    Mov ecx eax
                     inc ecx ; The size is increased to we alow including the zero byte
                 pop eax
             Else
                 movzx ecx B$esi-1
             End_If
 
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 __________________________________________________________________
@@ -10420,7 +10420,7 @@ Proc WriteCVGlobalProcFlagEquates:
     xor eax eax | lodsb
    ; We must clear Bits 4 to 7 because they are not used
     btr eax 4 | btr eax 5 | btr eax 6 | btr eax 7
-    mov ebx eax
+    Mov ebx eax
 
     push ebx
     push eax
@@ -10487,8 +10487,8 @@ Proc WriteRawDataDebugSGlobalProcItem:
     uses eax, ecx
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -10499,84 +10499,84 @@ Proc WriteRawDataDebugSGlobalProcItem:
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Ppar' ; from "Pparent" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..Else_If D$eax = 'Pend'; From "Pend" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..Else_If D$eax = 'Pnex'; From "Pnext" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..Else_If D$eax+2 = 'ocLe'; From "ProcLength" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..Else_If D$eax+4 = 'gSta'; From "DebugStart" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..Else_If D$eax+4 = 'gEnd'; From "DebugEnd" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..Else_If D$eax = 'OldC'; From "OldCVType" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Offs'; From "Offset" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..Else_If D$eax = 'Segm'; From "Segment" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+2 = 'octy'; From "Proctype" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
             .If W$esi-2 >= &CV_FIRST_NONPRIM
                 push esi | ZCopy {"; This is a Non-Primitive Type. The value is: ", 0} | pop esi
                 movzx eax W$esi-2
                 sub eax &CV_FIRST_NONPRIM
-                call WriteEax
+                Call WriteEax
             .End_If
 
         ..Else_If D$eax = 'Flag'; From "Flags" string
-            call WriteCVGlobalProcFlagEquates
+            Call WriteCVGlobalProcFlagEquates
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
                 ;mov B$edi "'" | inc edi
-                mov B$edi '"' | inc edi
+                Mov B$edi '"' | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
 L1:             ;mov B$edi "'" | inc edi
-                mov B$edi '"' | inc edi
+                Mov B$edi '"' | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -10602,7 +10602,7 @@ Proc WriteRawDataDebugSGlobalProc:
     Local @OldCodeView
     Uses ecx
 
-    mov D@OldCodeView &FALSE
+    Mov D@OldCodeView &FALSE
 
     If W$esi-2 = &S_LPROC32
         move D$CVGlobalProcLabel {'LocalProcedure.', 0}
@@ -10611,7 +10611,7 @@ Proc WriteRawDataDebugSGlobalProc:
     End_If
 
     If W$esi-2 = &S_GPROC32_CV3
-        mov D@OldCodeView &TRUE
+        Mov D@OldCodeView &TRUE
     End_If
 
     Call WriteRawDataDebugSGlobalProcItem CVGlobalProcPparent , {': D$ ', 0}
@@ -10640,9 +10640,9 @@ Proc WriteRawDataDebugSObjectName:
 ;    Uses ecx
     Uses ecx, eax, ebx
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
@@ -10650,8 +10650,8 @@ Proc WriteRawDataDebugSObjectName:
 
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -10660,12 +10660,12 @@ Proc WriteRawDataDebugSObjectName:
         zCopy {'ObjName.Signature: D$ ', 0}
     pop esi
 
-        lodsd | call WriteEax
-        mov W$edi CRLF | add edi 2
+        lodsd | Call WriteEax
+        Mov W$edi CRLF | add edi 2
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -10675,13 +10675,13 @@ Proc WriteRawDataDebugSObjectName:
     pop esi
 
         xor eax eax
-        lodsb | call WriteEax
+        lodsb | Call WriteEax
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {".Index", 0}
@@ -10692,59 +10692,59 @@ Proc WriteRawDataDebugSObjectName:
 
         ; ecx points to the size of the Name
         movzx ecx B$esi-1
-        mov edx esi | add edx ecx
+        Mov edx esi | add edx ecx
 
         .If B$esi = 0
-            mov B$edi '0' | inc edi | inc esi
+            Mov B$edi '0' | inc edi | inc esi
         .Else
 
-        mov B$edi "'" | inc edi
+        Mov B$edi "'" | inc edi
 L0:     lodsb
             If al = 0
                 dec esi | jmp L1>
             End_If
         stosb | On esi < edx, jmp L0<
-L1:     mov B$edi "'" | inc edi
+L1:     Mov B$edi "'" | inc edi
 
         .End_If
 
-        While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+        While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
     pop ebx
 
     ; Is the end of this structure ends on the proper place ?
 
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 
@@ -10772,7 +10772,7 @@ Proc WriteRawDataDebugSThunkStart1632:
     Local @OrdinalValue
     Uses ecx, eax
 
-    mov D@OrdinalValue 0
+    Mov D@OrdinalValue 0
 
     Call WriteRawDataDebugSThunkStart1632Item CVThunkStart1632Pparent , {': D$ ', 0}
     Call WriteRawDataDebugSThunkStart1632Item CVThunkStart1632Pend , {': D$ ', 0}
@@ -10781,22 +10781,22 @@ Proc WriteRawDataDebugSThunkStart1632:
     Call WriteRawDataDebugSThunkStart1632Item CVThunkStart1632Segment , {': W$ ', 0}
     Call WriteRawDataDebugSThunkStart1632Item CVThunkStart1632ThunkLength , {': W$ ', 0}
     movzx eax B$esi
-    mov D@OrdinalValue eax
+    Mov D@OrdinalValue eax
     Call WriteRawDataDebugSThunkStart1632Item CVThunkStart1632Ordinal , {': B$ ', 0}
     Call WriteRawDataDebugSThunkStart1632Item CVThunkStart1632Namelenght , {': B$ ', 0}
     Call WriteRawDataDebugSThunkStart1632Item CVThunkStart1632Name , {': B$ ', 0}
 
     ; Below are some members that i have no files to check, but accordying to the documentation, it seems correct.
     .If D@OrdinalValue = &CV4_THUNK32_ADJUSTOR
-        push edi | push esi | call 'USER32.MessageBoxA' 0, {"CV4 - S_THUNK32 / Variant. Please, send this file to us to we check if the CV4 structure is correct", 0}, {"Attention !!!!", 0}, &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL | pop esi | pop edi
+        push edi | push esi | Call 'USER32.MessageBoxA' 0, {"CV4 - S_THUNK32 / Variant. Please, send this file to us to we check if the CV4 structure is correct", 0}, {"Attention !!!!", 0}, &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL | pop esi | pop edi
         Call WriteRawDataDebugSThunkStart1632VariantItem CVThunkStart1632VariantAdjustorDelta, {': W$ ', 0}
         Call WriteRawDataDebugSThunkStart1632VariantItem CVThunkStart1632VariantAdjustorTargetFunctionNameLen, {': B$ ', 0}
         Call WriteRawDataDebugSThunkStart1632VariantItem CVThunkStart1632VariantAdjustorTargetFunctionName, {': B$ ', 0}
     .Else_If D@OrdinalValue = &CV4_THUNK32_VCALL
-        push edi | push esi | call 'USER32.MessageBoxA' 0, {"CV4 - S_THUNK32 / Variant. Please, send this file to us to we check if the CV4 structure is correct", 0}, {"Attention !!!!", 0}, &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL | pop esi | pop edi
+        push edi | push esi | Call 'USER32.MessageBoxA' 0, {"CV4 - S_THUNK32 / Variant. Please, send this file to us to we check if the CV4 structure is correct", 0}, {"Attention !!!!", 0}, &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL | pop esi | pop edi
         Call WriteRawDataDebugSThunkStart1632VariantItem CVThunkStart1632VariantVCallVTableDisplacement, {': W$ ', 0}
     .Else_If D@OrdinalValue = &CV4_THUNK32_PCODE
-        push edi | push esi | call 'USER32.MessageBoxA' 0, {"CV4 - S_THUNK32 / Variant. Please, send this file to us to we check if the CV4 structure is correct", 0}, {"Attention !!!!", 0}, &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL | pop esi | pop edi
+        push edi | push esi | Call 'USER32.MessageBoxA' 0, {"CV4 - S_THUNK32 / Variant. Please, send this file to us to we check if the CV4 structure is correct", 0}, {"Attention !!!!", 0}, &MB_OK__&MB_ICONWARNING__&MB_SYSTEMMODAL | pop esi | pop edi
         Call WriteRawDataDebugSThunkStart1632VariantItem CVThunkStart1632VariantPCodeSegment, {': W$ ', 0}
         Call WriteRawDataDebugSThunkStart1632VariantItem CVThunkStart1632VariantPCodeOffset, {': D$ ', 0}
     .End_If
@@ -10809,8 +10809,8 @@ Proc WriteRawDataDebugSThunkStart1632Item:
     uses eax, ecx
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -10821,62 +10821,62 @@ Proc WriteRawDataDebugSThunkStart1632Item:
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Ppar' ; from "Pparent" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..Else_If D$eax = 'Pend'; From "Pend" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..Else_If D$eax = 'Pnex'; From "Pnext" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..Else_If D$eax = 'Offs'; From "Offset" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..Else_If D$eax = 'Segm'; From "Segment" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Thun'; From "ThunkLength" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Ordi'; From "Ordinal" string
-            call WriteCVThunkStart1632OrdinalEquates
+            Call WriteCVThunkStart1632OrdinalEquates
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -10887,8 +10887,8 @@ Proc WriteRawDataDebugSThunkStart1632VariantItem:
     uses eax, ecx
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -10899,53 +10899,53 @@ Proc WriteRawDataDebugSThunkStart1632VariantItem:
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
 
         ..If D$eax+16 = 'Delt' ; from "VariantAdjustor.Delta" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+34 = 'Leng'; From "VariantAdjustor.TargetFunctionNameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax+30 = 'Name'; From "VariantAdjustor.TargetFunctionName" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..Else_If D$eax+13 = 'VTab'; From "VariantVCall.VTableDisplacement" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+13 = 'Segm'; From "VariantPCode.Segment" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+13 = 'Offs'; From "VariantPCode.Offset" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
          ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -11759,7 +11759,7 @@ Proc WriteCVBPRel32OffsetComment:
     Arguments @dwValue
     Uses esi, eax, ebx, edx, ecx
 
-    mov eax D@dwValue
+    Mov eax D@dwValue
 
     If eax = 0
         zCopy {" ; This symbol cannot be evaluated because its location is unknown.", 0}
@@ -11769,17 +11769,17 @@ Proc WriteCVBPRel32OffsetComment:
         push eax
             zCopy {" ; This is a Local variable: ebp-", 0}
             neg eax
-            call WriteEax
+            Call WriteEax
         pop eax
             zCopy {" , ebp+", 0}
-            call WriteEax
+            Call WriteEax
             ExitP
 @sign:
 
         ..If eax < 8
             zCopy {" ; Incorrect Symbol Allocation. This can be a Data Pointer, and not a Local Var or a Argument for this function.", 0}
         ..Else
-            mov ecx eax
+            Mov ecx eax
             sub eax 8
 
             ..If eax = 0
@@ -11787,7 +11787,7 @@ Proc WriteCVBPRel32OffsetComment:
             ..Else
 
                 ; divide eax by 4 to calculate how many parameters we have, and if it is a multiple of 4 or not.
-                mov edx 0, ebx 4
+                Mov edx 0, ebx 4
                 div ebx
 
                 If edx = 0
@@ -11796,7 +11796,7 @@ Proc WriteCVBPRel32OffsetComment:
 
                     push eax
                         zCopy {" ; This is a Parameter: ebp+", 0}
-                        mov eax ecx | call WriteEax
+                        Mov eax ecx | Call WriteEax
                     pop eax
 
                     zCopy {". Argument = ", 0}
@@ -11805,10 +11805,10 @@ Proc WriteCVBPRel32OffsetComment:
                     push edi
                     push eax
                         ; Calculate and Display Size (Convert Hexa do Decimal String)
-                        mov D$membersize2 eax
-                        mov esi membersize2, ecx 4
-                        call toUDword
-                        mov esi edi, edi DecimalBuffer
+                        Mov D$membersize2 eax
+                        Mov esi membersize2, ecx 4
+                        Call toUDword
+                        Mov esi edi, edi DecimalBuffer
                         Do | movsb | LoopUntil B$esi-1 = 0
                     pop eax
                     pop edi
@@ -11833,8 +11833,8 @@ Proc WriteRawDataDebugSBPRel32Item:
     uses eax, ecx
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -11845,51 +11845,51 @@ Proc WriteRawDataDebugSBPRel32Item:
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
         ..If D$eax = 'Offs' ; from "Offset" string
-            lodsd | call WriteEax
-            call WriteCVBPRel32OffsetComment D$esi-4
+            lodsd | Call WriteEax
+            Call WriteCVBPRel32OffsetComment D$esi-4
 
         ..Else_If D$eax = 'OldC'; From "OldCVType" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Type'; From "Type" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -11906,9 +11906,9 @@ Proc WriteRawDataDebugSBPRel32:
     Local @OldCodeView
     Uses ecx
 
-    mov D@OldCodeView &FALSE
+    Mov D@OldCodeView &FALSE
     If W$esi-2 = &S_BPREL32_CV3
-        mov D@OldCodeView &TRUE
+        Mov D@OldCodeView &TRUE
     End_If
 
 
@@ -11939,9 +11939,9 @@ Proc WriteRawDataDebugSLData32:
     Uses ecx, eax, ebx
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 
     push ebx
@@ -11955,7 +11955,7 @@ Proc WriteRawDataDebugSLData32:
     End_If
 
     If W$esi-2 = &S_GDATA_CV3
-        mov D@OldCodeView &TRUE
+        Mov D@OldCodeView &TRUE
     End_If
 
     If D@OldCodeView = &TRUE
@@ -11973,34 +11973,34 @@ Proc WriteRawDataDebugSLData32:
     ; Is the end of this structure ends on the proper place ?
 
     .If esi <> ebx
-        mov W$edi CRLF | add edi 2
-        call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        Call WriteCVdataTitle
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 
@@ -12013,8 +12013,8 @@ Proc WriteRawDataDebugSLData32Item:
     uses eax, ecx
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {".Index", 0}
@@ -12025,54 +12025,54 @@ Proc WriteRawDataDebugSLData32Item:
             zCopy D@Text2
         pop esi
 
-        mov eax D@Text1
+        Mov eax D@Text1
 
 
         ..If D$eax = 'OldC'; From "OldCVType" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Offs'; From "Offset" string
-            lodsd | call WriteEax
+            lodsd | Call WriteEax
 
         ..Else_If D$eax = 'Segm'; From "Segment" string
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax = 'Type'; From "Type" string
-            call WriteCVBPRel32TypeEquates
+            Call WriteCVBPRel32TypeEquates
             xor eax eax
-            lodsw | call WriteEax
+            lodsw | Call WriteEax
 
         ..Else_If D$eax+4 = 'Leng'; From "NameLenght" string
             xor eax eax
-            lodsb | call WriteEax
+            lodsb | Call WriteEax
 
         ..Else_If D$eax = 'Name'; From "Name" string
 
             ; ecx points to the size of the Name
             movzx ecx B$esi-1
-            mov edx esi | add edx ecx
+            Mov edx esi | add edx ecx
 
             .If B$esi = 0
-                mov B$edi '0' | inc edi | inc esi
+                Mov B$edi '0' | inc edi | inc esi
             .Else
 
-                mov B$edi "'" | inc edi
+                Mov B$edi "'" | inc edi
 L0:             lodsb
                 If al = 0
                     dec esi | jmp L1>
                 End_If
                 stosb | On esi < edx, jmp L0<
-L1:             mov B$edi "'" | inc edi
+L1:             Mov B$edi "'" | inc edi
 
             .End_If
 
-            While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+            While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
         ..End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 EndP
 
@@ -12094,9 +12094,9 @@ Proc WriteRawDataDebugS:
     Local @CVSize, @RawDataEnd
     Uses ecx, esi, eax
 
-    mov ecx esi
+    Mov ecx esi
     add ecx D$CoffSectionSize
-    mov D@RawDataEnd ecx
+    Mov D@RawDataEnd ecx
 
     ; If Signature is not 1. Do a byte chain. Signature = 1 is Code or CodeView 4 ?. Other values are data or CodeView older versions ?
 
@@ -12109,38 +12109,38 @@ Proc WriteRawDataDebugS:
     .Else_If D$esi = 4
         sub edi 4
         push esi | ZCopy {D$ CRLF2, B$ '; This Codeview format is unespecified. It is common for Dot NET files. ', D$ CRLF2, B$ '    B$: ', 0} | pop esi
-        mov ecx D$CoffSectionSize
-        call WriteRawDataDataSection
+        Mov ecx D$CoffSectionSize
+        Call WriteRawDataDataSection
         ExitP
     .Else    ;   Sometimes they do not contain signatures like in: clusapi2.obj
         move D$CVLabel CV2Label
-        mov D$SizeAdd 0
-        call InitSectionDebugNumber
+        Mov D$SizeAdd 0
+        Call InitSectionDebugNumber
         move D@CVSize D$CoffSectionSize
         sub edi 4
         add D@CVSize esi ; CVSize points to the beginning of the Debug Raw Data
-        mov W$edi CRLF | add edi 2
-        mov D$edi '    ' | add edi 4
+        Mov W$edi CRLF | add edi 2
+        Mov D$edi '    ' | add edi 4
         push esi | zCopy {'; This Debug Section have no signature.', 0} | pop esi
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
         jmp L1>>
 
     .End_If
 
 L0:
 
-    mov D$SizeAdd 0
+    Mov D$SizeAdd 0
 
-    call InitSectionDebugNumber
+    Call InitSectionDebugNumber
 
     move D@CVSize D$CoffSectionSize
     sub edi 4
 
-    mov D$edi CRLF2 | add edi 4
+    Mov D$edi CRLF2 | add edi 4
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy D$CVLabel
@@ -12150,20 +12150,20 @@ L0:
 
         add D@CVSize esi ; CVSize points to the beginning of the Debug Raw Data
 
-        lodsd | call WriteEax
+        lodsd | Call WriteEax
 
         If D$esi-4 = 1
             push esi | ZCopy {" ; The compiler that made this Object File, emitted OMF (Object Module Format) types on it's symbols and Types below", 0} | pop esi
         End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
    L1:
 
     .While esi <> D@RawDataEnd
 
         movzx eax W$esi
-        mov D$SizeAdd eax
+        Mov D$SizeAdd eax
 
         ...If_Or W$esi = 0, W$esi+2 = 0 ; If lenght = 0 , or index = 0 do next line
             add esi 2 ; only increment esi by 2
@@ -12173,177 +12173,177 @@ L0:
                 push esi | ZCopy {D$ CRLF2, B$ '; ---------------------- Procedure Start  ---------------------- ', W$ CRLF, 0} | pop esi
             .End_If
 
-            call WriteRawDataDebugSItem CVDataLenght, {': W$ ', 0}
-            call WriteRawDataDebugSItem CVDataIndex, {': W$ ', 0}
+            Call WriteRawDataDebugSItem CVDataLenght, {': W$ ', 0}
+            Call WriteRawDataDebugSItem CVDataIndex, {': W$ ', 0}
 
             ..If_Or W$esi-2 = &S_COMPILE, W$esi-2 = &S_COMPILE_CV3, W$esi-2 = &S_COMPILE_CV2
-                call WriteRawDataDebugSCompile
+                Call WriteRawDataDebugSCompile
 
             ..Else_If W$esi-2 = &S_MSTOOL_CV2 ; found in acos.obj This is a variation of S_COMPILE found in older versions of codeview
-                call WriteRawDataDebugSMsTool
+                Call WriteRawDataDebugSMsTool
 
             ..Else_If_Or W$esi-2 = &S_REGISTER, W$esi-2 = &S_REGISTER_CV3; Register variable
-                call WriteRawDataDebugSRegister
+                Call WriteRawDataDebugSRegister
 
             ..Else_If_Or W$esi-2 = &S_CONSTANT, W$esi-2 = &S_CONSTANT_CV3, W$esi-2 = &S_CONSTANT_CV2 ; Constant symbol (frmMainNET.obj)
-                call WriteRawDataDebugSContant
+                Call WriteRawDataDebugSContant
 
             ..Else_If_Or W$esi-2 = &S_UDT, W$esi-2 = &S_UDT_CV3, W$esi-2 = &S_UDT_CV2; User-defined Type (frmMainNET.obj)
-                call WriteRawDataDebugSUDT
+                Call WriteRawDataDebugSUDT
 
             ..Else_If W$esi-2 = &S_SSEARCH ; Start search
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_END ; End block, procedure, with, or thunk
                 push esi | ZCopy {W$ CRLF, B$ '; ---------------------- Procedure End  ---------------------- ', D$ CRLF2, 0} | pop esi
 
             ..Else_If W$esi-2 = &S_SKIP ; Skip - Reserve symbol space
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_CVRESERVE ; Reserved for internal use by the Microsoft debugger
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_OBJNAME ; Specify name of object file
-                call WriteRawDataDebugSObjectName
+                Call WriteRawDataDebugSObjectName
 
             ..Else_If W$esi-2 = &S_ENDARG ; Specify end of arguments in function symbols
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_COBOLUDT ; Microfocus COBOL user-defined type
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_MANYREG ; Many register symbol
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_RETURN ; Function return description
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_ENTRYTHIS ; Description of this pointer at entry
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_BPREL16 ; BP relative 16:16
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_LDATA16 ; Local data 16:16
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_GDATA16 ; Global data 16:16
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_PUB16 ; Public symbol 16:16
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_LPROC16 ; Local procedure start 16:16
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_GPROC16 ; Global procedure start 16:16
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_THUNK16 ; Thunk start 16:16
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_BLOCK16 ; Block start 16:16
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_WITH16 ; With start 16:16
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_LABEL16 ; Code label 16:16
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_CEXMODEL16 ; Change execution model 16:16
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_VFTPATH16 ; Virtual function table path descriptor 16:16
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_REGREL16 ; Specify 16:16 offset relative to arbitrary register
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If_Or W$esi-2 = &S_BPREL32, W$esi-2 = &S_BPREL32_CV3 ; BP relative 16:32
-                call WriteRawDataDebugSBPRel32
+                Call WriteRawDataDebugSBPRel32
             ..Else_If W$esi-2 = &S_LDATA32 ; Local data 16:32
-                call WriteRawDataDebugSLData32
+                Call WriteRawDataDebugSLData32
 
             ..Else_If_Or W$esi-2 = &S_GDATA32, W$esi-2 = &S_GDATA_CV3 ; Global data 16:32
-                call WriteRawDataDebugSLData32
+                Call WriteRawDataDebugSLData32
 
             ..Else_If W$esi-2 = &S_PUB32 ; Public symbol 16:32
-                call WriteRawDataDebugSLData32
+                Call WriteRawDataDebugSLData32
 
             ..Else_If W$esi-2 = &S_LPROC32 ; Local (Static) procedure start 16:32
-                call WriteRawDataDebugSGlobalProc
+                Call WriteRawDataDebugSGlobalProc
             ..Else_If_Or W$esi-2 = &S_GPROC32, W$esi-2 = &S_GPROC32_CV3 ; Global procedure start 16:32
-                call WriteRawDataDebugSGlobalProc
+                Call WriteRawDataDebugSGlobalProc
             ..Else_If W$esi-2 = &S_THUNK32 ; Thunk start 16:32
-                call WriteRawDataDebugSThunkStart1632
+                Call WriteRawDataDebugSThunkStart1632
 
             ..Else_If W$esi-2 = &S_BLOCK32 ; Block start 16:32
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_VFTPATH32 ; Virtual function table path descriptor 16:32
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_REGREL32 ; 16:32 offset relative to arbitrary register
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_LTHREAD32 ; Local Thread Storage data
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_GTHREAD32 ; Global Thread Storage data
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_LPROCMIPS ; Local procedure start MIPS
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_GPROCMIPS ; Global procedure start MIPS
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_PROCREF ; Reference to a procedure
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_DATAREF ; Reference to data
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If W$esi-2 = &S_ALIGN ; Page align symbols
-                mov eax eax
+                Mov eax eax
                 jmp L0>>
 
             ..Else_If_Or W$esi-2 >= 01000;, W$esi-2 >= 0
 L0:
                 push esi
-                    mov D$edi '    ' | add edi 4
-                    call WriteObjIndice
+                    Mov D$edi '    ' | add edi 4
+                    Call WriteObjIndice
                     zCopy {"Sec", 0}
                     zCopy SectionHeaderNumber
                     zCopy {".Index", 0}
@@ -12351,15 +12351,15 @@ L0:
                     zCopy D$CVLabel
                     zCopy {'Unknown', 0}
                 pop esi
-                call WriteRawDataDebugSUnknown
+                Call WriteRawDataDebugSUnknown
 
         ..End_If
 
     ...End_If
 
-        call IncrementSectionDebugNumber
-        mov eax D@CVSize
-        mov W$edi CRLF | add edi 2
+        Call IncrementSectionDebugNumber
+        Mov eax D@CVSize
+        Mov W$edi CRLF | add edi 2
 
 ;    .Loop_Until esi >= eax
     .End_While
@@ -12371,16 +12371,16 @@ Proc WriteRawDataDebugSUnknown:
 
 
     ; This is to avoid that the Structure have dummy bytes at the end.
-    mov ebx esi
+    Mov ebx esi
     sub ebx 2
-    mov ecx D$SizeAdd
+    Mov ecx D$SizeAdd
     add ebx ecx
 ;;
     push ebx
 
                     push esi
-                        mov D$edi '    ' | add edi 4
-                        call WriteObjIndice
+                        Mov D$edi '    ' | add edi 4
+                        Call WriteObjIndice
                         zCopy {"Sec", 0}
                         zCopy SectionHeaderNumber
                         zCopy {".Index", 0}
@@ -12404,11 +12404,11 @@ Proc WriteRawDataDebugSUnknown:
     ; Is the end of this structure ends on the proper place ?
     .If esi <> ebx
 ;;
-        mov W$edi CRLF | add edi 2
-        ;call WriteCVdataTitle
+        Mov W$edi CRLF | add edi 2
+        ;Call WriteCVdataTitle
                     push esi
-                        mov D$edi '    ' | add edi 4
-                        call WriteObjIndice
+                        Mov D$edi '    ' | add edi 4
+                        Call WriteObjIndice
                         zCopy {"Sec", 0}
                         zCopy SectionHeaderNumber
                         zCopy {".Index", 0}
@@ -12422,30 +12422,30 @@ Proc WriteRawDataDebugSUnknown:
 
         push ecx
 
-        mov edx 0
+        Mov edx 0
         xor eax eax
 
         Do
 
             movzx eax B$esi
-            push ebx | call WriteEax | pop ebx
+            push ebx | Call WriteEax | pop ebx
 
-            mov W$edi ', ' | add edi 2 | inc esi
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
 
         Loop_Until esi = ebx
 
             sub edi 2
             dec edi
-            mov W$edi+1 CRLF | add edi 2
+            Mov W$edi+1 CRLF | add edi 2
             pop ecx
             inc edi
     .Else
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
     .End_If
 
 EndP
@@ -12458,9 +12458,9 @@ Proc WriteRawDataDebugT:
     Local @CVSize, @RawDataEnd
     Uses ecx, esi, eax
 
-    mov ecx esi
+    Mov ecx esi
     add ecx D$CoffSectionSize
-    mov D@RawDataEnd ecx
+    Mov D@RawDataEnd ecx
 
     ; If Signature is not 1. Do a byte chain. Signature = 1 is Code or CodeView 4 ?. Other values are data or CodeView older versions ?
     If D$esi = 1
@@ -12473,24 +12473,24 @@ Proc WriteRawDataDebugT:
         move D$CVLabel CV5Label ; found in NET files. This is really really painfull.
         jmp L0>
     Else
-        call WriteRawDataDataSection
+        Call WriteRawDataDataSection
         ExitP
     End_If
 
 L0:
 
-    mov D$SizeAdd 0
+    Mov D$SizeAdd 0
 
-    call InitSectionDebugNumber
+    Call InitSectionDebugNumber
 
     move D@CVSize D$CoffSectionSize
     sub edi 4
 
-    mov D$edi CRLF2 | add edi 4
+    Mov D$edi CRLF2 | add edi 4
 
     push esi
-        mov D$edi '    ' | add edi 4
-        call WriteObjIndice
+        Mov D$edi '    ' | add edi 4
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy D$CVLabel
@@ -12499,19 +12499,19 @@ L0:
 
         add D@CVSize esi ; CVSize points to the beginning of the Debug Raw Data
 
-        lodsd | call WriteEax
+        lodsd | Call WriteEax
         If D$esi-4 = 1
             push esi | ZCopy {" ; The compiler that made this Object File, emitted OMF (Object Module Format) types on it's symbols and Types below", 0} | pop esi
         End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
         ; sometimes we may have a file with only the Signature Byte. (Size of raw data is 4 in VBAEXE6.LIB)
         On D@RawDataEnd = esi, ExitP
 
     .Do
         movzx eax W$esi
-        mov D$SizeAdd eax
+        Mov D$SizeAdd eax
 
         ...If W$esi = 0 ; If lenght = 0 do next line
             add esi 2 ; only increment esi by 2
@@ -12521,8 +12521,8 @@ L0:
             push eax
 
             push esi
-                mov D$edi '    ' | add edi 4
-                call WriteObjIndice
+                Mov D$edi '    ' | add edi 4
+                Call WriteObjIndice
 
                 zCopy {"Sec", 0}
                 zCopy SectionHeaderNumber
@@ -12533,18 +12533,18 @@ L0:
             pop esi
 
                 xor eax eax
-                lodsw | call WriteEax
+                lodsw | Call WriteEax
 
-            mov W$edi CRLF | add edi 2
+            Mov W$edi CRLF | add edi 2
             pop eax
 
-            call WriteRawDataDebugSContantLeafTypeItem
+            Call WriteRawDataDebugSContantLeafTypeItem
 
     ...End_If
 
-        call IncrementSectionDebugNumber
-        mov eax D@CVSize
-        mov W$edi CRLF | add edi 2
+        Call IncrementSectionDebugNumber
+        Mov eax D@CVSize
+        Mov W$edi CRLF | add edi 2
 
     .Loop_Until esi >= eax
 
@@ -12557,60 +12557,60 @@ Proc WriteRawDataDebugFItem:
     uses eax
 
         push esi
-            mov D$edi '    ' | add edi 4
-            call WriteObjIndice
+            Mov D$edi '    ' | add edi 4
+            Call WriteObjIndice
 
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
 
             zCopy {'.FPOData', 0}
-            mov B$edi '.' | inc edi
+            Mov B$edi '.' | inc edi
             zCopy D@Text1
             zCopy D@Text2
         pop esi
 
-                mov eax D@Text1
+                Mov eax D@Text1
 
                 If D$eax = 'ulOf' ; from "ulOffStart" string
-                    lodsd | call WriteEax
-                    ;call WriteSectionHeaderRawSizeDiffLabel
+                    lodsd | Call WriteEax
+                    ;Call WriteSectionHeaderRawSizeDiffLabel
                     ;push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
 
                 Else_If D$eax+2 = 'Proc'; From "cbProcSize" string
-                    lodsd | call WriteEax
-                    ;call WriteSectionHeaderPointerToDataDiffLabel
+                    lodsd | Call WriteEax
+                    ;Call WriteSectionHeaderPointerToDataDiffLabel
                     ;push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
 
                 Else_If D$eax = 'cdwL'; From "cdwLocals" string
-                    lodsd | call WriteEax
-                    ;call InitSectionRelocNumber
-                    ;call WriteSectionHeaderPointerToRelocDiffLabel
+                    lodsd | Call WriteEax
+                    ;Call InitSectionRelocNumber
+                    ;Call WriteSectionHeaderPointerToRelocDiffLabel
                     ;push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
 
                 Else_If D$eax = 'cdwP'; From "cdwParams" string
                     xor eax eax
-                    lodsw | call WriteEax
-                    ;call InitSectionLineNumber
-                    ;call WriteSectionHeaderPointerToLineNumberDiffLabel
+                    lodsw | Call WriteEax
+                    ;Call InitSectionLineNumber
+                    ;Call WriteSectionHeaderPointerToLineNumberDiffLabel
                     ;push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
 
                 Else_If D$eax+2 = 'Prol'; From "cbProlog" string
                     xor eax eax
-                    lodsb | call WriteEax
-                    ;call InitSectionLineNumber
-                    ;call WriteSectionHeaderPointerToLineNumberDiffLabel
+                    lodsb | Call WriteEax
+                    ;Call InitSectionLineNumber
+                    ;Call WriteSectionHeaderPointerToLineNumberDiffLabel
                     ;push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
 
                 Else_If D$eax = 'Func'; From "FunctionSpec" string
                     xor eax eax
-                    lodsb | call WriteEax
-                    ;call InitSectionLineNumber
-                    ;call WriteSectionHeaderPointerToLineNumberDiffLabel
+                    lodsb | Call WriteEax
+                    ;Call InitSectionLineNumber
+                    ;Call WriteSectionHeaderPointerToLineNumberDiffLabel
                     ;push esi | zcopy {" ; Hex Value:  ", 0} | pop esi
 
                 End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 EndP
 
 
@@ -12639,13 +12639,13 @@ WriteRawDataDebugF:
 
     sub edi 4
 
-    mov D$edi CRLF2 | add edi 4
-    call WriteRawDataDebugFItem RawDataulOffStart, {': D$ ', 0}
-    call WriteRawDataDebugFItem RawDatacbProcSize, {': D$ ', 0}
-    call WriteRawDataDebugFItem RawDatacdwLocals, {': D$ ', 0}
-    call WriteRawDataDebugFItem RawDatacdwParams, {': W$ ', 0}
-    call WriteRawDataDebugFItem RawDatacbProlog, {': B$ ', 0}
-    call WriteRawDataDebugFItem RawDataFunctionSpec, {': B$ ', 0}
+    Mov D$edi CRLF2 | add edi 4
+    Call WriteRawDataDebugFItem RawDataulOffStart, {': D$ ', 0}
+    Call WriteRawDataDebugFItem RawDatacbProcSize, {': D$ ', 0}
+    Call WriteRawDataDebugFItem RawDatacdwLocals, {': D$ ', 0}
+    Call WriteRawDataDebugFItem RawDatacdwParams, {': W$ ', 0}
+    Call WriteRawDataDebugFItem RawDatacbProlog, {': B$ ', 0}
+    Call WriteRawDataDebugFItem RawDataFunctionSpec, {': B$ ', 0}
 
 ret
 __________________________________________________________________
@@ -12654,28 +12654,28 @@ WriteRawDataOnlyStringsSection:
 
     ; Initialize the String Record Counter
 
-    call InitStringTableRecord
+    Call InitStringTableRecord
     push esi
-        call WriteObjIndice
+        Call WriteObjIndice
         zCopy {"Sec", 0}
         zCopy SectionHeaderNumber
         zCopy {'.StringData.Signature', 0}
-        mov D$edi ': B$', B$edi+4 ' ' | add edi 5
+        Mov D$edi ': B$', B$edi+4 ' ' | add edi 5
     pop esi
         While B$esi <> 0 | movsb | End_While
     xor eax eax
-    lodsb | call WriteEax
+    lodsb | Call WriteEax
 
-    mov W$edi CRLF | add edi 2
+    Mov W$edi CRLF | add edi 2
 
-    mov edx D$CoffSectionSize
+    Mov edx D$CoffSectionSize
     dec edx
     add edx, esi ; We will use edx as a counter delimiter for the strings
 
    .Do
 
         push esi
-            call WriteObjIndice
+            Call WriteObjIndice
             zCopy {"Sec", 0}
             zCopy SectionHeaderNumber
             zCopy {'.StringData.Arr', 0}
@@ -12684,29 +12684,29 @@ WriteRawDataOnlyStringsSection:
         pop esi
 
 
-        While B$esi <> 0 | movsb | End_While | inc esi | On B$esi = 0, mov edx 0
+        While B$esi <> 0 | movsb | End_While | inc esi | On B$esi = 0, Mov edx 0
 
-        mov D$edi "', 0" | add edi 4
-        mov W$edi CRLF | add edi 2
+        Mov D$edi "', 0" | add edi 4
+        Mov W$edi CRLF | add edi 2
 
-        call IncrementStringTableRecord
+        Call IncrementStringTableRecord
 
     .Loop_Until esi >= edx
 
     sub edi 2
-    mov W$edi CRLF | add edi 2
+    Mov W$edi CRLF | add edi 2
 ret
 
 __________________________________________________________________
 
 WriteRawDataDataSection:
 
-L0:         movzx eax B$esi | call WriteEax
-            mov W$edi ', ' | add edi 2 | inc esi
+L0:         movzx eax B$esi | Call WriteEax
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
             loop L0<
 
@@ -12716,12 +12716,12 @@ __________________________________________________________________
 
 WriteRawDataCodeSection:
 
-L0:         movzx eax B$esi | call WriteEax
-            mov W$edi ', ' | add edi 2 | inc esi
+L0:         movzx eax B$esi | Call WriteEax
+            Mov W$edi ', ' | add edi 2 | inc esi
             inc edx
             If edx > 15
-                mov W$edi CRLF | add edi 2 | mov edx 0
-                mov D$edi '    ', D$edi+4 '    ' | add edi 8
+                Mov W$edi CRLF | add edi 2 | Mov edx 0
+                Mov D$edi '    ', D$edi+4 '    ' | add edi 8
             End_If
             loop L0<
 
@@ -12732,31 +12732,31 @@ __________________________________________________________________
 
 WriteRawDataLinkerDirective:
 
-    mov edx esi | add edx ecx
+    Mov edx esi | add edx ecx
 
     .If B$esi = 0
-        mov B$edi '0' | inc edi | inc esi
+        Mov B$edi '0' | inc edi | inc esi
     .Else
 
-        mov B$edi "'" | inc edi
+        Mov B$edi "'" | inc edi
 L0:     lodsb
         If al = 0
             dec esi | jmp L1>
         End_If
         stosb | On esi < edx, jmp L0<
-L1:     mov B$edi "'" | inc edi
+L1:     Mov B$edi "'" | inc edi
 
     .End_If
 
-    While esi < edx | lodsb | mov D$edi ', 0' | add edi 3 | End_While
+    While esi < edx | lodsb | Mov D$edi ', 0' | add edi 3 | End_While
 
 ret
 __________________________________________________________________
 
 WriteRawdataEnd:
 
-    mov W$edi CRLF | add edi 2
-    call WriteObjIndice
+    Mov W$edi CRLF | add edi 2
+    Call WriteObjIndice
     zCopy {"Sec", 0}
     zCopy SectionHeaderNumber
     zCopy {".RawDataEnd", 0}
@@ -12768,17 +12768,17 @@ Proc WriteRawdataTitle:
     Uses esi, ecx
 
     zCopy CoffRawDataSectionTitle
-    call WriteObjIndice
+    Call WriteObjIndice
     zCopy {"ImgSecHdr", 0}
     zCopy SectionHeaderNumber
     zCopy {B$ ".PointerToRawData", W$ CRLF, 0}
 
-    mov W$edi CRLF, B$edi+2 '[' | add edi 3
-    call WriteObjIndice
+    Mov W$edi CRLF, B$edi+2 '[' | add edi 3
+    Call WriteObjIndice
     zCopy {"Sec", 0}
     zCopy SectionHeaderNumber
     zCopy {'.RawData', 0}
-    mov D$edi ': B$', B$edi+4 ' ' | add edi 5
+    Mov D$edi ': B$', B$edi+4 ' ' | add edi 5
 
 EndP
 __________________________________________________________________
@@ -12804,176 +12804,176 @@ Proc WriteCoffSectionData:
 
         push esi | zCopy CoffRawDataInfoTitle | pop esi
         ; esi points to the Begin of the Raw data section, ecx points to the size of the raw data
-        mov esi D$CoffSectionBase | add esi D$CoffPointerToData
-        mov ecx D$CoffSectionSize, edx 0
+        Mov esi D$CoffSectionBase | add esi D$CoffPointerToData
+        Mov ecx D$CoffSectionSize, edx 0
 
         ..If D$RawDataType = RDT_LNKDIRECTIVE
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    Linker Directive Reports:", D$ CRLF2, 0} | pop esi
-                call WriteRawDataLinkerDirectiveReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+                Call WriteRawDataLinkerDirectiveReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataLinkerDirective
+            Call WriteRawDataLinkerDirective
 
         ..Else_If D$RawDataType = RDT_CODE
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to CODE", D$ CRLF2, 0} | pop esi
-                ; call WriteRawDataCodeSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+                ; Call WriteRawDataCodeSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataCodeSection
+            Call WriteRawDataCodeSection
 
         ..Else_If D$RawDataType = RDT_VIRTUALDATA
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to Virtual Data", D$ CRLF2, 0} | pop esi
-                ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+                ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataDataSection
+            Call WriteRawDataDataSection
 
         ..Else_If D$RawDataType = RDT_DEBUGS
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to Debug$S", D$ CRLF2, 0} | pop esi
-                ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+                ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            ;call WriteRawDataDebugS
-            call WriteRawDataDataSection
+            ;Call WriteRawDataDebugS
+            Call WriteRawDataDataSection
 
         ..Else_If D$RawDataType = RDT_DEBUGF
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to Debug$F - Frame Point Omission", D$ CRLF2, 0} | pop esi
-            ; call WriteRawDataDebugFReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+            ; Call WriteRawDataDebugFReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataDebugF
+            Call WriteRawDataDebugF
 
         ..Else_If D$RawDataType = RDT_DEBUGT
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to Debug$T - Debug Type", D$ CRLF2, 0} | pop esi
-            ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+            ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataDataSection
-            ;call WriteRawDataDebugT
+            Call WriteRawDataDataSection
+            ;Call WriteRawDataDebugT
 
         ..Else_If D$RawDataType = RDT_DEBUGP
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to Debug$P", D$ CRLF2, 0} | pop esi
-            ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
-            call WriteRawDataDataSection
+            ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
+            Call WriteRawDataDataSection
 
         ..Else_If D$RawDataType = RDT_STABSTR
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to NetFramework strings section - stabstr", D$ CRLF2, 0} | pop esi
-            ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+            ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
             sub edi 4
-            mov W$edi CRLF | add edi 2
-            call WriteRawDataOnlyStringsSection
+            Mov W$edi CRLF | add edi 2
+            Call WriteRawDataOnlyStringsSection
 
         ..Else_If D$RawDataType = RDT_IDATA
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to Import Table Data - idata", D$ CRLF2, 0} | pop esi
-            ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+            ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataDataSection
+            Call WriteRawDataDataSection
 
         ..Else_If D$RawDataType = RDT_RDATA
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to Read-Only Data - rdata", D$ CRLF2, 0} | pop esi
-            ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+            ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataDataSection
+            Call WriteRawDataDataSection
 
         ..Else_If D$RawDataType = RDT_XDATA
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to Exception information - xdata", D$ CRLF2, 0} | pop esi
-            ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+            ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataDataSection
+            Call WriteRawDataDataSection
 
         ..Else_If D$RawDataType = RDT_PDATA
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to Exception information - pdata", D$ CRLF2, 0} | pop esi
-            ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+            ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataDataSection
+            Call WriteRawDataDataSection
 
         ..Else_If D$RawDataType = RDT_EDATA
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to Export tables - edata", D$ CRLF2, 0} | pop esi
-            ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+            ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataDataSection
+            Call WriteRawDataDataSection
 
         ..Else_If D$RawDataType = RDT_TLSDATA
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to Thread-local storage - tls", D$ CRLF2, 0} | pop esi
-            ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+            ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataDataSection
+            Call WriteRawDataDataSection
 
         ..Else_If D$RawDataType = RDT_RELOCDATA
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to Image relocations - reloc", D$ CRLF2, 0} | pop esi
-            ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+            ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataDataSection
+            Call WriteRawDataDataSection
 
         ..Else_If D$RawDataType = RDT_RSRCDATA
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to resources - rsrc", D$ CRLF2, 0} | pop esi
-            ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+            ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataDataSection
+            Call WriteRawDataDataSection
 
         ..Else_If D$RawDataType = RDT_ERROR
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    There was an error on the debug or the data section. These raw values will be assumed as DATA", D$ CRLF2, 0} | pop esi
-            ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+            ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataDataSection
+            Call WriteRawDataDataSection
 
         ..Else
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
             push esi | zCopy {B$ "    This Raw Data is related only to DATA", D$ CRLF2, 0} | pop esi
-            ; call WriteRawDataDataSectionReport
-            mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
-            call WriteRawdataTitle
+            ; Call WriteRawDataDataSectionReport
+            Mov W$edi CRLF, W$edi+2 ';;', W$edi+4 CRLF | add edi 6
+            Call WriteRawdataTitle
 
-            call WriteRawDataDataSection
+            Call WriteRawDataDataSection
 
         ..End_If
 
-        call WriteRawdataEnd
+        Call WriteRawdataEnd
 
     ...End_If
 
@@ -12988,15 +12988,15 @@ EndP
 
 WriteCoffReloc:
 
-    call InitSectionRelocNumber
+    Call InitSectionRelocNumber
 
     push esi
-        mov esi D$CoffSectionBase | add esi D$CoffPointerToReloc
-        mov ecx D$NumberOfRelocations
+        Mov esi D$CoffSectionBase | add esi D$CoffPointerToReloc
+        Mov ecx D$NumberOfRelocations
 
 L0:     push ecx
-            call GetCoffRelocHeader
-            call IncrementSectionRelocNumber
+            Call GetCoffRelocHeader
+            Call IncrementSectionRelocNumber
         pop ecx
 
         loop L0<
@@ -13006,14 +13006,14 @@ ret
 
 
 WriteCoffLineNumber:
-    call InitSectionLineNumber
+    Call InitSectionLineNumber
     push esi
-        mov esi D$CoffSectionBase | add esi D$CoffPointerToLineNumber
-        mov ecx D$NumberOfLineNumbers
+        Mov esi D$CoffSectionBase | add esi D$CoffPointerToLineNumber
+        Mov ecx D$NumberOfLineNumbers
 
 L0:     push ecx
-            call GetCoffLineHeader
-            call IncrementSectionLineNumber
+            Call GetCoffLineHeader
+            Call IncrementSectionLineNumber
         pop ecx
 
         loop L0<
@@ -13048,7 +13048,7 @@ ________________________________________________________________________________
 WriteObjCharacteristics:
     push esi
 
-    mov D$edi ' ; ' | add edi 3
+    Mov D$edi ' ; ' | add edi 3
 
     test eax &IMAGE_FILE_32BIT_MACHINE | jz L1>
         zCopy ImageFileEquate, IMAGE_FILE_32BIT_MACHINE
@@ -13123,15 +13123,15 @@ ________________________________________________________________________________
 
 GetMemberSize:
     push esi
-        mov ecx 10, ebx 0, eax 0
+        Mov ecx 10, ebx 0, eax 0
         While B$esi > ' '
             mul ecx
             push eax
-                lodsb | sub al '0' | mov bl al
+                lodsb | sub al '0' | Mov bl al
             pop eax
             add eax ebx
         End_While
-        mov D$MemberSize eax
+        Mov D$MemberSize eax
     pop esi
 ret
 
@@ -13141,15 +13141,15 @@ ______________________________
 
 GetMemberDate:
     push esi
-        mov ecx 10, ebx 0, eax 0
+        Mov ecx 10, ebx 0, eax 0
         While B$esi > ' '
             mul ecx
             push eax
-                lodsb | sub al '0' | mov bl al
+                lodsb | sub al '0' | Mov bl al
             pop eax
             add eax ebx
         End_While
-        mov D$MemberDate eax
+        Mov D$MemberDate eax
     pop esi
 ret
 
@@ -13160,50 +13160,50 @@ Proc WriteNamesLinkerMemberX:
     Local @Item
 
         push esi
-            mov esi D@LinkerMember
+            Mov esi D@LinkerMember
             While B$esi <> 0 | movsb | End_While
 
-            mov B$edi '.' | inc edi
-            mov esi D@Name
+            Mov B$edi '.' | inc edi
+            Mov esi D@Name
 
             move D@Item D$esi
 
             If D$esi = 'Size'
                 pop esi | push esi
-                call GetMemberSize
-                mov esi D@Name
+                Call GetMemberSize
+                Mov esi D@Name
 
             Else_If D$esi = 'Date'
                 pop esi | push esi
-                call GetMemberDate
-                mov esi D@Name
+                Call GetMemberDate
+                Mov esi D@Name
             End_If
 
             While B$esi <> 0 | movsb | End_While
         pop esi
 
-        mov D$edi ': B$' | add edi 4
+        Mov D$edi ': B$' | add edi 4
 
         .If D@n <> 0-2
 
-            mov W$edi " '" | add edi 2
-            mov ecx D@n
+            Mov W$edi " '" | add edi 2
+            Mov ecx D@n
 
             If D@Item = 'User'
-                mov D$edi '****', W$edi+4 '**' | add edi 6 | sub ecx 6 | add esi 6
+                Mov D$edi '****', W$edi+4 '**' | add edi 6 | sub ecx 6 | add esi 6
             End_If
 
             rep movsb
 
             While B$edi-1 = 0 | dec edi | End_While
 
-            mov B$edi "'" | inc edi
-            mov W$edi CRLF | add edi 2
+            Mov B$edi "'" | inc edi
+            Mov W$edi CRLF | add edi 2
 
         .Else
-            mov B$edi ' ' | inc edi
-            mov ecx D@n | neg ecx
-L0:         lodsb | and eax 0FF | call WriteEax | mov W$edi ', ' | add edi 2 | loop L0<
+            Mov B$edi ' ' | inc edi
+            Mov ecx D@n | neg ecx
+L0:         lodsb | and eax 0FF | Call WriteEax | Mov W$edi ', ' | add edi 2 | loop L0<
             sub edi 2
 
         .End_If
@@ -13214,22 +13214,22 @@ ________________________________________________________________________________
 [LibObjIndice: '000001', 0]
 
 InitCoffIndice:
-    mov D$LibObjIndice '0000', D$LibObjIndice+4 '01'
+    Mov D$LibObjIndice '0000', D$LibObjIndice+4 '01'
 ret
 
 IncrementLibCoffIndice:
     lea ebx D$LibObjIndice+5 | inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx | inc B$ebx
+        Mov B$ebx '0' | dec ebx | inc B$ebx
     End_While
 ret
 
 WriteCoffIndice:
     push esi
-        mov D$edi 'Obj_' | add edi 4
-        mov eax D$LibObjIndice, D$edi eax
-        mov ax W$LibObjIndice+4, W$edi+4 ax
-        mov D$edi+6 ': ; ' | add edi 10
+        Mov D$edi 'Obj_' | add edi 4
+        Mov eax D$LibObjIndice, D$edi eax
+        Mov ax W$LibObjIndice+4, W$edi+4 ax
+        Mov D$edi+6 ': ; ' | add edi 10
     pop esi
 ret
 
@@ -13244,30 +13244,30 @@ Proc WriteLinkerMemberTimeDateStamp:
     Uses esi
 
         ; Write the Value of the Date in Hexadecimal string
-        mov esi {' ; Hex Value:  ', 0}
+        Mov esi {' ; Hex Value:  ', 0}
         sub edi 2 ; We need to subtract 02 Bytes, to bypass the CRLF
         While B$esi <> 0 | movsb | End_While
-        mov eax D@TimeDate
-        call Writeeax
+        Mov eax D@TimeDate
+        Call Writeeax
 
-        mov esi {' - TimeDate Stamp: ', 0}
+        Mov esi {' - TimeDate Stamp: ', 0}
         While B$esi <> 0 | movsb | End_While
 
       ; Get the DateTime Stamp
 
       ; Time date stamp to string Function
-        call TimeDateStampToString D@TimeDate, {"yyyy/MM/dd ddd ", 0},
+        Call TimeDateStampToString D@TimeDate, {"yyyy/MM/dd ddd ", 0},
                                    {"HH:mm:ss UTC", 0}, szDateString, szTimeString
 
       ; Write the TimeDate Stamp strings
-        mov esi szDateString
+        Mov esi szDateString
         While B$esi <> 0 | movsb | End_While
 
-        mov esi szTimeString
+        Mov esi szTimeString
         While B$esi <> 0 | movsb | End_While
 
       ; We now Add the paragraphs marks, and add 02 Bytes at edi:
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 
 
 EndP
@@ -13279,12 +13279,12 @@ Proc WriteLinkerMemberSizeHex:
     Uses esi
     ; Write the Value of the Size in Hexadecimal string
 
-        mov esi {' ; Hex Value:  ', 0}
+        Mov esi {' ; Hex Value:  ', 0}
         sub edi 2 ; We need to subtract 02 Bytes, to bypass the CRLF
         While B$esi <> 0 | movsb | End_While
-        mov eax D@SizeValue
-        call Writeeax
-        mov W$edi CRLF | add edi 2 ; We now Add the paragraphs marks, and add 02 Bytes at edi
+        Mov eax D@SizeValue
+        Call Writeeax
+        Mov W$edi CRLF | add edi 2 ; We now Add the paragraphs marks, and add 02 Bytes at edi
 
 EndP
 _________________________________________________________
@@ -13297,23 +13297,23 @@ _________________________________________________________
 [NamesLinkerMember1: 'NamesLinkerMember_1', 0]
 
 Write_IMAGE_ARCHIVE_MEMBER_HEADER_1:
-    mov B$edi '[' | inc edi
+    Mov B$edi '[' | inc edi
 
-    call WriteNamesLinkerMemberX {'Name1', 0}, 16, NamesLinkerMember1
-    call WriteNamesLinkerMemberX {'Date', 0}, 12, NamesLinkerMember1
-    call WriteLinkerMemberTimeDateStamp D$MemberDate
-    call WriteNamesLinkerMemberX {'UserID', 0}, 6, NamesLinkerMember1
-    call WriteNamesLinkerMemberX {'GroupID', 0}, 6, NamesLinkerMember1
-    call WriteNamesLinkerMemberX {'Mode', 0}, 8, NamesLinkerMember1
-    call WriteNamesLinkerMemberX {'Size1', 0}, 10, NamesLinkerMember1
-    call WriteLinkerMemberSizeHex D$MemberSize
-    call WriteNamesLinkerMemberX {'EndHeader', 0}, 0-2, NamesLinkerMember1
+    Call WriteNamesLinkerMemberX {'Name1', 0}, 16, NamesLinkerMember1
+    Call WriteNamesLinkerMemberX {'Date', 0}, 12, NamesLinkerMember1
+    Call WriteLinkerMemberTimeDateStamp D$MemberDate
+    Call WriteNamesLinkerMemberX {'UserID', 0}, 6, NamesLinkerMember1
+    Call WriteNamesLinkerMemberX {'GroupID', 0}, 6, NamesLinkerMember1
+    Call WriteNamesLinkerMemberX {'Mode', 0}, 8, NamesLinkerMember1
+    Call WriteNamesLinkerMemberX {'Size1', 0}, 10, NamesLinkerMember1
+    Call WriteLinkerMemberSizeHex D$MemberSize
+    Call WriteNamesLinkerMemberX {'EndHeader', 0}, 0-2, NamesLinkerMember1
 
-    mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+    Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
 
     lea ebx D$ARCHIVE_MEMBER_HEADER_Indice+5 | inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx | inc B$ebx
+        Mov B$ebx '0' | dec ebx | inc B$ebx
     End_While
 ret
 
@@ -13321,23 +13321,23 @@ ret
 [NamesLinkerMember2: 'NamesLinkerMember_2', 0]
 
 Write_IMAGE_ARCHIVE_MEMBER_HEADER_2:
-    mov B$edi '[' | inc edi
+    Mov B$edi '[' | inc edi
 
-    call WriteNamesLinkerMemberX {'Name1', 0}, 16, NamesLinkerMember2
-    call WriteNamesLinkerMemberX {'Date', 0}, 12, NamesLinkerMember2
-    call WriteLinkerMemberTimeDateStamp D$MemberDate
-    call WriteNamesLinkerMemberX {'UserID', 0}, 6, NamesLinkerMember2
-    call WriteNamesLinkerMemberX {'GroupID', 0}, 6, NamesLinkerMember2
-    call WriteNamesLinkerMemberX {'Mode', 0}, 8, NamesLinkerMember2
-    call WriteNamesLinkerMemberX {'Size1', 0}, 10, NamesLinkerMember2
-    call WriteLinkerMemberSizeHex D$MemberSize
-    call WriteNamesLinkerMemberX {'EndHeader', 0}, 0-2, NamesLinkerMember2
+    Call WriteNamesLinkerMemberX {'Name1', 0}, 16, NamesLinkerMember2
+    Call WriteNamesLinkerMemberX {'Date', 0}, 12, NamesLinkerMember2
+    Call WriteLinkerMemberTimeDateStamp D$MemberDate
+    Call WriteNamesLinkerMemberX {'UserID', 0}, 6, NamesLinkerMember2
+    Call WriteNamesLinkerMemberX {'GroupID', 0}, 6, NamesLinkerMember2
+    Call WriteNamesLinkerMemberX {'Mode', 0}, 8, NamesLinkerMember2
+    Call WriteNamesLinkerMemberX {'Size1', 0}, 10, NamesLinkerMember2
+    Call WriteLinkerMemberSizeHex D$MemberSize
+    Call WriteNamesLinkerMemberX {'EndHeader', 0}, 0-2, NamesLinkerMember2
 
-    mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+    Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
 
     lea ebx D$ARCHIVE_MEMBER_HEADER_Indice+3 | inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx | inc B$ebx
+        Mov B$ebx '0' | dec ebx | inc B$ebx
     End_While
 ret
 
@@ -13345,23 +13345,23 @@ ret
 [NamesLinkerMember3: 'NamesLinkerMember_3', 0]
 
 Write_IMAGE_ARCHIVE_MEMBER_HEADER_3:
-    mov B$edi '[' | inc edi
+    Mov B$edi '[' | inc edi
 
-    call WriteNamesLinkerMemberX {'Name1', 0}, 16, NamesLinkerMember3
-    call WriteNamesLinkerMemberX {'Date', 0}, 12, NamesLinkerMember3
-    call WriteLinkerMemberTimeDateStamp D$MemberDate
-    call WriteNamesLinkerMemberX {'UserID', 0}, 6, NamesLinkerMember3
-    call WriteNamesLinkerMemberX {'GroupID', 0}, 6, NamesLinkerMember3
-    call WriteNamesLinkerMemberX {'Mode', 0}, 8, NamesLinkerMember3
-    call WriteNamesLinkerMemberX {'Size1', 0}, 10, NamesLinkerMember3
-    call WriteLinkerMemberSizeHex D$MemberSize
-    call WriteNamesLinkerMemberX {'EndHeader', 0}, 0-2, NamesLinkerMember3
+    Call WriteNamesLinkerMemberX {'Name1', 0}, 16, NamesLinkerMember3
+    Call WriteNamesLinkerMemberX {'Date', 0}, 12, NamesLinkerMember3
+    Call WriteLinkerMemberTimeDateStamp D$MemberDate
+    Call WriteNamesLinkerMemberX {'UserID', 0}, 6, NamesLinkerMember3
+    Call WriteNamesLinkerMemberX {'GroupID', 0}, 6, NamesLinkerMember3
+    Call WriteNamesLinkerMemberX {'Mode', 0}, 8, NamesLinkerMember3
+    Call WriteNamesLinkerMemberX {'Size1', 0}, 10, NamesLinkerMember3
+    Call WriteLinkerMemberSizeHex D$MemberSize
+    Call WriteNamesLinkerMemberX {'EndHeader', 0}, 0-2, NamesLinkerMember3
 
-    mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+    Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
 
     lea ebx D$ARCHIVE_MEMBER_HEADER_Indice+5 | inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx | inc B$ebx
+        Mov B$ebx '0' | dec ebx | inc B$ebx
     End_While
 ret
 
@@ -13374,8 +13374,8 @@ ________________________________________________________________________________
 
 WriteCoffTitle:
     push esi
-        mov esi CoffTitle | While B$esi <> 0 | movsb | End_While
-        mov eax D$LibObjIndice, D$edi eax,
+        Mov esi CoffTitle | While B$esi <> 0 | movsb | End_While
+        Mov eax D$LibObjIndice, D$edi eax,
             ax W$LibObjIndice+4, W$edi+4 ax,
             D$edi+6 CRLF2 | add edi 10
     pop esi
@@ -13388,81 +13388,81 @@ ret
 Proc Write_Obj_IMAGE_ARCHIVE_MEMBER_HEADER:
     Local @StartAddress
 
-    mov B$edi '[' | inc edi
+    Mov B$edi '[' | inc edi
 
     ...If B$esi = '/'
       ; First or Second Header: nop
         ..If B$esi+1 <> ' '
           ; Case of Obj with LongNames Table in the Third Header:
-            call WriteCoffIndice
+            Call WriteCoffIndice
             push esi
                 inc esi
                 If D$LongNamesBase <> 0
-                    call CheckLongNameDisplacement | On eax = &FALSE, jmp L1>
+                    Call CheckLongNameDisplacement | On eax = &FALSE, jmp L1>
                     ; to be used in AddListviewItem
-                    mov D$StartObjNameAddress edi
-                    call WriteLongName esi
+                    Mov D$StartObjNameAddress edi
+                    Call WriteLongName esi
                 Else
 
    L1:
                     ; to be used in AddListviewItem
-                    mov D$StartObjNameAddress edi
-                    call CopyObjSymbolName
+                    Mov D$StartObjNameAddress edi
+                    Call CopyObjSymbolName
 
                 End_If
-                mov esi IMAGE_ARCHIVE_MEMBER_HEADERstring
+                Mov esi IMAGE_ARCHIVE_MEMBER_HEADERstring
                 While B$esi <> 0 | movsb | End_While
-                mov W$edi CRLF | add edi 2
+                Mov W$edi CRLF | add edi 2
             pop esi
         ..Else
             ; There seem to exist case of Functions called by Number, here
-            mov D$StartObjNameAddress edi
+            Mov D$StartObjNameAddress edi
 
-            call WriteCoffIndice
+            Call WriteCoffIndice
             While B$esi <> 0 | movsb | End_While
             push esi
-                mov esi IMAGE_ARCHIVE_MEMBER_HEADERstring
+                Mov esi IMAGE_ARCHIVE_MEMBER_HEADERstring
                 While B$esi <> 0 | movsb | End_While
-                mov W$edi CRLF | add edi 2
+                Mov W$edi CRLF | add edi 2
             pop esi
 
         ..End_If
 
     ...Else
       ; Case of Obj without LongNames Table (No Third Header) Ex.: UUID.LIB ; WLDAP32.LIB:
-        call WriteCoffIndice
+        Call WriteCoffIndice
 
-        mov D$StartObjNameAddress edi
+        Mov D$StartObjNameAddress edi
         push esi
 
-            call CopyObjSymbolName
-            mov esi IMAGE_ARCHIVE_MEMBER_HEADERstring
+            Call CopyObjSymbolName
+            Mov esi IMAGE_ARCHIVE_MEMBER_HEADERstring
             While B$esi <> 0 | movsb | End_While
-            mov W$edi CRLF | add edi 2
+            Mov W$edi CRLF | add edi 2
         pop esi
 
     ...End_If
 
-    call ParseLibObjectSymbolName D$StartObjNameAddress
+    Call ParseLibObjectSymbolName D$StartObjNameAddress
 
-    mov eax D$esi+LIB_USER_ID, D$CopyOf_LIB_USER_ID eax,
+    Mov eax D$esi+LIB_USER_ID, D$CopyOf_LIB_USER_ID eax,
         ax W$esi+LIB_USER_ID+4, W$CopyOf_LIB_USER_ID+4 ax
 
-    call WriteNamesLinkerMemberX {'Name1', 0}, 16, Obj_LIB_USER_ID
-    call WriteNamesLinkerMemberX {'Date', 0}, 12, Obj_LIB_USER_ID
-    call WriteLinkerMemberTimeDateStamp D$MemberDate
-    call WriteNamesLinkerMemberX {'UserID', 0}, 6, Obj_LIB_USER_ID
-    call WriteNamesLinkerMemberX {'GroupID', 0}, 6, Obj_LIB_USER_ID
-    call WriteNamesLinkerMemberX {'Mode', 0}, 8, Obj_LIB_USER_ID
-    call WriteNamesLinkerMemberX {'Size1', 0}, 10, Obj_LIB_USER_ID
-    call WriteLinkerMemberSizeHex D$MemberSize
-    call WriteNamesLinkerMemberX {'EndHeader', 0}, 0-2, Obj_LIB_USER_ID
+    Call WriteNamesLinkerMemberX {'Name1', 0}, 16, Obj_LIB_USER_ID
+    Call WriteNamesLinkerMemberX {'Date', 0}, 12, Obj_LIB_USER_ID
+    Call WriteLinkerMemberTimeDateStamp D$MemberDate
+    Call WriteNamesLinkerMemberX {'UserID', 0}, 6, Obj_LIB_USER_ID
+    Call WriteNamesLinkerMemberX {'GroupID', 0}, 6, Obj_LIB_USER_ID
+    Call WriteNamesLinkerMemberX {'Mode', 0}, 8, Obj_LIB_USER_ID
+    Call WriteNamesLinkerMemberX {'Size1', 0}, 10, Obj_LIB_USER_ID
+    Call WriteLinkerMemberSizeHex D$MemberSize
+    Call WriteNamesLinkerMemberX {'EndHeader', 0}, 0-2, Obj_LIB_USER_ID
 
-    mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+    Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
 
     lea ebx D$ARCHIVE_MEMBER_HEADER_Indice+5 | inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx | inc B$ebx
+        Mov B$ebx '0' | dec ebx | inc B$ebx
     End_While
 
 EndP
@@ -13501,47 +13501,47 @@ Proc ParseLibObjectSymbolName:
     pushad
 
     ; Always clear the loaded data before use.
-    call ClearBuffer ObjectName, 256
-    call ClearBuffer ObjExtensionStr, 16
-    call ClearBuffer ObjPathStr, 256
+    Call ClearBuffer ObjectName, 256
+    Call ClearBuffer ObjExtensionStr, 16
+    Call ClearBuffer ObjPathStr, 256
 
     ; Initialize all the data
-    mov D$ObjFileNameType 0
-    mov D$UseObjPath 0
-    mov D$UseObjExtension 0
-    mov D@TempStartAddr 0
-    mov D@TempEndAddr 0
-    mov D@StartExportObjAddr 0
-    mov D@UseExportedLibrary 0
+    Mov D$ObjFileNameType 0
+    Mov D$UseObjPath 0
+    Mov D$UseObjExtension 0
+    Mov D@TempStartAddr 0
+    Mov D@TempEndAddr 0
+    Mov D@StartExportObjAddr 0
+    Mov D@UseExportedLibrary 0
 
-    mov esi D@StartAddress
+    Mov esi D@StartAddress
 
     ; 1St Step. Locate the start and the end of the String, and also get the FileNameType and the check Exported Library
-    mov ecx 0 ; we will use ecx as a counter.
+    Mov ecx 0 ; we will use ecx as a counter.
               ; The maximum size allowed for this is 784 bytes (Max path + Max Object Name + Max exported Lib string + Max extension)
     .While ecx <> (256*3+16)
 
         .If_And D$esi = 'Long', D$esi+4 = ' Nam' ; is it a Long Name string type ?
 
             ; to be used in AddListviewItem
-            mov D$ObjFileNameType 1
+            Mov D$ObjFileNameType 1
             add D@StartAddress 11 ; (String len) "Long Name: "
 
         .Else_If_And D$esi = 'Shor', D$esi+4 = 't Na' ; is it a Short Name string type ?
 
             ; to be used in AddListviewItem
-            mov D$ObjFileNameType 0
+            Mov D$ObjFileNameType 0
             add D@StartAddress 12 ; (String len) "Short Name: "
 
         .Else_If_And D$esi = ' Fun', D$esi+4 = 'ctio', D$esi+8 = 'n Na', D$esi+12 = 'me: '
 
             ; to be used in AddListviewItem
-            mov D@StartExportObjAddr esi
-            mov D@UseExportedLibrary 1
+            Mov D@StartExportObjAddr esi
+            Mov D@UseExportedLibrary 1
 
         .Else_If_And D$esi = ' Str', D$esi+4 = 'uctu', D$esi+8 = 're: ' ; Did we reached the end of the string ?
                                                                         ; Our string always ends with " Structure: "
-            mov D@TempEndAddr esi
+            Mov D@TempEndAddr esi
             jmp L1>
 
         .End_If
@@ -13556,22 +13556,22 @@ Proc ParseLibObjectSymbolName:
     ; These formats always have the String " Function Name: " on it. Copy it to the proper buffer (ExportedLibraryStr)
 
     .If D@UseExportedLibrary = 1
-        mov esi D@StartExportObjAddr
+        Mov esi D@StartExportObjAddr
         move D@TempEndAddr D@StartExportObjAddr
     .End_If
 
 
     ; 3rd Step. Now that we have our full string, we need to see if it have any path inside.
     ; We must start from the end to the beginning of the string to find the path chars.
-    mov esi D@StartAddress
-    mov ecx D@TempEndAddr
+    Mov esi D@StartAddress
+    Mov ecx D@TempEndAddr
 
     .While esi <> ecx
 
         If_Or B$ecx = '/', B$ecx = '\'
 
-            mov D@EndObjPathAddr ecx
-            mov D$UseObjPath 1
+            Mov D@EndObjPathAddr ecx
+            Mov D$UseObjPath 1
             jmp L1>
         End_If
 
@@ -13584,32 +13584,32 @@ Proc ParseLibObjectSymbolName:
 
     .If D$UseObjPath = 1
         ; Here esi is already defined as the starting point. We don't need to change it now.
-        mov ecx D@EndObjPathAddr
-        mov edi ObjPathStr
+        Mov ecx D@EndObjPathAddr
+        Mov edi ObjPathStr
 
         .While esi <> ecx
             movsb
             ;inc esi
         .End_While
         inc esi ; Bypass the last "/" or "\" char preceeding the object name.
-        mov D@StartAddress esi ; Will points to the beginning of the object name only
+        Mov D@StartAddress esi ; Will points to the beginning of the object name only
 
     .End_If
 
     ; 5th Step. At this point we have only the name of the object and it's extension (if any).
     ; So we must find and copy the object extension.
 
-    mov esi D@StartAddress
-    mov ecx D@TempEndAddr
-    mov edi ObjectName
+    Mov esi D@StartAddress
+    Mov ecx D@TempEndAddr
+    Mov edi ObjectName
 
     On esi = ecx, jmp L2> ; If the end and starting address is teh same ones, it is an empty string
 
     .Do
 
         .If B$esi = '.'
-            mov D$UseObjExtension 1
-            mov edi ObjExtensionStr
+            Mov D$UseObjExtension 1
+            Mov edi ObjExtensionStr
             inc esi ; Bypass the "." char
             While esi <> ecx
                 movsb
@@ -13635,41 +13635,41 @@ ParseLibObj:
               ; +12 is the 'NameType'. 0 >>> Ordinal for the Function,
               ; that should be at +10...
                 .If W$esi+012 <> 0
-                    call WriteLibImportObj
+                    Call WriteLibImportObj
                     add esi 014
-                    call WriteImportObjStrings
+                    Call WriteImportObjStrings
 
                 .Else
-                    ;call SendMeThisLib
-                    call WriteLibImportObj
+                    ;Call SendMeThisLib
+                    Call WriteLibImportObj
 
                     movzx eax W$esi+010
-                    mov edx D$esi+0C
+                    Mov edx D$esi+0C
                     add esi 014
                     add edx esi
-                    mov ebx esi | While B$ebx <> 0 | inc ebx | End_While | inc ebx
+                    Mov ebx esi | While B$ebx <> 0 | inc ebx | End_While | inc ebx
                     If ebx < edx
-                        call WriteImportObjStrings
+                        Call WriteImportObjStrings
                     Else
-                        call WriteImportObjStringAndOrdinal eax
+                        Call WriteImportObjStringAndOrdinal eax
                     End_If
                 .End_If
 
             ..Else
                 ; to be added in AddListviewItem
                 ; Always clear the loaded data before use.
-                call ClearBuffer ExportedLibraryStr, 256
-                mov D$ExportedLibrary 0
-                call GetCoffListing
+                Call ClearBuffer ExportedLibraryStr, 256
+                Mov D$ExportedLibrary 0
+                Call GetCoffListing
 
             ..End_If
 
         ...Else
             ; to be added in AddListviewItem
             ; Always clear the loaded data before use.
-            call ClearBuffer ExportedLibraryStr, 256
-            mov D$ExportedLibrary 0
-            call GetCoffListing
+            Call ClearBuffer ExportedLibraryStr, 256
+            Mov D$ExportedLibrary 0
+            Call GetCoffListing
 
         ...End_If
     pop esi
@@ -13720,7 +13720,7 @@ Proc WriteIMAGE_FILE_MACHINE:
     Argument @Type
     Uses esi
 
-        mov esi IMAGE_FILE_MACHINE_Text, eax D@Type | and eax 0FFFF
+        Mov esi IMAGE_FILE_MACHINE_Text, eax D@Type | and eax 0FFFF
 
         ..While D$esi <> 0-1
             .If D$esi = eax
@@ -13730,8 +13730,8 @@ Proc WriteIMAGE_FILE_MACHINE:
                 .While B$esi <> '&'
                     inc esi
                     If D$esi = 0-1
-                        call WriteEax
-                        mov esi UnKown_IMAGE_FILE_MACHINE
+                        Call WriteEax
+                        Mov esi UnKown_IMAGE_FILE_MACHINE
                         While B$esi <> 0 | movsb | End_While | ExitP
                     End_If
                 .End_While
@@ -13745,17 +13745,17 @@ Proc IsIMAGE_FILE_MACHINE:
     Argument @Type
     Uses esi
 
-        mov esi IMAGE_FILE_MACHINE_Text, eax D@Type | and eax 0FFFF
+        Mov esi IMAGE_FILE_MACHINE_Text, eax D@Type | and eax 0FFFF
 
         .While D$esi <> 0-1
             .If D$esi = eax
-                mov eax &TRUE | ExitP
+                Mov eax &TRUE | ExitP
             .Else
                 add esi 5
                 While B$esi <> '&'
                     inc esi
                     If D$esi = 0-1
-                        mov eax &FALSE | ExitP
+                        Mov eax &FALSE | ExitP
                     End_If
                 End_While
                 sub esi 4
@@ -13806,12 +13806,12 @@ Proc LibScan_ErrManager:
     Arguments @ErrFlag
     Uses edx ; messagebox function changes the value of edx...So we need to preserve it, because we will use it.
 
-    mov eax D@ErrFlag
+    Mov eax D@ErrFlag
 
     .If eax = IMP_OBJ_RESBIT_ERR
 
 
-        call 'USER32.MessageBoxA' 0, {"CORRUPTED LIBRARY !!!
+        Call 'USER32.MessageBoxA' 0, {"CORRUPTED LIBRARY !!!
 
 The reserved Bits for the ImpObjHdr.Type member of the structure IMPORT_OBJECT_HEADER
 on this Library are not Zero.
@@ -13831,14 +13831,14 @@ Many thanks in advance. Betov.
 ", 0}, {'Corrupted Library', 0}, &MB_SYSTEMMODAL__&MB_ICONEXCLAMATION__&MB_YESNO
 
             If eax = &IDNO
-                mov eax &FALSE
+                Mov eax &FALSE
             Else_If eax = &IDYES
-                mov eax &TRUE
+                Mov eax &TRUE
             End_If
 
     .Else_If eax = IMP_OBJ_UNKTYPE_ERR
 
-          call 'USER32.MessageBoxA' D$hwnd {"UNKNOWN TYPE !!!.
+          Call 'USER32.MessageBoxA' D$H.MainWindow {"UNKNOWN TYPE !!!.
 
 The reserved Bits for the ImpObjHdr.Type member of the structure IMPORT_OBJECT_HEADER
 on this Library are of a Unknown Type.
@@ -13856,7 +13856,7 @@ Or report this error to the Development Team at the main RosAsm Forum.
 
 Many thanks in advance. Betov." 0} {"Unknown Type" 0} &MB_SYSTEMMODAL__&MB_ICONEXCLAMATION
 
-            mov eax &FALSE
+            Mov eax &FALSE
 
     .End_If
 
@@ -13875,18 +13875,18 @@ ________________________________________________________________________________
  ImpObjHdrType: 'ImpObjHdr.Type: W$ ', 0]
 
 WriteObjIndice:
-    mov D$edi 'Obj',
+    Mov D$edi 'Obj',
         ecx D$LibObjIndice, D$edi+3 ecx,
         cx W$LibObjIndice+4, W$edi+7 cx
 
     add edi 9
 
-    mov B$edi '.' | inc edi
+    Mov B$edi '.' | inc edi
 ret
 
 
 WriteIndiceOnly:
-    mov ecx D$LibObjIndice, D$edi ecx, cx W$LibObjIndice+4, W$edi+4 cx
+    Mov ecx D$LibObjIndice, D$edi ecx, cx W$LibObjIndice+4, W$edi+4 cx
     add edi 6
 ret
 
@@ -13895,44 +13895,44 @@ Proc WriteLibImportObjItem:
     Arguments @Text, @Flag
     Uses esi
 
-        call WriteObjIndice
+        Call WriteObjIndice
 
-        mov esi D@Text | While B$esi <> 0 | movsb | End_While
+        Mov esi D@Text | While B$esi <> 0 | movsb | End_While
 
         If D@Text = ImpObjHdrMachineText
-            call WriteIMAGE_FILE_MACHINE eax
+            Call WriteIMAGE_FILE_MACHINE eax
 
         Else_If D@Text = ImpObjHdrType
             ; Need to increase edi with CRLF at the end, because when  the function returns, it
             ; decreases edi by 2. And we need to close the bracket after the paragraph, due to the commented
             ; Hexadecimal Value below.
             push eax
-            call WriteLibImportObjType eax
+            Call WriteLibImportObjType eax
             pop eax
             zCopy {' ; Hex Value:  ', 0}
-            call WriteEax
-            mov W$edi CRLF | add edi 2
+            Call WriteEax
+            Mov W$edi CRLF | add edi 2
 
         Else_If D@Text = ImpObjHdrSizeOfDataText
 
             push esi
-                call WriteObjIndice
+                Call WriteObjIndice
                 zCopy {'ImportStringsEnd', 0}
             pop esi
 
-            mov D$edi ' - ' | add edi 3
+            Mov D$edi ' - ' | add edi 3
             push esi
-                call WriteObjIndice
+                Call WriteObjIndice
                 zCopy {'ImportStrings ; Hex Value:  ', 0}
             pop esi
-            call WriteEax
+            Call WriteEax
 
         Else_If B@Flag = &TRUE
-            call WriteEax
+            Call WriteEax
 
         End_If
 
-        mov W$edi CRLF | add edi 2
+        Mov W$edi CRLF | add edi 2
 EndP
 
 ____________________________________________________________________________________________
@@ -14006,13 +14006,13 @@ ________________________________________________________________________________
     03; 07; 11, 15 to 31
 
    Ex.: We have a WORD with the value of 4073. So we clean the high bits resulting, like this:
-                mov eax 4073 | mov ah 0 ; Bits 8 to 15 settled to 0)
+                Mov eax 4073 | Mov ah 0 ; Bits 8 to 15 settled to 0)
         
         Now we must clear the bits 5 to 7, because they are unused. Like this:
          btr eax 5 | btr eax 6 | btr eax 7 ; I´m using this, because it is probably faster on big files.
          
         Or we can also do this:
-        shl eax 3 | mov ah 0 | shr eax 3
+        shl eax 3 | Mov ah 0 | shr eax 3
         
    
    
@@ -14024,18 +14024,18 @@ Proc WriteLibImportObjType:
     Argument @Flags
     Uses esi, ebx
 
-        mov eax D@Flags
+        Mov eax D@Flags
 
         .If_And eax >= 32, eax <= 65535 ; Check for Corrupted library. Reserved Bits are not 0
 
-            call LibScan_ErrManager IMP_OBJ_RESBIT_ERR
+            Call LibScan_ErrManager IMP_OBJ_RESBIT_ERR
 
             If eax = &FALSE ; The user pressed No
                 ExitP
 
             Else_If eax = &TRUE ; The user pressed Yes. We will Zero all reserved bits for him continue the parsing.
-                mov eax D@Flags ; Restore the original value of eax to be fixed
-                mov ah 0 ; Clear High Bits Flags
+                Mov eax D@Flags ; Restore the original value of eax to be fixed
+                Mov ah 0 ; Clear High Bits Flags
                 btr eax 5 | btr eax 6 | btr eax 7 ; Clear Bits 5 to 7
 
             End_If
@@ -14046,12 +14046,12 @@ Proc WriteLibImportObjType:
 
 
         test eax 010 | jz A1> ; Is Bit4 Flagged ? So, is eax = 16 to 31 ? No, jmp over
-            call LibScan_ErrManager IMP_OBJ_UNKTYPE_ERR | ExitP
+            Call LibScan_ErrManager IMP_OBJ_UNKTYPE_ERR | ExitP
 A1:
         test eax 1 | jz A2> ; Is bit0 flagged ? No...Ok, we don´ have any unknown types (15, 11, 7, 3)
             test eax 2 | jz A2> ; is bit1 also Flagged ? No...Ok, we don´ have any unknown types (15, 11, 7, 3) jmp over.
 
-            call LibScan_ErrManager IMP_OBJ_UNKTYPE_ERR | ExitP ; Yes bit0 and bit1 are flagged, we have unknown types (15, 11, 7, 3)
+            Call LibScan_ErrManager IMP_OBJ_UNKTYPE_ERR | ExitP ; Yes bit0 and bit1 are flagged, we have unknown types (15, 11, 7, 3)
 
 A2:
 
@@ -14061,19 +14061,19 @@ A2:
           ; First lower two Bits (Code / Data / Constant). We can only have one of the 02 bits set, or none of them.
 
             test eax &IMPORT_OBJECT_DATA | jz L1> ; Is Bit0 Flaged ? Yes, do next line. Values = 1,5,9,13
-                mov esi IMPORT_OBJECT_DATA
+                Mov esi IMPORT_OBJECT_DATA
                 jmp L2>
 
 L1:         test eax &IMPORT_OBJECT_CONST | jz L1> ; Is Bit1 Flaged ? Yes, do next line. Values = 2,6,10,14
-                mov esi IMPORT_OBJECT_CONST
+                Mov esi IMPORT_OBJECT_CONST
                 jmp L2>
 
 L1:         ; we don´ have bit0 and bit1 flagged. Values = 0,4,8,12
-                mov esi IMPORT_OBJECT_CODE
+                Mov esi IMPORT_OBJECT_CODE
 
 L2:
                 While B$esi <> 0 | movsb | End_While
-                mov W$edi '+(' | add edi 2
+                Mov W$edi '+(' | add edi 2
 
 
           ; Second Part of the Record of Bits 2,3 (Ordinal, Name, NoPrefix, Undecorated)
@@ -14084,26 +14084,26 @@ L2:
 
             cmp eax &IMPORT_OBJECT_NAME_UNDECORATE | jnz L1> ; Is Bit0 and 1 Flaged ? Yes, do next line
                                                             ; Values = 12, 13, 14
-                mov esi IMPORT_OBJECT_NAME_UNDECORATE
-                mov B$SymNameType &IMPORT_OBJECT_NAME_UNDECORATE ; Save for later skip leading chars
+                Mov esi IMPORT_OBJECT_NAME_UNDECORATE
+                Mov B$SymNameType &IMPORT_OBJECT_NAME_UNDECORATE ; Save for later skip leading chars
                 jmp L2>
 
 
 L1:         test eax &IMPORT_OBJECT_NAME | jz L1> ; Is Bit0 Flaged ? Yes, do next line. Values = 4,5,6
-                mov esi IMPORT_OBJECT_NAME
+                Mov esi IMPORT_OBJECT_NAME
                 jmp L2>
 
 L1:         test eax &IMPORT_OBJECT_NAME_NO_PREFIX | jz L1> ; Is Bit1 Flaged ? Yes, do next line. Values = 8,9,10
-                mov esi IMPORT_OBJECT_NAME_NO_PREFIX
-                mov B$SymNameType &IMPORT_OBJECT_NAME_NO_PREFIX ; Save for later skip leading chars
+                Mov esi IMPORT_OBJECT_NAME_NO_PREFIX
+                Mov B$SymNameType &IMPORT_OBJECT_NAME_NO_PREFIX ; Save for later skip leading chars
                 jmp L2>
 
 L1:         ; we don't have bit0 and bit1 flagged. Values = 0,1,2
-                mov esi IMPORT_OBJECT_ORDINAL
+                Mov esi IMPORT_OBJECT_ORDINAL
 
 L2:
                 While B$esi <> 0 | movsb | End_While
-                mov D$edi ' shl', D$edi+4 ' 2)' | add edi 7
+                Mov D$edi ' shl', D$edi+4 ' 2)' | add edi 7
 
 EndP
 
@@ -14115,22 +14115,22 @@ Proc WriteImportObjHdrTimeDateStamp:
     Uses esi
 
         sub edi 2 ; We need to subtract 02 Bytes, to bypass the previous CRLF
-        mov esi {' ; - TimeDate Stamp: ', 0}
+        Mov esi {' ; - TimeDate Stamp: ', 0}
         While B$esi <> 0 | movsb | End_While
 
         ; Get the DateTime Stamp
 
         ; Time date stamp to string Function
-        call TimeDateStampToString D@TimeDate {"yyyy/MM/dd ddd ", 0} {"HH:mm:ss UTC", 0} szDateString szTimeString
+        Call TimeDateStampToString D@TimeDate {"yyyy/MM/dd ddd ", 0} {"HH:mm:ss UTC", 0} szDateString szTimeString
 
         ; Write the TimeDate Stamp strings
-        mov esi szDateString
+        Mov esi szDateString
         While B$esi <> 0 | movsb | End_While
 
-        mov esi szTimeString
+        Mov esi szTimeString
         While B$esi <> 0 | movsb | End_While
 
-        mov W$edi CRLF | add edi 2 ; We now Add the paragraphs marks, and add 02 Bytes at edi
+        Mov W$edi CRLF | add edi 2 ; We now Add the paragraphs marks, and add 02 Bytes at edi
 
 EndP
 ____________________________________________________________________________________________
@@ -14140,61 +14140,61 @@ ________________________________________________________________________________
 WriteLibImportObj:
 
     push esi
-        mov esi CoffListingTitle
+        Mov esi CoffListingTitle
         While B$esi <> 0 | movsb | End_While
-        call WriteIndiceOnly
-        mov B$edi ':', W$edi+1 CRLF | add edi 3
+        Call WriteIndiceOnly
+        Mov B$edi ':', W$edi+1 CRLF | add edi 3
     pop esi
 
     ; To be used in AddListviewItem
     push esi
-        mov D$LvOffsetCOFF 0 ; always initialize at 0 1st, due to the several loopings for each object.
+        Mov D$LvOffsetCOFF 0 ; always initialize at 0 1st, due to the several loopings for each object.
         sub esi D$LibFileMemory
-        mov D$LvOffsetCOFF esi
+        Mov D$LvOffsetCOFF esi
     pop esi
 
     push esi
-;        mov B$edi '[' | inc edi
+;        Mov B$edi '[' | inc edi
 
-        call WriteLibImportObjItem ImpObjHdrSig1Text, &FALSE | add esi 2
+        Call WriteLibImportObjItem ImpObjHdrSig1Text, &FALSE | add esi 2
 
-        call WriteLibImportObjItem ImpObjHdrSig2Text, &FALSE | add esi 2
+        Call WriteLibImportObjItem ImpObjHdrSig2Text, &FALSE | add esi 2
 
         movzx eax W$esi | add esi 2
-        call WriteLibImportObjItem ImpObjHdrVersionText, &TRUE
+        Call WriteLibImportObjItem ImpObjHdrVersionText, &TRUE
 
         ; To be used in AddListviewItem
-        mov W$CoffMachineType 0 ; always initialize at 0 1st, due to the several loopings for each object.
+        Mov W$CoffMachineType 0 ; always initialize at 0 1st, due to the several loopings for each object.
         move W$CoffMachineType W$esi
 
         movzx eax W$esi | add esi 2
-        call WriteLibImportObjItem ImpObjHdrMachineText, &TRUE
+        Call WriteLibImportObjItem ImpObjHdrMachineText, &TRUE
 
         lodsd
-        mov D$ImpObjDateStamp eax
-        call WriteLibImportObjItem ImpObjHdrTimeDateStampText, &TRUE
-        call WriteImportObjHdrTimeDateStamp D$ImpObjDateStamp
+        Mov D$ImpObjDateStamp eax
+        Call WriteLibImportObjItem ImpObjHdrTimeDateStampText, &TRUE
+        Call WriteImportObjHdrTimeDateStamp D$ImpObjDateStamp
 
         lodsd
         If D$esi-4 <> 0
-            call WriteLibImportObjItem ImpObjHdrSizeOfDataText, &TRUE
+            Call WriteLibImportObjItem ImpObjHdrSizeOfDataText, &TRUE
         Else
 
             push esi
-                call WriteObjIndice
+                Call WriteObjIndice
                 zCopy ImpObjHdrSizeOfDataText
             pop esi
-            call WriteEax
-            mov W$edi CRLF | add edi 2
+            Call WriteEax
+            Mov W$edi CRLF | add edi 2
         End_If
 
         movzx eax W$esi | add esi 2
-        call WriteLibImportObjItem ImpObjHdrOrdinalText, &TRUE
+        Call WriteLibImportObjItem ImpObjHdrOrdinalText, &TRUE
 
         movzx eax W$esi | add esi 2
-        call WriteLibImportObjItem ImpObjHdrType, &TRUE
+        Call WriteLibImportObjItem ImpObjHdrType, &TRUE
 
-        mov B$edi-2 ']' | dec edi | mov D$edi CRLF2 | add edi 4
+        Mov B$edi-2 ']' | dec edi | Mov D$edi CRLF2 | add edi 4
     pop esi
 ret
 
@@ -14209,13 +14209,13 @@ ret
 Proc WriteImportObjStrings:
     Uses ecx, esi
 
-    mov D$edi '[' | inc edi
-    mov D$edi 'Obj',
+    Mov D$edi '[' | inc edi
+    Mov D$edi 'Obj',
         eax D$LibObjIndice, D$edi+3 eax,
         ax W$LibObjIndice+4, W$edi+7 ax,
         B$edi+9 '.' | add edi 10
     push esi
-        mov esi ImportStringsText | While B$esi <> 0 | movsb | End_While
+        Mov esi ImportStringsText | While B$esi <> 0 | movsb | End_While
     pop esi
 
     push esi
@@ -14223,9 +14223,9 @@ Proc WriteImportObjStrings:
         push esi
         push edi
             ; Always clear the loaded data before use.
-            call ClearBuffer ExportedLibraryStr, 256
-            mov D$ExportedLibrary 1
-            mov edi ExportedLibraryStr
+            Call ClearBuffer ExportedLibraryStr, 256
+            Mov D$ExportedLibrary 1
+            Mov edi ExportedLibraryStr
             While B$esi <> 0 | movsb | End_While
         pop edi
         pop esi
@@ -14233,34 +14233,34 @@ Proc WriteImportObjStrings:
 
         ; Copy the Function Name:
         While B$esi <> 0 | movsb | End_While
-        mov D$edi "', 0", D$edi+4 ", '" | add edi 7
+        Mov D$edi "', 0", D$edi+4 ", '" | add edi 7
         While B$esi = 0 | inc esi | End_While
 
         ; Copy the Module Name:
         push esi
             While B$esi <> 0 | movsb | End_While
-            mov D$edi "', 0" | add edi 4
-            mov W$edi CRLF | add edi 2
+            Mov D$edi "', 0" | add edi 4
+            Mov W$edi CRLF | add edi 2
             push esi
-                call WriteObjIndice
+                Call WriteObjIndice
                 zCopy {'ImportStringsEnd: ]', 0}
             pop esi
-            mov D$edi CRLF2 | add edi 4
+            Mov D$edi CRLF2 | add edi 4
 
-            mov esi RosAsmInterpretation | While B$esi <> 0 | movsb | End_While
+            Mov esi RosAsmInterpretation | While B$esi <> 0 | movsb | End_While
         pop esi
 
         ; Copy the Commented Module Name:
         While B$esi <> 0 | movsb | End_While
-        mov eax D$edi-4 | or eax 020202000
+        Mov eax D$edi-4 | or eax 020202000
         If eax = '.dll'
             sub edi 4
         End_If
 
-        mov B$edi '.' | inc edi
+        Mov B$edi '.' | inc edi
     pop esi
 
-    mov ecx esi ; Copy esi String to be used for name undecoration
+    Mov ecx esi ; Copy esi String to be used for name undecoration
 
   ; Copy the Commented Function Name:
 
@@ -14300,34 +14300,34 @@ Proc WriteImportObjStrings:
 
     .End_if
 
-    mov B$edi "'" | inc edi
+    Mov B$edi "'" | inc edi
 
-    mov D$edi CRLF2 | add edi 4
+    Mov D$edi CRLF2 | add edi 4
 
     ; Write the full Undecorated name. Ecx ecx points to {'?wndTopMost@CWnd@@2V1@B' , 0}
 
     push esi
-        mov esi RosAsmUndecoratedName | While B$esi <> 0 | movsb | End_While
+        Mov esi RosAsmUndecoratedName | While B$esi <> 0 | movsb | End_While
     pop esi
 
     push ecx
-    call 'IMAGEHLP.UnDecorateSymbolName' ecx, Trash, 4000, &UNDNAME_COMPLETE
+    Call 'IMAGEHLP.UnDecorateSymbolName' ecx, Trash, 4000, &UNDNAME_COMPLETE
     pop ecx
 
-    call StrCmp ecx Trash
+    Call StrCmp ecx Trash
 
     ; If the strings are the same it means that the above function failed, because the undecoretated name is not the same
     ; as the original loaded name.
     If eax = 0
-        call Simple_UndecorateSymbolName ecx, Trash
+        Call Simple_UndecorateSymbolName ecx, Trash
     End_If
 
     push esi
-        mov esi Trash | While B$esi <> 0 | movsb | End_While
+        Mov esi Trash | While B$esi <> 0 | movsb | End_While
     pop esi
 
 
-    mov D$edi CRLF2 | add edi 4
+    Mov D$edi CRLF2 | add edi 4
 EndP
 ___________________________________________________________________________
 ;;
@@ -14356,8 +14356,8 @@ Proc Simple_UndecorateSymbolName:
 
     pushad
 
-    mov D@ParamCount 0
-    mov edi D@Input
+    Mov D@ParamCount 0
+    Mov edi D@Input
 
     While B$edi <> 0
         On B$edi = '?', jmp L4>> ; On this simplified versin we cannot have this char
@@ -14381,8 +14381,8 @@ L1:
     ; If we reach here we have a Good Symbol.
 L2:
 
-    mov esi D@Input
-    mov edi D@Output
+    Mov esi D@Input
+    Mov edi D@Output
 
     If B$esi = '_'
         inc esi
@@ -14397,17 +14397,17 @@ L2:
 
         .If B$esi = '@' ; We found our delimiter for the Parameters amount.
             inc esi ; Bypass the '@' char.
-            call DecimalStringToDword esi
+            Call DecimalStringToDword esi
             shr eax 2 ; divide the result by 4
             push esi | ZCopy {" - Amount of Parameters: ", 0} | pop esi
 
             ; Convert Dword to Decimal String
             push edi
-                mov D@ParamCount eax
+                Mov D@ParamCount eax
                 lea esi D@ParamCount
-                mov ecx 4
-                call toUDword
-                mov esi edi
+                Mov ecx 4
+                Call toUDword
+                Mov esi edi
             pop edi
 
             Do | movsb | LoopUntil B$esi-1 = 0
@@ -14419,7 +14419,7 @@ L2:
     .End_While
 
 L3:
-    mov B$edi 0
+    Mov B$edi 0
 
    L4:
 
@@ -14436,14 +14436,14 @@ Proc DecimalStringToDword:
     Arguments @String
     Uses, esi, ebx, ecx, edx
 
-    mov esi D@String
-    mov ecx 10, ebx 0, eax 0
+    Mov esi D@String
+    Mov ecx 10, ebx 0, eax 0
 
     .While B$esi <> 0
         on B$esi = ' ', ExitP
         mul ecx
         push eax
-            lodsb | sub al '0' | mov bl al
+            lodsb | sub al '0' | Mov bl al
         pop eax
         add eax ebx
     .End_While
@@ -14455,13 +14455,13 @@ ___________________________________________________________________________
 Proc WriteImportObjStringAndOrdinal:
     Argument @Ordinal
 
-        mov D$edi '[' | inc edi
-        mov D$edi 'Obj',
+        Mov D$edi '[' | inc edi
+        Mov D$edi 'Obj',
             eax D$LibObjIndice, D$edi+3 eax,
             ax W$LibObjIndice+4, W$edi+7 ax,
             B$edi+9 '.' | add edi 10
         push esi
-            mov esi ImportStringsText | While B$esi <> 0 | movsb | End_While
+            Mov esi ImportStringsText | While B$esi <> 0 | movsb | End_While
         pop esi
 
 
@@ -14470,9 +14470,9 @@ Proc WriteImportObjStringAndOrdinal:
         push edi
 
             ; Always clear the loaded data before use.
-            call ClearBuffer ExportedLibraryStr, 256
-            mov D$ExportedLibrary 1
-            mov edi ExportedLibraryStr
+            Call ClearBuffer ExportedLibraryStr, 256
+            Mov D$ExportedLibrary 1
+            Mov edi ExportedLibraryStr
             While B$esi <> 0 | movsb | End_While
         pop edi
         pop esi
@@ -14481,31 +14481,31 @@ Proc WriteImportObjStringAndOrdinal:
         ; Copy the Module Name:
         push esi
             While B$esi <> 0 | movsb | End_While
-            mov D$edi "', 0" | add edi 4
-            mov W$edi CRLF | add edi 2
+            Mov D$edi "', 0" | add edi 4
+            Mov W$edi CRLF | add edi 2
             push esi
-                call WriteObjIndice
+                Call WriteObjIndice
                 zCopy {'ImportStringsEnd: ]', 0}
             pop esi
-            mov D$edi CRLF2 | add edi 4
+            Mov D$edi CRLF2 | add edi 4
 
-            mov esi RosAsmInterpretation | While B$esi <> 0 | movsb | End_While
+            Mov esi RosAsmInterpretation | While B$esi <> 0 | movsb | End_While
 
         pop esi
 
       ; Copy the Commented Module Name:
         While B$esi <> 0 | movsb | End_While
-        mov eax D$edi-4 | or eax 020202000
+        Mov eax D$edi-4 | or eax 020202000
         If eax = '.dll'
             sub edi 4
         End_If
 
-        mov B$edi '.' | inc edi
+        Mov B$edi '.' | inc edi
     pop esi
   ; Copy the Commented Function Ordinal:
-    mov eax D@Ordinal | call WriteEax
+    Mov eax D@Ordinal | Call WriteEax
 
-    mov D$edi CRLF2 | add edi 4
+    Mov D$edi CRLF2 | add edi 4
 EndP
 
 
@@ -14513,68 +14513,68 @@ EndP
 [LookUpValidNameCharsTable: B$ ? #0100]
 
 InitLookUpValidNameCharsTable:
-    mov edi LookUpValidNameCharsTable, eax 0, ecx 0100
+    Mov edi LookUpValidNameCharsTable, eax 0, ecx 0100
 
   ; Build a normal Asicii Table:
-L0: mov B$edi+eax al | inc eax | loop L0<
+L0: Mov B$edi+eax al | inc eax | loop L0<
 ret
 
   ; Replace everything above 127 by '_'
-    mov ecx 080, ebx 080, al '_'
-L0: mov B$edi+ebx al | inc ebx | loop L0<
+    Mov ecx 080, ebx 080, al '_'
+L0: Mov B$edi+ebx al | inc ebx | loop L0<
 
   ; Replace Ascii 127 by '_'
-    mov B$edi+07F '_'
+    Mov B$edi+07F '_'
 
-    mov eax '\' | mov B$edi+eax '.'
+    Mov eax '\' | Mov B$edi+eax '.'
 
-    mov eax '?' | mov B$edi+eax '.'
+    Mov eax '?' | Mov B$edi+eax '.'
 
-    mov eax '_' | mov B$edi+eax '.'
+    Mov eax '_' | Mov B$edi+eax '.'
 
-    mov eax '$' | mov B$edi+eax '.'
+    Mov eax '$' | Mov B$edi+eax '.'
 
-    mov eax '|' | mov B$edi+eax '.'
+    Mov eax '|' | Mov B$edi+eax '.'
 ret
 ;;
   ; Other possibility:
   
-    mov al '_', ecx 0100, edi LookUpValidNameCharsTable | rep stosb
+    Mov al '_', ecx 0100, edi LookUpValidNameCharsTable | rep stosb
     
-    mov edi LookUpValidNameCharsTable, eax '0'
+    Mov edi LookUpValidNameCharsTable, eax '0'
     While eax <= '9'
-        mov B$edi+eax al | inc al
+        Mov B$edi+eax al | inc al
     End_While
     
-    mov eax 'A'
+    Mov eax 'A'
     While eax <= 'Z'
-        mov B$edi+eax al | inc al
+        Mov B$edi+eax al | inc al
     End_While
     
-    mov eax 'a'
+    Mov eax 'a'
     While eax <= 'z'
-        mov B$edi+eax al | inc al
+        Mov B$edi+eax al | inc al
     End_While
 ret
 ;;
 
-[LookUpValidNameChars | lodsb | and eax 0FF | mov al B$LookUpValidNameCharsTable+eax | stosb]
+[LookUpValidNameChars | lodsb | and eax 0FF | Mov al B$LookUpValidNameCharsTable+eax | stosb]
 
 [IMAGE_ARCHIVE_MEMBER_SIZE 030]
 
 GetLongNamesPointer:  ; GetMemberSize
     ...If D$LongNamesBase = 0
         pushad
-          ;  mov esi D$LibFileMemory | add esi 8
+          ;  Mov esi D$LibFileMemory | add esi 8
 
 L0:         If W$esi = '//'
                 add esi 03C
-                mov D$LongNamesBase esi
+                Mov D$LongNamesBase esi
 
             Else_If B$esi = '/'
                 push D$MemberSize
                     add esi IMAGE_ARCHIVE_MEMBER_SIZE
-                    call GetMemberSize
+                    Call GetMemberSize
                     sub esi IMAGE_ARCHIVE_MEMBER_SIZE
                     add esi 03C | add esi D$MemberSize
                 pop D$MemberSize | jmp L0<
@@ -14590,12 +14590,12 @@ CheckLongNameDisplacement:
         While B$esi <> ' '
             lodsb
             If al < '0'
-                mov eax &FALSE | jmp L9>
+                Mov eax &FALSE | jmp L9>
             Else_If al > '9'
-                mov eax &FALSE | jmp L9>
+                Mov eax &FALSE | jmp L9>
             End_If
         End_While
-        mov eax &TRUE
+        Mov eax &TRUE
 L9: pop esi
 ret
 
@@ -14605,21 +14605,21 @@ Proc WriteLongName:  ; GetMemberSize
     Uses ebx, ecx, edx
 
     push esi
-        mov esi {'Long Name: ', 0};IMAGE_ARCHIVE_MEMBER_HEADERstring
+        Mov esi {'Long Name: ', 0};IMAGE_ARCHIVE_MEMBER_HEADERstring
         While B$esi <> 0 | movsb | End_While
     pop esi
 
-        mov esi D@Dis, ecx 10, ebx 0, eax 0
+        Mov esi D@Dis, ecx 10, ebx 0, eax 0
 
         While B$esi > ' '
             mul ecx
             push eax
-                lodsb | sub al '0' | mov bl al
+                lodsb | sub al '0' | Mov bl al
             pop eax
             add eax ebx
         End_While
 
-        mov esi D$LongNamesBase | add esi eax
+        Mov esi D$LongNamesBase | add esi eax
 
         While B$esi >= ' ' | movsb | End_While
         On B$edi-1 = '/', dec edi
@@ -14630,14 +14630,14 @@ ________________________________________________________________________________
 [LongNamesBase: ?]
 
 GetLongNamesBase:
-    mov D$LongNamesBase 0
+    Mov D$LongNamesBase 0
    ____________________________________________
   ; Lib Tag:
-    mov esi D$LibFileMemory | add esi 8
+    Mov esi D$LibFileMemory | add esi 8
 
     If W$esi = '/ '
         push esi
-            add esi LIB_MEMBER_SIZE | call GetMemberSize
+            add esi LIB_MEMBER_SIZE | Call GetMemberSize
         pop esi
         add esi COFF_HEADER_SIZE
         add esi D$MemberSize | On B$esi = 0A, inc esi
@@ -14646,7 +14646,7 @@ GetLongNamesBase:
   ; Second optional Lib Header:
     If W$esi = '/ '
         push esi
-            add esi LIB_MEMBER_SIZE | call GetMemberSize
+            add esi LIB_MEMBER_SIZE | Call GetMemberSize
         pop esi
         add esi COFF_HEADER_SIZE
         add esi D$MemberSize | On B$esi = 0A, inc esi
@@ -14655,7 +14655,7 @@ GetLongNamesBase:
   ; Third optional Lib Header:
     If W$esi = '//'
         add esi COFF_HEADER_SIZE
-        mov D$LongNamesBase esi
+        Mov D$LongNamesBase esi
     End_If
 ret
 ____________________________________________________________________________________________
@@ -14727,9 +14727,9 @@ ________________________________________________________________________________
 
 WriteLibTag:
   ; (Includes the First Headers comments at once):
-    mov esi LibTag | While B$esi <> 0 | movsb | End_While
+    Mov esi LibTag | While B$esi <> 0 | movsb | End_While
 
-    mov esi D$LibFileMemory | add esi 8
+    Mov esi D$LibFileMemory | add esi 8
 ret
 ____________________________________________________________________________________________
 
@@ -14744,11 +14744,11 @@ ShowAmountOfSymbols1:
   Show the Amount of Symbols (a dWord stored the other way round):
 ;;
     push esi
-        mov esi AmountOfMembers | While B$esi <> 0 | movsb | End_While
+        Mov esi AmountOfMembers | While B$esi <> 0 | movsb | End_While
     pop esi
-    lodsd | bswap eax | mov D$NumberOfSymbols eax | call WriteEax
+    lodsd | bswap eax | Mov D$NumberOfSymbols eax | Call WriteEax
 
-    mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+    Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
 ret
 ____________________________________________________________________________________________
 
@@ -14764,56 +14764,56 @@ ShowOffsetTable1: ; 'ShowOffsetTable2'
   matching Name found in the next "Symbols Table" String):
 ;;
     push esi
-        mov esi AmountOfOffsets1 | While B$esi <> 0 | movsb | End_While
+        Mov esi AmountOfOffsets1 | While B$esi <> 0 | movsb | End_While
     pop esi
 
-    mov ecx D$NumberOfSymbols
+    Mov ecx D$NumberOfSymbols
 
 L0: lodsd
     push esi
     ; Eax: Displacement to the SymOffset array Data. If it is 0, jmp over.
         ..If eax = 0
-            mov esi {'&NULL ; Null Pointer. Does not point to any Object in this file.', 0}
+            Mov esi {'&NULL ; Null Pointer. Does not point to any Object in this file.', 0}
 
         ..Else
-            mov esi D$LibFileMemory | bswap eax | add esi eax
+            Mov esi D$LibFileMemory | bswap eax | add esi eax
 
             .If B$esi = '/'
 L1:             push ecx
-                    call GetLongNamesPointer
-                    call CopyCoffIndice | inc esi
+                    Call GetLongNamesPointer
+                    Call CopyCoffIndice | inc esi
                     If D$LongNamesBase <> 0
-                       ;                     mov esi D$LongNamesBase
-                        call CheckLongNameDisplacement | On eax = &FALSE, jmp L1>
-                        call WriteLongName esi
+                       ;                     Mov esi D$LongNamesBase
+                        Call CheckLongNameDisplacement | On eax = &FALSE, jmp L1>
+                        Call WriteLongName esi
                     Else
-L1:                     call CopySymbolName
+L1:                     Call CopySymbolName
                     End_If
                 pop ecx
 
             .Else
-                call CopyCoffIndice | call CopySymbolName
+                Call CopyCoffIndice | Call CopySymbolName
 
             .End_If
 
-            mov esi IMAGE_ARCHIVE_MEMBER_HEADERstring
+            Mov esi IMAGE_ARCHIVE_MEMBER_HEADERstring
 
         ..End_If
 
         While B$esi <> 0 | movsb | End_While
     pop esi
-    mov W$edi CRLF, B$edi+2 ' ' | add edi 3 | dec ecx | jnz L0<<
+    Mov W$edi CRLF, B$edi+2 ' ' | add edi 3 | dec ecx | jnz L0<<
 ret
 
 
 CopySymbolName:
   ; Copy the ARCHIVE_MEMBER_HEADER Name:
   push ecx
-  mov ecx 1 ; It is used as a counter. Starting with 1 (The 1st byte)
+  Mov ecx 1 ; It is used as a counter. Starting with 1 (The 1st byte)
 
 
     push esi
-        mov esi {'Short Name: ', 0}
+        Mov esi {'Short Name: ', 0}
         While B$esi <> 0 | movsb | End_While
     pop esi
 
@@ -14844,7 +14844,7 @@ L2:     On B$edi-1 = '/', dec edi ; Clean Up the last "/" char
         .If W$esi+58+2+2 = &IMPORT_OBJECT_HDR_SIG2
 
             push esi
-                mov esi {' Function Name: ', 0}
+                Mov esi {' Function Name: ', 0}
                 While B$esi <> 0 | movsb | End_While
             pop esi
 
@@ -14863,10 +14863,10 @@ ret
 CopyObjSymbolName:
   ; Copy the ARCHIVE_MEMBER_HEADER Name:
   push ecx
-  mov ecx 1 ; It is used as a counter. Starting with 1 (The 1st byte)
+  Mov ecx 1 ; It is used as a counter. Starting with 1 (The 1st byte)
 
     push esi
-        mov esi {'Short Name: ', 0}
+        Mov esi {'Short Name: ', 0}
         While B$esi <> 0 | movsb | End_While
     pop esi
 
@@ -14888,7 +14888,7 @@ CopyObjSymbolName:
 L2:     On B$edi-1 = '/', dec edi ; Clean Up the last "/" char
 
     pop esi
-    mov D$ExportedLibrary 0
+    Mov D$ExportedLibrary 0
     ; We need to retrieve the Function Name in case for the Import Header (The non common Coff format)
     ; To avoid inserting the ".directive" strings etc. We need only the real function name for this type
     ; of structure.
@@ -14896,10 +14896,10 @@ L2:     On B$edi-1 = '/', dec edi ; Clean Up the last "/" char
     ..If W$esi+58+2 = &IMAGE_FILE_MACHINE_UNKNOWN
         .If W$esi+58+2+2 = &IMPORT_OBJECT_HDR_SIG2
 
-        mov D$ExportedLibrary edi
+        Mov D$ExportedLibrary edi
 
         push esi
-            mov esi {' Function Name: ', 0}
+            Mov esi {' Function Name: ', 0}
             While B$esi <> 0 | movsb | End_While
         pop esi
 
@@ -14934,35 +14934,35 @@ ShowSymbolsTable1:
   is pointed to, by the above Offset Table:
 ;;
     push esi
-        mov esi StringsArrayComments1
+        Mov esi StringsArrayComments1
         While B$esi <> 0 | movsb | End_While
     pop esi
 
-    mov D$SymName1Counter '0000', W$SymName1Counter+4 '01', ecx D$NumberOfSymbols
+    Mov D$SymName1Counter '0000', W$SymName1Counter+4 '01', ecx D$NumberOfSymbols
 
 L0: push esi
-        mov esi Symname1.Data
+        Mov esi Symname1.Data
         While B$esi <> 0 | movsb | End_While
     pop esi
     While B$esi <> 0 | LookUpValidNameChars | End_While | inc esi
-    mov D$edi "', 0", W$edi+4 CRLF, B$edi+6 ' ' | add edi 7
+    Mov D$edi "', 0", W$edi+4 CRLF, B$edi+6 ' ' | add edi 7
     lea ebx D$SymName1Counter+5
     inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx
+        Mov B$ebx '0' | dec ebx
         inc B$ebx
     End_While
     loop L0<
     sub edi 3
-    mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+    Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
 ret
 ____________________________________________________________________________________________
 
 WriteHeaderMember1:
-    call ShowAmountOfSymbols1
+    Call ShowAmountOfSymbols1
     If D$NumberOfSymbols > 0
-        call ShowOffsetTable1
-        call ShowSymbolsTable1
+        Call ShowOffsetTable1
+        Call ShowSymbolsTable1
     End_If
 ret
 ____________________________________________________________________________________________
@@ -14987,7 +14987,7 @@ ________________________________________________________________________________
 
 WriteSecondLibHeaderComment:
     push esi
-        mov esi SecondLibHeaderComment
+        Mov esi SecondLibHeaderComment
         While B$esi <> 0 | movsb | End_While
     pop esi
 ret
@@ -15002,11 +15002,11 @@ ShowAmountOfSymbols2:
   Show the Amount of Symbols (a dWord stored the other way round):
 ;;
     push esi
-        mov esi AmountOfSymbols2 | While B$esi <> 0 | movsb | End_While
+        Mov esi AmountOfSymbols2 | While B$esi <> 0 | movsb | End_While
     pop esi
-    lodsd | mov D$NumberOfSymbols eax | call WriteEax
+    lodsd | Mov D$NumberOfSymbols eax | Call WriteEax
 
-    mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+    Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
 ret
 ____________________________________________________________________________________________
 
@@ -15022,44 +15022,44 @@ ShowOffsetTable2:  ; 'ShowOffsetTable1'
   matching Name found in the next "Symbols Table" String):
 ;;
     push esi
-        mov esi AmountOfOffsets2 | While B$esi <> 0 | movsb | End_While
+        Mov esi AmountOfOffsets2 | While B$esi <> 0 | movsb | End_While
     pop esi
 
-    mov ecx D$NumberOfSymbols
+    Mov ecx D$NumberOfSymbols
 
 L0: lodsd
     push esi
   ; Eax: Displacement to the SymOffset array Data. If it is 0, jmp over.
 
         ..If eax = 0
-            mov esi {'&NULL ; Null Pointer. Does not point to any Object in this file.', 0}
+            Mov esi {'&NULL ; Null Pointer. Does not point to any Object in this file.', 0}
 
         ..Else
-            mov esi D$LibFileMemory | add esi eax
+            Mov esi D$LibFileMemory | add esi eax
             .If B$esi = '/'
-                call GetLongNamesPointer
-                call CopyCoffIndice | inc esi
+                Call GetLongNamesPointer
+                Call CopyCoffIndice | inc esi
                 If D$LongNamesBase <> 0
-                    call CheckLongNameDisplacement | On eax = &FALSE, jmp L1>
-                    call WriteLongName esi
+                    Call CheckLongNameDisplacement | On eax = &FALSE, jmp L1>
+                    Call WriteLongName esi
                 Else
-L1:                 call CopySymbolName
+L1:                 Call CopySymbolName
                 End_If
 
             .Else
-                call CopyCoffIndice | call CopySymbolName
+                Call CopyCoffIndice | Call CopySymbolName
 
             .End_If
 
-            mov esi IMAGE_ARCHIVE_MEMBER_HEADERstring
+            Mov esi IMAGE_ARCHIVE_MEMBER_HEADERstring
 
         ..End_If
 
         While B$esi <> 0 | movsb | End_While
 
     pop esi
-    mov W$edi CRLF, B$edi+2 ' ' | add edi 3 | dec ecx | jnz L0<< ;loop L0<
-    mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+    Mov W$edi CRLF, B$edi+2 ' ' | add edi 3 | dec ecx | jnz L0<< ;loop L0<
+    Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
 ret
 ____________________________________________________________________________________________
 
@@ -15072,11 +15072,11 @@ ShowAmountOfSymbols2Bis:
   Show the Amount of Members (a dWord stored the other way round), for Second Header:
 ;;
     push esi
-        mov esi AmountOfSymbols3 | While B$esi <> 0 | movsb | End_While
+        Mov esi AmountOfSymbols3 | While B$esi <> 0 | movsb | End_While
     pop esi
-    lodsd | mov D$NumberOfSymbols eax | call WriteEax
+    lodsd | Mov D$NumberOfSymbols eax | Call WriteEax
 
-    mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+    Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
 ret
 ____________________________________________________________________________________________
 
@@ -15096,28 +15096,28 @@ ShowIndexTable2:
   Flow of reversed Words. They are indexes to point out what String goes with what Obj File:
 ;;
     push esi
-        mov esi IndexString2 | While B$esi <> 0 | movsb | End_While
+        Mov esi IndexString2 | While B$esi <> 0 | movsb | End_While
     pop esi
 
-    mov ecx D$NumberOfSymbols, D$SymIndex2Counter '0000', W$SymIndex2Counter+4 '01'
+    Mov ecx D$NumberOfSymbols, D$SymIndex2Counter '0000', W$SymIndex2Counter+4 '01'
 
 L0: push esi
-        mov esi SymIndex2.Data
+        Mov esi SymIndex2.Data
         While B$esi <> 0 | movsb | End_While
     pop esi
   ; This one is not reversed:
-    lodsw | and eax 0FFFF | call WriteEax
+    lodsw | and eax 0FFFF | Call WriteEax
 
 
 
     lea ebx D$SymIndex2Counter+5
     inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx
+        Mov B$ebx '0' | dec ebx
         inc B$ebx
     End_While
 
-    mov W$edi CRLF, B$edi+2 ' ' | add edi 3 | loop L0<
+    Mov W$edi CRLF, B$edi+2 ' ' | add edi 3 | loop L0<
 
     sub edi 3
 ret
@@ -15141,37 +15141,37 @@ ShowSymbolsTable2:
   is pointed to, by the above Offset Table:
 ;;
     push esi
-        mov esi StringsArrayComments2
+        Mov esi StringsArrayComments2
         While B$esi <> 0 | movsb | End_While
     pop esi
 
-    mov D$SymName2Counter '0000', W$SymName2Counter+4 '01', ecx D$NumberOfSymbols
+    Mov D$SymName2Counter '0000', W$SymName2Counter+4 '01', ecx D$NumberOfSymbols
 
 L0: push esi
-        mov esi Symname2.Data
+        Mov esi Symname2.Data
         While B$esi <> 0 | movsb | End_While
     pop esi
     While B$esi <> 0 | LookUpValidNameChars | End_While | inc esi
-    mov D$edi "', 0", W$edi+4 CRLF, B$edi+6 ' ' | add edi 7
+    Mov D$edi "', 0", W$edi+4 CRLF, B$edi+6 ' ' | add edi 7
     lea ebx D$SymName2Counter+5
     inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx
+        Mov B$ebx '0' | dec ebx
         inc B$ebx
     End_While
     loop L0<
     sub edi 3
-    mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+    Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
 ret
 ____________________________________________________________________________________________
 
 WriteHeaderMember2:
-    call ShowAmountOfSymbols2
-    On D$NumberOfSymbols > 0, call ShowOffsetTable2
-    call ShowAmountOfSymbols2Bis
+    Call ShowAmountOfSymbols2
+    On D$NumberOfSymbols > 0, Call ShowOffsetTable2
+    Call ShowAmountOfSymbols2Bis
     If D$NumberOfSymbols > 0
-        call ShowIndexTable2
-        call ShowSymbolsTable2
+        Call ShowIndexTable2
+        Call ShowSymbolsTable2
     End_If
 ret
 ____________________________________________________________________________________________
@@ -15198,7 +15198,7 @@ ________________________________________________________________________________
 
 WriteThirdLibHeaderComment:
     push esi
-        mov esi ThirdLibHeaderComment
+        Mov esi ThirdLibHeaderComment
         While B$esi <> 0 | movsb | End_While
     pop esi
 ret
@@ -15215,42 +15215,42 @@ LongObjectNamesCounter: "000001: B$ '", 0]
 ____________________________________________________________________________________________
 
 WriteLongNameTableComment3:
-    mov D$LongObjectNamesCounter '0000', W$LongObjectNamesCounter+4 '01'
+    Mov D$LongObjectNamesCounter '0000', W$LongObjectNamesCounter+4 '01'
 
     push esi
-        mov esi LongNamesTableComment3
+        Mov esi LongNamesTableComment3
         While B$esi <> 0 | movsb | End_While
     pop esi
 ret
 
 ShowLongNamesTable3:
-    mov edx esi | add edx D$MemberSize
+    Mov edx esi | add edx D$MemberSize
 
     ..While esi < edx
         push esi
-            mov esi LongObjectNames
+            Mov esi LongObjectNames
             While B$esi <> 0 | movsb | End_While
 
             lea ebx D$LongObjectNamesCounter+5
             inc B$ebx
             While B$ebx > '9'
-                mov B$ebx '0' | dec ebx | inc B$ebx
+                Mov B$ebx '0' | dec ebx | inc B$ebx
             End_While
         pop esi
 
         While B$esi >= ' ' | LookUpValidNameChars | End_While | inc esi
         While B$esi < ' ' | inc esi | End_While
-        mov D$edi "', 0", W$edi+4 CRLF | add edi 6
+        Mov D$edi "', 0", W$edi+4 CRLF | add edi 6
     ..End_While
 
-    sub edi 2 | mov B$edi ']', D$edi+1 CRLF2 | add edi 5
+    sub edi 2 | Mov B$edi ']', D$edi+1 CRLF2 | add edi 5
 ret
 
 
 WriteHeaderMember3:
     If D$MemberSize > 0
-        call WriteLongNameTableComment3
-        call ShowLongNamesTable3
+        Call WriteLongNameTableComment3
+        Call ShowLongNamesTable3
     End_If
 ret
 ____________________________________________________________________________________________
@@ -15286,31 +15286,31 @@ ________________________________________________________________________________
 [SymbolsNumber: ?    CoffIndice: ?]
 
 GetLibCode:
-    mov D$SymbolsNumber 0, D$LibNumberOfBytes 0
-    call GetLibSymbolsNumber | On D$SymbolsNumber = 0, jmp L9>>
+    Mov D$SymbolsNumber 0, D$LibNumberOfBytes 0
+    Call GetLibSymbolsNumber | On D$SymbolsNumber = 0, jmp L9>>
 
-    call CreateLibBuffers
+    Call CreateLibBuffers
     move D$LibDisassemblyPtr D$LibDisassembly, D$LibBytesCopyPtr D$LibBytesCopy
-    mov D$CoffIndice 0
+    Mov D$CoffIndice 0
 
-L0: call GetCoffBase D$CoffIndice
+L0: Call GetCoffBase D$CoffIndice
     .If W$esi <> 0-1
         If W$esi+2 <> 0-1
-            call ScanCoff
+            Call ScanCoff
         End_If
     .End_If
-    inc D$CoffIndice | mov eax D$CoffIndice | cmp eax D$SymbolsNumber | jb L0<<
+    inc D$CoffIndice | Mov eax D$CoffIndice | cmp eax D$SymbolsNumber | jb L0<<
 
-    call DecodeLib
+    Call DecodeLib
 L9: ret
 
 
 GetLibSymbolsNumber:
-    mov esi D$LibFileMemory
+    Mov esi D$LibFileMemory
 
   ; Number of SYMBOLs in ecx:
-    mov eax D$esi+COFF_HEADER_SIZE+ARCH_TAG | bswap eax
-    mov D$SymbolsNumber eax
+    Mov eax D$esi+COFF_HEADER_SIZE+ARCH_TAG | bswap eax
+    Mov D$SymbolsNumber eax
 ret
 
 ; esi point to Coff Base (014C):
@@ -15321,8 +15321,8 @@ ret
 
 ScanCoff:
     ..If W$esi <> 0-1 ; 'PeHeader'
-        mov W$esi 0-1
-        mov D$CoffHeaderBase esi
+        Mov W$esi 0-1
+        Mov D$CoffHeaderBase esi
       ; Number of Coff Sections in ecx:
         movzx ecx W$esi+2
         add esi 014 ; COFF_HEADER_SIZE ; example: '.text'
@@ -15331,15 +15331,15 @@ L0:     and D$esi+SECTION_FLAG &IMAGE_SCN_CNT_CODE
 
         .If D$esi+SECTION_FLAG = &IMAGE_SCN_CNT_CODE
             push ecx, esi
-                mov ecx D$esi+SECTION_FILESIZE, esi D$esi+SECTION_FILEPOINTER
+                Mov ecx D$esi+SECTION_FILESIZE, esi D$esi+SECTION_FILEPOINTER
 
                 If ecx <> 0
                     add esi D$CoffHeaderBase
-                    mov edi D$LibBytesCopyPtr
-                    mov D$edi ecx | add edi 4
+                    Mov edi D$LibBytesCopyPtr
+                    Mov D$edi ecx | add edi 4
                     add D$LibNumberOfBytes ecx
                     rep movsb
-                    mov D$LibBytesCopyPtr edi
+                    Mov D$LibBytesCopyPtr edi
                 End_If
             pop esi, ecx
         .End_If
@@ -15367,7 +15367,7 @@ D$   0_60000020             ; characteristics (readable, runable, code)
 CreateLibBuffers:
     VirtualAlloc LibBytesCopy, D$LibFileLength
   ; VirtualAlloc LibSymbolsMap, D$LibFileLength
-    mov ecx D$LibFileLength | shl ecx 5 | VirtualAlloc LibDisassembly ecx
+    Mov ecx D$LibFileLength | shl ecx 5 | VirtualAlloc LibDisassembly ecx
     move D$LibDisassemblyPtr D$LibDisassembly
     add D$LibDisassembly 4
 ret
@@ -15376,8 +15376,8 @@ ret
 Proc GetCoffBase:
     Argument @Indice
 
-        mov esi D$LibFileMemory, eax D@Indice
-        mov esi D$esi+eax*4+COFF_HEADER_SIZE+ARCH_TAG+4
+        Mov esi D$LibFileMemory, eax D@Indice
+        Mov esi D$esi+eax*4+COFF_HEADER_SIZE+ARCH_TAG+4
         bswap esi | add esi D$LibFileMemory
 
       ; esi now points to a COFF Object:
@@ -15392,7 +15392,7 @@ Proc SetStringPointer:
     Arguments @Base, @Offset, @String
     Uses edi
       ; Write the Pointer to String directly on the Code "0, 0, 0, 0":
-        mov edi D@Base
+        Mov edi D@Base
         add edi D$esi+SECTION_FILEPOINTER
         add edi D@Offset
         move D$edi D@String
@@ -15420,34 +15420,34 @@ ________________________________________________________________________________
 Proc WriteSectionHeaderSymbolConstantIndex:
     uses eax, ecx, ebx, esi
 
-    call InitSymbolIndexRecord
-    call WriteObjIndice
+    Call InitSymbolIndexRecord
+    Call WriteObjIndice
 
     ; Fix the label to show in Caps and replace the '." with an "_"
     ; The 1st char in "Obj000000." is in Caps, so we don't need to overwrite the "O" char
 
     push edi
-    mov B$edi-1 '_', W$edi-9 'BJ'
+    Mov B$edi-1 '_', W$edi-9 'BJ'
     pop edi
 
     push esi
     zCopy {'SYMBOLINDEX', 0}
     pop esi
 
-    mov ecx D$esi
+    Mov ecx D$esi
 
     ; Note to René: Replacing this with a hex to decimal ascii string is better,
     ; but i couldn't make it be on the same style as SymbolTableIndex
 
     While ecx <> 0
-        call IncrementSymbolIndexRecord
+        Call IncrementSymbolIndexRecord
         dec ecx
     End_While
 
     zCopy SymbolTableIndex
 
     ; restore the SymbolTableIndex
-    call InitSymbolIndexRecord
+    Call InitSymbolIndexRecord
 
 EndP
 ;;
@@ -15492,169 +15492,169 @@ Proc AddListviewItem:
 
 
     ; Calculate and Display Index Value
-    mov edi buffer2
-    mov esi LibObjIndice
+    Mov edi buffer2
+    Mov esi LibObjIndice
     While B$esi <> 0 | movsb | End_While
 
     sub edi 6
-    mov D$lvi.pszText edi
-    mov D$lvi.iSubItem, 0
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTITEM, 0, lvi
+    Mov D$lvi.pszText edi
+    Mov D$lvi.iSubItem, 0
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTITEM, 0, lvi
 
     ; Calculate and Display FileName
 
     move D$lvi.pszText ObjectName
     inc D$lvi.iSubItem
-    call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
+    Call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
 
     ; Calculate and Display Extension
 
     If D$UseObjExtension = 0
-        mov D$lvi.pszText {"No extension", 0}
+        Mov D$lvi.pszText {"No extension", 0}
     Else
         move D$lvi.pszText ObjExtensionStr
     End_If
     inc D$lvi.iSubItem
-    call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
+    Call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
 
 
     ; Display File Name Type
     ; Definition of values in Write_Obj_IMAGE_ARCHIVE_MEMBER_HEADER
 
     If D$ObjFileNameType = 1
-        mov D$lvi.pszText {"Long Name", 0}
+        Mov D$lvi.pszText {"Long Name", 0}
     Else
-        mov D$lvi.pszText {"Short Name", 0}
+        Mov D$lvi.pszText {"Short Name", 0}
     End_If
     inc D$lvi.iSubItem
-    call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
+    Call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
 
 
     ; Display the Path of the Object file
     If D$UseObjPath = 0
-        mov D$lvi.pszText {"Not used", 0}
+        Mov D$lvi.pszText {"Not used", 0}
     Else
-        mov D$lvi.pszText ObjPathStr
+        Mov D$lvi.pszText ObjPathStr
     End_If
 
     inc D$lvi.iSubItem
-    call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
+    Call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
 
    ; Calculate and Display Offset (Convert hexa dword to string)
 
-    mov edi HexaDecimalBuffer
+    Mov edi HexaDecimalBuffer
     DwordToHex D$LvOffsetCOFF
-    mov B$edi 0
+    Mov B$edi 0
 
     move D$lvi.pszText HexaDecimalBuffer
     inc D$lvi.iSubItem
-    call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
+    Call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
 
     ; Calculate and Display Size (Convert Hexa do Decimal String)
 
-    mov esi MemberSize, ecx 4
-    call toUDword
-    mov esi edi, edi DecimalBuffer
+    Mov esi MemberSize, ecx 4
+    Call toUDword
+    Mov esi edi, edi DecimalBuffer
     Do | movsb | LoopUntil B$esi-1 = 0
 
     move D$lvi.pszText DecimalBuffer
     inc D$lvi.iSubItem
-    call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
+    Call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
 
     ; Display Object Type
     If D$ExportedLibrary = 0
-        mov D$lvi.pszText {"Runtime Object", 0}
+        Mov D$lvi.pszText {"Runtime Object", 0}
     Else
-        mov D$lvi.pszText {"Exported Object", 0}
+        Mov D$lvi.pszText {"Exported Object", 0}
     End_If
 
     inc D$lvi.iSubItem
-    call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
+    Call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
 
     ; Display Function Name used in Exported Library
     If D$ExportedLibrary = 0
-        mov D$lvi.pszText {"Not used", 0}
+        Mov D$lvi.pszText {"Not used", 0}
     Else
         move D$lvi.pszText ExportedLibraryStr
     End_If
 
     inc D$lvi.iSubItem
-    call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
+    Call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
 
 
     ; Display the Machine Type
 
-    mov D$buffer2 edi ; eax holds the address of the initial Equate String
+    Mov D$buffer2 edi ; eax holds the address of the initial Equate String
 
-    call Write_IMAGE_FILE_MACHINE D$CoffMachineType
-    mov B$edi 0 ; Fix the end of edi in all cases. Force Null Terminated String
-    mov eax D$buffer2
+    Call Write_IMAGE_FILE_MACHINE D$CoffMachineType
+    Mov B$edi 0 ; Fix the end of edi in all cases. Force Null Terminated String
+    Mov eax D$buffer2
 
     If B$eax = '&'
         inc D$buffer2
         move D$lvi.pszText D$buffer2
     Else
-        mov D$lvi.pszText {"Unknown or Corrupted Machine Type", 0}
+        Mov D$lvi.pszText {"Unknown or Corrupted Machine Type", 0}
     End_If
     inc D$lvi.iSubItem
-    call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
+    Call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
 
     ;  Calculate and Display Number of Sections (Convert Hexa do Decimal String)
 
     .If D$ExportedLibrary = 0
-        mov esi ObjNumberOfSections, ecx 4
-        call toUDword
-        mov esi edi, edi DecimalBuffer
+        Mov esi ObjNumberOfSections, ecx 4
+        Call toUDword
+        Mov esi edi, edi DecimalBuffer
         Do | movsb | LoopUntil B$esi-1 = 0
 
-        mov D$lvi.pszText DecimalBuffer
+        Mov D$lvi.pszText DecimalBuffer
     .Else
-        mov D$lvi.pszText {"No Sections", 0}
+        Mov D$lvi.pszText {"No Sections", 0}
     .End_If
 
     inc D$lvi.iSubItem
-    call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
+    Call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
 
     ; Display Time and Date Stamp
     ; This came from WriteImportObjHdrTimeDateStamp
     ;TimeDateStringtoDword
-    call Concatenation szDateString, szTimeString, buffer2
+    Call Concatenation szDateString, szTimeString, buffer2
     move D$lvi.pszText buffer2
     inc D$lvi.iSubItem
-    call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
+    Call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
 
 
     ;  Calculate and Display Number of Symbols (Convert Hexa do Decimal String) CoffSymbolsNumber
     .If D$ExportedLibrary = 0
-        mov esi ObjSymbolsNumber, ecx 4
-        call toUDword
-        mov esi edi, edi DecimalBuffer
+        Mov esi ObjSymbolsNumber, ecx 4
+        Call toUDword
+        Mov esi edi, edi DecimalBuffer
         Do | movsb | Loop_Until B$esi-1 = 0
 
-        mov D$lvi.pszText DecimalBuffer
+        Mov D$lvi.pszText DecimalBuffer
     .Else
-        mov D$lvi.pszText {"No Symbols", 0}
+        Mov D$lvi.pszText {"No Symbols", 0}
     .End_If
 
     inc D$lvi.iSubItem
-    call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
+    Call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
 
     ; Show Optional Header Options (False if it don't use Optional Header, True otherwise)
 
     If D$SizeOfOptionalHeaderInObj = 0
-        mov D$lvi.pszText {"False", 0}
+        Mov D$lvi.pszText {"False", 0}
     Else
-        mov D$lvi.pszText {"True", 0}
+        Mov D$lvi.pszText {"True", 0}
     End_If
     inc D$lvi.iSubItem
-    call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
+    Call 'user32.SendMessageA', D@h2list, &LVM_SETITEM, 0, lvi
 
     ; Clear the Buffer before exit
 
-    mov ecx &MAXPATH
-    mov edi 0
+    Mov ecx &MAXPATH
+    Mov edi 0
     L0:
-        mov B$buffer2+edi 0
+        Mov B$buffer2+edi 0
         inc edi
     Loop L0<
 
@@ -15723,61 +15723,61 @@ Proc SetupListview:
     Arguments @h2List
 
     ; /*Listview setup */
-    mov D$lvc.imask, &LVCF_TEXT+&LVCF_WIDTH
-    mov D$lvc.pszText, Header1
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_INDEX, lvc
+    Mov D$lvc.imask, &LVCF_TEXT+&LVCF_WIDTH
+    Mov D$lvc.pszText, Header1
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_INDEX, lvc
     or D$lvc.imask, &LVCF_FMT
-    mov D$lvc.pszText, Header2
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_FILENAME, lvc
+    Mov D$lvc.pszText, Header2
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_FILENAME, lvc
     or D$lvc.imask, &LVCF_FMT
-    mov D$lvc.pszText, Header3
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_EXTENSION, lvc
+    Mov D$lvc.pszText, Header3
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_EXTENSION, lvc
     or D$lvc.imask, &LVCF_FMT
-    mov D$lvc.pszText, Header4
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_NAMETYPE, lvc
+    Mov D$lvc.pszText, Header4
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_NAMETYPE, lvc
     or D$lvc.imask, &LVCF_FMT
-    mov D$lvc.pszText, Header5
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_PATH, lvc
+    Mov D$lvc.pszText, Header5
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_PATH, lvc
     or D$lvc.imask, &LVCF_FMT
-    mov D$lvc.pszText, Header6
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_OFFSET, lvc
+    Mov D$lvc.pszText, Header6
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_OFFSET, lvc
     or D$lvc.imask, &LVCF_FMT
-    mov D$lvc.pszText, Header7
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_SIZE, lvc
+    Mov D$lvc.pszText, Header7
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_SIZE, lvc
     or D$lvc.imask, &LVCF_FMT
-    mov D$lvc.pszText, Header8
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_OBJTYPE, lvc
+    Mov D$lvc.pszText, Header8
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_OBJTYPE, lvc
     or D$lvc.imask, &LVCF_FMT
-    mov D$lvc.pszText, Header9
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_EXPORTEDFUNCTION, lvc
+    Mov D$lvc.pszText, Header9
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_EXPORTEDFUNCTION, lvc
     or D$lvc.imask, &LVCF_FMT
-    mov D$lvc.pszText, Header10
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_MACHINE, lvc
+    Mov D$lvc.pszText, Header10
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_MACHINE, lvc
     or D$lvc.imask, &LVCF_FMT
-    mov D$lvc.pszText, Header11
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_SECTION, lvc
+    Mov D$lvc.pszText, Header11
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_SECTION, lvc
     or D$lvc.imask, &LVCF_FMT
-    mov D$lvc.pszText, Header12
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_TIME, lvc
+    Mov D$lvc.pszText, Header12
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_TIME, lvc
     or D$lvc.imask, &LVCF_FMT
-    mov D$lvc.pszText, Header13
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_SYMBOL, lvc
+    Mov D$lvc.pszText, Header13
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_SYMBOL, lvc
     or D$lvc.imask, &LVCF_FMT
-    mov D$lvc.pszText, Header14
-    call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_OPTIONAL, lvc
+    Mov D$lvc.pszText, Header14
+    Call 'user32.SendMessageA', D@h2list, &LVM_INSERTCOLUMN, LVIEW_OPTIONAL, lvc
 
     ;/* these 5 lines create a FLAT columnheader */
-    call 'user32.SendMessageA', D@h2List, &LVM_GETHEADER__&LVM_ENSUREVISIBLE__&LVM_SETCOLUMNORDERARRAY, 0, 0 ;// get handle to header;&LVM_GETHEADER, 0, 0 ;// get handle to header
-    mov D$hHeader, eax ;// preserve header handle
-    call 'user32.GetWindowLongA', D$hHeader, &GWL_STYLE ;// get current window styles
+    Call 'user32.SendMessageA', D@h2List, &LVM_GETHEADER__&LVM_ENSUREVISIBLE__&LVM_SETCOLUMNORDERARRAY, 0, 0 ;// get handle to header;&LVM_GETHEADER, 0, 0 ;// get handle to header
+    Mov D$hHeader, eax ;// preserve header handle
+    Call 'user32.GetWindowLongA', D$hHeader, &GWL_STYLE ;// get current window styles
     xor eax, &HDS_BUTTONS
-    call 'user32.SetWindowLongA', D$hHeader, &GWL_STYLE, eax ;// set the new header styles
+    Call 'user32.SetWindowLongA', D$hHeader, &GWL_STYLE, eax ;// set the new header styles
 
     ;/* Setup extended styles like gridlines, back-foregroundcolors */
-    call 'user32.SendMessageA', D@h2List, &LVM_SETEXTENDEDLISTVIEWSTYLE, 0, &LVS_EX_FULLROWSELECT__&LVS_EX_HEADERDRAGDROP__&LVS_EX_SUBITEMIMAGES__&LVS_EX_GRIDLINES__&LVS_EX_FLATSB
-    call 'user32.SendMessageA', D@h2List, &LVM_SETTEXTCOLOR, 0, {RGB 186 48 38};{RGB 0 0 0} ;0
-    call 'user32.SendMessageA', D@h2List, &LVM_SETBKCOLOR, 0, {RGB 255 255 255} ; 0FFFFFF
-    call 'user32.SendMessageA', D@h2List, &LVM_SETTEXTBKCOLOR, 0, {RGB 240, 247, 166} ; 0A6F7F0
+    Call 'user32.SendMessageA', D@h2List, &LVM_SETEXTENDEDLISTVIEWSTYLE, 0, &LVS_EX_FULLROWSELECT__&LVS_EX_HEADERDRAGDROP__&LVS_EX_SUBITEMIMAGES__&LVS_EX_GRIDLINES__&LVS_EX_FLATSB
+    Call 'user32.SendMessageA', D@h2List, &LVM_SETTEXTCOLOR, 0, {RGB 186 48 38};{RGB 0 0 0} ;0
+    Call 'user32.SendMessageA', D@h2List, &LVM_SETBKCOLOR, 0, {RGB 255 255 255} ; 0FFFFFF
+    Call 'user32.SendMessageA', D@h2List, &LVM_SETTEXTBKCOLOR, 0, {RGB 240, 247, 166} ; 0A6F7F0
 
 EndP
 
@@ -15795,19 +15795,19 @@ Proc Tab2Proc:
     pushad
 
     If D@uMsg = &WM_INITDIALOG
-        call 'USER32.SendMessageW' D@lParam, &EM_SETSEL, 0-1, 0
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | ExitP
+        Call 'USER32.SendMessageW' D@lParam, &EM_SETSEL, 0-1, 0
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
     Else_If D@uMsg = &WM_NOTIFY
-        call LibScanDialog_OnNotify D@hWin, D@lParam
+        Call LibScanDialog_OnNotify D@hWin, D@lParam
     Else_If D@uMsg = &WM_CTLCOLOREDIT
-        call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | ExitP
+        Call 'GDI32.SetBkColor' D@wParam, D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
     Else
-        popad | mov eax &FALSE | ExitP
+        popad | Mov eax &FALSE | ExitP
     End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 EndP
 
 
@@ -15823,19 +15823,19 @@ Proc Tab1Proc:
     pushad
 
     .If D@uMsg = &WM_INITDIALOG
-        call 'USER32.SendMessageW' D@lParam, &EM_SETSEL, 0-1, 0
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | ExitP
+        Call 'USER32.SendMessageW' D@lParam, &EM_SETSEL, 0-1, 0
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
     .Else_If D@uMsg = &WM_NOTIFY
-        call LibScanDialog_OnNotify D@hWin, D@lParam
+        Call LibScanDialog_OnNotify D@hWin, D@lParam
     .Else_If D@uMsg = &WM_CTLCOLOREDIT
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | ExitP
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
     .Else
-        popad | mov eax &FALSE | ExitP
+        popad | Mov eax &FALSE | ExitP
     .End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 EndP
 
 
@@ -15904,157 +15904,157 @@ ________________________________________________________________________________
 ; Tag Dialog 20
 
 Proc ScanLibFile:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
      pushad
 
-    ...If D@Message = &WM_COMMAND                  ; User action
+    ...If D@msg = &WM_COMMAND                  ; User action
 
         ..If_Or D@wParam = &IDCANCEL, D@wParam = M03_Exit  ; User clicks on upper right [X] or Exited through the menu
-            call LibScanCleanUp D@Adressee
-            call 'COMCTL32.ImageList_Destroy' D$LibScanDialog_ImageList
-            call 'COMCTL32.ImageList_Destroy' D$LibScanTab_ImageList
-            call 'USER32.EndDialog' D@Adressee 0
-            mov D$LibScanToolbarHandle 0
-            mov B$LibScanIsFileOpen &FALSE
+            Call LibScanCleanUp D@hwnd
+            Call 'COMCTL32.ImageList_Destroy' D$LibScanDialog_ImageList
+            Call 'COMCTL32.ImageList_Destroy' D$LibScanTab_ImageList
+            Call 'USER32.EndDialog' D@hwnd 0
+            Mov D$LibScanToolbarHandle 0
+            Mov B$LibScanIsFileOpen &FALSE
 
         ..Else_If D@wParam = M03_Close
-            call LibScanCleanUp D@Adressee
-            mov B$LibScanIsFileOpen &FALSE
-            call LibScanDialog_EnableContinueMenu &FALSE
+            Call LibScanCleanUp D@hwnd
+            Mov B$LibScanIsFileOpen &FALSE
+            Call LibScanDialog_EnableContinueMenu &FALSE
             jmp L5>>
 
         ..Else_If D@wParam = M03_Save_Report
-            call SaveLibFileAs D@Adressee, D$hLibReportEdit, D$hLibReportEditLength
+            Call SaveLibFileAs D@hwnd, D$hLibReportEdit, D$hLibReportEditLength
 
         ..Else_If D@wParam = M03_Single_Object_File
-            call SaveOneObjectFile D@Adressee
+            Call SaveOneObjectFile D@hwnd
 
         ..Else_If D@wParam = M03_Runtime_Objects_Only
-            call SaveAllObjectFile D@Adressee, EXPORT_RUNTIME_OBJECTS
+            Call SaveAllObjectFile D@hwnd, EXPORT_RUNTIME_OBJECTS
 
         ..Else_If D@wParam = M03_Exported_Objects_Only
-            call SaveAllObjectFile D@Adressee, EXPORT_EXPORTED_OBJECTS
+            Call SaveAllObjectFile D@hwnd, EXPORT_EXPORTED_OBJECTS
 
         ..Else_If D@wParam = M03_All_Object_Files
-            call SaveAllObjectFile D@Adressee, EXPORT_ALL_OBJECTS
+            Call SaveAllObjectFile D@hwnd, EXPORT_ALL_OBJECTS
 
         ..Else_If D@wParam = M03_Show_ToolBarText
-            call LibScanDialog_ToggleToolbarText D@Adressee
+            Call LibScanDialog_ToggleToolbarText D@hwnd
 
         ..Else_If D@wParam = M03_Hover_ToolBar
-            call LibScanDialog_HoverToolbarText D@Adressee
+            Call LibScanDialog_HoverToolbarText D@hwnd
 
         ..Else_If D@wParam = M03_Next_Tab
-            call LibScanDialog_EnableContinuePrevTabMenu &TRUE
-            call 'USER32.SendMessageA' D$hTab &TCM_GETCURSEL 0 0
+            Call LibScanDialog_EnableContinuePrevTabMenu &TRUE
+            Call 'USER32.SendMessageA' D$hTab &TCM_GETCURSEL 0 0
             .If eax <> LibScanSelTabDisBuild
                 inc eax
-                call 'USER32.SendMessageA' D$hTab &TCM_SETCURSEL eax eax
+                Call 'USER32.SendMessageA' D$hTab &TCM_SETCURSEL eax eax
                 inc eax
 
                 If eax <> D$SelTab
                     push eax
-                    mov eax D$SelTab
-                    call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_HIDE
+                    Mov eax D$SelTab
+                    Call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_HIDE
                     pop eax
-                    mov D$SelTab eax
-                    call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_SHOWDEFAULT
+                    Mov D$SelTab eax
+                    Call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_SHOWDEFAULT
                 End_If
             .End_If
 
             If D$SelTab = LibScanSelTabDisBuild
-                call LibScanDialog_EnableContinueNextTabMenu &FALSE
+                Call LibScanDialog_EnableContinueNextTabMenu &FALSE
             End_If
 
         ..Else_If D@wParam = M03_Previous_Tab
 
-            call 'user32.SendMessageA' D$hTab &TCM_GETCURSEL 0 0
+            Call 'user32.SendMessageA' D$hTab &TCM_GETCURSEL 0 0
             .If eax <> LibScanSelTabStruc
                 dec eax
-                call 'USER32.SendMessageA' D$hTab &TCM_SETCURSEL eax eax
+                Call 'USER32.SendMessageA' D$hTab &TCM_SETCURSEL eax eax
                 dec eax
 
                 If eax <> D$SelTab
                     push eax
-                    mov eax D$SelTab
-                    call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_HIDE
+                    Mov eax D$SelTab
+                    Call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_HIDE
                     pop eax
-                    mov D$SelTab eax
-                    call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_SHOWDEFAULT
+                    Mov D$SelTab eax
+                    Call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_SHOWDEFAULT
                 End_If
-                call LibScanDialog_EnableContinueNextTabMenu &TRUE
+                Call LibScanDialog_EnableContinueNextTabMenu &TRUE
             .End_If
 
             If D$SelTab = LibScanSelTabStruc
-                call LibScanDialog_EnableContinuePrevTabMenu &FALSE
+                Call LibScanDialog_EnableContinuePrevTabMenu &FALSE
             End_If
 
         ..Else_If D@wParam = M03_First_Tab
 L5:
-                call 'USER32.SendMessageA' D$hTab &TCM_SETCURSEL LibScanSelTabStruc LibScanSelTabStruc
-                mov eax LibScanSelTabStruc
-                mov D$SelTab LibScanSelTabObj
+                Call 'USER32.SendMessageA' D$hTab &TCM_SETCURSEL LibScanSelTabStruc LibScanSelTabStruc
+                Mov eax LibScanSelTabStruc
+                Mov D$SelTab LibScanSelTabObj
 
                 If eax <> D$SelTab
                     push eax
-                    mov eax D$SelTab
-                    call 'user32.ShowWindow' D$eax*4+hTabDlg1 &SW_HIDE
+                    Mov eax D$SelTab
+                    Call 'user32.ShowWindow' D$eax*4+hTabDlg1 &SW_HIDE
                     pop eax
-                    mov D$SelTab eax
-                    call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_SHOWDEFAULT
+                    Mov D$SelTab eax
+                    Call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_SHOWDEFAULT
                 End_If
-                call LibScanDialog_EnableContinueNextTabMenu &TRUE
-                call LibScanDialog_EnableContinuePrevTabMenu &FALSE
+                Call LibScanDialog_EnableContinueNextTabMenu &TRUE
+                Call LibScanDialog_EnableContinuePrevTabMenu &FALSE
 
         ..Else_If D@wParam = M03_Last_Tab
 
-                call 'USER32.SendMessageA' D$hTab &TCM_SETCURSEL LibScanSelTabDisBuild LibScanSelTabDisBuild
-                mov ecx LibScanSelTabDisBuild
-                mov eax D$SelTab
+                Call 'USER32.SendMessageA' D$hTab &TCM_SETCURSEL LibScanSelTabDisBuild LibScanSelTabDisBuild
+                Mov ecx LibScanSelTabDisBuild
+                Mov eax D$SelTab
                 If eax = D$SelTab
                     push eax
-                    mov eax D$SelTab
-                    call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_HIDE
+                    Mov eax D$SelTab
+                    Call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_HIDE
                     pop eax
-                    mov eax LibScanSelTabDisBuild
-                    mov D$SelTab eax
-                    call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_SHOWDEFAULT
+                    Mov eax LibScanSelTabDisBuild
+                    Mov D$SelTab eax
+                    Call 'USER32.ShowWindow' D$eax*4+hTabDlg1 &SW_SHOWDEFAULT
                 End_If
-                call LibScanDialog_EnableContinueNextTabMenu &FALSE
-                call LibScanDialog_EnableContinuePrevTabMenu &TRUE
+                Call LibScanDialog_EnableContinueNextTabMenu &FALSE
+                Call LibScanDialog_EnableContinuePrevTabMenu &TRUE
 
         ..Else_If D@wParam = M03_Open
 
-            mov D$ChoosenLibFile 0
-            move D$OPENLIB@hwndOwner D@Adressee
+            Mov D$ChoosenLibFile 0
+            move D$OPENLIB@hwndOwner D@hwnd
             move D$OPENLIB@hInstance D$hInstance
             move D$OPENLIB@lpstrFilter LibsFileFilter
-            call 'COMDLG32.GetOpenFileNameA' OPENLIB
+            Call 'COMDLG32.GetOpenFileNameA' OPENLIB
 
             .If D$ChoosenLibFile <> 0
-                call LibScanCleanUp D@Adressee
-                call LibScanDialog_EnableContinueMenu &TRUE
+                Call LibScanCleanUp D@hwnd
+                Call LibScanDialog_EnableContinueMenu &TRUE
 
-                call 'USER32.SendDlgItemMessageA' D@Adressee IDC_OPENLIBFILE &WM_SETTEXT 0 LibSaveFilter
-                call 'USER32.SendDlgItemMessageA' D@Adressee IDC_OPENLIBFILE &WM_GETTEXT 0 LibSaveFilter ; GET THE FILENAME
+                Call 'USER32.SendDlgItemMessageA' D@hwnd IDC_OPENLIBFILE &WM_SETTEXT 0 LibSaveFilter
+                Call 'USER32.SendDlgItemMessageA' D@hwnd IDC_OPENLIBFILE &WM_GETTEXT 0 LibSaveFilter ; GET THE FILENAME
 
                 ; The user is opening the file, Clean the list view.
-                call 'USER32.SendMessageA', D$hlist, &LVM_DELETEALLITEMS, 0, lvi
+                Call 'USER32.SendMessageA', D$hlist, &LVM_DELETEALLITEMS, 0, lvi
 
-                call OpenLibFile D@Adressee
+                Call OpenLibFile D@hwnd
                 On D$LibFileLength = 0, jmp L9>> ; Exit when the file size is 0.
 
-                call LibSignatureCheck
+                Call LibSignatureCheck
 
                 If D$ValidLib = UNKNOWN_LIB_FILE
                     ; Disables the Menus itens to prevent the user tries to save a report, or do something wrong with it
-                    call LibScanDialog_EnableContinueMenu &FALSE
-                    call 'USER32.DialogBoxParamA' D$hinstance, IDD_LIBSCANWARNINGMSG, D@Adressee, LibScanWarning, &NULL
+                    Call LibScanDialog_EnableContinueMenu &FALSE
+                    Call 'USER32.DialogBoxParamA' D$hinstance, IDD_LIBSCANWARNINGMSG, D@hwnd, LibScanWarning, &NULL
                     jmp L9>>
                 End_If
 
-                call ParseIdentifiedLibs D@Adressee
+                Call ParseIdentifiedLibs D@hwnd
 
                 ; Below we can only remove after we build the parser for each one of these libraries.
                 ; But we can leave this lines here, in the meanwhile
@@ -16068,94 +16068,94 @@ L5:
                 End_If
             .End_If
 
-            call CoolControl_LVBeginSort ListViewLibSort, SortDecimal, D$hlist, 1
+            Call CoolControl_LVBeginSort ListViewLibSort, SortDecimal, D$hlist, 1
       ;  ..Else_If D@wParam = &IDHELP
-      ;      call Help, B_U_AsmName, DisassemblerHelp, ContextHlpMessage
+      ;      Call Help, B_U_AsmName, DisassemblerHelp, ContextHlpMessage
 
         ..End_If
 
 
-    ...Else_If D@Message = &WM_NOTIFY
-        call LibScanDialog_OnNotify D@Adressee, D@lParam
+    ...Else_If D@msg = &WM_NOTIFY
+        Call LibScanDialog_OnNotify D@hwnd, D@lParam
 
-    ...Else_If D@Message = &WM_NCMOUSEMOVE
+    ...Else_If D@msg = &WM_NCMOUSEMOVE
         ..If B$LibScanHoverTBText <> &MF_UNCHECKED
             .If D$flag_TB_00 = 0                    ;check flag toolbar
-                call 'USER32.ShowWindow' D$LibScanToolbarHandle &SW_SHOW
-                mov D$flag_TB_00 1                  ;set flag toolbar
+                Call 'USER32.ShowWindow' D$LibScanToolbarHandle &SW_SHOW
+                Mov D$flag_TB_00 1                  ;set flag toolbar
             .End_If
         ..End_If
-    ...Else_If D@Message = &WM_MOUSEMOVE
+    ...Else_If D@msg = &WM_MOUSEMOVE
         ..If B$LibScanHoverTBText <> &MF_UNCHECKED
             .If D$flag_TB_00 = 1                    ;check flag toolbar
-                call 'USER32.ShowWindow' D$LibScanToolbarHandle &SW_HIDE
-                mov D$flag_TB_00 0                  ;set flag toolbar
+                Call 'USER32.ShowWindow' D$LibScanToolbarHandle &SW_HIDE
+                Mov D$flag_TB_00 0                  ;set flag toolbar
             .End_If
         ..End_If
 
-    ...Else_If D@Message = &WM_INITDIALOG
+    ...Else_If D@msg = &WM_INITDIALOG
 
-        call 'USER32.GetMenu' D@Adressee | mov D$LibScanMenuHandle eax
+        Call 'USER32.GetMenu' D@hwnd | Mov D$LibScanMenuHandle eax
 
         ; Create the image list
-        call CoolControlTB_CreateImageList LibScanDialog_ImageList, IDB_LibScanEnableTB, IDB_LibScanDisableTB, 20, 20, &ILC_COLOR32+&ILC_MASK, LibScanToolButtonsNumber, LibScanToolButtonsNumber
+        Call CoolControlTB_CreateImageList LibScanDialog_ImageList, IDB_LibScanEnableTB, IDB_LibScanDisableTB, 20, 20, &ILC_COLOR32+&ILC_MASK, LibScanToolButtonsNumber, LibScanToolButtonsNumber
 
-        call CoolControlTB_CreateImageList LibScanTab_ImageList, IDB_LibScanTABEnable, IDB_LibScanTABDisable, 20, 20, &ILC_COLOR32+&ILC_MASK, LibScanTabControlsNumber, LibScanTabControlsNumber
+        Call CoolControlTB_CreateImageList LibScanTab_ImageList, IDB_LibScanTABEnable, IDB_LibScanTABDisable, 20, 20, &ILC_COLOR32+&ILC_MASK, LibScanTabControlsNumber, LibScanTabControlsNumber
 
         ;Create the tabs
-        call CoolControlDlg_CreateTab D@Adressee, IDC_TABCTRL, hTab, LibScanTabControl
+        Call CoolControlDlg_CreateTab D@hwnd, IDC_TABCTRL, hTab, LibScanTabControl
 
         ;Create the tab dialogs
-        call 'user32.CreateDialogParamA' D$hInstance IDD_TAB1 D$hTab Tab1Proc 0
-        mov D$hTabDlg1 eax
+        Call 'user32.CreateDialogParamA' D$hInstance IDD_TAB1 D$hTab Tab1Proc 0
+        Mov D$hTabDlg1 eax
 
-        call 'user32.CreateDialogParamA' D$hInstance IDD_TAB2 D$hTab Tab2Proc 0
-        mov D$hTabDlg2 eax
+        Call 'user32.CreateDialogParamA' D$hInstance IDD_TAB2 D$hTab Tab2Proc 0
+        Mov D$hTabDlg2 eax
 
 
-        call 'user32.GetDlgItem' D$hTabDlg2 IDC_LVIEW ; Get the ListView Control in the 2nd TAB resources, and
+        Call 'user32.GetDlgItem' D$hTabDlg2 IDC_LVIEW ; Get the ListView Control in the 2nd TAB resources, and
                                                     ; use it on the handle of the main window
-        mov D$hList eax                              ; Now we return the result (found in eax), copying it to
+        Mov D$hList eax                              ; Now we return the result (found in eax), copying it to
                                                     ; the Handle of the Tab Control in the resource.
                                                     ; So, all we did was get the TAB Control and save it to the Tab handle.
 
         ; Create the toolbar
-        call CoolControlWin_CreateToolbar D@Adressee, LibScanToolbarHandle, LibScanToolbarButtons,
+        Call CoolControlWin_CreateToolbar D@hwnd, LibScanToolbarHandle, LibScanToolbarButtons,
         LibScanToolButtonsNumber, LibScanToolTipsStrings, LSTBWin_Cmd
 
         ; Initialize the Menu state
-        call LibScanDialog_EnableContinueMenu &FALSE
-        call LibScanDialog_EnableContinuePrevTabMenu &FALSE
+        Call LibScanDialog_EnableContinueMenu &FALSE
+        Call LibScanDialog_EnableContinuePrevTabMenu &FALSE
 
         ;/* Setup listview */
-        call SetupListview, D$hList
-        call CoolControl_LVBeginSort ListViewLibSort, SortDecimal, D$hlist, 1
+        Call SetupListview, D$hList
+        Call CoolControl_LVBeginSort ListViewLibSort, SortDecimal, D$hlist, 1
 ;;
-        call 'user32.CreateDialogParamA' D$hInstance IDD_TAB3 D$hTab Tab3Proc 0
-        mov D$hTabDlg3 eax
-        call 'user32.CreateDialogParamA' D$hInstance IDD_TAB4 D$hTab Tab4Proc 0
-        mov D$hTabDlg4 eax
+        Call 'user32.CreateDialogParamA' D$hInstance IDD_TAB3 D$hTab Tab3Proc 0
+        Mov D$hTabDlg3 eax
+        Call 'user32.CreateDialogParamA' D$hInstance IDD_TAB4 D$hTab Tab4Proc 0
+        Mov D$hTabDlg4 eax
 ;;
 
 
-    ...Else_If D@Message = &WM_CLOSE
-        call LibScanCleanUp D@Adressee
-        call 'COMCTL32.ImageList_Destroy' D$LibScanDialog_ImageList
-        call 'COMCTL32.ImageList_Destroy' D$LibScanTab_ImageList
-        call 'USER32.EndDialog' D@Adressee &NULL
-        mov D$LibScanToolbarHandle 0
-        mov B$LibScanIsFileOpen &FALSE
+    ...Else_If D@msg = &WM_CLOSE
+        Call LibScanCleanUp D@hwnd
+        Call 'COMCTL32.ImageList_Destroy' D$LibScanDialog_ImageList
+        Call 'COMCTL32.ImageList_Destroy' D$LibScanTab_ImageList
+        Call 'USER32.EndDialog' D@hwnd &NULL
+        Mov D$LibScanToolbarHandle 0
+        Mov B$LibScanIsFileOpen &FALSE
 
-    ...Else_If D@Message = &WM_CTLCOLOREDIT
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | ExitP
+    ...Else_If D@msg = &WM_CTLCOLOREDIT
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | ExitP
 
     ...Else
-        popad | mov eax &FALSE | ExitP
+        popad | Mov eax &FALSE | ExitP
 
     ...End_If
 
-L9: popad | mov eax &TRUE
+L9: popad | Mov eax &TRUE
 EndP
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -16165,30 +16165,30 @@ ________________________________________________________________________________
 ; because we need they behave as a callback to handle the proper messages from each control Tab
 
 Proc LibScanDialog_OnNotify:
-    Arguments @Adressee, @Notification
+    Arguments @hwnd, @Notification
 
-    mov ebx D@Notification
-    mov edx D$ebx+NMHDR.idFromDis
-    mov eax D$ebx+NMHDR.codeDis
+    Mov ebx D@Notification
+    Mov edx D$ebx+NMHDR.idFromDis
+    Mov eax D$ebx+NMHDR.codeDis
 
     .If edx = IDC_TABCTRL
         If eax = &TCN_SELCHANGE
-            call CoolControlTabChange_OnNotify D@Notification, SelTab, D$hTab
+            Call CoolControlTabChange_OnNotify D@Notification, SelTab, D$hTab
         End_If
 
     .Else_If edx = IDC_LVIEW
         If eax = &LVN_COLUMNCLICK
-            call CoolControl_ListViewAlternateSort ListViewLibSort, D@Notification, SortDecimal, D$hList, Lib_LVTotalCol
+            Call CoolControl_ListViewAlternateSort ListViewLibSort, D@Notification, SortDecimal, D$hList, Lib_LVTotalCol
         Else_If eax = &NM_DBLCLK
-            call SaveOneObjectFile D@Adressee
+            Call SaveOneObjectFile D@hwnd
         End_If
 
     .Else_If eax = &TTN_NEEDTEXT
 
         If_And edx >= D$LSTB01.idCommand, edx <= D$LSTB10.idCommand
-            call CoolControlTB_OnNotify D@Adressee, D@Notification, LibScanToolbarButtons, LibScanToolButtonsNumber, LibScanToolTipsStrings
+            Call CoolControlTB_OnNotify D@hwnd, D@Notification, LibScanToolbarButtons, LibScanToolButtonsNumber, LibScanToolTipsStrings
         Else_If_And edx >= LibScanSelTabStruc, edx <= LibScanSelTabDisBuild
-            call CoolControlTabToolTip_OnNotify D@Notification, LibScanTabNumber, LibScanTabToolTipStrings
+            Call CoolControlTabToolTip_OnNotify D@Notification, LibScanTabNumber, LibScanTabToolTipStrings
         End_If
 
     .End_If
@@ -16199,15 +16199,15 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 Proc SaveOneObjectFile:
-    Arguments @Adressee
+    Arguments @hwnd
 
     pushad
 
-    call 'user32.SendMessageA' D$hList, &LVM_GETNEXTITEM, 0-1, &LVNI_SELECTED
+    Call 'user32.SendMessageA' D$hList, &LVM_GETNEXTITEM, 0-1, &LVNI_SELECTED
     If eax <> 0-1
-        call SaveSingleObjectFileAs D@Adressee, eax
+        Call SaveSingleObjectFileAs D@hwnd, eax
     Else
-        call 'user32.MessageBoxA' D@Adressee, {B$ "No field selected or empty fields.", D$ CRLF2, B$ "You must select one field in the ListControl to allow exporting the Selected Object file.", 0}, {"Attention !", 0}, &MB_ICONEXCLAMATION
+        Call 'user32.MessageBoxA' D@hwnd, {B$ "No field selected or empty fields.", D$ CRLF2, B$ "You must select one field in the ListControl to allow exporting the Selected Object file.", 0}, {"Attention !", 0}, &MB_ICONEXCLAMATION
     End_If
 
     popad
@@ -16220,47 +16220,47 @@ ________________________________________________________________________________
 [ObjSaveFilter: ? #&MAX_PATH]
 
 Proc SaveSingleObjectFileAs:
-    Arguments @Adressee, @SelectedItem
+    Arguments @hwnd, @SelectedItem
     pushad
 
     ; 1st we get the FileName
 
     move D$lvi.iItem D@SelectedItem
-    mov D$lvi.iSubItem 1 ; [Header2: B$ 'File Name',0] ; string
-    call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
+    Mov D$lvi.iSubItem 1 ; [Header2: B$ 'File Name',0] ; string
+    Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
     ; the result is in szBuff0
 
-    mov edi ObjSaveFilter
+    Mov edi ObjSaveFilter
     push esi | ZCopy szBuff0 | pop esi
-    mov B$edi 0
+    Mov B$edi 0
 
-    mov D$ChoosenLibFile 0
+    Mov D$ChoosenLibFile 0
     move D$SAVELIB.lpstrFile ObjSaveFilter
-    move D$SAVELIB.hwndOwner D@Adressee
+    move D$SAVELIB.hwndOwner D@hwnd
     move D$SAVELIB.hInstance D$hInstance
     move D$SAVELIB.lpstrFilter ObjSaveFileFilter
-    call 'Comdlg32.GetSaveFileNameA' SAVELIB
+    Call 'Comdlg32.GetSaveFileNameA' SAVELIB
 
     ..If eax <> 0
         .If D$ChoosenLibFile <> 0
-            call ForceExtension ObjSaveFilter, '.obj'
+            Call ForceExtension ObjSaveFilter, '.obj'
 
             ; Get the Offset
             move D$lvi.iItem D@SelectedItem
-            mov D$lvi.iSubItem 5 ; [Header6: B$ 'Offset',0] ; hexadecimal value string
-            call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
-            call AsciiBase szBuff0 BASE_HEX
-            mov edi eax
+            Mov D$lvi.iSubItem 5 ; [Header6: B$ 'Offset',0] ; hexadecimal value string
+            Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
+            Call AsciiBase szBuff0 BASE_HEX
+            Mov edi eax
 
             ; Get the size
             move D$lvi.iItem D@SelectedItem
-            mov D$lvi.iSubItem 6 ; [Header7: B$ 'Size',0] ; decimal value
-            call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
-            call String2Dword szBuff0
+            Mov D$lvi.iSubItem 6 ; [Header7: B$ 'Size',0] ; decimal value
+            Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
+            Call String2Dword szBuff0
 
-            mov esi D$LibFileMemory
+            Mov esi D$LibFileMemory
             add esi edi
-            call SaveLibFile, esi, eax, ObjSaveFilter
+            Call SaveLibFile, esi, eax, ObjSaveFilter
         .End_If
     ..End_If
 
@@ -16281,83 +16281,83 @@ ________________________________________________________________________________
 ; Flag = 1 (Save all Runtime Objects)
 ; Flag = 2 (Save all Exported Objects)
 Proc SaveAllObjectFile:
-    Arguments @Adressee, @Flag
+    Arguments @hwnd, @Flag
     Local @SelectedItem, @CountItens, @FolderPathStart, @RepeatedName
 
 ; More examples here MultipleCompileTests SaveSingleObjectFileAs
     pushad
 
-    call BrowseForFolder D@Adressee, ObjPathTitle
+    Call BrowseForFolder D@hwnd, ObjPathTitle
     ...If B$BrowseForFolderAborted <> &TRUE
 
         ; Initialize all revelant Data
-        mov D@RepeatedName 0
-        mov D@CountItens 0
-        mov D$RepeatedObjIndice '0000', D$RepeatedObjIndice+4 '00'
+        Mov D@RepeatedName 0
+        Mov D@CountItens 0
+        Mov D$RepeatedObjIndice '0000', D$RepeatedObjIndice+4 '00'
         ; 1st we calculate the amount of objectsinside the lib
-        call String2Dword LibObjIndice
-        mov D@CountItens eax
+        Call String2Dword LibObjIndice
+        Mov D@CountItens eax
 
-        mov D@SelectedItem 0 ; always starts at the 1st item (that have the value of 0)
-        mov esi FolderPath, edi MultipleObjectPath
-        While B$esi <> 0 | movsb | End_While | mov B$edi '\' | inc edi
-        mov D@FolderPathStart edi
+        Mov D@SelectedItem 0 ; always starts at the 1st item (that have the value of 0)
+        Mov esi FolderPath, edi MultipleObjectPath
+        While B$esi <> 0 | movsb | End_While | Mov B$edi '\' | inc edi
+        Mov D@FolderPathStart edi
 
         .Do
 
             .If D@Flag = EXPORT_RUNTIME_OBJECTS
                 move D$lvi.iItem D@SelectedItem
-                mov D$lvi.iSubItem 7 ; [Header8: B$ 'Object Type',0] ; string
-                call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
+                Mov D$lvi.iSubItem 7 ; [Header8: B$ 'Object Type',0] ; string
+                Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
                 On D$szBuff0 <> 'Runt', jmp L1>> ; Not a runtime Object, jmp over it
             .Else_If D@Flag = EXPORT_EXPORTED_OBJECTS
                 move D$lvi.iItem D@SelectedItem
-                mov D$lvi.iSubItem 7 ; [Header8: B$ 'Object Type',0] ; string
-                call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
+                Mov D$lvi.iSubItem 7 ; [Header8: B$ 'Object Type',0] ; string
+                Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
                 On D$szBuff0 <> 'Expo', jmp L1>> ; Not a Export Object, jmp over it
             .End_If
             ; 1st we get the FileName
 
             move D$lvi.iItem D@SelectedItem
-            mov D$lvi.iSubItem 1 ; [Header2: B$ 'File Name',0] ; string
-            call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
+            Mov D$lvi.iSubItem 1 ; [Header2: B$ 'File Name',0] ; string
+            Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
 
             ; Copy the filename to the path and append the '.obj' extension
             ; the result is in szBuff0
-            mov esi szBuff0
+            Mov esi szBuff0
             While B$esi <> 0 | movsb | End_While
-            mov D$edi '.obj' | add edi 4 | mov B$edi 0
+            Mov D$edi '.obj' | add edi 4 | Mov B$edi 0
 
-            call 'KERNEL32.FindFirstFileA' MultipleObjectPath, FindFile
+            Call 'KERNEL32.FindFirstFileA' MultipleObjectPath, FindFile
 
             If eax <> &INVALID_HANDLE_VALUE ; do we have an existing file with this name ?
                 ; Yes...append a new name for it
-                mov D$edi-4 '_New'
-                call IncrementObjExportNameIndex
-                mov esi RepeatedObjIndice
+                Mov D$edi-4 '_New'
+                Call IncrementObjExportNameIndex
+                Mov esi RepeatedObjIndice
                 While B$esi <> 0 | movsb | End_While
-                mov D$edi '.obj' | add edi 4 | mov B$edi 0
+                Mov D$edi '.obj' | add edi 4 | Mov B$edi 0
 
             End_If
 
             ; Get the Offset
             move D$lvi.iItem D@SelectedItem
-            mov D$lvi.iSubItem 5 ; [Header6: B$ 'Offset',0] ; hexadecimal value string
-            call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
-            call AsciiBase szBuff0 BASE_HEX
-            mov edi eax
+            Mov D$lvi.iSubItem 5 ; [Header6: B$ 'Offset',0] ; hexadecimal value string
+            Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
+            Call AsciiBase szBuff0 BASE_HEX
+            Mov edi eax
 
             ; Get the size
             move D$lvi.iItem D@SelectedItem
-            mov D$lvi.iSubItem 6 ; [Header7: B$ 'Size',0] ; decimal value
-            call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
-            call String2Dword szBuff0
+            Mov D$lvi.iSubItem 6 ; [Header7: B$ 'Size',0] ; decimal value
+            Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEM, D@SelectedItem, lvi
+            Call String2Dword szBuff0
 
-            mov esi D$LibFileMemory
+            Mov esi D$LibFileMemory
             add esi edi
-            call SaveLibFile, esi, eax, MultipleObjectPath
+            Call SaveLibFile, esi, eax, MultipleObjectPath
 L1:
-            mov edi D@FolderPathStart
+            Mov edi D@FolderPathStart
             inc D@SelectedItem
             dec D@CountItens
         .Loop_Until D@CountItens = 0
@@ -16373,7 +16373,7 @@ ________________________________________________________________________________
 IncrementObjExportNameIndex:
     lea ebx D$RepeatedObjIndice+5 | inc B$ebx
     While B$ebx > '9'
-        mov B$ebx '0' | dec ebx | inc B$ebx
+        Mov B$ebx '0' | dec ebx | inc B$ebx
     End_While
 ret
 
@@ -16417,32 +16417,32 @@ ________________________________________________________________________________
 [LibScanIsFileOpen: B$ &FALSE]
 
 Proc SaveLibFileAs:
-    Arguments @Adressee, @OutPut, @OutPutSize
+    Arguments @hwnd, @OutPut, @OutPutSize
     uses eax
 
     ; To Insert the Appended String. We inset it, when the user opens a new file only. On case the user presses Clear Button
     ; the Buffer is emptyed.
     If_And B$LibScanIsFileOpen = &FALSE, D$hLibReportEdit <> 0
-        call LibScanAppendReportName LibSaveFilter
+        Call LibScanAppendReportName LibSaveFilter
     End_If
 
-    mov D$ChoosenLibFile 0
+    Mov D$ChoosenLibFile 0
     move D$SAVELIB.lpstrFile LibSaveFilter
-    move D$SAVELIB.hwndOwner D@Adressee
+    move D$SAVELIB.hwndOwner D@hwnd
     move D$SAVELIB.hInstance D$hInstance
     move D$SAVELIB.lpstrFilter LibSaveFileFilter
-    call 'Comdlg32.GetSaveFileNameA' SAVELIB
+    Call 'Comdlg32.GetSaveFileNameA' SAVELIB
 
     On eax = 0, ExitP
     .If D$ChoosenLibFile <> 0
         If D$SAVELIB.nFilterIndex = 1 ; extension .txt
-            call ForceExtension LibSaveFilter, '.txt'
+            Call ForceExtension LibSaveFilter, '.txt'
         Else_If D$SAVELIB.nFilterIndex = 2 ; extension .asm
-            call ForceExtension LibSaveFilter, '.asm'
+            Call ForceExtension LibSaveFilter, '.asm'
         Else ; Force txt extensino if the user is trying to save as "all"
-            call ForceExtension LibSaveFilter, '.txt'
+            Call ForceExtension LibSaveFilter, '.txt'
         End_If
-        call SaveLibFile, D@OutPut, D@OutPutSize, LibSaveFilter
+        Call SaveLibFile, D@OutPut, D@OutPutSize, LibSaveFilter
     .End_If
 
 EndP
@@ -16453,7 +16453,7 @@ Proc LibScanAppendReportName:
     Arguments @String
     Uses eax, ecx, edi
 
-    mov edi D@String
+    Mov edi D@String
     ;sub edi 2     ; edi points to the end of the string 2
 
     .While edi >= D@String
@@ -16472,8 +16472,8 @@ Proc LibScanAppendReportName:
     .End_While
     L1:
         push esi | ZCopy {"Report.txt", 0} | pop esi
-        mov D$edi 0
-    mov B$LibScanIsFileOpen &TRUE
+        Mov D$edi 0
+    Mov B$LibScanIsFileOpen &TRUE
 EndP
 
 ____________________________________________________________________________________________
@@ -16484,20 +16484,20 @@ Proc SaveLibFile:
 
     pushad
 
-    call 'KERNEL32.CreateFileA' D@FileFilter, &GENERIC_WRITE,
+    Call 'KERNEL32.CreateFileA' D@FileFilter, &GENERIC_WRITE,
                                 &FILE_SHARE_READ, &NULL, &CREATE_ALWAYS,
                                 &FILE_ATTRIBUTE_NORMAL, &NULL
 
-    mov D$LibFileHandle eax
+    Mov D$LibFileHandle eax
 
     If eax = &INVALID_HANDLE_VALUE
-        mov eax D$BusyFilePtr | call MessageBox | popad | ret
+        Mov eax D$BusyFilePtr | Call MessageBox | popad | ret
     End_If
 
-    mov D$DestinationHandle eax, D$NumberOfReadBytes 0
+    Mov D$DestinationHandle eax, D$NumberOfReadBytes 0
 
-    call 'KERNEL32.WriteFile' D$DestinationHandle, D@OutPut, D@OutPutSize, NumberOfReadBytes  0
-    call 'KERNEL32.CloseHandle' D$DestinationHandle | mov D$DestinationHandle 0
+    Call 'KERNEL32.WriteFile' D$DestinationHandle, D@OutPut, D@OutPutSize, NumberOfReadBytes  0
+    Call 'KERNEL32.CloseHandle' D$DestinationHandle | Mov D$DestinationHandle 0
 
     popad
 
@@ -16509,84 +16509,84 @@ ________________________________________________________________________________
 ; closing the CharMap Dialog
 
 Proc LibScanCleanUp:
-    Arguments @Adressee
+    Arguments @hwnd
     ; Free LibFileMemory
     VirtualFree D$LibFileMemory
     ; Free hLibReportEdit Report
     VirtualFree D$hLibReportEdit
 
-    call 'USER32.SendDlgItemMessageA' D@Adressee, IDC_OPENLIBFILE, &WM_SETTEXT, 0, &NULL
-    call 'USER32.SendDlgItemMessageA' D@Adressee, IDC_LIBFILESIZE, &WM_SETTEXT, 0, &NULL
-    call 'USER32.SendDlgItemMessageA' D$hTabDlg1, IDC_LIB_SOURCE, &WM_SETTEXT, 0, &NULL
-    call 'user32.SendMessageA', D$hList, &LVM_DELETEALLITEMS, 0, lvi
-    call 'USER32.SendMessageA' D@Adressee, &WM_SETTEXT, 0, {"ScanLib v 1.0", 0}
+    Call 'USER32.SendDlgItemMessageA' D@hwnd, IDC_OPENLIBFILE, &WM_SETTEXT, 0, &NULL
+    Call 'USER32.SendDlgItemMessageA' D@hwnd, IDC_LIBFILESIZE, &WM_SETTEXT, 0, &NULL
+    Call 'USER32.SendDlgItemMessageA' D$hTabDlg1, IDC_LIB_SOURCE, &WM_SETTEXT, 0, &NULL
+    Call 'user32.SendMessageA', D$hList, &LVM_DELETEALLITEMS, 0, lvi
+    Call 'USER32.SendMessageA' D@hwnd, &WM_SETTEXT, 0, {"ScanLib v 1.0", 0}
 
-    call ClearBuffer szBuff0, 256
-    call ClearBuffer szBuff1, 256
+    Call ClearBuffer szBuff0, 256
+    Call ClearBuffer szBuff1, 256
 
     ; Must clean these listview itens to avoid that we have errors on the resequence
-    mov D$lvi.iItem 0
-    mov D$lvi.iSubItem 0
+    Mov D$lvi.iItem 0
+    Mov D$lvi.iSubItem 0
 EndP
 
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
 Proc CoolControlDlg_CreateTab:
-    Arguments @Adressee, @nIDDlgItem, @OutPutHandle, @CCTabStructure
+    Arguments @hwnd, @nIDDlgItem, @OutPutHandle, @CCTabStructure
     Local @TabsAmount, @UseImage
 
 
-    mov D@TabsAmount 0
-    mov D@UseImage 0
+    Mov D@TabsAmount 0
+    Mov D@UseImage 0
 
-    call 'user32.GetDlgItem' D@Adressee, D@nIDDlgItem ; Get the Tab Control in the resources, and
+    Call 'user32.GetDlgItem' D@hwnd, D@nIDDlgItem ; Get the Tab Control in the resources, and
                                                     ; use it on the handle of the main window
                                                     ; of this procedure.
     lea edi D@OutPutHandle
-    mov edi D$edi
-    mov D$edi eax                                   ; Now we return the result (found in eax), copying it to
+    Mov edi D$edi
+    Mov D$edi eax                                   ; Now we return the result (found in eax), copying it to
                                                     ; the Handle of the Tab Control in the resource.
                                                     ; So, all we did was get the TAB Control and save it to the Tab handle.
 
-    mov ecx D@CCTabStructure
-    mov eax D$ecx+CCTabOrganize.ImageListDis
+    Mov ecx D@CCTabStructure
+    Mov eax D$ecx+CCTabOrganize.ImageListDis
 
     If eax = 0
-        mov D@UseImage &FALSE
+        Mov D@UseImage &FALSE
     Else
-        mov D@UseImage &TRUE
+        Mov D@UseImage &TRUE
         push ecx | SendMessage D$edi, &TCM_SETIMAGELIST, 0, D$eax | pop ecx
     End_If
 
-    mov edx D$ecx+CCTabOrganize.TCITEMDis
+    Mov edx D$ecx+CCTabOrganize.TCITEMDis
     move D$edx+TC_ITEM.imaskDis D$ecx+CCTabOrganize.iMaskFlagDis
 
-    mov eax D$ecx+CCTabOrganize.TabsAmountDis
+    Mov eax D$ecx+CCTabOrganize.TabsAmountDis
     move D@TabsAmount D$eax
 
-    mov ebx 0
+    Mov ebx 0
 
     .Do
 
         ; TabTitle copied to ts.pszText
-        mov esi D$ecx+CCTabOrganize.StringArrayDis
-        mov esi D$esi+ebx*4
-        mov D$edx+TC_ITEM.pszTextDis esi
+        Mov esi D$ecx+CCTabOrganize.StringArrayDis
+        Mov esi D$esi+ebx*4
+        Mov D$edx+TC_ITEM.pszTextDis esi
 
         ; TabTitleLen copied to ts.cchTextMax
-        mov esi D$ecx+CCTabOrganize.StringLenArrayDis
-        mov esi D$esi+ebx*4
+        Mov esi D$ecx+CCTabOrganize.StringLenArrayDis
+        Mov esi D$esi+ebx*4
         move D$edx+TC_ITEM.cchTextMaxDis D$esi
 
         If D@UseImage = &TRUE
             ; Image ID copied to ts.iImage
-            mov D$edx+TC_ITEM.iImageDis ebx
+            Mov D$edx+TC_ITEM.iImageDis ebx
         End_If
 
         push edx
         push ecx
-        call 'user32.SendMessageA' D$edi &TCM_INSERTITEM ebx edx
+        Call 'user32.SendMessageA' D$edi &TCM_INSERTITEM ebx edx
         pop ecx
         pop edx
 
@@ -16604,30 +16604,30 @@ Proc CoolControlDlg_CreateTab:
 ;;
 ;;
 
-        mov D$ts.imask &TCIF_TEXT__&TCIF_IMAGE ; Mask text & image
-        mov D$ts.pszText TabTitle1
-        mov D$ts.cchTextMax TabTitle1Len
-        mov D$ts.iImage 0
-        call 'user32.SendMessageA' D$edi &TCM_INSERTITEM 0 ts
+        Mov D$ts.imask &TCIF_TEXT__&TCIF_IMAGE ; Mask text & image
+        Mov D$ts.pszText TabTitle1
+        Mov D$ts.cchTextMax TabTitle1Len
+        Mov D$ts.iImage 0
+        Call 'user32.SendMessageA' D$edi &TCM_INSERTITEM 0 ts
 
-        mov D$ts.imask &TCIF_TEXT__&TCIF_IMAGE ; Mask text & image
-        mov D$ts.pszText TabTitle2
-        mov D$ts.cchTextMax TabTitle2Len
-        mov D$ts.iImage 1
-        call 'user32.SendMessageA' D$edi &TCM_INSERTITEM 1 ts
+        Mov D$ts.imask &TCIF_TEXT__&TCIF_IMAGE ; Mask text & image
+        Mov D$ts.pszText TabTitle2
+        Mov D$ts.cchTextMax TabTitle2Len
+        Mov D$ts.iImage 1
+        Call 'user32.SendMessageA' D$edi &TCM_INSERTITEM 1 ts
 
-        mov D$ts.imask &TCIF_TEXT__&TCIF_IMAGE ; Mask text & image
-        mov D$ts.pszText TabTitle3
-        mov D$ts.cchTextMax TabTitle3Len
-        mov D$ts.iImage 2
-        call 'user32.SendMessageA' D$edi &TCM_INSERTITEM 2 ts
+        Mov D$ts.imask &TCIF_TEXT__&TCIF_IMAGE ; Mask text & image
+        Mov D$ts.pszText TabTitle3
+        Mov D$ts.cchTextMax TabTitle3Len
+        Mov D$ts.iImage 2
+        Call 'user32.SendMessageA' D$edi &TCM_INSERTITEM 2 ts
 
 
-        mov D$ts.imask &TCIF_TEXT__&TCIF_IMAGE ; Mask text & image
-        mov D$ts.pszText TabTitle4
-        mov D$ts.cchTextMax TabTitle4Len
-        mov D$ts.iImage 3
-        call 'user32.SendMessageA' D$edi &TCM_INSERTITEM 3 ts
+        Mov D$ts.imask &TCIF_TEXT__&TCIF_IMAGE ; Mask text & image
+        Mov D$ts.pszText TabTitle4
+        Mov D$ts.cchTextMax TabTitle4Len
+        Mov D$ts.iImage 3
+        Call 'user32.SendMessageA' D$edi &TCM_INSERTITEM 3 ts
 ;;
 
 EndP
@@ -16638,19 +16638,19 @@ ________________________________________________________________________________
 [LibScannerTitle: B$ 0 #100]
 
 Proc WriteObjectTypeinTitle:
-    Arguments @Adressee, @TextTitle
+    Arguments @hwnd, @TextTitle
 
     pushad
 
-    mov eax D@TextTitle
-    mov edi LibScannerTitle
+    Mov eax D@TextTitle
+    Mov edi LibScannerTitle
     push esi | Zcopy {"ScanLib v 1.0 - ", 0} | pop esi
 
     push esi | ZCopy eax | pop eax
     push esi | Zcopy {" Format", 0} | pop esi
 
-    mov B$edi 0
-    call 'USER32.SendMessageA' D@Adressee, &WM_SETTEXT, 0, LibScannerTitle
+    Mov B$edi 0
+    Call 'USER32.SendMessageA' D@hwnd, &WM_SETTEXT, 0, LibScannerTitle
 
     popad
 
@@ -16664,18 +16664,18 @@ Proc LibScanDialog_EnableContinueMenu:
     Arguments @Enable
 
     If D@Enable = 1
-        mov ebx &MF_ENABLED
+        Mov ebx &MF_ENABLED
     Else
-        mov ebx &MF_GRAYED
+        Mov ebx &MF_GRAYED
     EndIf
 
-    call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Close, ebx
-    call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Save_Report, ebx
-    call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Single_Object_File, ebx
-    call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_All_Object_Files, ebx
-    call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Runtime_Objects_Only, ebx
-    call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Exported_Objects_Only, ebx
-    call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Build_Dis_File, ebx
+    Call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Close, ebx
+    Call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Save_Report, ebx
+    Call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Single_Object_File, ebx
+    Call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_All_Object_Files, ebx
+    Call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Runtime_Objects_Only, ebx
+    Call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Exported_Objects_Only, ebx
+    Call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Build_Dis_File, ebx
 
     SendMessage D$LibScanToolbarHandle, &TB_ENABLEBUTTON, M03_Close, D@Enable
     SendMessage D$LibScanToolbarHandle, &TB_ENABLEBUTTON, M03_Save_Report, D@Enable
@@ -16687,11 +16687,11 @@ Proc LibScanDialog_EnableContinueMenu:
 
   ; Invert
     If D@Enable = 1
-        mov ebx &MF_GRAYED
-        mov D@Enable 0
+        Mov ebx &MF_GRAYED
+        Mov D@Enable 0
     Else
-        mov ebx &MF_ENABLED
-        mov D@Enable 1
+        Mov ebx &MF_ENABLED
+        Mov D@Enable 1
     EndIf
 
 EndP
@@ -16703,23 +16703,23 @@ Proc LibScanDialog_EnableContinueNextTabMenu:
     Arguments @Enable
 
     If D@Enable = 1
-        mov ebx &MF_ENABLED
+        Mov ebx &MF_ENABLED
     Else
-        mov ebx &MF_GRAYED
+        Mov ebx &MF_GRAYED
     EndIf
 
-    call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Next_Tab, ebx
+    Call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Next_Tab, ebx
     SendMessage D$LibScanToolbarHandle, &TB_ENABLEBUTTON, M03_Next_Tab, D@Enable
 
-    call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Last_Tab, ebx
+    Call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Last_Tab, ebx
     SendMessage D$LibScanToolbarHandle, &TB_ENABLEBUTTON, M03_Last_Tab, D@Enable
   ; Invert
     If D@Enable = 1
-        mov ebx &MF_GRAYED
-        mov D@Enable 0
+        Mov ebx &MF_GRAYED
+        Mov D@Enable 0
     Else
-        mov ebx &MF_ENABLED
-        mov D@Enable 1
+        Mov ebx &MF_ENABLED
+        Mov D@Enable 1
     EndIf
 
 EndP
@@ -16731,25 +16731,25 @@ Proc LibScanDialog_EnableContinuePrevTabMenu:
     uses eax, ecx, edx
 
     If D@Enable = 1
-        mov ebx &MF_ENABLED
+        Mov ebx &MF_ENABLED
     Else
-        mov ebx &MF_GRAYED
+        Mov ebx &MF_GRAYED
     EndIf
 
-    call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Previous_Tab, ebx
+    Call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_Previous_Tab, ebx
     SendMessage D$LibScanToolbarHandle, &TB_ENABLEBUTTON, M03_Previous_Tab, D@Enable
 
-    call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_First_Tab, ebx
+    Call 'USER32.EnableMenuItem' D$LibScanMenuHandle, M03_First_Tab, ebx
     SendMessage D$LibScanToolbarHandle, &TB_ENABLEBUTTON, M03_First_Tab, D@Enable
 
 
   ; Invert
     If D@Enable = 1
-        mov ebx &MF_GRAYED
-        mov D@Enable 0
+        Mov ebx &MF_GRAYED
+        Mov D@Enable 0
     Else
-        mov ebx &MF_ENABLED
-        mov D@Enable 1
+        Mov ebx &MF_ENABLED
+        Mov D@Enable 1
     EndIf
 
 EndP
@@ -16758,22 +16758,22 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 Proc LibScanDisplayFileSize:
-    Arguments @Adressee
+    Arguments @hwnd
 
     pushad
     ; Calculate and Display File Size
-    mov edi buffer2
+    Mov edi buffer2
     lea esi D$LibFileLength
 
-    mov ecx 4
-    call toUDword
-    mov esi edi, edi DecimalBuffer
+    Mov ecx 4
+    Call toUDword
+    Mov esi edi, edi DecimalBuffer
     Do | movsb | LoopUntil B$esi = 0
     push esi | ZCopy {' Bytes', 0} | pop esi
-    mov B$edi 0
+    Mov B$edi 0
 
-    call 'USER32.SendDlgItemMessageA' D@Adressee IDC_LIBFILESIZE &WM_SETTEXT 0 DecimalBuffer
-    call 'USER32.SendDlgItemMessageA' D@Adressee IDC_LIBFILESIZE &WM_GETTEXT 0 DecimalBuffer ; GET THE FILENAME
+    Call 'USER32.SendDlgItemMessageA' D@hwnd IDC_LIBFILESIZE &WM_SETTEXT 0 DecimalBuffer
+    Call 'USER32.SendDlgItemMessageA' D@hwnd IDC_LIBFILESIZE &WM_GETTEXT 0 DecimalBuffer ; GET THE FILENAME
     popad
 EndP
 ____________________________________________________________________________________________
@@ -16783,17 +16783,17 @@ Proc LibScanDialog_ToggleToolbarText:
     Arguments @Addresse
     Structure @TBButtonInfo 32, @Size 0, @Mask 4, @Text 24
 
-    mov D@Size 32, D@Mask &TBIF_TEXT
+    Mov D@Size 32, D@Mask &TBIF_TEXT
 
   ; get check state of menu item, invert, toggle band and set inverted check state
-    call 'User32.GetMenuState' D$LibScanMenuHandle, M03_Show_ToolBarText, &MF_BYCOMMAND
+    Call 'User32.GetMenuState' D$LibScanMenuHandle, M03_Show_ToolBarText, &MF_BYCOMMAND
     push eax
         xor edx edx | test eax &MF_CHECKED | setz dl
-        mov B$LibScanShowTBText dl
-        call CoolControlWin_CreateCommandTB D@Addresse, LibScanToolbarHandle, LibScanToolbarButtons, LibScanToolButtonsNumber, LibScanToolTipsStrings, LSTBWin_Cmd
+        Mov B$LibScanShowTBText dl
+        Call CoolControlWin_CreateCommandTB D@Addresse, LibScanToolbarHandle, LibScanToolbarButtons, LibScanToolButtonsNumber, LibScanToolTipsStrings, LSTBWin_Cmd
     pop eax
     xor eax &MF_CHECKED | and eax &MF_CHECKED
-    call 'USER32.CheckMenuItem' D$LibScanMenuHandle, M03_Show_ToolBarText, eax
+    Call 'USER32.CheckMenuItem' D$LibScanMenuHandle, M03_Show_ToolBarText, eax
     SendMessage D$LibScanMenuHandle, &TB_AUTOSIZE, 0, 0
 
 EndP
@@ -16806,17 +16806,17 @@ Proc LibScanDialog_HoverToolbarText:
     Arguments @Addresse
     Structure @TBButtonInfo 32, @Size 0, @Mask 4, @Text 24
 
-    mov D@Size 32, D@Mask &TBIF_TEXT
+    Mov D@Size 32, D@Mask &TBIF_TEXT
 
   ; get check state of menu item, invert, toggle band and set inverted check state
-    call 'User32.GetMenuState' D$LibScanMenuHandle, M03_Hover_ToolBar, &MF_BYCOMMAND
+    Call 'User32.GetMenuState' D$LibScanMenuHandle, M03_Hover_ToolBar, &MF_BYCOMMAND
     push eax
         xor edx edx | test eax &MF_CHECKED | setz dl
-        mov B$LibScanHoverTBText dl
-        ;call CoolControlWin_CreateCommandTB D@Addresse, LibScanToolbarHandle, LibScanToolbarButtons, LibScanToolButtonsNumber, LibScanToolTipsStrings, LSTBWin_Cmd
+        Mov B$LibScanHoverTBText dl
+        ;Call CoolControlWin_CreateCommandTB D@Addresse, LibScanToolbarHandle, LibScanToolbarButtons, LibScanToolButtonsNumber, LibScanToolTipsStrings, LSTBWin_Cmd
     pop eax
     xor eax &MF_CHECKED | and eax &MF_CHECKED
-    call 'USER32.CheckMenuItem' D$LibScanMenuHandle, M03_Hover_ToolBar, eax
+    Call 'USER32.CheckMenuItem' D$LibScanMenuHandle, M03_Hover_ToolBar, eax
     SendMessage D$LibScanMenuHandle, &TB_AUTOSIZE, 0, 0
 
 EndP
@@ -16824,33 +16824,33 @@ ________________________________________________________________________________
 ____________________________________________________________________________________________
 
 DecodeLib:   ; EncodeDecode
-    mov B$WeAreInTheCodeBox &TRUE
+    Mov B$WeAreInTheCodeBox &TRUE
 
-        mov esi D$LibBytesCopy, edi D$LibDisassemblyPtr
+        Mov esi D$LibBytesCopy, edi D$LibDisassemblyPtr
 
       ; Disassemble: (DisMain)
         .While D$esi <> 0
-            lodsd | mov edx esi | add edx eax
+            lodsd | Mov edx esi | add edx eax
 
             While esi < edx
                 push edx
-                    mov B$DisFlag 0, D$SegmentOverride 0, B$AddressSizeOverride 0
-                    mov B$OperandSizeOverride 0, W$DisSizeMarker 'D$'
-                    mov B$DisCodeDisplacement &FALSE, B$EscapePrefix &FALSE
+                    Mov B$DisFlag 0, D$SegmentOverride 0, B$AddressSizeOverride 0
+                    Mov B$OperandSizeOverride 0, W$DisSizeMarker 'D$'
+                    Mov B$DisCodeDisplacement &FALSE, B$EscapePrefix &FALSE
 
-L1:                 movzx eax B$esi | inc esi | call D$DisOp1+eax*4
+L1:                 movzx eax B$esi | inc esi | Call D$DisOp1+eax*4
                     On B$DisFlag = DISDONE, jmp L1<
 
-                    mov W$edi CRLF | add edi 2
+                    Mov W$edi CRLF | add edi 2
                 pop edx
             End_While
 
-            mov D$edi CRLF2 | add edi 4 | mov esi edx
+            Mov D$edi CRLF2 | add edi 4 | Mov esi edx
         .End_While
 
-        mov D$LibDisassemblyPtr edi
+        Mov D$LibDisassemblyPtr edi
 
-    mov B$WeAreInTheCodeBox &FALSE
+    Mov B$WeAreInTheCodeBox &FALSE
 ret
 
 
@@ -16863,7 +16863,7 @@ ________________________________________________________________________________
 ; Tag Dialog 20
 
 LibScanner:
-    call 'USER32.DialogBoxParamA' D$hinstance, IDD_MAINLIB, &NULL, ScanLibFile, &NULL
+    Call 'USER32.DialogBoxParamA' D$hinstance, IDD_MAINLIB, &NULL, ScanLibFile, &NULL
 ret
 
 ____________________________________________________________________________________________
@@ -16885,67 +16885,67 @@ __________________________________________________", 0]
 [LibScanhIcon: D$ 0]
 
 Proc LibScanWarning:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
      pushad
 
 
-    ..If D@Message = &WM_INITDIALOG
+    ..If D@msg = &WM_INITDIALOG
 
-        call 'user32.GetDlgItem' D@Adressee IDC_LIBWARNING_SHOWICON ; Get the handle of the Static Image
-        mov D$LibWarningStaticImage eax
-        call 'USER32.LoadBitmapA' D$hInstance, IDB_LIBWARNING_BITMAP
-        mov D$LibScanhIcon eax
+        Call 'user32.GetDlgItem' D@hwnd IDC_LIBWARNING_SHOWICON ; Get the handle of the Static Image
+        Mov D$LibWarningStaticImage eax
+        Call 'USER32.LoadBitmapA' D$hInstance, IDB_LIBWARNING_BITMAP
+        Mov D$LibScanhIcon eax
 
-        call 'user32.SendMessageA' D$LibWarningStaticImage, &STM_SETIMAGE, &IMAGE_BITMAP, D$LibScanhIcon
-        call 'USER32.SendDlgItemMessageA' D@Adressee IDC_DISPLAYWARNINGMSG &WM_SETTEXT 0 LibScanWarnMsg
-        call 'USER32.SendDlgItemMessageA' D@Adressee IDC_DISPLAYWARNINGMSG &WM_GETTEXT 0 LibScanWarnMsg
+        Call 'user32.SendMessageA' D$LibWarningStaticImage, &STM_SETIMAGE, &IMAGE_BITMAP, D$LibScanhIcon
+        Call 'USER32.SendDlgItemMessageA' D@hwnd IDC_DISPLAYWARNINGMSG &WM_SETTEXT 0 LibScanWarnMsg
+        Call 'USER32.SendDlgItemMessageA' D@hwnd IDC_DISPLAYWARNINGMSG &WM_GETTEXT 0 LibScanWarnMsg
 
         ; Calculate and Display File Size
-        mov edi LibScanHexaMsg
-        mov ecx D$LibFileLength
-        mov esi D$LibFileMemory
+        Mov edi LibScanHexaMsg
+        Mov ecx D$LibFileLength
+        Mov esi D$LibFileMemory
 
         If D$LibFileLength < 80  ; Maximum amount of bytes
-            mov ecx D$LibFileLength
+            Mov ecx D$LibFileLength
         Else_If ecx = 0 ; This shouldn´t happen, because we already have a Zero Size check, but...security is never too much ;)
-            mov ecx 1
+            Mov ecx 1
         Else
-            mov ecx 80
+            Mov ecx 80
         End_If
 
         ; Convert the 1st 80 Bytes to Decimal String notation.
         xor eax eax
-        mov edx 0
+        Mov edx 0
         Do
             lodsb
-            call writeeax
+            Call writeeax
             xor eax eax
-            mov B$edi ' ' | inc edi
+            Mov B$edi ' ' | inc edi
             dec ecx
         Loop_Until ecx = 0
-        mov B$edi 0
+        Mov B$edi 0
 
-        call 'USER32.SetDlgItemTextA' D@Adressee, IDC_DISPLAYWARNINGHEXA, LibScanHexaMsg
+        Call 'USER32.SetDlgItemTextA' D@hwnd, IDC_DISPLAYWARNINGHEXA, LibScanHexaMsg
 
-    ..Else_If D@Message = &WM_CLOSE
-        call ClearBuffer LibScanHexaMsg, 256
-        call 'User32.EndDialog' D@Adressee &NULL
+    ..Else_If D@msg = &WM_CLOSE
+        Call ClearBuffer LibScanHexaMsg, 256
+        Call 'User32.EndDialog' D@hwnd &NULL
 
-    ..Else_If D@Message = &WM_COMMAND
+    ..Else_If D@msg = &WM_COMMAND
         .If D@wParam = &IDOK
-            call ClearBuffer LibScanHexaMsg, 256
-            call 'User32.EndDialog' D@Adressee &NULL
+            Call ClearBuffer LibScanHexaMsg, 256
+            Call 'User32.EndDialog' D@hwnd &NULL
          .End_If
 
     ..Else
 
-       popad | mov eax &FALSE | ExitP
+       popad | Mov eax &FALSE | ExitP
 
     ..End_If
 
     popad
-    mov eax &TRUE
+    Mov eax &TRUE
 EndP
 
 ____________________________________________________________
@@ -16957,39 +16957,39 @@ Proc ListViewLibSort:
     Local @Dir1, @Dir2
     Uses edi, ebx, esi, ecx, edx
 
-;    call ClearCharMapData szBuff0, 256
-;    call ClearCharMapData szBuff1, 256
+;    Call ClearCharMapData szBuff0, 256
+;    Call ClearCharMapData szBuff1, 256
 
     and D@Dir1 0
     and D@Dir2 0
-    mov D$lvi.imask &LVIF_TEXT
+    Mov D$lvi.imask &LVIF_TEXT
     lea eax D$szBuff0
-    mov D$lvi.pszText eax
-    mov D$lvi.cchTextMax 256
+    Mov D$lvi.pszText eax
+    Mov D$lvi.cchTextMax 256
 
-    mov D$lvi.iSubItem 01
-    call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+    Mov D$lvi.iSubItem 01
+    Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
     xor eax eax
-    mov al B$szBuff0
-    mov D@Dir1 eax
-    call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+    Mov al B$szBuff0
+    Mov D@Dir1 eax
+    Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
     xor eax eax
-    mov al B$szBuff0
-    mov D@Dir2 eax
+    Mov al B$szBuff0
+    Mov D@Dir2 eax
 
     ; Decimal Value [Header1: B$ 'Index',0]
     ..If_Or D@lParamSort = 01, D@lParamSort = 02
 
-        mov D$lvi.iSubItem 0
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
-        call String2Dword szBuff0
-        mov edi eax
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
-        call String2Dword szBuff0
+        Mov D$lvi.iSubItem 0
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+        Call String2Dword szBuff0
+        Mov edi eax
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+        Call String2Dword szBuff0
 
         If D@lParamSort = 1
             sub edi eax
-            mov eax edi
+            Mov eax edi
         Else
             sub eax edi
         End_If
@@ -16997,72 +16997,72 @@ Proc ListViewLibSort:
     ; Hexadecimal Value [Header2: B$ 'File Name',0] ; string
     ..Else_If_Or D@lParamSort = 3, D@lParamSort = 4
 
-        mov D$lvi.iSubItem 1
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
-        call strcpy szBuff1, szBuff0
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+        Mov D$lvi.iSubItem 1
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+        Call strcpy szBuff1, szBuff0
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
 
         If D@lParamSort = 3
-            call lstrcmpi szBuff1, szBuff0
+            Call lstrcmpi szBuff1, szBuff0
         Else
-            call lstrcmpi szBuff0, szBuff1
+            Call lstrcmpi szBuff0, szBuff1
         End_If
 
     ; [Header3: B$ 'Extension',0] ; string
     ..Else_If_Or D@lParamSort = 5, D@lParamSort = 6
 
-        mov D$lvi.iSubItem 2
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
-        call strcpy szBuff1, szBuff0
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+        Mov D$lvi.iSubItem 2
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+        Call strcpy szBuff1, szBuff0
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
 
         If D@lParamSort = 5
-            call stricmp szBuff1, szBuff0
+            Call stricmp szBuff1, szBuff0
         Else
-            call stricmp szBuff0, szBuff1
+            Call stricmp szBuff0, szBuff1
         End_If
 
     ; [Header4: B$ 'FileName Type',0] ; string
     ..Else_If_Or D@lParamSort = 7, D@lParamSort = 8
 
-        mov D$lvi.iSubItem 3
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
-        call strcpy szBuff1, szBuff0
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+        Mov D$lvi.iSubItem 3
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+        Call strcpy szBuff1, szBuff0
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
 
         If D@lParamSort = 7
-            call stricmp szBuff1, szBuff0
+            Call stricmp szBuff1, szBuff0
         Else
-            call stricmp szBuff0, szBuff1
+            Call stricmp szBuff0, szBuff1
         End_If
 
     ; [Header5: B$ 'Path',0] ; string
     ..Else_If_Or D@lParamSort = 9, D@lParamSort = 10
 
-        mov D$lvi.iSubItem 4
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
-        call strcpy szBuff1, szBuff0
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+        Mov D$lvi.iSubItem 4
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+        Call strcpy szBuff1, szBuff0
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
 
         If D@lParamSort = 9
-            call lstrcmpi szBuff1, szBuff0
+            Call lstrcmpi szBuff1, szBuff0
         Else
-            call lstrcmpi szBuff0, szBuff1
+            Call lstrcmpi szBuff0, szBuff1
         End_If
 
     ; [Header6: B$ 'Offset',0] ; hexadecimal value string
     ..Else_If_Or D@lParamSort = 11, D@lParamSort = 12
 
-        mov D$lvi.iSubItem 5
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
-        call AsciiBase szBuff0 BASE_HEX
-        mov edi eax
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
-        call AsciiBase szBuff0 BASE_HEX
+        Mov D$lvi.iSubItem 5
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+        Call AsciiBase szBuff0 BASE_HEX
+        Mov edi eax
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+        Call AsciiBase szBuff0 BASE_HEX
 
         If D@lParamSort = 11
             sub edi eax
-            mov eax edi
+            Mov eax edi
         Else
             sub eax edi
         End_If
@@ -17071,16 +17071,16 @@ Proc ListViewLibSort:
     ; [Header7: B$ 'Size',0] ; decimal value
     ..Else_If_Or D@lParamSort = 13, D@lParamSort = 14
 
-        mov D$lvi.iSubItem 6
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
-        call String2Dword szBuff0
-        mov edi eax
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
-        call String2Dword szBuff0
+        Mov D$lvi.iSubItem 6
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+        Call String2Dword szBuff0
+        Mov edi eax
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+        Call String2Dword szBuff0
 
         If D@lParamSort = 13
             sub edi eax
-            mov eax edi
+            Mov eax edi
         Else
             sub eax edi
         End_If
@@ -17088,65 +17088,65 @@ Proc ListViewLibSort:
     ; [Header8: B$ 'Object Type',0] ; string
     ..Else_If_Or D@lParamSort = 15, D@lParamSort = 16
 
-        mov D$lvi.iSubItem 7
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
-        call strcpy szBuff1, szBuff0
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+        Mov D$lvi.iSubItem 7
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+        Call strcpy szBuff1, szBuff0
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
 
         If D@lParamSort = 15
-            call stricmp szBuff1, szBuff0
+            Call stricmp szBuff1, szBuff0
         Else
-            call stricmp szBuff0, szBuff1
+            Call stricmp szBuff0, szBuff1
         End_If
 
     ; [Header9: B$ 'Exported Function',0] ; string
     ..Else_If_Or D@lParamSort = 17, D@lParamSort = 18
 
-        mov D$lvi.iSubItem 8
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
-        call strcpy szBuff1, szBuff0
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+        Mov D$lvi.iSubItem 8
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+        Call strcpy szBuff1, szBuff0
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
 
         If D@lParamSort = 17
-            call lstrcmpi szBuff1, szBuff0
+            Call lstrcmpi szBuff1, szBuff0
         Else
-            call lstrcmpi szBuff0, szBuff1
+            Call lstrcmpi szBuff0, szBuff1
         End_If
 
     ; [Header10: B$ 'Machine Type',0] ; string
     ..Else_If_Or D@lParamSort = 19, D@lParamSort = 20
 
-        mov D$lvi.iSubItem 9
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
-        call strcpy szBuff1, szBuff0
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+        Mov D$lvi.iSubItem 9
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+        Call strcpy szBuff1, szBuff0
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
 
         If D@lParamSort = 19
-            call lstrcmpi szBuff1, szBuff0
+            Call lstrcmpi szBuff1, szBuff0
         Else
-            call lstrcmpi szBuff0, szBuff1
+            Call lstrcmpi szBuff0, szBuff1
         End_If
 
     ; [Header11: B$ 'Sections',0] ; decimal value
     ..Else_If_Or D@lParamSort = 21, D@lParamSort = 22
 
-        mov D$lvi.iSubItem 10
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+        Mov D$lvi.iSubItem 10
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
             If_And D$szBuff0 = 'No S', D$szBuff0+4 = 'ecti' ; "No Sections" string = 0
-                mov eax 0
+                Mov eax 0
             Else
-                call String2Dword szBuff0
+                Call String2Dword szBuff0
             End_If
-        mov edi eax
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+        Mov edi eax
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
             If_And D$szBuff0 = 'No S', D$szBuff0+4 = 'ecti' ; "No Sections" string = 0
-                mov eax 0
+                Mov eax 0
             Else
-                call String2Dword szBuff0
+                Call String2Dword szBuff0
             End_If
         If D@lParamSort = 21
             sub edi eax
-            mov eax edi
+            Mov eax edi
         Else
             sub eax edi
         End_If
@@ -17154,39 +17154,39 @@ Proc ListViewLibSort:
     ; [Header12: B$ 'Time and Date',0] ; time and date string - convert it to dword
     ..Else_If_Or D@lParamSort = 23, D@lParamSort = 24
 
-        mov D$lvi.iSubItem 11
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+        Mov D$lvi.iSubItem 11
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
         ;TimeDateStringtoDword
-        call strcpy szBuff1, szBuff0
-        mov edi eax
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
-        call String2Dword szBuff0
+        Call strcpy szBuff1, szBuff0
+        Mov edi eax
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+        Call String2Dword szBuff0
 
         If D@lParamSort = 23
-            call lstrcmpi szBuff1, szBuff0
+            Call lstrcmpi szBuff1, szBuff0
         Else
-            call lstrcmpi szBuff0, szBuff1
+            Call lstrcmpi szBuff0, szBuff1
         End_If
 
     ; [Header13: B$ 'Symbols',0] ; decimal value
     ..Else_If_Or D@lParamSort = 25, D@lParamSort = 26
-        mov D$lvi.iSubItem 12
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+        Mov D$lvi.iSubItem 12
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
             If_And D$szBuff0 = 'No S', D$szBuff0+4 = 'ymbo' ; "No Symbols" String = 0
-                mov eax 0
+                Mov eax 0
             Else
-                call String2Dword szBuff0
+                Call String2Dword szBuff0
             End_If
-        mov edi eax
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+        Mov edi eax
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
             If_And D$szBuff0 = 'No S', D$szBuff0+4 = 'ymbo' ; "No Symbols" String = 0
-                mov eax 0
+                Mov eax 0
             Else
-                call String2Dword szBuff0
+                Call String2Dword szBuff0
             End_If
         If D@lParamSort = 25
             sub edi eax
-            mov eax edi
+            Mov eax edi
         Else
             sub eax edi
         End_If
@@ -17194,25 +17194,25 @@ Proc ListViewLibSort:
     ; [Header14: B$ 'Optional Header',0] ; string
     ..Else_If_Or D@lParamSort = 27, D@lParamSort = 28
         ; Optional Header can be only True or False.
-        mov D$lvi.iSubItem 13
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
+        Mov D$lvi.iSubItem 13
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam1, lvi
             If D$szBuff0 = 'True'
-                mov eax 1
+                Mov eax 1
             Else
-                mov eax 0
+                Mov eax 0
             End_If
-        mov edi eax
+        Mov edi eax
 
-        call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
+        Call 'USER32.SendMessageA' D$hlist, &LVM_GETITEMTEXT, D@lParam2, lvi
             If D$szBuff0 = 'True'
-                mov eax 1
+                Mov eax 1
             Else
-                mov eax 0
+                Mov eax 0
             End_If
 
         If D@lParamSort = 27
             sub edi eax
-            mov eax edi
+            Mov eax edi
         Else
             sub eax edi
         End_If
@@ -17462,7 +17462,7 @@ ________________________________________________________________________________
  Usage Example:
  
  
-    call Concatenation {"HY ! My name is",0} {"Guga", 0}  edi
+    Call Concatenation {"HY ! My name is",0} {"Guga", 0}  edi
 
 _______________________________________________________________
 
@@ -17477,10 +17477,10 @@ Proc Concatenation:
     Arguments @Source1, @Source2, @Destination
     Uses esi, edi
 
-        mov esi D@Source1, edi D@Destination
+        Mov esi D@Source1, edi D@Destination
         While B$esi <> 0 | movsb | End_While
 
-        mov esi D@Source2
+        Mov esi D@Source2
         While B$esi <> 0 | movsb | End_While
 
         movsb
@@ -17533,7 +17533,7 @@ Note to Guga:
 It seems that when a Lib file is used by the linker, it inserts the whole object file that
 uses a specific function that was called by the source.
 
-For example, if we have a source file with a call to a external lib containing "Function01", and this lib file
+For example, if we have a source file with a Call to a external lib containing "Function01", and this lib file
 have 45 different Object files. The only Object file that will be used and "linked" is the one containing the 
 "Functino01" function. (Example, if this function exists only in Object 32.
 
@@ -17594,11 +17594,11 @@ to be enough to find what are the data and code part of it.
 
 a) Assembler Errors
 
-        call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
+        Call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
 
-        mov edi RegContent | mov W$edi+1 'DX' | add edi 4
+        Mov edi RegContent | Mov W$edi+1 'DX' | add edi 4
 "       DwordToHex D$ebx+0A8
-        call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
+        Call 'Kernel32.WriteFile' D@File, RegContent, 14, BytesTransfered, 0
 
 
 When i try to assemble a copy of RoAsm2028b with RosAsm2028b, it keeps inserting a " char like above.
@@ -17621,9 +17621,9 @@ mov W$edi CRLF | add edi 2
 
 Like in the Error Tab, here:
 
-mov esi D@Text1, edi Trash1, ecx 0 | mov D$edi CRLF | add edi 2
+mov esi D@Text1, edi Trash1, ecx 0 | Mov D$edi CRLF | add edi 2
 (...)
-mov esi D@Text2, edi Trash2, ecx 0 | mov D$edi CRLF | add edi 2
+mov esi D@Text2, edi Trash2, ecx 0 | Mov D$edi CRLF | add edi 2
 
 
 b) On file libgccguga.a, and on libgcc.a it was crashing due to an memory error.
@@ -17645,7 +17645,7 @@ I Fixed it increasing allocated memory here:
     VirtualAlloc CompletionTable ecx | inc D$CompletionTable
 
   ; Fill the Tables:
-    mov edi D$CompletionTable, ebx D$CompletionPointers
+    Mov edi D$CompletionTable, ebx D$CompletionPointers
 
 
 Note: Although it is fixed, the same memory problem hapens on UAFXCWD.LIB
@@ -17661,7 +17661,7 @@ Proc SetQwordCheckSum:
 
     pushad
 
-        mov esi D@Pointer
+        Mov esi D@Pointer
 
         If B$esi < '0'
             ;
@@ -17669,26 +17669,26 @@ Proc SetQwordCheckSum:
             error D$NumerAsSymbolPtr
         End_If
 
-        call CheckSum64 | call NoDuplication D@Pointer | call CheckSum16
+        Call CheckSum64 | Call NoDuplication D@Pointer | Call CheckSum16
 
       ; The List Pointer is used to test empty Records (Lists Pointers can never be zero):
         .If D$CheckSumsRecords+ecx = 0
             On D$CheckSumsRecords+ecx+4 <> 0, jmp L1>
-            mov D$CheckSumsRecords+ecx eax
-            mov D$CheckSumsRecords+ecx+4 ebx
+            Mov D$CheckSumsRecords+ecx eax
+            Mov D$CheckSumsRecords+ecx+4 ebx
             move D$CheckSumsRecords+ecx+8 D@Pointer
           ; D$CheckSumsRecords+ecx+12 = 0
         .Else
 L1:         If D$CheckSumsRecords+ecx+12 = 0
                 move D$CheckSumsRecords+ecx+12 D$PointerToCheckSumsLinkedRecords
             Else
-                mov edi D$CheckSumsRecords+ecx+12
-                While D$edi+12 <> 0 | mov edi D$edi+12 | End_While
+                Mov edi D$CheckSumsRecords+ecx+12
+                While D$edi+12 <> 0 | Mov edi D$edi+12 | End_While
                 move D$edi+12 D$PointerToCheckSumsLinkedRecords
             End_If
 
-            mov edi D$PointerToCheckSumsLinkedRecords
-            mov D$edi eax ; -----------------------------> Crashes here
+            Mov edi D$PointerToCheckSumsLinkedRecords
+            Mov D$edi eax ; -----------------------------> Crashes here
 
 d) Fixed Loading BookMarks when Loading the MRU files.
 
@@ -17700,11 +17700,11 @@ I fixed here (MainProc TAB):
             .Else_If eax > 3000             ; Most Recently Used Files.
                 If eax < 3005
                     push eax
-                        call Security       ; 'Security' also uses eax as return Value.
+                        Call Security       ; 'Security' also uses eax as return Value.
                     pop ebx
                     On eax = &IDCANCEL, jmp L9>>
-                        mov eax ebx         ; ... and 'LoadRMUfile' as input.
-                        call LoadRMUfile | call EnableMenutems | call LoadBookMarks ; added the call to LoadBookmarks
+                        Mov eax ebx         ; ... and 'LoadRMUfile' as input.
+                        Call LoadRMUfile | Call EnableMenutems | Call LoadBookMarks ; added the Call to LoadBookmarks
 
 
 e) Small codecomplete error.
@@ -17786,114 +17786,114 @@ cvtdq2ps
 
 Op5B:
     .If B$EscapePrefix = &FALSE
-        mov D$edi 'pop ' | add edi 4
+        Mov D$edi 'pop ' | add edi 4
         If B$OperandSizeOverride = &FALSE
             inc D$LikelyCode
-            mov D$edi 'ebx ' | add edi 3
+            Mov D$edi 'ebx ' | add edi 3
         Else
            ; inc D$UnLikelyCode
-            mov W$edi 'bx' | add edi 2
+            Mov W$edi 'bx' | add edi 2
         End_If
 
     .Else
 
         ;inc D$UnLikelyCode
-;        mov D$edi 'cvtp'
+;        Mov D$edi 'cvtp'
         If B$OperandSizeOverride = &TRUE ; CVTPS2DQ xmm1, xmm2/m128
-            mov D$edi 'cvtp'
-            mov D$edi+4 's2dq'
+            Mov D$edi 'cvtp'
+            Mov D$edi+4 's2dq'
         Else                             ; CVTDQ2PS xmm1, xmm2/m128
-            mov D$edi 'cvtd'            ; Guga fix. It must be cvtd
-            mov D$edi+4 'q2ps'          ; Guga Error Here. It is d2ps and not q2ps
+            Mov D$edi 'cvtd'            ; Guga fix. It must be cvtd
+            Mov D$edi+4 'q2ps'          ; Guga Error Here. It is d2ps and not q2ps
         End_If
-        mov B$edi+8 ' ' | add edi 9 | jmp Dis_xmm1__xmm2_m128
+        Mov B$edi+8 ' ' | add edi 9 | jmp Dis_xmm1__xmm2_m128
 
 Also on this same file we have several problems of bad interpretations of code as data. It comes for example from here:
 
 All of the Pointers are to Code and Not data, like "mov D$ecx  Code04124BB" ; "mov D$ecx+04 Code0411707" etc etc
 
 Code0406E53: O7:
-    call Code0406D6F
+    Call Code0406D6F
     test al 020
-    mov ecx D$esp+04 | je Code040708C
+    Mov ecx D$esp+04 | je Code040708C
     test al al | jns Code040708C
     test ah 01
-    mov D$ecx  Data04124BB ; error here it is a pointer to code and not to data
-    mov D$ecx+04 Data0411707 ; error here it is a pointer to code and not to data
-    mov D$ecx+08 Data041277C ; error here it is a pointer to code and not to data
-    mov D$ecx+0C Data040D957 ; error here it is a pointer to code and not to data
-    mov D$ecx+014 Data0412510 ; error here it is a pointer to code and not to data
-    mov D$ecx+018 Data0411778 ; error here it is a pointer to code and not to data
-    mov D$ecx+01C Code04117DF
-    mov D$ecx+020 Data04127FE ; error here it is a pointer to code and not to data
-    mov D$ecx+024 Data0412549 ; error here it is a pointer to code and not to data
-    mov D$ecx+028 Code0411CBF
-    mov D$ecx+02C Data040DB89 ; error here it is a pointer to code and not to data
-    mov D$ecx+030 Data0412BA6 ; error here it is a pointer to code and not to data
-    mov D$ecx+034 Data0412BE9 ; error here it is a pointer to code and not to data
-    mov D$ecx+038 Code0411CC4
-    mov D$ecx+03C Code0411E4C
-    mov D$ecx+040 Data041285D ; error here it is a pointer to code and not to data
-    mov D$ecx+044 Data04125AD ; error here it is a pointer to code and not to data
-    mov D$ecx+048 Data04116EB ; error here it is a pointer to code and not to data
-    mov D$ecx+04C Data040C47C ; error here it is a pointer to code and not to data
-    mov D$ecx+050 Data040C515 ; error here it is a pointer to code and not to data
-    mov D$ecx+054 Code0412D8B
-    mov D$ecx+058 Data0412CCD ; error here it is a pointer to code and not to data
-    mov D$ecx+05C Data040C572 ; error here it is a pointer to code and not to data
-    mov D$ecx+060 Data040C5B6 ; error here it is a pointer to code and not to data
-    mov D$ecx+064 Data040C9E7 ; error here it is a pointer to code and not to data
-    mov D$ecx+068 Data040DC58 ; error here it is a pointer to code and not to data
-    mov D$ecx+06C Data040DCA8 ; error here it is a pointer to code and not to data
-    mov D$ecx+070 Data040DD93 ; error here it is a pointer to code and not to data
-    mov D$ecx+074 Data040CAAC ; error here it is a pointer to code and not to data
-    mov D$ecx+078 Data040DE6F ; error here it is a pointer to code and not to data
-    mov D$ecx+07C Data040DED2 ; error here it is a pointer to code and not to data
-    mov D$ecx+080 Data040DF30 ; error here it is a pointer to code and not to data
-    mov D$ecx+084 Data040DF89 ; error here it is a pointer to code and not to data
-    mov D$ecx+088 Data0412DEF ; error here it is a pointer to code and not to data
-    mov D$ecx+08C Code040CB18
-    mov D$ecx+090 Data040CC4F ; error here it is a pointer to code and not to data
-    mov D$ecx+094 Data040DFD0 ; error here it is a pointer to code and not to data
-    mov D$ecx+098 Data040E078 ; error here it is a pointer to code and not to data
-    mov D$ecx+09C Code040E1FF
-    mov D$ecx+0A0 Data040F397 ; error here it is a pointer to code and not to data
-    mov D$ecx+0A4 Data040F53C ; error here it is a pointer to code and not to data
-    mov D$ecx+0A8 Code040FA70
-    mov D$ecx+0AC Data040CCDC ; error here it is a pointer to code and not to data
-    mov D$ecx+0B0 Data040CD6E ; error here it is a pointer to code and not to data
-    mov D$ecx+0D8 Data041298F ; error here it is a pointer to code and not to data
-    mov D$ecx+0CC Data041183E ; error here it is a pointer to code and not to data
-    mov D$ecx+0C0 Data0412645 ; error here it is a pointer to code and not to data
-    mov D$ecx+0B8 Data041268E ; error here it is a pointer to code and not to data
-    mov D$ecx+0D0 Data0412A00 ; error here it is a pointer to code and not to data
-    mov D$ecx+0C4 Data04118AF ; error here it is a pointer to code and not to data
-    mov D$ecx+0DC Data040CDD2 ; error here it is a pointer to code and not to data
-    mov D$ecx+0E0 Data040CE79 ; error here it is a pointer to code and not to data
-    mov D$ecx+0D4 Data0412AC8 ; error here it is a pointer to code and not to data
-    mov D$ecx+0BC Data04126D1 ; error here it is a pointer to code and not to data
-    mov D$ecx+0C8 Data0411983 ; error here it is a pointer to code and not to data
-    mov D$ecx+010 Data0410FBF ; error here it is a pointer to code and not to data
-    mov D$ecx+0B4 Code040CF1E
-    mov D$ecx+0E8 Code0412200
-    mov D$ecx+0E4 Code0412340 | je H6>  ; Code040708C
+    Mov D$ecx  Data04124BB ; error here it is a pointer to code and not to data
+    Mov D$ecx+04 Data0411707 ; error here it is a pointer to code and not to data
+    Mov D$ecx+08 Data041277C ; error here it is a pointer to code and not to data
+    Mov D$ecx+0C Data040D957 ; error here it is a pointer to code and not to data
+    Mov D$ecx+014 Data0412510 ; error here it is a pointer to code and not to data
+    Mov D$ecx+018 Data0411778 ; error here it is a pointer to code and not to data
+    Mov D$ecx+01C Code04117DF
+    Mov D$ecx+020 Data04127FE ; error here it is a pointer to code and not to data
+    Mov D$ecx+024 Data0412549 ; error here it is a pointer to code and not to data
+    Mov D$ecx+028 Code0411CBF
+    Mov D$ecx+02C Data040DB89 ; error here it is a pointer to code and not to data
+    Mov D$ecx+030 Data0412BA6 ; error here it is a pointer to code and not to data
+    Mov D$ecx+034 Data0412BE9 ; error here it is a pointer to code and not to data
+    Mov D$ecx+038 Code0411CC4
+    Mov D$ecx+03C Code0411E4C
+    Mov D$ecx+040 Data041285D ; error here it is a pointer to code and not to data
+    Mov D$ecx+044 Data04125AD ; error here it is a pointer to code and not to data
+    Mov D$ecx+048 Data04116EB ; error here it is a pointer to code and not to data
+    Mov D$ecx+04C Data040C47C ; error here it is a pointer to code and not to data
+    Mov D$ecx+050 Data040C515 ; error here it is a pointer to code and not to data
+    Mov D$ecx+054 Code0412D8B
+    Mov D$ecx+058 Data0412CCD ; error here it is a pointer to code and not to data
+    Mov D$ecx+05C Data040C572 ; error here it is a pointer to code and not to data
+    Mov D$ecx+060 Data040C5B6 ; error here it is a pointer to code and not to data
+    Mov D$ecx+064 Data040C9E7 ; error here it is a pointer to code and not to data
+    Mov D$ecx+068 Data040DC58 ; error here it is a pointer to code and not to data
+    Mov D$ecx+06C Data040DCA8 ; error here it is a pointer to code and not to data
+    Mov D$ecx+070 Data040DD93 ; error here it is a pointer to code and not to data
+    Mov D$ecx+074 Data040CAAC ; error here it is a pointer to code and not to data
+    Mov D$ecx+078 Data040DE6F ; error here it is a pointer to code and not to data
+    Mov D$ecx+07C Data040DED2 ; error here it is a pointer to code and not to data
+    Mov D$ecx+080 Data040DF30 ; error here it is a pointer to code and not to data
+    Mov D$ecx+084 Data040DF89 ; error here it is a pointer to code and not to data
+    Mov D$ecx+088 Data0412DEF ; error here it is a pointer to code and not to data
+    Mov D$ecx+08C Code040CB18
+    Mov D$ecx+090 Data040CC4F ; error here it is a pointer to code and not to data
+    Mov D$ecx+094 Data040DFD0 ; error here it is a pointer to code and not to data
+    Mov D$ecx+098 Data040E078 ; error here it is a pointer to code and not to data
+    Mov D$ecx+09C Code040E1FF
+    Mov D$ecx+0A0 Data040F397 ; error here it is a pointer to code and not to data
+    Mov D$ecx+0A4 Data040F53C ; error here it is a pointer to code and not to data
+    Mov D$ecx+0A8 Code040FA70
+    Mov D$ecx+0AC Data040CCDC ; error here it is a pointer to code and not to data
+    Mov D$ecx+0B0 Data040CD6E ; error here it is a pointer to code and not to data
+    Mov D$ecx+0D8 Data041298F ; error here it is a pointer to code and not to data
+    Mov D$ecx+0CC Data041183E ; error here it is a pointer to code and not to data
+    Mov D$ecx+0C0 Data0412645 ; error here it is a pointer to code and not to data
+    Mov D$ecx+0B8 Data041268E ; error here it is a pointer to code and not to data
+    Mov D$ecx+0D0 Data0412A00 ; error here it is a pointer to code and not to data
+    Mov D$ecx+0C4 Data04118AF ; error here it is a pointer to code and not to data
+    Mov D$ecx+0DC Data040CDD2 ; error here it is a pointer to code and not to data
+    Mov D$ecx+0E0 Data040CE79 ; error here it is a pointer to code and not to data
+    Mov D$ecx+0D4 Data0412AC8 ; error here it is a pointer to code and not to data
+    Mov D$ecx+0BC Data04126D1 ; error here it is a pointer to code and not to data
+    Mov D$ecx+0C8 Data0411983 ; error here it is a pointer to code and not to data
+    Mov D$ecx+010 Data0410FBF ; error here it is a pointer to code and not to data
+    Mov D$ecx+0B4 Code040CF1E
+    Mov D$ecx+0E8 Code0412200
+    Mov D$ecx+0E4 Code0412340 | je H6>  ; Code040708C
     test ah 02 | je H6>  ; Code040708C
-    mov D$ecx+03C Code0412072
-    mov D$ecx+048 Code0410CDD
-    mov D$ecx+098 Data040E14A ; error here it is a pointer to code and not to data
-    mov D$ecx+09C Code040FB89
-    mov D$ecx+060 Data040C7D2 ; error here it is a pointer to code and not to data
+    Mov D$ecx+03C Code0412072
+    Mov D$ecx+048 Code0410CDD
+    Mov D$ecx+098 Data040E14A ; error here it is a pointer to code and not to data
+    Mov D$ecx+09C Code040FB89
+    Mov D$ecx+060 Data040C7D2 ; error here it is a pointer to code and not to data
     
 Code040708C: H6:
     test al 040 | je A0>  ; Code04070E0
-    mov D$ecx+0F8 Code040BE40
-    mov D$ecx+0FC Code040BEE0
-    mov D$ecx+0100 Data040C200 ; error here it is a pointer to code and not to data
-    mov D$ecx+0EC Data040B7C0 ; error here it is a pointer to code and not to data
-    mov D$ecx+0F0 Data040BA20 ; error here it is a pointer to code and not to data
-    mov D$ecx+0F4 Data040BC80 ; error here it is a pointer to code and not to data
-    mov D$ecx+0104 Code040B700
-    mov D$ecx+0110 Code040B640
+    Mov D$ecx+0F8 Code040BE40
+    Mov D$ecx+0FC Code040BEE0
+    Mov D$ecx+0100 Data040C200 ; error here it is a pointer to code and not to data
+    Mov D$ecx+0EC Data040B7C0 ; error here it is a pointer to code and not to data
+    Mov D$ecx+0F0 Data040BA20 ; error here it is a pointer to code and not to data
+    Mov D$ecx+0F4 Data040BC80 ; error here it is a pointer to code and not to data
+    Mov D$ecx+0104 Code040B700
+    Mov D$ecx+0110 Code040B640
     
 Code04070E0: A0:
     ret
@@ -17902,8 +17902,8 @@ Code04070E0: A0:
 You will also note that even fixing this we have other errors like it may result in this (After fixing the Data to Code problem):
 
 Code040C47C: M4:
-    mov edx D$esp+0C
-    mov eax D$esp+08
+    Mov edx D$esp+0C
+    Mov eax D$esp+08
     movq MM2 Q$edx 
     movq MM3 Q$edx+08
     movq MM4 MM2
@@ -17914,7 +17914,7 @@ Code040C47C: M4:
     movq MM1 Q$eax+08
     punpckldq MM4 MM2
     punpckldq MM5 MM3
-    mov eax D$esp+04
+    Mov eax D$esp+04
     movq MM6 MM4
     movq MM7 MM5
     psrlw MM6 Q$edi+ecx+089E02DEF ; Error Here
@@ -17937,8 +17937,8 @@ jmp 0F74FD4B7
 But the correct is:
 Code040C47C: M4:
 
-.text:0040C47C                 mov     edx, [esp+0Ch]
-.text:0040C480                 mov     eax, [esp+8]
+.text:0040C47C                 Mov     edx, [esp+0Ch]
+.text:0040C480                 Mov     eax, [esp+8]
 .text:0040C484                 movq    mm2, qword ptr [edx]
 .text:0040C487                 movq    mm3, qword ptr [edx+8]
 .text:0040C48B                 movq    mm4, mm2
@@ -17949,7 +17949,7 @@ Code040C47C: M4:
 .text:0040C49A                 movq    mm1, qword ptr [eax+8]
 .text:0040C49E                 punpckldq mm4, mm2
 .text:0040C4A1                 punpckldq mm5, mm3
-.text:0040C4A4                 mov     eax, [esp+4]
+.text:0040C4A4                 Mov     eax, [esp+4]
 .text:0040C4A8                 movq    mm6, mm4
 .text:0040C4AB                 movq    mm7, mm5
 .text:0040C4AE                 pfmul   mm2, mm1
@@ -17995,8 +17995,8 @@ a)
                         ;or B$eax PUSH_EBP+NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
                         ; GugaNote This is a jmp call
                         or B$eax NODE+INSTRUCTION+ACCESSED+EVOCATED+LABEL
-                        mov ebx eax | sub ebx D$RoutingMap | add ebx D$SectionsMap
-                        mov B$ebx CODEFLAG
+                        Mov ebx eax | sub ebx D$RoutingMap | add ebx D$SectionsMap
+                        Mov B$ebx CODEFLAG
                         jmp L5>
                         
 b)
@@ -18004,8 +18004,8 @@ b)
 This is for the JCC
     While edi < edx
         If B$esi > 3
-            On B$edi = 0, mov B$edi CODEFLAG
-            On B$edi = CODEFLAG, mov B$ebx INSTRUCTION+EVOCATED+LABEL+ACCESSED;+PUSH_EBP
+            On B$edi = 0, Mov B$edi CODEFLAG
+            On B$edi = CODEFLAG, Mov B$ebx INSTRUCTION+EVOCATED+LABEL+ACCESSED;+PUSH_EBP
         End_If
         inc esi, edi, ebx
     End_While
@@ -18020,36 +18020,36 @@ On ntdll.dll (D:\RosAsm\dlls\NewDlls)
 
 Here:
 
-    mov D$eax+0BC es                  ; 8C 88 BC 00 00 00 
-    mov D$eax+098 es                  ; 8C 98 98 00 00 00 
-    mov D$eax+094 es                  ; 8C 80 94 00 00 00 
-    mov D$eax+090 es                  ; 8C A0 90 00 00 00 
-    mov D$eax+08C es                  ; 8C A8 8C 00 00 00 
-    mov D$eax+0C8 es                  ; 8C 90 C8 00 00 00 
-    mov D$eax  010007                 ; C7 00 07 00 01 00 
+    Mov D$eax+0BC es                  ; 8C 88 BC 00 00 00 
+    Mov D$eax+098 es                  ; 8C 98 98 00 00 00 
+    Mov D$eax+094 es                  ; 8C 80 94 00 00 00 
+    Mov D$eax+090 es                  ; 8C A0 90 00 00 00 
+    Mov D$eax+08C es                  ; 8C A8 8C 00 00 00 
+    Mov D$eax+0C8 es                  ; 8C 90 C8 00 00 00 
+    Mov D$eax  010007                 ; C7 00 07 00 01 00 
     push 01                           ; 6A 01 
     push eax                          ; 50 
     push D$ebp+08                     ; FF 75 08 
-    call Code078468A5C                ; E8 29 C5 FD FF 
+    Call Code078468A5C                ; E8 29 C5 FD FF 
 (...)
-    call Code07848C4A0                ; E8 48 FF FF FF 
+    Call Code07848C4A0                ; E8 48 FF FF FF 
 RtlRaiseStatus:: Code07848C558: P2:
 
 The "es" is repeated. It dhould be:
 
-    mov D$eax+0BC cs                  ; 8C 88 BC 00 00 00 
-    mov D$eax+098 ds                  ; 8C 98 98 00 00 00 
-    mov D$eax+094 es                  ; 8C 80 94 00 00 00 
-    mov D$eax+090 fs                  ; 8C A0 90 00 00 00 
-    mov D$eax+08C gs                  ; 8C A8 8C 00 00 00 
-    mov D$eax+0C8 ss                  ; 8C 90 C8 00 00 00 
-    mov D$eax  010007                 ; C7 00 07 00 01 00 
+    Mov D$eax+0BC cs                  ; 8C 88 BC 00 00 00 
+    Mov D$eax+098 ds                  ; 8C 98 98 00 00 00 
+    Mov D$eax+094 es                  ; 8C 80 94 00 00 00 
+    Mov D$eax+090 fs                  ; 8C A0 90 00 00 00 
+    Mov D$eax+08C gs                  ; 8C A8 8C 00 00 00 
+    Mov D$eax+0C8 ss                  ; 8C 90 C8 00 00 00 
+    Mov D$eax  010007                 ; C7 00 07 00 01 00 
     push 01                           ; 6A 01 
     push eax                          ; 50 
     push D$ebp+08                     ; FF 75 08 
-    call Code078468A5C                ; E8 29 C5 FD FF 
+    Call Code078468A5C                ; E8 29 C5 FD FF 
 (...)
-    call Code07848C4A0                ; E8 48 FF FF FF 
+    Call Code07848C4A0                ; E8 48 FF FF FF 
 RtlRaiseStatus:: Code07848C558: P2:
 
 
@@ -18059,52 +18059,52 @@ WriteEffectiveAddressFromModRm:  ; 044 00_100_100
 (...)
 
     .Else_If al = 2
-        call StartEffectiveAddress | RmMask bl To al
+        Call StartEffectiveAddress | RmMask bl To al
 
-        If al = 0      | mov D$edi 'eax+' | add edi 4
-        Else_If al = 1 | mov D$edi 'ecx+' | add edi 4
-        Else_If al = 2 | mov D$edi 'edx+' | add edi 4
-        Else_If al = 3 | mov D$edi 'ebx+' | add edi 4
-        Else_If al = 4 | call WriteFromSib
+        If al = 0      | Mov D$edi 'eax+' | add edi 4
+        Else_If al = 1 | Mov D$edi 'ecx+' | add edi 4
+        Else_If al = 2 | Mov D$edi 'edx+' | add edi 4
+        Else_If al = 3 | Mov D$edi 'ebx+' | add edi 4
+        Else_If al = 4 | Call WriteFromSib
             ..If B$edi-1 <> '+'
-                mov B$edi '+' | inc edi
+                Mov B$edi '+' | inc edi
             ..End_If
-        Else_If al = 5 | mov D$edi 'ebp+' | add edi 4
-        Else_If al = 6 | mov D$edi 'esi+' | add edi 4
-        Else           | mov D$edi 'edi+' | add edi 4
+        Else_If al = 5 | Mov D$edi 'ebp+' | add edi 4
+        Else_If al = 6 | Mov D$edi 'esi+' | add edi 4
+        Else           | Mov D$edi 'edi+' | add edi 4
         End_If
 
-        ; call Writedis32 ; ----> Here was the error. The values of eax and ebx was changing
-        push ebx | push eax | call Writedis32 | pop eax | pop ebx ; --> This was my preliminary fix.
+        ; Call Writedis32 ; ----> Here was the error. The values of eax and ebx was changing
+        push ebx | push eax | Call Writedis32 | pop eax | pop ebx ; --> This was my preliminary fix.
 
     .Else ; bl = 3
 
 The 1st fix i made was only a palleative way to retrieve back the values of eax and ebx in order to don´t change
-the values of bl and al, but this is not the proper way to go, because we have several other functions that call to
+the values of bl and al, but this is not the proper way to go, because we have several other functions that Call to
 this Writedis32 and also in some functions below or after it.
 
 All of those surrounding functions changes the values, because they are not preserved. The functions are top-down, like:
 
 WriteBase5dis32: ; starting address
     If B$edi-1 <> '+'
-        mov B$edi '+' | inc edi
+        Mov B$edi '+' | inc edi
     End_If
 
 WriteDis32:
     If B$AddressSizeOverride = &FALSE
         lodsd
     Else
-        lodsw | and eax 0FFFF | call WriteEax | ret
+        lodsw | and eax 0FFFF | Call WriteEax | ret
     End_If
 
 WriteDisRelative:
-    mov D$LastCodeRef eax | On eax = 0, jmp L8>>
+    Mov D$LastCodeRef eax | On eax = 0, jmp L8>>
 
 L0: If B$SimpleScan = &TRUE
-        mov B$DisFlag DISDONE+DISLINEOVER | ret
+        Mov B$DisFlag DISDONE+DISLINEOVER | ret
     End_If
 
-So i fix it all only adding a Proc macro and a use macro in all functinos and adding a call to the next function in sequence,
+So i fix it all only adding a Proc macro and a use macro in all functinos and adding a Call to the next function in sequence,
 like this:
 
 
@@ -18112,9 +18112,9 @@ Proc WriteBase5dis32:
     Uses eax, ebx, ecx, edx
     
     If B$edi-1 <> '+'
-        mov B$edi '+' | inc edi
+        Mov B$edi '+' | inc edi
     End_If
-    call WriteDis32
+    Call WriteDis32
 EndP
 
 Proc WriteDis32:
@@ -18123,19 +18123,19 @@ Proc WriteDis32:
     If B$AddressSizeOverride = &FALSE
         lodsd
     Else
-        lodsw | and eax 0FFFF | call WriteEax | ExitP;ret
+        lodsw | and eax 0FFFF | Call WriteEax | ExitP;ret
     End_If
-    call WriteDisRelative
+    Call WriteDisRelative
 EndP
 
 Proc WriteDisRelative:
     ;Uses eax, ebx, ecx, edx ; Maybe not use eax here bccause of  | jnz WriteDisRelative
     Uses ebx, ecx, edx ; Maybe not use eax here
 
-    mov D$LastCodeRef eax | On eax = 0, jmp L8>>
+    Mov D$LastCodeRef eax | On eax = 0, jmp L8>>
 
 L0: If B$SimpleScan = &TRUE
-        mov B$DisFlag DISDONE+DISLINEOVER | ExitP;ret
+        Mov B$DisFlag DISDONE+DISLINEOVER | ExitP;ret
     End_If
 
 L0: On B$WeAreInTheCodeBox = &TRUE, jmp L8>>
@@ -18145,89 +18145,89 @@ L0: On B$WeAreInTheCodeBox = &TRUE, jmp L8>>
     On eax >= D$EndOfSectionsMap, jmp L8>>
     On eax <= D$SectionsMap, jmp L8>>
 
-    mov B$ToJumpsTable &FALSE
-    mov al B$eax | and al DATAFLAG+VIRTUALFLAG+IMPORTFLAG+CODEFLAG+CONSTANTFLAG
+    Mov B$ToJumpsTable &FALSE
+    Mov al B$eax | and al DATAFLAG+VIRTUALFLAG+IMPORTFLAG+CODEFLAG+CONSTANTFLAG
 
     ..If al = 0
-        mov eax D$LastCodeRef
+        Mov eax D$LastCodeRef
 
-        mov ebx eax | sub ebx D$DisImageBase | add ebx D$SizesMap
+        Mov ebx eax | sub ebx D$DisImageBase | add ebx D$SizesMap
 
             .If B$LeaInstruction = &TRUE
-               ; or B$ebx POINTER | mov B$LeaInstruction &FALSE
+               ; or B$ebx POINTER | Mov B$LeaInstruction &FALSE
             .Else_If W$edi-2 = 'B$'
                 or B$ebx BYTE
-                sub ebx D$SizesMap | add ebx D$SectionsMap | mov B$ebx DATAFLAG
+                sub ebx D$SizesMap | add ebx D$SectionsMap | Mov B$ebx DATAFLAG
             .Else_If W$edi-2 = 'W$'
                 or B$ebx WORD
                 sub ebx D$SizesMap | add ebx D$SectionsMap
-                mov B$ebx DATAFLAG, B$ebx+1 DATAFLAG
+                Mov B$ebx DATAFLAG, B$ebx+1 DATAFLAG
             .Else_If W$edi-2 = 'D$'
                 or B$ebx DWORD
                 sub ebx D$SizesMap | add ebx D$SectionsMap
-                mov D$ebx FOURDATAFLAGS
+                Mov D$ebx FOURDATAFLAGS
             .Else_If W$edi-2 = 'F$'
                 or B$ebx FP4
                 sub ebx D$SizesMap | add ebx D$SectionsMap
-                mov D$ebx FOURDATAFLAGS
+                Mov D$ebx FOURDATAFLAGS
             .Else_If W$edi-2 = 'R$'
                 or B$ebx FP8
                 sub ebx D$SizesMap | add ebx D$SectionsMap
-                mov D$ebx FOURDATAFLAGS, D$ebx+4 FOURDATAFLAGS
+                Mov D$ebx FOURDATAFLAGS, D$ebx+4 FOURDATAFLAGS
             .Else_If W$edi-2 = 'T$'
                 or B$ebx FP10
                 sub ebx D$SizesMap | add ebx D$SectionsMap
-                mov D$ebx FOURDATAFLAGS, D$ebx+4 FOURDATAFLAGS, D$ebx+6 FOURDATAFLAGS
+                Mov D$ebx FOURDATAFLAGS, D$ebx+4 FOURDATAFLAGS, D$ebx+6 FOURDATAFLAGS
             .Else
                 jmp L8>>
                ; or B$ebx POINTER
             .End_If
 
     ..Else_If al = DATAFLAG
-        mov eax D$LastCodeRef | call StoreDisSize
+        Mov eax D$LastCodeRef | Call StoreDisSize
         sub eax D$DisImageBase | add eax D$RoutingMap | or B$eax LABEL+EVOCATED
-        mov D$edi 'Data' | add edi 4 | jmp L8>>
+        Mov D$edi 'Data' | add edi 4 | jmp L8>>
 
     ..Else_If al = CODEFLAG
-      ; Is it a call to a Jumps Table?
-        mov eax D$LastCodeRef
+      ; Is it a Call to a Jumps Table?
+        Mov eax D$LastCodeRef
         sub eax D$DisImageBase | add eax D$UserPeStart
 
         If W$eax = 025FF ; Code of jmp relative long
-            mov ebx D$eax+2 | sub ebx D$DisImageBase | add ebx D$SectionsMap
+            Mov ebx D$eax+2 | sub ebx D$DisImageBase | add ebx D$SectionsMap
             On ebx > D$EndOfSectionsMap, jmp L1>
             On ebx < D$SectionsMap, jmp L1>
                 On B$ebx <> IMPORTFLAG, jmp L1>
 
-                    mov B$ApiCommentWanted &TRUE, ebx D$eax+2, D$PtrToApiName ebx
+                    Mov B$ApiCommentWanted &TRUE, ebx D$eax+2, D$PtrToApiName ebx
 
-                  ; On B$WithSymbolicsAnalyzes = &FALSE, mov B$ToJumpsTable &TRUE
+                  ; On B$WithSymbolicsAnalyzes = &FALSE, Mov B$ToJumpsTable &TRUE
 ;                    push eax
-;                        mov al B$WithSymbolicsAnalyzes | xor al &TRUE
-;                        mov B$ToJumpsTable al
-;                        On B$WithoutJumpsTableCalls = &TRUE, mov B$ToJumpsTable &FALSE
+;                        Mov al B$WithSymbolicsAnalyzes | xor al &TRUE
+;                        Mov B$ToJumpsTable al
+;                        On B$WithoutJumpsTableCalls = &TRUE, Mov B$ToJumpsTable &FALSE
 ;                    pop eax
-;                    mov ebx D$eax+2 | jmp L5>>
+;                    Mov ebx D$eax+2 | jmp L5>>
         End_If
 
-L1:     mov eax D$LastCodeRef
+L1:     Mov eax D$LastCodeRef
         sub eax D$DisImageBase | add eax D$RoutingMap
         test B$eax INSTRUCTION | jz L8>>
-        or B$eax NODE+LABEL | mov D$edi 'Code' | add edi 4 | jmp L8>>
+        or B$eax NODE+LABEL | Mov D$edi 'Code' | add edi 4 | jmp L8>>
 
     ..Else_If al = VIRTUALFLAG
-        mov eax D$LastCodeRef | call StoreDisSize
+        Mov eax D$LastCodeRef | Call StoreDisSize
         sub eax D$DisImageBase | add eax D$RoutingMap | or B$eax LABEL+EVOCATED
-        mov D$edi 'Virt', D$edi+4 'ual ' | add edi 7 | jmp L8>>
+        Mov D$edi 'Virt', D$edi+4 'ual ' | add edi 7 | jmp L8>>
 
     ..Else_If al = CONSTANTFLAG
-L1:     mov eax D$LastCodeRef | call StoreDisSize
+L1:     Mov eax D$LastCodeRef | Call StoreDisSize
         sub eax D$DisImageBase | add eax D$RoutingMap | or B$eax LABEL+EVOCATED
-        mov D$edi 'Cons', D$edi+4 'tant', B$edi+8 ' ' | add edi 8 | jmp L8>>
+        Mov D$edi 'Cons', D$edi+4 'tant', B$edi+8 ' ' | add edi 8 | jmp L8>>
 
     ..Else_If al = IMPORTFLAG
-        mov ebx D$LastCodeRef
-L5:     sub ebx D$DisImageBase | add ebx D$UserPeStart | mov ebx D$ebx
+        Mov ebx D$LastCodeRef
+L5:     sub ebx D$DisImageBase | add ebx D$UserPeStart | Mov ebx D$ebx
       ; May be a wrong pointing inside the .Import!
       ; Add a Pointer test!
         On ebx < D$ApiBuffer, ExitP;ret
@@ -18237,28 +18237,28 @@ L5:     sub ebx D$DisImageBase | add ebx D$UserPeStart | mov ebx D$ebx
 
             On W$edi-2 = 'D$', sub edi 2
 
-            mov esi ebx
+            Mov esi ebx
 
             .If D$edi-4 = 'jmp '    ; Jumps Table?
-                call WriteApiJmpTableLabel
+                Call WriteApiJmpTableLabel
 
                 While B$esi <> 0 | movsb | End_While
 
-            .Else_If D$edi-4 = 'all '  ; call api?
-                call FlagNoReturnApi
-                call FlagApiProcedures
+            .Else_If D$edi-4 = 'all '  ; Call api?
+                Call FlagNoReturnApi
+                Call FlagApiProcedures
                 While B$esi <> 0 | movsb | End_While
 
           ; Other case: Either "mov eax D$ApiCall" or "mov D$eax ApiCall"
             .Else
                 push edi
-                    mov al "'"
+                    Mov al "'"
                     While B$edi > LF
                         dec edi
-                        On B$edi = '$', mov al 0
+                        On B$edi = '$', Mov al 0
                     End_While
                 pop edi
-                mov esi ebx
+                Mov esi ebx
                 If al = 0
                     While B$esi <> '.' | inc esi | End_While | inc esi
                 End_If
@@ -18275,50 +18275,50 @@ ______________________________________________
 ; Note to René: All of this is for your Tests ?
 
 L7:         pop ebx, eax, esi
-            mov B$edi ':' | inc edi | NextDisLine
+            Mov B$edi ':' | inc edi | NextDisLine
 
-            mov D$edi 'jmp ' | add edi 4
+            Mov D$edi 'jmp ' | add edi 4
         .End_If
 ExitP;ret
 
        ; If B$ToJumpsTable = &FALSE
-       ;     mov B$edi "'" | inc edi
+       ;     Mov B$edi "'" | inc edi
        ; End_If
         push esi
-            mov esi ebx | While B$esi <> 0 | movsb | End_While
+            Mov esi ebx | While B$esi <> 0 | movsb | End_While
         pop esi
-      ;  mov eax D$edi-4 | or eax 0202020 | On eax = '.dll' | sub edi 4
-      ;  mov B$edi '.' | inc edi
+      ;  Mov eax D$edi-4 | or eax 0202020 | On eax = '.dll' | sub edi 4
+      ;  Mov B$edi '.' | inc edi
 ;      ; Switch to the real Import for reading the Pointer to Function Name:
 ;        sub ebx D$RoutingMap | add ebx D$UserPeStart
 ;        Test D$ebx 0_8000_0000 | jnz L6>
 ;            push esi
-;                mov esi D$ebx | add esi 2 | add esi D$UserPeStart
+;                Mov esi D$ebx | add esi 2 | add esi D$UserPeStart
 ;                If esi < D$UserPeStart
-;D0:                 mov B$DisFlag DISFAILED | pop esi | ret
+;D0:                 Mov B$DisFlag DISFAILED | pop esi | ret
 ;                Else_If esi > D$UserPeEnd
 ;                    jmp D0<
 ;                End_If
 ;                While B$esi <> 0 | movsb | End_While
 ;            pop esi
 ;            If B$ToJumpsTable = &FALSE
-;                mov B$edi "'" | inc edi
+;                Mov B$edi "'" | inc edi
 ;            End_If
             ExitP;ret
 
-;L6:     mov eax D$ebx | xor eax 0_8000_0000 | call WriteEax
+;L6:     Mov eax D$ebx | xor eax 0_8000_0000 | Call WriteEax
 ;        If B$ToJumpsTable = &FALSE
-;            mov B$edi "'" | inc edi
+;            Mov B$edi "'" | inc edi
 ;        End_If
         ExitP;ret
 
     ..Else_If al = 0
-        mov ebx D$LastCodeRef
+        Mov ebx D$LastCodeRef
         sub ebx D$DisImageBase | add ebx D$RoutingMap
-        mov eax D$ebx
+        Mov eax D$ebx
         If eax = 0
             sub ebx D$RoutingMap | add ebx D$SectionsMap
-            mov B$ebx CONSTANTFLAG | jmp L1<<
+            Mov B$ebx CONSTANTFLAG | jmp L1<<
         End_If
     ..End_If
 _______________________________________
@@ -18326,12 +18326,12 @@ _______________________________________
 L8: On B$WeAreInTheCodeBox = &FALSE, jmp L8>
     On D$LibFileMemory = 0, jmp L8>
         push esi
-            mov esi D$LastCodeRef
+            Mov esi D$LastCodeRef
             .If esi > D$LibFileMemory
-                mov eax D$LibFileMemory | add eax D$LibFileLength
+                Mov eax D$LibFileMemory | add eax D$LibFileLength
                 If esi < eax
                     While B$esi <> 0 | movsb | End_While
-                   ; mov D$edi ' ; <', D$edi+4 '<<<<' | add edi 8
+                   ; Mov D$edi ' ; <', D$edi+4 '<<<<' | add edi 8
                 Else
                     pop esi | jmp L8>
                 End_If
@@ -18345,42 +18345,42 @@ L8: ;On D$LastCodeRef = 0438E28, int3
 
     .If B$edi-1 = '+'
         If W$edi-3 = '*2'
-            call TryWithIndice 2
+            Call TryWithIndice 2
         Else_If W$edi-3 = '*4'
-            call TryWithIndice 4
+            Call TryWithIndice 4
         Else_If W$edi-3 = '*8'
-            call TryWithIndice 8
+            Call TryWithIndice 8
         End_If
     .End_If
 
     If W$DisplacementFromLabel = 0
-        mov eax D$LastCodeRef | sub eax D$DisImageBase | add eax D$SizesMap
-        mov ebx D$SizesMap | add ebx 4
+        Mov eax D$LastCodeRef | sub eax D$DisImageBase | add eax D$SizesMap
+        Mov ebx D$SizesMap | add ebx 4
         On eax < ebx, jmp L8>
         On eax > D$EndOfSizesMap, jmp L8>
         test B$eax-4 FP8 | jz L8>
-            sub D$LastCodeRef 4 | mov W$DisplacementFromLabel '+4'
+            sub D$LastCodeRef 4 | Mov W$DisplacementFromLabel '+4'
     End_If
 
 L8: push 0-1
 
-    mov ebx D$LastCodeRef
+    Mov ebx D$LastCodeRef
 
-L0: mov eax ebx | shr ebx 4 | and eax 0F
+L0: Mov eax ebx | shr ebx 4 | and eax 0F
     add eax '0' | On eax > '9', add eax 7
     push eax
     cmp ebx 0 | ja L0<
 
-    mov B$edi '0' | inc edi
+    Mov B$edi '0' | inc edi
 L0: pop eax | cmp eax 0-1 | je L9>
-    mov B$edi al | inc edi | jmp L0<
+    Mov B$edi al | inc edi | jmp L0<
 
 L9: If W$DisplacementFromLabel <> 0
-        mov ax W$DisplacementFromLabel | stosw
-        mov W$DisplacementFromLabel 0
+        Mov ax W$DisplacementFromLabel | stosw
+        Mov W$DisplacementFromLabel 0
     End_If
 
-    mov eax D$LastCodeRef | sub eax D$DisImageBase | add eax D$SectionsMap
+    Mov eax D$LastCodeRef | sub eax D$DisImageBase | add eax D$SectionsMap
 
     .If eax < D$SectionsMap
         ;
@@ -18390,7 +18390,7 @@ L9: If W$DisplacementFromLabel <> 0
         End_If
     .End_If
 
-    On B$ApiCommentWanted = &TRUE, call WriteApiLabelComment
+    On B$ApiCommentWanted = &TRUE, Call WriteApiLabelComment
 ;ret
 EndP
 
@@ -18403,18 +18403,18 @@ i Also changed here:
 
 BuildTruthAsciiTable:
     VirtualAlloc TruthAsciiTable 256
-    mov edi D$TruthAsciiTable, al BADASCII, ecx 256 | rep stosb
+    Mov edi D$TruthAsciiTable, al BADASCII, ecx 256 | rep stosb
 
-    mov edi D$TruthAsciiTable, B$edi 0
-    mov B$edi+LF GOODASCII, B$edi+CR GOODASCII,
+    Mov edi D$TruthAsciiTable, B$edi 0
+    Mov B$edi+LF GOODASCII, B$edi+CR GOODASCII,
         B$edi+0A7 GOODASCII,    ; $
         B$edi+025 GOODASCII,    ; %
         B$edi+0A9 GOODASCII,    ; ®
         B$edi+02F GOODASCII     ; /
 
-    mov ebx 32, ecx 127;8
+    Mov ebx 32, ecx 127;8
     While ebx =< ecx
-        mov B$edi+ebx GOODASCII | inc ebx
+        Mov B$edi+ebx GOODASCII | inc ebx
     End_While
 
   ; 128 - 32 + 6 > 102
@@ -18448,11 +18448,11 @@ Chars 127 and 128 are not Good Ascii
         
     Example of usage and their return values:
 
-    call lstrcmpi {B$ "AB", 0} {B$ "AB", 0} ; Eax = 0
-    call lstrcmpi {B$ "AB", 0} {B$ "CD", 0} ; Eax = 0-1
-    call lstrcmpi {B$ "CD", 0} {B$ "AB", 0} ; Eax = 1
-    call lstrcmpi {B$ "RosAsm", 0} {B$ "Assembly", 0} ; Eax = 1
-    call lstrcmpi {B$ "Assembly", 0} {B$ "RosAsm", 0} ; Eax = 0-1
+    Call lstrcmpi {B$ "AB", 0} {B$ "AB", 0} ; Eax = 0
+    Call lstrcmpi {B$ "AB", 0} {B$ "CD", 0} ; Eax = 0-1
+    Call lstrcmpi {B$ "CD", 0} {B$ "AB", 0} ; Eax = 1
+    Call lstrcmpi {B$ "RosAsm", 0} {B$ "Assembly", 0} ; Eax = 1
+    Call lstrcmpi {B$ "Assembly", 0} {B$ "RosAsm", 0} ; Eax = 0-1
     
     Note: If you are using this function to organize (list) strings. The starting order in crescent sttrings.
     Like the following list of strings:
@@ -18473,24 +18473,24 @@ Proc lstrcmpi:
     Arguments @String1, @String2
     uses ebx, esi, ecx, edx
 
-    call 'kernel32.GetThreadLocale'
-    call 'kernel32.CompareStringA' eax, &LOCALE_ILANGUAGE__&LOCALE_USE_CP_ACP, D@String1, 0-01, D@String2, 0-1
+    Call 'kernel32.GetThreadLocale'
+    Call 'kernel32.CompareStringA' eax, &LOCALE_ILANGUAGE__&LOCALE_USE_CP_ACP, D@String1, 0-01, D@String2, 0-1
 
     ...If eax = 0
 
-        call 'kernel32.GetSystemDefaultLCID'
-        call 'kernel32.CompareStringA' eax, &LOCALE_ILANGUAGE__&LOCALE_USE_CP_ACP, D@String1, 0-01, D@String2, 0-1
+        Call 'kernel32.GetSystemDefaultLCID'
+        Call 'kernel32.CompareStringA' eax, &LOCALE_ILANGUAGE__&LOCALE_USE_CP_ACP, D@String1, 0-01, D@String2, 0-1
 
         ..If eax = 0
 
             .If D@String1 <> 0
 
                 If D@String2 <> 0
-                    call stricmp D@String1, D@String2
+                    Call stricmp D@String1, D@String2
                 Else_If D@String1 <> 0 ; There is an error on the original dll. This may be eax and not String1
-                    mov eax 1
+                    Mov eax 1
                 Else
-                    mov eax D@String2
+                    Mov eax D@String2
                     neg eax
                     sbb eax eax
                 End_If
@@ -18498,7 +18498,7 @@ Proc lstrcmpi:
 
             .End_If
 
-            mov eax D@String2
+            Mov eax D@String2
             neg eax
             sbb eax eax
             ExitP
@@ -18540,11 +18540,11 @@ EndP
         
     Example of usage and their return values:
         
-    call stricmp {B$ "AB", 0} {B$ "AB", 0} ; Eax = 0
-    call stricmp {B$ "AB", 0} {B$ "CD", 0} ; Eax = 1
-    call stricmp {B$ "CD", 0} {B$ "AB", 0} ; Eax = 0-1
-    call stricmp {B$ "RosAsm", 0} {B$ "Assembly", 0} ; Eax = 0-1
-    call stricmp {B$ "Assembly", 0} {B$ "RosAsm", 0} ; Eax = 1
+    Call stricmp {B$ "AB", 0} {B$ "AB", 0} ; Eax = 0
+    Call stricmp {B$ "AB", 0} {B$ "CD", 0} ; Eax = 1
+    Call stricmp {B$ "CD", 0} {B$ "AB", 0} ; Eax = 0-1
+    Call stricmp {B$ "RosAsm", 0} {B$ "Assembly", 0} ; Eax = 0-1
+    Call stricmp {B$ "Assembly", 0} {B$ "RosAsm", 0} ; Eax = 1
     
     Note: Used Macros. Default RosAsm macro system, plus:
     
@@ -18569,17 +18569,17 @@ Proc stricmp:
     Arguments @String1, @String2
     Uses edi, esi, ebx
 
-    mov esi D@String2
-    mov edi D@String1
-    mov al 0FF
+    Mov esi D@String2
+    Mov edi D@String1
+    Mov al 0FF
 
 
     .Do
         Do
             On al = 0, jmp L2>
-            mov al B$esi
+            Mov al B$esi
             inc esi
-            mov ah B$edi
+            Mov ah B$edi
             inc edi
         Loop_Until ah <> al
 
@@ -18621,24 +18621,24 @@ Proc String2Dword:
     Local @Result
     Uses ecx, edi, edx, esi
 
-    mov D@Result 0
-    mov edi D@String
-    mov ecx D@String
+    Mov D@Result 0
+    Mov edi D@String
+    Mov ecx D@String
     On ecx = 0, ExitP
 
-    call StrLenProc edi
+    Call StrLenProc edi
 
     .While B$ecx <> 0
 
         xor edx edx
-        mov dl B$edi
+        Mov dl B$edi
         sub dl '0'  ; subtrack each digit with "0" to convert it to hex value
-        mov esi eax
+        Mov esi eax
         dec esi
         push eax
-            mov eax edx
+            Mov eax edx
             push ebx
-                mov ebx 10;0A
+                Mov ebx 10;0A
                 While esi > 0
                     mul ebx
                     dec esi
@@ -18650,7 +18650,7 @@ Proc String2Dword:
         dec eax
         inc ecx
     .End_While
-    mov eax D@Result
+    Mov eax D@Result
 
 EndP
 ____________________________________________________________________________________________
@@ -18680,11 +18680,11 @@ ________________________________________________________________________________
         
     Example of usage and their return values:
         
-    call strcmp {B$ "AB", 0} {B$ "AB", 0} ; Eax = 0
-    call strcmp {B$ "AB", 0} {B$ "CD", 0} ; Eax = 0-1
-    call strcmp {B$ "CD", 0} {B$ "AB", 0} ; Eax = 1
-    call strcmp {B$ "RosAsm", 0} {B$ "Assembly", 0} ; Eax = 1
-    call strcmp {B$ "Assembly", 0} {B$ "RosAsm", 0} ; Eax = 0-1
+    Call strcmp {B$ "AB", 0} {B$ "AB", 0} ; Eax = 0
+    Call strcmp {B$ "AB", 0} {B$ "CD", 0} ; Eax = 0-1
+    Call strcmp {B$ "CD", 0} {B$ "AB", 0} ; Eax = 1
+    Call strcmp {B$ "RosAsm", 0} {B$ "Assembly", 0} ; Eax = 1
+    Call strcmp {B$ "Assembly", 0} {B$ "RosAsm", 0} ; Eax = 0-1
     
     Note: Used Macros. Default RosAsm macro system, plus:
     
@@ -18709,17 +18709,17 @@ Proc strcmp:
     Arguments @String1, @String2
     Uses edi, esi, ebx
 
-    mov esi D@String1
-    mov edi D@String2
-    mov al 0FF
+    Mov esi D@String1
+    Mov edi D@String2
+    Mov al 0FF
 
 
     .Do
         Do
             On al = 0, jmp L2>
-            mov al B$esi
+            Mov al B$esi
             inc esi
-            mov ah B$edi
+            Mov ah B$edi
             inc edi
         Loop_Until ah <> al
 
@@ -18749,17 +18749,17 @@ Proc AsciiBase:
     Arguments @String, @Base
     Uses esi, ebx, edx
 
-        mov esi D@String, eax 0, ebx 0
+        Mov esi D@String, eax 0, ebx 0
 
         While B$esi <> 0
-            mov eax ebx | mul D@Base | mov ebx eax, eax 0
-            mov al B$esi | sub al '0'
+            Mov eax ebx | mul D@Base | Mov ebx eax, eax 0
+            Mov al B$esi | sub al '0'
           ; Cases of Hexa Notation:
             On al > 9, sub al 7
             add ebx eax | inc esi
         End_While
 
-        mov eax ebx
+        Mov eax ebx
 EndP
 
 ;;
@@ -18782,15 +18782,15 @@ Proc strcpy:
     Uses ecx, esi, edi
 
     xor ecx ecx
-    mov esi D@InBound
+    Mov esi D@InBound
 
     Do
         inc ecx
         inc esi
     Loop_Until B$esi = 0
 
-    mov esi D@InBound | mov edi D@OutBound | rep movsb
-    mov B$edi 0
+    Mov esi D@InBound | Mov edi D@OutBound | rep movsb
+    Mov B$edi 0
 
 EndP
 ____________________________________________________________________________________________

@@ -44,13 +44,13 @@ Review the Strings analyzes in the Disassembler. Some 9, 10, 13, are replaced by
 Space, when isolated (should be the reverse).
 ____________________________________________________________________________________________
 
->     mov D$eax+0BC   ; ----------------> Here missing the register. It 
-> should be mov D$eax+0BC es
->     mov D$eax+098 ds
->     mov D$eax+094 ss
->     mov D$eax+090 ss
->     mov D$eax+08C cs
->     mov D$eax+0C8 cs
+>     Mov D$eax+0BC   ; ----------------> Here missing the register. It 
+> should be Mov D$eax+0BC es
+>     Mov D$eax+098 ds
+>     Mov D$eax+094 ss
+>     Mov D$eax+090 ss
+>     Mov D$eax+08C cs
+>     Mov D$eax+0C8 cs
 
 !!!!!!!!!!!!!!!!!!!!!!!!
 ____________________________________________________________________________________________
@@ -70,7 +70,7 @@ DeclareTable materials 1 1 SAMPLE_Material.size
 [sizeof_materials 34]
 [DeclareTable| {SIZEOF_#1 #2  SIZEOF_#1_CHUNK #3   SIZEOF_#1_ELEMENT #4}]
 
-Main: call 'Kernel32.ExitProcess'
+Main: Call 'Kernel32.ExitProcess'
 
 ____________________________________________________________________________________________
 
@@ -110,12 +110,12 @@ ________________________________________________________________________________
 Linux-LINE: Chuck reports:
 
 > As it turns out, there is a problem with the debugger. Wine handles the
-> KERNEL32.VirtualQueryEx call with its NtQueryVirtualMemory routine, and
+> KERNEL32.VirtualQueryEx Call with its NtQueryVirtualMemory routine, and
 > returns "Unsupported on other process", causing the debugger to display
 > "VirtualQueryEx reported error".
 ____________________________________________________________________________________________
 
-[list - tree/import/export] Not assuming anything but CALL '...'.
+[list - tree/import/export] Not assuming anything but Call '...'.
 ____________________________________________________________________________________________
 
 Error-Box with Copy&Paste enable.
@@ -171,7 +171,7 @@ A user reports having seen a hang at:
 >    SendMessage D@ComboHandle, &CB_RESETCONTENT, 0, 0
 >    move D$DataLabelComboHandle D@ComboHandle
 >
->    mov esi D$PlainLabelList
+>    Mov esi D$PlainLabelList
 >    lodsd ; <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 ... which is quite "strange"...
@@ -245,7 +245,7 @@ ________________________________________________________________________________
 
 In "Proc @ReplaceEquate:" don't forget to tell Ludwig to do:
 
-call GetFromQwordCheckSum esi, D$EquateList, D$EquateListLimit
+Call GetFromQwordCheckSum esi, D$EquateList, D$EquateListLimit
 
 ____________________________________________________________________________________________
 
@@ -262,9 +262,9 @@ In 'WriteFloatingPointOperationCode'
 ;...
 
 ..Test_Else_If_And bx ConstantOperand, dx ConstantOperand
-       ; mov eax merde
+       ; Mov eax merde
             EPP_Code '{??:R$ #1}|FLD R$?|{??:R$ #2}|FLD R$?|' | 
-        mov eax merde
+        Mov eax merde
 
 The error Manager seesm to be perverted by this "EPP_Code" Macro
 
@@ -345,8 +345,8 @@ In 'WriteMacroVariable', i comment out the 5th line, without recalling why i wro
 this, previously (it was for the Conditional macros, anyway, but it seems to work
 the same without... Wait and see...)
 
-Also to be reviewed, in 'ReplaceFromMacroData', after the 'call StoreMacroVariableByNumber',
-the 'NOPE' output should probably not be there, but after the 'call WriteMacroVariableByNumber'
+Also to be reviewed, in 'ReplaceFromMacroData', after the 'Call StoreMacroVariableByNumber',
+the 'NOPE' output should probably not be there, but after the 'Call WriteMacroVariableByNumber'
 Seems out of logic...
 ____________________________________________________________________________________________
 
@@ -430,7 +430,7 @@ ________________________________________________________________________________
 Review the BitMap Types. Example, Cursor sizes.
 ____________________________________________________________________________________________
 
-After the new release of ludwig Debugger (coming after V.2.007d), recall of
+After the new release of ludwig Debugger (coming after V.2.007d), reCall of
 the problem of TD_170Graph Demo, that aborts, when trying to Load/Save a File.
 ____________________________________________________________________________________________
 
@@ -444,7 +444,7 @@ Unknown Win equate name
 Certes, mais le saut dans le code se fait, apparemment, sur la premi re  vocation et non sur l'erreur.
 ____________________________________________________________________________________________
 
-le clic droit sur les appels Api fait appara tre une fen tre "Api call infos" qui
+le clic droit sur les appels Api fait appara tre une fen tre "Api Call infos" qui
 n'est plus redimensionnable. Le probl me est que dans plusieurs cas la largeur 
 n'est pas suffisante pour afficher tout le contenu sans retours   la lignes qui 
 rendent confus et mal ais  la lecture...
@@ -497,7 +497,7 @@ There is a issue in rosasm with local label calls:
 
 Proc DoThis:
  ;code
- call @locall; DoThis@locall
+ Call @locall; DoThis@locall
  ;code
 
 Endp
@@ -508,7 +508,7 @@ ret
 
 Proc DoThat:
  ;code
- call @locall; DoThat@locall
+ Call @locall; DoThat@locall
  ;code
 
 Endp
@@ -726,7 +726,7 @@ ________________________________________________________________________________
 
  
  
- Do not send an error message for Api call by number with same Number in two different
+ Do not send an error message for Api Call by number with same Number in two different
  DLL. Force DLL Name for such calls.
  Disassembler, set the Jumps Table Labels' Names in the form of: "DllName0xxx:"
  
@@ -781,7 +781,7 @@ error in the Dx Demo:
 
 I think i found a very serious Errors in (RosAsm414b version). i using this macro
 
-[DxCall | mov eax D$#1 | mov eax D$eax | call D$eax+#3 D$#1 #4>L]
+[DxCall | Mov eax D$#1 | Mov eax D$eax | Call D$eax+#3 D$#1 #4>L]
 
 when i write this code ( DxCall lpdd '->' Release) , by unfolding or showing in Debuger
 it looks so: 
@@ -793,7 +793,7 @@ where is the rest!!! > ; that's because there is no fourth Parameter !!
 
 instead i use this one:
 
-[DxCall | mov eax D$#1 | mov eax D$eax | push #L>3 | push D$#1 | call D$eax+#2]
+[DxCall | Mov eax D$#1 | Mov eax D$eax | push #L>3 | push D$#1 | Call D$eax+#2]
 
 ____________________________________________________________________________________________
 
@@ -860,7 +860,7 @@ ______________________________________________
 
  Problem with CreateDialog... vs DialogBox... Exit does not behave as Win Doc says.
 
- We could have a 'ReDo' feature if commenting out the 'ClearNextUndoRecord' call in
+ We could have a 'ReDo' feature if commenting out the 'ClearNextUndoRecord' Call in
  'ControlZ' (keep one for the 'TitleMoveFlag'), and implemeting a 'ControlShiftZ' Routine.
 
  Add something for Extended Styles in the Dialog Editor. Usefull, for example
@@ -966,5 +966,5 @@ Main Implementations to be entirely done:
   and so on. May be, simply the existing Tree-View, but with the concerned Routines 
   written in Red, or something like this.
 
-
+
 

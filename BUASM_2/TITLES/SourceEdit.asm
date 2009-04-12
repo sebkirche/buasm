@@ -185,7 +185,7 @@ Proc XtoRow:
     Argument @X
     Uses edx, ecx
 
-        mov edx 0, eax D@X, ecx D$FontWidth | div ecx
+        Mov edx 0, eax D@X, ecx D$FontWidth | div ecx
       ; Round up:
         shr ecx 1 | On edx > ecx, inc eax
 EndP
@@ -197,8 +197,8 @@ Proc TroncatedXtoRow:
     Argument @X
     Uses edx
 
-        mov edx 0, eax D@X | div D$FontWidth
-        mov D$XRemainder edx
+        Mov edx 0, eax D@X | div D$FontWidth
+        Mov D$XRemainder edx
 EndP
 
 
@@ -206,7 +206,7 @@ Proc YtoLine:
     Argument @Y
     Uses edx, ecx
 
-        mov edx 0, eax D@Y, ecx D$FontHeight | div ecx
+        Mov edx 0, eax D@Y, ecx D$FontHeight | div ecx
       ; No 'HalfWay' adjustement to do: The Hot Point of the default Edit-type Cursor
       ; seems to be at the bottom of its shape...
 EndP
@@ -215,8 +215,8 @@ Proc TroncatedYtoLine:
     Argument @Y
     Uses edx, ecx
 
-        mov edx 0, eax D@Y | div D$FontHeight
-        mov D$YRemainder edx
+        Mov edx 0, eax D@Y | div D$FontHeight
+        Mov D$YRemainder edx
 EndP
 
 
@@ -224,7 +224,7 @@ Proc RowToX:
     Argument @Row
     Uses edx
 
-        mov eax D@Row | mul D$FontWidth
+        Mov eax D@Row | mul D$FontWidth
 EndP
 
 
@@ -232,7 +232,7 @@ Proc LineToY:
     Argument @Line
     Uses edx
 
-        mov eax D@Line | mul D$FontHeight
+        Mov eax D@Line | mul D$FontHeight
 EndP
 ____________________________________________________________________________________________
 
@@ -241,17 +241,17 @@ ________________________________________________________________________________
 
 BlankRemainders:
     If D$XRemainder <> 0
-        call 'USER32.GetClientRect' D$EditWindowHandle, AraseBackEdit
+        Call 'USER32.GetClientRect' D$EditWindowHandle, AraseBackEdit
         move D$AraseBackEdit D$AraseBackEdit+8
-        mov eax D$XRemainder | sub D$AraseBackEdit eax
-        call 'USER32.FillRect' D$hdc, AraseBackEdit, D$BackGroundBrushHandle
+        Mov eax D$XRemainder | sub D$AraseBackEdit eax
+        Call 'USER32.FillRect' D$hdc, AraseBackEdit, D$BackGroundBrushHandle
     End_If
 
     If D$YRemainder <> 0
-        call 'USER32.GetClientRect' D$EditWindowHandle, AraseBackEdit
+        Call 'USER32.GetClientRect' D$EditWindowHandle, AraseBackEdit
         move D$AraseBackEdit+4 D$AraseBackEdit+12
-        mov eax D$YRemainder | sub D$AraseBackEdit+4 eax
-        call 'USER32.FillRect' D$hdc, AraseBackEdit, D$BackGroundBrushHandle
+        Mov eax D$YRemainder | sub D$AraseBackEdit+4 eax
+        Call 'USER32.FillRect' D$hdc, AraseBackEdit, D$BackGroundBrushHandle
     End_If
 ret
 ____________________________________________________________________________________________
@@ -259,58 +259,58 @@ ________________________________________________________________________________
 [SourceEndReached: ?    EditRightPixel: ?    EditBottomPixel: ?]
 
 InitPrintText:
-    call 'User32.BeginPaint' D$EditWindowHandle, PAINTSTRUCT | mov D$hdc eax
+    Call 'User32.BeginPaint' D$EditWindowHandle, PAINTSTRUCT | Mov D$hdc eax
 
-    call 'GDI32.SelectObject'  D$hdc D$Font1Handle | mov D$hfont eax
-    call 'GDI32.SetBkColor' D$hdc D$NormalBackColor
+    Call 'GDI32.SelectObject'  D$hdc D$Font1Handle | Mov D$hfont eax
+    Call 'GDI32.SetBkColor' D$hdc D$NormalBackColor
 
-    call TroncatedXtoRow D$EditWindowW | mov D$ColNumber eax
-    call RowToX eax | mov D$EditRightPixel eax
+    Call TroncatedXtoRow D$EditWindowW | Mov D$ColNumber eax
+    Call RowToX eax | Mov D$EditRightPixel eax
 
     ;If D$TitleWindowHandle <> 0
-    ;    mov eax D$TabWindowH | sub D$EditWindowH eax
+    ;    Mov eax D$TabWindowH | sub D$EditWindowH eax
     ;End_If
 
-    call TroncatedYtoLine D$EditWindowH | mov D$LineNumber eax
-    call LineToY eax | dec eax | mov D$EditBottomPixel eax
+    Call TroncatedYtoLine D$EditWindowH | Mov D$LineNumber eax
+    Call LineToY eax | dec eax | Mov D$EditBottomPixel eax
 
-    On B$CaretOnlyRedraw = &FALSE, call BlankRemainders
+    On B$CaretOnlyRedraw = &FALSE, Call BlankRemainders
 
     dec D$LineNumber | dec D$ColNumber
 
-    mov B$TextGoingOn &FALSE | move D$NormalTextColor D$StatementColor
-    mov B$SourceEndReached &FALSE
+    Mov B$TextGoingOn &FALSE | move D$NormalTextColor D$StatementColor
+    Mov B$SourceEndReached &FALSE
 ret
 
 
 [MarginLine: @X1: ? @Y1: ?   @X2: ? @Y2: ?]
 
 DrawMarginLine:
-    mov eax D$FontWidth | dec eax | mov D$MarginLine@X2 eax
-    dec eax | mov D$MarginLine@X1 eax
-    mov D$MarginLine@Y1 0
+    Mov eax D$FontWidth | dec eax | Mov D$MarginLine@X2 eax
+    dec eax | Mov D$MarginLine@X1 eax
+    Mov D$MarginLine@Y1 0
     move D$MarginLine@Y2 D$EditWindowH
 
-    call 'USER32.FillRect' D$hdc, MarginLine, D$CaretBrushHandle
+    Call 'USER32.FillRect' D$hdc, MarginLine, D$CaretBrushHandle
 ret
 
 
 RemoveCaretAndUnderline:
     If D$CaretRectangle+8 <> 0
-        call 'USER32.FillRect'  D$hdc CaretRectangle D$BackGroundBrushHandle
-        mov D$CaretRectangle+8 0
+        Call 'USER32.FillRect'  D$hdc CaretRectangle D$BackGroundBrushHandle
+        Mov D$CaretRectangle+8 0
     End_If
 
     If D$UnderLineRectangle+8 <> 0
-        call 'USER32.FillRect' D$hdc, UnderLineRectangle, D$BackGroundBrushHandle
+        Call 'USER32.FillRect' D$hdc, UnderLineRectangle, D$BackGroundBrushHandle
     End_If
 ret
 
 ClosePrint:
-    call 'GDI32.SelectObject' D$hdc D$hfont
-    call 'USER32.EndPaint' D$EditWindowHandle, PAINTSTRUCT
+    Call 'GDI32.SelectObject' D$hdc D$hfont
+    Call 'USER32.EndPaint' D$EditWindowHandle, PAINTSTRUCT
 
-    mov B$TextGoingOn &FALSE
+    Mov B$TextGoingOn &FALSE
 ret
 ____________________________________________________________________________________________
 
@@ -320,9 +320,9 @@ ________________________________________________________________________________
  UnderLineRectangle: ? ? ? ?]
 
 PrintCaretAndUnderline:
-    mov eax D$LineNumber | On D$CaretLine > eax, mov D$CaretLine eax
+    Mov eax D$LineNumber | On D$CaretLine > eax, Mov D$CaretLine eax
 
-    mov esi D$UpperLine, ecx 0
+    Mov esi D$UpperLine, ecx 0
 
 L0: cmp ecx D$CaretLine | je L2>                 ; search for Caret line (esi)
 
@@ -330,49 +330,49 @@ L0: cmp ecx D$CaretLine | je L2>                 ; search for Caret line (esi)
 L1: lodsb | cmp al LF | jne L1<
     inc ecx | jmp L0<
 
-L2: mov B$CaretEndOfLine &FALSE, ecx 0
+L2: Mov B$CaretEndOfLine &FALSE, ecx 0
     On D$RightScroll > 0, sub ecx D$RightScroll
 
 L0: cmp ecx D$CaretRow | je L5>>
 L1: lodsb | cmp al tab | je L3>
             cmp al CR | ja L2>                      ; search for Caret col (esi too)
-      mov B$CaretEndOfLine &TRUE | inc ecx
-      mov B$Caret 32, ebx ecx, D$PhysicalCaretRow ebx | jmp L6>>   ; Caret at end of line
+      Mov B$CaretEndOfLine &TRUE | inc ecx
+      Mov B$Caret 32, ebx ecx, D$PhysicalCaretRow ebx | jmp L6>>   ; Caret at end of line
 L2: inc ecx | jmp L0<
 
-L3: mov ebx D$CaretRow, edx ecx | or ecx 00_111 | inc ecx | On ebx > ecx, Jmp L0<
+L3: Mov ebx D$CaretRow, edx ecx | or ecx 00_111 | inc ecx | On ebx > ecx, Jmp L0<
 
-    inc edx | mov D$CaretRow edx | cmp ebx D$TabOldCaretRow | jbe L5>
+    inc edx | Mov D$CaretRow edx | cmp ebx D$TabOldCaretRow | jbe L5>
 
     If edx = D$TabOldCaretRow
-        inc ecx | mov D$CaretRow ecx | lodsb  ; just for insert Pos on Tab
+        inc ecx | Mov D$CaretRow ecx | lodsb  ; just for insert Pos on Tab
     End_If
 
-L5: mov B$Caret al, ebx D$CaretRow, D$PhysicalCaretRow ebx
-L6: dec esi | mov D$CurrentWritingPos esi | mov D$TabOldCaretRow ebx
+L5: Mov B$Caret al, ebx D$CaretRow, D$PhysicalCaretRow ebx
+L6: dec esi | Mov D$CurrentWritingPos esi | Mov D$TabOldCaretRow ebx
 
-    call LineToY D$CaretLine | mov ecx eax
-    call RowToX ebx | mov ebx eax
+    Call LineToY D$CaretLine | Mov ecx eax
+    Call RowToX ebx | Mov ebx eax
 
-    mov D$CaretRowValue ebx
-    On esi >= D$SourceEnd, mov B$Caret ' '
+    Mov D$CaretRowValue ebx
+    On esi >= D$SourceEnd, Mov B$Caret ' '
 
     If ecx > 0
-        mov eax D$FontHeight | shr eax 2 | sub ecx eax
+        Mov eax D$FontHeight | shr eax 2 | sub ecx eax
     Else
-        mov eax 0
+        Mov eax 0
     End_If
-    mov D$CaretRectangle ebx, D$CaretRectangle+4 ecx
+    Mov D$CaretRectangle ebx, D$CaretRectangle+4 ecx
     add ebx 3 | add ecx eax | add ecx D$FontHeight
-    mov D$CaretRectangle+8 ebx, D$CaretRectangle+12 ecx
+    Mov D$CaretRectangle+8 ebx, D$CaretRectangle+12 ecx
 
   ; Let Overwrite Dims a special case to let max speed to the normal Caret:
     If B$Overwrite = &TRUE
-        mov eax D$FontWidth | add eax D$CaretRectangle | mov D$CaretRectangle+8 eax
-        mov eax D$FontHeight | shr eax 2 | add D$CaretRectangle+4 eax
+        Mov eax D$FontWidth | add eax D$CaretRectangle | Mov D$CaretRectangle+8 eax
+        Mov eax D$FontHeight | shr eax 2 | add D$CaretRectangle+4 eax
     End_If
 
-    On B$ShowCaret = &TRUE, call 'USER32.InvertRect' D$hdc, CaretRectangle
+    On B$ShowCaret = &TRUE, Call 'USER32.InvertRect' D$hdc, CaretRectangle
 
     .If B$Underline = &TRUE
         move D$UnderLineRectangle D$CaretRectangle,
@@ -380,23 +380,20 @@ L6: dec esi | mov D$CurrentWritingPos esi | mov D$TabOldCaretRow ebx
              D$UnderLineRectangle+8 D$CaretRectangle+8,
              D$UnderLineRectangle+12 D$CaretRectangle+12
 
-        mov ebx D$CurrentWritingPos | dec ebx
-        mov eax D$FontWidth
+        Mov ebx D$CurrentWritingPos | dec ebx
+        Mov eax D$FontWidth
         While B$ebx > ' ' | dec ebx | sub D$UnderLineRectangle eax | End_While
-        mov eax D$FontHeight | inc eax
+        Mov eax D$FontHeight | inc eax
         add D$UnderLineRectangle+4 eax | sub D$UnderLineRectangle+8 6
-        mov eax D$UnderLineRectangle+4 | add eax 2 | mov D$UnderLineRectangle+12 eax
+        Mov eax D$UnderLineRectangle+4 | add eax 2 | Mov D$UnderLineRectangle+12 eax
 
-        call 'USER32.FillRect' D$hdc, UnderLineRectangle, D$CaretBrushHandle
+        Call 'USER32.FillRect' D$hdc, UnderLineRectangle, D$CaretBrushHandle
     .End_If
 ret
 
 ____________________________________________________________________________________________
 
 [RosAsmBracket: ?    MultiLinesComment: ?]
-
-[MLC 0D3B3B0A] ; MLC: Multi-Lines Comment (LF ; ; CR). Set first in 'SearchForBrackets'.
-
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
 
@@ -404,24 +401,24 @@ ________________________________________________________________________________
 
 GetLastCharPosOnScreen:
   ; LineNumber is zero based:
-    mov eax D$LineNumber | inc eax
+    Mov eax D$LineNumber | inc eax
 
-    mov esi D$UpperLine
+    Mov esi D$UpperLine
 
 L0: .If B$esi < ' '
         If B$esi = CR
-            On B$esi+1 <> LF, mov B$esi ' '
+            On B$esi+1 <> LF, Mov B$esi ' '
         Else_If B$esi = LF
-            On B$esi-1 <> CR, mov B$esi ' '
+            On B$esi-1 <> CR, Mov B$esi ' '
         Else
-            mov B$esi ' '
+            Mov B$esi ' '
         End_If
     .End_If
 
     inc esi | cmp B$esi CR | jne L0<
     dec eax | jnz L0<
 
-    inc esi | mov D$LastCharPosOnScreen esi
+    inc esi | Mov D$LastCharPosOnScreen esi
 ret
 ____________________________________________________________________________________________
 
@@ -430,117 +427,117 @@ ________________________________________________________________________________
 Proc SetColorsMap:
     Argument @First, @Last, @Color
 
-        mov esi D@First, edx D@Last | add edx 100
-        mov edi esi | sub edi D$CodeSource | add edi D$ColorsMap
-        mov bl B@Color | On bl = 0, mov bl 1
+        Mov esi D@First, edx D@Last | add edx 100
+        Mov edi esi | sub edi D$CodeSource | add edi D$ColorsMap
+        Mov bl B@Color | On bl = 0, Mov bl 1
 
 L0:     .While esi < edx
-            mov al B$esi
+            Mov al B$esi
 
             ; Normal = 1 // Brackets = 2 // Strings = 3 // Comments = 4 // Selection 5
             ...If al = "'"
                 Do
                     If B$esi >= ' '
-                        mov B$edi 3
+                        Mov B$edi 3
                     Else
-                        mov B$edi 0
+                        Mov B$edi 0
                     End_If
                     inc esi | inc edi | cmp esi edx | je L9>>
                 Loop_Until B$esi = "'"
-                mov B$edi 3 | inc esi | inc edi | jmp L0<
+                Mov B$edi 3 | inc esi | inc edi | jmp L0<
 
             ...Else_If al = '"'
-                mov eax esi
+                Mov eax esi
                 Do
                     If B$esi >= ' '
-                        mov B$edi 3
+                        Mov B$edi 3
                     Else
-                        mov B$edi 0
+                        Mov B$edi 0
                     End_If
                     inc esi | inc edi | cmp esi edx | je L9>>
                 Loop_Until B$esi = '"'
-                mov B$edi 3 | inc esi | inc edi | jmp L0<<
+                Mov B$edi 3 | inc esi | inc edi | jmp L0<<
 
             ...Else_If al = '['
-                mov bl 2, B$edi 2
+                Mov bl 2, B$edi 2
                 inc esi | inc edi | jmp L0<<
 
             ...Else_If al = ']'
-                mov B$edi 2, bl 1
+                Mov B$edi 2, bl 1
                 inc esi | inc edi | jmp L0<<
 
             ...Else_If B$esi = ';'
                 .If D$esi-1 = MLC
-                    mov eax esi
+                    Mov eax esi
                     Do
                         If B$esi < ' '
-                            mov B$edi 0
+                            Mov B$edi 0
                         Else
-                            mov B$edi 4
+                            Mov B$edi 4
                         End_If
                         inc esi | inc edi | cmp esi edx | je L9>>
                     Loop_Until D$esi = MLC
-                    mov B$edi 0, W$edi+1 0404, B$edi+3 0
-                    mov B@Color 0
+                    Mov B$edi 0, W$edi+1 0404, B$edi+3 0
+                    Mov B@Color 0
                     add esi 4 | add edi 4 | jmp L0<<
                 .Else
                     Do
-                        mov B$edi 4
+                        Mov B$edi 4
                         inc esi | inc edi | cmp esi edx | je L9>>
                     Loop_Until B$esi < ' '
-                    mov B@Color 0
+                    Mov B@Color 0
                     jmp L0<<
                 .End_If
 
             ...Else_If al < ' '
                 Do
-                    mov B$edi 0
+                    Mov B$edi 0
                     inc esi | inc edi | cmp esi edx | je L9>>
                 Loop_Until B$esi >= ' '
                 jmp L0<<
 
             ...Else_If al = 36
-                mov al B$ParagraphChar, B$esi al
-                mov B$edi bl | On B$WantSizeMarkerColor = &TRUE, xor B$edi 0011
+                Mov al B$ParagraphChar, B$esi al
+                Mov B$edi bl | On B$WantSizeMarkerColor = &TRUE, xor B$edi 0011
                 inc esi | inc edi | jmp L0<<
 
             ...Else_If al = 167
-                mov al B$ParagraphChar, B$esi al
-                mov B$edi bl | On B$WantSizeMarkerColor = &TRUE, xor B$edi 0011
+                Mov al B$ParagraphChar, B$esi al
+                Mov B$edi bl | On B$WantSizeMarkerColor = &TRUE, xor B$edi 0011
                 inc esi | inc edi | jmp L0<<
 
             ...Else_If al = '@'
-                mov B$edi bl
+                Mov B$edi bl
                 On B$WantSizeMarkerColor = &TRUE, xor B$edi 0011
                 inc esi | inc edi | jmp L0<<
 
             ...Else
-L1:             mov B$edi bl | inc esi | inc edi | jmp L0<<
+L1:             Mov B$edi bl | inc esi | inc edi | jmp L0<<
 
             ...End_If
 
         .End_While
 
       ; Arase any remaining color flag at the end of the last line
-        mov ecx 100, al 0 | rep stosb
+        Mov ecx 100, al 0 | rep stosb
 
 L9:     If B$BlockInside = &TRUE
-            mov esi D@First, edx D@Last, eax D$BlockStartTextPtr, ebx D$BlockEndTextPtr
+            Mov esi D@First, edx D@Last, eax D$BlockStartTextPtr, ebx D$BlockEndTextPtr
 
             On eax > ebx, xchg eax ebx
 
-            On eax < esi, mov eax esi
-            On ebx > edx, mov ebx edx
+            On eax < esi, Mov eax esi
+            On ebx > edx, Mov ebx edx
 
             sub eax D$CodeSource | add eax D$ColorsMap
             sub ebx D$CodeSource | add ebx D$ColorsMap | inc ebx
 
           ; Normal = 1 // Brackets = 2 // Strings = 3 // Comments = 4 // Selection 5
-            While eax < ebx | On B$eax <> 0, mov B$eax 5 | inc eax | End_While
+            While eax < ebx | On B$eax <> 0, Mov B$eax 5 | inc eax | End_While
         End_If
 ;;
         ..If B$WantSizeMarkerColor = &TRUE
-            mov esi D@First, edx D@Last, eax esi, ebx edx
+            Mov esi D@First, edx D@Last, eax esi, ebx edx
 
             sub eax D$CodeSource | add eax D$ColorsMap
             sub ebx D$CodeSource | add ebx D$ColorsMap
@@ -548,21 +545,21 @@ L9:     If B$BlockInside = &TRUE
             .While esi < edx
                 .If B$esi = 167     ; Paragraph Char
                     If B$eax = 1
-                        mov B$eax 2
+                        Mov B$eax 2
                     Else_If B$eax = 2
-                        mov B$eax 1
+                        Mov B$eax 1
                     End_If
                 .Else_If B$esi = 36 ; Dollar Char
                     If B$eax = 1
-                        mov B$eax 2
+                        Mov B$eax 2
                     Else_If B$eax = 2
-                        mov B$eax 1
+                        Mov B$eax 1
                     End_If
                 .Else_If B$esi = '@'
                     If B$eax = 1
-                        mov B$eax 2
+                        Mov B$eax 2
                     Else_If B$eax = 2
-                        mov B$eax 1
+                        Mov B$eax 1
                     End_If
                 .End_If
                 
@@ -578,10 +575,10 @@ ________________________________________________________________________________
 [BlockStartTextPtr: D$ ?  BlockEndTextPtr: ?  ReverseBlock: B$ ?]
 
 TextColorsMap:
-    mov eax D$SourceLen | add eax 300 | Align_On 01000 eax
+    Mov eax D$SourceLen | add eax 300 | Align_On 01000 eax
 
     If D$ColorMapSize < eax
-        mov D$ColorMapSize eax
+        Mov D$ColorMapSize eax
         VirtualFree D$ColorsMap
         VirtualAlloc ColorsMap, D$ColorMapSize
     End_If
@@ -591,70 +588,70 @@ ________________________________________________________________________________
 [ParagraphChar: 36] ; 36 or 167 (Dollar or Paragraph)
 
 TextOutput:
-    mov esi D$UpperLine, ebx esi | sub ebx D$CodeSource | add ebx D$ColorsMap
-    move D$Col D$FontWidth | mov D$Line 0
+    Mov esi D$UpperLine, ebx esi | sub ebx D$CodeSource | add ebx D$ColorsMap
+    move D$Col D$FontWidth | Mov D$Line 0
 
     push D$LineNumber
         inc D$LineNumber
 
-        On D$RightScroll <> 0, call AjustForRightScroll
+        On D$RightScroll <> 0, Call AjustForRightScroll
 
         push ebx
-            call 'GDI32.TextOutA' D$hdc, 0, D$Line, BlankLine, 1
+            Call 'GDI32.TextOutA' D$hdc, 0, D$Line, BlankLine, 1
         pop ebx
 
       ; Set the Color for a Chunk of Text:
 L0:     movzx eax B$ebx
         If al <> 5
-            mov eax D$StatementColor+eax*4-4
+            Mov eax D$StatementColor+eax*4-4
             push esi, ebx
                 push eax
-                    call 'GDI32.SetBkColor' D$hdc D$NormalBackColor
+                    Call 'GDI32.SetBkColor' D$hdc D$NormalBackColor
                 pop eax
-                call 'GDI32.SetTextColor' D$hdc, eax
+                Call 'GDI32.SetTextColor' D$hdc, eax
             pop ebx, esi
         Else
             push esi, ebx
-                call 'GDI32.SetBkColor' D$hdc D$CaretColor
-                call 'GDI32.SetTextColor' D$hdc D$NormalBackColor
+                Call 'GDI32.SetBkColor' D$hdc D$CaretColor
+                Call 'GDI32.SetTextColor' D$hdc D$NormalBackColor
             pop ebx, esi
         End_If
 
       ; How many Chars in that Color Chunk, into ecx:
-        mov al B$ebx, ecx 0
+        Mov al B$ebx, ecx 0
         If al <> 0
             While B$ebx = al
                 inc ebx | inc ecx
             End_While
         Else
           ; CR/LF:
-            add ebx 2 | mov ecx 2 | dec D$LineNumber
+            add ebx 2 | Mov ecx 2 | dec D$LineNumber
         End_If
 
       ; Output:
         push esi, ebx, ecx
             ..If al <> 0
               ; Normal output:
-                call RowToX ecx
+                Call RowToX ecx
               ; > eax = Number of Pixels to output.
                 push eax
                   ; Limit to the available number of Chars:
                     add eax D$Col
                     If eax > D$EditRightPixel
                         pop ecx
-                            mov ecx D$EditRightPixel | sub ecx D$Col
+                            Mov ecx D$EditRightPixel | sub ecx D$Col
                         push ecx
-                        call XToRow ecx | mov ecx eax
+                        Call XToRow ecx | Mov ecx eax
                     End_If
                     .If ecx <> 1
-                        call 'GDI32.TextOutA' D$hdc, D$Col, D$Line, esi, ecx
+                        Call 'GDI32.TextOutA' D$hdc, D$Col, D$Line, esi, ecx
                     .Else
                         If B$esi = 36
-                            call 'GDI32.TextOutA' D$hdc, D$Col, D$Line, ParagraphChar, ecx
+                            Call 'GDI32.TextOutA' D$hdc, D$Col, D$Line, ParagraphChar, ecx
                         Else_If B$esi = 167
-                            call 'GDI32.TextOutA' D$hdc, D$Col, D$Line, ParagraphChar, ecx
+                            Call 'GDI32.TextOutA' D$hdc, D$Col, D$Line, ParagraphChar, ecx
                         Else
-                            call 'GDI32.TextOutA' D$hdc, D$Col, D$Line, esi, ecx
+                            Call 'GDI32.TextOutA' D$hdc, D$Col, D$Line, esi, ecx
                         End_If
                     .End_If
                 pop eax
@@ -662,22 +659,22 @@ L0:     movzx eax B$ebx
 
             ..Else
               ; CR/LF:
-                mov eax D$EditRightPixel
+                Mov eax D$EditRightPixel
                 If eax > D$Col
                   ; Here we "blank" the End of Line:
-                    sub eax D$Col | call XToRow eax
+                    sub eax D$Col | Call XToRow eax
                     push ecx
-                        call 'GDI32.TextOutA' D$hdc, D$Col, D$Line, BlankLine, eax
+                        Call 'GDI32.TextOutA' D$hdc, D$Col, D$Line, BlankLine, eax
                     pop ecx
                 End_If
 
               ; And here, we Blank the next Row Zero (DCBP,...):
-                move D$col D$FontWidth | mov eax D$FontHeight | add D$Line eax
-                On D$LineNumber > 0, call 'GDI32.TextOutA' D$hdc, 0, D$Line, BlankLine, 1
+                move D$col D$FontWidth | Mov eax D$FontHeight | add D$Line eax
+                On D$LineNumber > 0, Call 'GDI32.TextOutA' D$hdc, 0, D$Line, BlankLine, 1
 
                 If D$RightScroll <> 0
                     pop ecx, ebx, esi
-                        call AjustForRightScroll
+                        Call AjustForRightScroll
                     push esi, ebx, ecx
                 End_If
 
@@ -696,40 +693,40 @@ ________________________________________________________________________________
 ;;
 
 CharOutput:
-    mov esi D$UpperLine, eax 0, ebx 1, edx D$ColorsMap
+    Mov esi D$UpperLine, eax 0, ebx 1, edx D$ColorsMap
 
     While esi < D$CurrentWritingPos
         If B$esi = CR
             add esi 2 | add edx 2
-            mov ebx 1 | inc eax
+            Mov ebx 1 | inc eax
         Else
             inc ebx | inc esi | inc edx
         End_If
     End_While
 
-    call LineToY eax
+    Call LineToY eax
 
-    push eax | call RowToX ebx | pop ebx
+    push eax | Call RowToX ebx | pop ebx
 
     pushad
         If B$edx <> 5
-            mov eax D$StatementColor+eax*4-4
+            Mov eax D$StatementColor+eax*4-4
             push eax
-                call 'GDI32.SetBkColor' D$hdc D$NormalBackColor
+                Call 'GDI32.SetBkColor' D$hdc D$NormalBackColor
             pop eax
-            call 'GDI32.SetTextColor' D$hdc, eax
+            Call 'GDI32.SetTextColor' D$hdc, eax
         Else
-            call 'GDI32.SetBkColor' D$hdc D$CaretColor
-            call 'GDI32.SetTextColor' D$hdc D$NormalBackColor
+            Call 'GDI32.SetBkColor' D$hdc D$CaretColor
+            Call 'GDI32.SetTextColor' D$hdc D$NormalBackColor
         End_If
     popad
 
-    On B$esi <> CR, call 'GDI32.TextOutA' D$hdc, eax, ebx, esi, 1
+    On B$esi <> CR, Call 'GDI32.TextOutA' D$hdc, eax, ebx, esi, 1
 ret
 ____________________________________________________________________________________________
 
 AjustForRightScroll:
-    mov eax D$RightScroll
+    Mov eax D$RightScroll
 
 L0: cmp B$ebx 0 | je L9>
 
@@ -755,16 +752,16 @@ L9: ret
 [PreviousStartUpColour: ?   PreviousStartUpColourPos: ?]
 
 GetStartUpColorPos:
-    mov esi D$UpperLine | sub esi D$CodeSource | add esi D$ColorsMap
-    mov edx D$ColorsMap
+    Mov esi D$UpperLine | sub esi D$CodeSource | add esi D$ColorsMap
+    Mov edx D$ColorsMap
 
   ; CRLF = 0 // Normal = 1 // Brackets = 2 // Strings = 3 // Comments = 4 // Selection 5
     While esi > edx
         .If B$esi = 0
             If B$esi+1 = 1
-                mov eax 1 | jmp L5>
+                Mov eax 1 | jmp L5>
             Else_If B$esi+1 = 2
-                mov eax 2 | jmp L5>
+                Mov eax 2 | jmp L5>
             End_If
 
 L0:         dec esi
@@ -775,15 +772,15 @@ L0:         dec esi
 
   ; Top of File reached:
     move D$PreviousStartUpColourPos D$CodeSource
-    mov D$PreviousStartUpColour 1  | ret
+    Mov D$PreviousStartUpColour 1  | ret
 
   ; Start point found. Check cases of Local Symbols label at first Row:
-L5: inc esi | mov ebx esi
+L5: inc esi | Mov ebx esi
     sub ebx D$ColorsMap | add ebx D$CodeSource | On B$ebx = '@', jmp L0<
 
     sub esi D$ColorsMap | add esi D$CodeSource
-    mov D$PreviousStartUpColourPos esi
-    mov D$PreviousStartUpColour eax | ret
+    Mov D$PreviousStartUpColourPos esi
+    Mov D$PreviousStartUpColour eax | ret
 ____________________________________________________________________________________________
 
 ____________________________________________________________________________________________
@@ -794,45 +791,45 @@ PrintColorText:
     On B$SourceReady = &FALSE, ret
    ; On D$TitleFontHandle <> 0, ret
 
-    call TextColorsMap | call InitPrintText | On D$LineNumber <s 1, ret
+    Call TextColorsMap | Call InitPrintText | On D$LineNumber <s 1, ret
 
     If B$CaretOnlyRedraw = &TRUE
-        call RemoveCaretAndUnderline | call CharOutput | call PrintCaretAndUnderline
-        mov B$CaretOnlyRedraw &FALSE | jmp L9>>
+        Call RemoveCaretAndUnderline | Call CharOutput | Call PrintCaretAndUnderline
+        Mov B$CaretOnlyRedraw &FALSE | jmp L9>>
     End_If
 
-    call GetLastCharPosOnScreen
+    Call GetLastCharPosOnScreen
 
-    mov eax D$PreviousUpperLine
+    Mov eax D$PreviousUpperLine
     If eax <> D$Upperline
-        call SetColorsMap D$CodeSource, D$LastCharPosOnScreen, 1
+        Call SetColorsMap D$CodeSource, D$LastCharPosOnScreen, 1
     Else
-        call GetStartUpColorPos
-        call SetColorsMap D$PreviousStartUpColourPos,
+        Call GetStartUpColorPos
+        Call SetColorsMap D$PreviousStartUpColourPos,
                           D$LastCharPosOnScreen, D$PreviousStartUpColour
     End_If
 
-    call RemoveCaretAndUnderline | call TextOutput | call PrintCaretAndUnderline
+    Call RemoveCaretAndUnderline | Call TextOutput | Call PrintCaretAndUnderline
 
     move D$PreviousUpperLine D$UpperLine
 
     ;If D$BreakPointsTables <> 0
-    ;    On D$RightScroll = 0, call DrawTheRedPlots
+    ;    On D$RightScroll = 0, Call DrawTheRedPlots
     ;End_If
 
-L9: ;call DrawMarginLine
+L9: ;Call DrawMarginLine
 
-    call ClosePrint
+    Call ClosePrint
 ret
 
 
 PrintBp:
-    On B$BpLineDrawn = &FALSE, call DrawBpLine
+    On B$BpLineDrawn = &FALSE, Call DrawBpLine
 
     If D$BreakPointsTables <> 0
-        call DrawTheRedPlots
+        Call DrawTheRedPlots
     Else
-        call BlankMargin
+        Call BlankMargin
     End_If
 ret
 
@@ -842,21 +839,21 @@ ret
  BpLineX1: ? BpLineY1: ? BpLineX2: ? BpLineY2: ?]
 
 DrawBpLine:
-    call 'USER32.BeginPaint' D$BpWindowHandle, PAINTSTRUCT | mov D$hdc eax
+    Call 'USER32.BeginPaint' D$BpWindowHandle, PAINTSTRUCT | Mov D$hdc eax
 
-    call DrawTheBpLine
+    Call DrawTheBpLine
 
-    call 'USER32.EndPaint' D$BpWindowHandle, PAINTSTRUCT
+    Call 'USER32.EndPaint' D$BpWindowHandle, PAINTSTRUCT
 
-    mov B$BpLineDrawn &TRUE
+    Mov B$BpLineDrawn &TRUE
 ret
 
 DrawTheBpLine:
-    call 'USER32.GetClientRect' D$BpWindowHandle, BpLine
+    Call 'USER32.GetClientRect' D$BpWindowHandle, BpLine
 
-    mov eax D$BpLineX2 | dec eax | mov D$BpLineX1 eax
+    Mov eax D$BpLineX2 | dec eax | Mov D$BpLineX1 eax
 
-    call 'USER32.FillRect' D$hdc, BpLine, D$CaretBrushHandle
+    Call 'USER32.FillRect' D$hdc, BpLine, D$CaretBrushHandle
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -881,16 +878,16 @@ ________________________________________________________________________________
 [ClickOnMargin: ?  DoubleClickOnMargin: ?]
 
 MouseTextPos:
-    call YtoLine D$MousePosY | mov ebx eax
-    call XtoRow D$MousePosX
+    Call YtoLine D$MousePosY | Mov ebx eax
+    Call XtoRow D$MousePosX
 
 L9: ;If eax < 1
-    ;    mov B$ClickOnMargin &TRUE | mov eax 1
+    ;    Mov B$ClickOnMargin &TRUE | Mov eax 1
     ;Else
-    ;    mov B$ClickOnMargin &FALSE
+    ;    Mov B$ClickOnMargin &FALSE
     ;End_If
 
-    On eax = 0, mov eax 1
+    On eax = 0, Mov eax 1
 
   ; > eax = Row from start of line // ebx = Line
 ret
@@ -899,10 +896,10 @@ ret
 ; Same as above, but with no adjustement (this is for the Mouse Blocks Selections):
 
 SimpleMouseTextPos:
-   ; mov eax D$MousePosX, ebx D$MousePosY
+   ; Mov eax D$MousePosX, ebx D$MousePosY
    ; shr eax 3 | shr ebx 4
-    call YtoLine D$MousePosY | mov ebx eax
-    call XtoRow D$MousePosX
+    Call YtoLine D$MousePosY | Mov ebx eax
+    Call XtoRow D$MousePosX
 
     On eax = 0, inc eax
 ret                            ; > eax = col from start of line   ebx = line
@@ -910,27 +907,27 @@ ret                            ; > eax = col from start of line   ebx = line
 
 DownOneLine:
     push eax, ebx, ecx
-        mov esi D$UpperLine
+        Mov esi D$UpperLine
 L0:     lodsb | cmp al LF | jne L0<                     ; New pos OK:
 
-        mov ebx esi, ecx D$LineNumber
+        Mov ebx esi, ecx D$LineNumber
 L0:     lodsb | On esi > D$SourceEnd, jmp L9>           ; abort if end of text found
             cmp al LF | jne L0<
         loop L0<
-        mov D$UpperLine ebx
+        Mov D$UpperLine ebx
 L9: pop ecx, ebx, eax
 ret
 
 
 UpOneLine:
     push eax
-        mov esi D$UpperLine
+        Mov esi D$UpperLine
         std
             lodsw
 L0:         lodsb | cmp al LF | jne L0<
             add esi 2
             If esi >= D$CodeSource
-                mov D$UpperLine esi
+                Mov D$UpperLine esi
             Else
                 move D$UpperLine D$CodeSource
             End_If
@@ -942,44 +939,44 @@ ret
 FullDown:
     move D$UpperLine D$SourceEnd
 
-  ; call OnlyOnePageUp
-    mov ecx D$LineNumber | On ecx > 1, dec ecx
-L0: call UpOneLine | loop L0<
+  ; Call OnlyOnePageUp
+    Mov ecx D$LineNumber | On ecx > 1, dec ecx
+L0: Call UpOneLine | loop L0<
 
-    call OnlyOnePageDown
+    Call OnlyOnePageDown
 ret
 
 
 OnlyOnePageDown:
-L1: mov ebx D$LineNumber
+L1: Mov ebx D$LineNumber
 
     If D$CaretLine < ebx
-        mov esi D$UpperLine, ecx D$LineNumber, ebx 0
+        Mov esi D$UpperLine, ecx D$LineNumber, ebx 0
 L2:     lodsb | On esi > D$SourceEnd, jmp L3>
         cmp al LF | jne L2<
         inc ebx
         loop L2<
-L3:     mov D$CaretLine ebx
+L3:     Mov D$CaretLine ebx
     Else
-        mov ecx ebx | On ecx > 1, dec ecx
+        Mov ecx ebx | On ecx > 1, dec ecx
 L4:     push ecx
-            call DownOneLine
+            Call DownOneLine
         pop ecx | loop L4<
     End_If
 ret
 
 
 FullUp:
-    move D$UpperLine D$CodeSource | mov D$CaretLine 0
+    move D$UpperLine D$CodeSource | Mov D$CaretLine 0
 ret
 
 OnlyOnePageUp:
-    mov eax D$LineNumber
+    Mov eax D$LineNumber
     If D$CaretLine > 0
-        mov D$CaretLine 0
+        Mov D$CaretLine 0
     Else
-        mov ecx eax | On ecx > 1, dec ecx
-L0:     call UpOneLine | loop L0<
+        Mov ecx eax | On ecx > 1, dec ecx
+L0:     Call UpOneLine | loop L0<
     End_If
 ret
 
@@ -990,7 +987,7 @@ AutoDeleteBlock:
     If B$OldBlockInside = &TRUE
         .If B$SimulatedBlock <> &TRUE
             push eax
-                mov B$BlockInside &TRUE | call ControlD | call AskForRedrawNow
+                Mov B$BlockInside &TRUE | Call ControlD | Call AskForRedrawNow
             pop eax
         .End_If
     End_If
@@ -1000,19 +997,19 @@ ret
 [RIGHT_FEED 8]
 
 OverwriteSource:
-    On B$BlockAutoDelete = &TRUE, call AutoDeleteBlock
+    On B$BlockAutoDelete = &TRUE, Call AutoDeleteBlock
 
-    mov edi D$CurrentWritingPos
+    Mov edi D$CurrentWritingPos
     On B$edi = CR, jmp InsertSource
   ;  On eax = Tab, jmp TabCarret
-    mov cl B$edi
+    Mov cl B$edi
 
     On al < 32, ret
 
     stosb
 
     push eax
-        mov eax D$ColNumber
+        Mov eax D$ColNumber
         If D$CaretRow < eax
             inc D$CaretRow
         Else
@@ -1021,48 +1018,48 @@ OverwriteSource:
         End_If
     pop eax
 
-    call DoStoreOverWrite
+    Call DoStoreOverWrite
 ret
 
 
 [InsertedChar: ?]
 
 InsertSource:   ; eax = Char.
-    On B$BlockAutoDelete = &TRUE, call AutoDeleteBlock
+    On B$BlockAutoDelete = &TRUE, Call AutoDeleteBlock
 InsertSourceOnBlockIndent:
     RealCaretRow
 
     Agree  al = 13, al = 10, al = tab
     Reject  al < 32  ;, al > 126
 
-    mov esi D$SourceEnd | add esi 400 | mov edi esi      ; 400 is security 13/10/...
-    mov ecx esi | sub ecx D$CurrentWritingPos | inc ecx
+    Mov esi D$SourceEnd | add esi 400 | Mov edi esi      ; 400 is security 13/10/...
+    Mov ecx esi | sub ecx D$CurrentWritingPos | inc ecx
 
     If al = Tab
-        mov B$InsertedChar ' ' | jmp L2>
+        Mov B$InsertedChar ' ' | jmp L2>
     Else
-        mov B$InsertedChar al
+        Mov B$InsertedChar al
     End_If
 
 L1: inc edi
     std
         rep movsb | stosb
     cld
-    mov ebx 1 | jmp L3>
+    Mov ebx 1 | jmp L3>
 
-L2: mov eax D$CaretRow | add eax D$RightScroll
+L2: Mov eax D$CaretRow | add eax D$RightScroll
     add eax D$TabIs | dec eax
-    mov ebx D$TabIs | neg ebx | and eax ebx
-    mov ebx eax
+    Mov ebx D$TabIs | neg ebx | and eax ebx
+    Mov ebx eax
     sub ebx D$CaretRow | sub ebx D$RightScroll | inc ebx
     add edi ebx
         std
-            rep movsb | mov al ' ', ecx ebx | rep stosb
+            rep movsb | Mov al ' ', ecx ebx | rep stosb
         cld
 
 L3: add D$SourceLen ebx | add D$CurrentWritingPos ebx | add D$SourceEnd ebx
 
-    mov eax D$ColNumber
+    Mov eax D$ColNumber
 
     cmp D$CaretRow  eax | jae L4>
       add D$CaretRow ebx | jmp L9>
@@ -1070,12 +1067,12 @@ L4:   push ebx
       AlignOn RIGHT_FEED ebx | add D$RightScroll ebx | sub D$CaretRow ebx | inc D$CaretRow
       pop ebx
 
-L9: call DoStoreInsert
+L9: Call DoStoreInsert
 
     .If B$CompletionWanted = &TRUE
       ; To prevent from runing when doing the Substitution:
         If B$CompletionRuning = &FALSE
-            call CodeComplete | mov B$CompletionRuning &FALSE
+            Call CodeComplete | Mov B$CompletionRuning &FALSE
         End_If
     .End_If
 
@@ -1084,34 +1081,34 @@ ________________________________________________________________________________
 
 InsertDoubleByte:
     cmp ah 0 | jne L1>
-    call InsertSource
+    Call InsertSource
     ret
 
-L1: mov esi D$SourceEnd | add esi 400 | mov edi esi
-    mov ecx esi | sub ecx D$CurrentWritingPos | inc ecx
+L1: Mov esi D$SourceEnd | add esi 400 | Mov edi esi
+    Mov ecx esi | sub ecx D$CurrentWritingPos | inc ecx
 
 L2: add edi 2
         std
-            rep movsb | stosb | mov al ah | stosb
+            rep movsb | stosb | Mov al ah | stosb
         cld
-        mov ebx 2
+        Mov ebx 2
 
 L3: add D$SourceLen ebx | add D$CurrentWritingPos ebx | add D$SourceEnd ebx
 
-    mov eax D$ColNumber
+    Mov eax D$ColNumber
 
     cmp D$CaretRow  eax | jae L4>
     add D$CaretRow ebx | jmp L9>
 L4: push ebx
         AlignOn RIGHT_FEED ebx | add D$RightScroll ebx | sub D$CaretRow ebx | dec D$CaretRow
     pop ebx
-L9: call DoStoreInsert
+L9: Call DoStoreInsert
 ret
 ____________________________________________________________________________________________
 
 ;;
  [Carriage Return] includes an indent feature. As many spaces may have to be added
- at once, we do not simply call to "InsertSource" for each but, instead insert all
+ at once, we do not simply Call to "InsertSource" for each but, instead insert all
  spaces at once for speed reasons (we make a move on the entire tail of file...):
 ;;
 
@@ -1119,14 +1116,14 @@ ________________________________________________________________________________
 
 SetIndent:
     push eax
-        mov D$AutoIndent 0, esi D$CurrentWritingPos
+        Mov D$AutoIndent 0, esi D$CurrentWritingPos
 
 L0:     dec esi | cmp B$esi LF | ja L0<
 
         inc esi                             ; Start of Current Line.
 
         .If B$esi+2 = ':'
-            add esi 3 | mov D$AutoIndent 3
+            add esi 3 | Mov D$AutoIndent 3
             If esi > D$CurrentWritingPos
               ; Cases of CRLF from  a Pos before a Local Label:
                 sub esi 3 | sub D$AutoIndent 3
@@ -1144,37 +1141,37 @@ ret
 CarriageReturn:
     .If B$BlockAutoDelete = &TRUE
         If B$OldBlockInside = &TRUE
-            call AutoDeleteBlock | ret
+            Call AutoDeleteBlock | ret
         End_If
     .End_If
 
-    On B$AutoIndentFlag = &TRUE, call SetIndent
-    mov eax CR | call InsertSource | mov eax LF | call InsertSource
+    On B$AutoIndentFlag = &TRUE, Call SetIndent
+    Mov eax CR | Call InsertSource | Mov eax LF | Call InsertSource
 
     If D$AutoIndent > 0                                ; instead of "InsertSource":
-        mov esi D$SourceEnd | add esi 400
-        mov edi esi | add edi D$AutoIndent | mov ecx esi
+        Mov esi D$SourceEnd | add esi 400
+        Mov edi esi | add edi D$AutoIndent | Mov ecx esi
         sub ecx D$CurrentWritingPos | inc ecx
         std
-            rep movsb | mov ecx D$AutoIndent, al ' ' | rep stosb
+            rep movsb | Mov ecx D$AutoIndent, al ' ' | rep stosb
         cld
-        mov eax D$AutoIndent
+        Mov eax D$AutoIndent
         add D$SourceLen eax | add D$CurrentWritingPos eax | add D$SourceEnd eax
     End_If
 
-    mov D$RightScroll 0 | move D$CaretRow D$AutoIndent
-    inc D$CaretRow | mov eax D$LineNumber ;;;| mov D$AutoIndent 0   ; in case flag changed
+    Mov D$RightScroll 0 | move D$CaretRow D$AutoIndent
+    inc D$CaretRow | Mov eax D$LineNumber ;;;| Mov D$AutoIndent 0   ; in case flag changed
 
     If D$CaretLine = eax
-        call DownOneLine
+        Call DownOneLine
     Else
         inc D$CaretLine
     End_If
 
-    mov ebx D$AutoIndent     ; If AutoIndent on, we have to memorize this event now
+    Mov ebx D$AutoIndent     ; If AutoIndent on, we have to memorize this event now
     If ebx > 0               ; (after CR/LF recording. Undo will hold 2 jobs for this:
-        mov D$InsertedChar ' '
-        call DoStoreInsert   ; one for undo indent and another for undo CR/LF).
+        Mov D$InsertedChar ' '
+        Call DoStoreInsert   ; one for undo indent and another for undo CR/LF).
     End_If
 ret
 ____________________________________________________________________________________________
@@ -1190,24 +1187,24 @@ ________________________________________________________________________________
 TryToMove:
     On D$LineNumber <s 1, ret
 
-L0: mov B$CanGoUp &FALSE, B$CanGoDown &FALSE,  esi D$UpperLine     ; try Up One Line:
+L0: Mov B$CanGoUp &FALSE, B$CanGoDown &FALSE,  esi D$UpperLine     ; try Up One Line:
     std
         lodsw
 L1:     lodsb | cmp al LF | ja L1<
         add esi 2
     cld
-    mov edx esi | On esi > D$CodeSource, mov B$CanGoUp &TRUE
+    Mov edx esi | On esi > D$CodeSource, Mov B$CanGoUp &TRUE
 
-    mov esi D$UpperLine, ecx D$LineNumber       ; try down one line:
+    Mov esi D$UpperLine, ecx D$LineNumber       ; try down one line:
 
 L1: lodsb | cmp al LF | ja L1<
     loop L1<
-    add esi 2 | On esi < D$SourceEnd, mov B$CanGoDown &TRUE
+    add esi 2 | On esi < D$SourceEnd, Mov B$CanGoDown &TRUE
 
     On B$CanGoDown = &TRUE, ret
     On B$CanGoUp = &FALSE, ret
 
-    mov D$UpperLine edx | inc D$CaretLine       ; up one line (down false / up true)
+    Mov D$UpperLine edx | inc D$CaretLine       ; up one line (down false / up true)
     jmp L0<
 ____________________________________________________________________________________________
 
@@ -1216,22 +1213,22 @@ ResetCaretOnStripTab:
         std
 L0:         lodsb | cmp al LF | jne L0<
         cld
-        add esi 2 | mov ecx 0
+        add esi 2 | Mov ecx 0
 L0:     lodsb | inc ecx | cmp al 255 | je L9>
             cmp al tab | jne L0<
                 Align_on 8 ecx | jmp L0<
-L9:     inc ecx | mov D$CaretRow ecx, D$PhysicalCaretRow ecx
+L9:     inc ecx | Mov D$CaretRow ecx, D$PhysicalCaretRow ecx
     popad
 ret
 
 
 StripBackSpace:
-    mov esi D$CurrentWritingPos
+    Mov esi D$CurrentWritingPos
     If B$esi-1 = tab
-        mov B$esi-1 255 | call ResetCaretOnStripTab
+        Mov B$esi-1 255 | Call ResetCaretOnStripTab
     End_If
-    mov edi esi | dec edi, D$CurrentWritingPos, D$SourceLen, D$SourceEnd
-    mov ecx D$SourceEnd | sub ecx D$CurrentWritingPos | add ecx 0100 | rep movsb
+    Mov edi esi | dec edi, D$CurrentWritingPos, D$SourceLen, D$SourceEnd
+    Mov ecx D$SourceEnd | sub ecx D$CurrentWritingPos | add ecx 0100 | rep movsb
 ret
 
 
@@ -1239,15 +1236,15 @@ BackSpace:
     ..If B$BlockAutoDelete = &TRUE
         .If B$OldBlockInside = &TRUE
             If al <> Tab
-                call AutoDeleteBlock | ret
+                Call AutoDeleteBlock | ret
             End_If
         .End_If
     ..End_If
 EraseLastChar:
     RealCaretRow | On D$SourceLen = 0, ret
-    mov eax D$CurrentWritingPos | On eax = D$CodeSource, ret
-    mov ebx BACK | call DoStoreCharDelete
-    call StripBackSpace
+    Mov eax D$CurrentWritingPos | On eax = D$CodeSource, ret
+    Mov ebx BACK | Call DoStoreCharDelete
+    Call StripBackSpace
 
     .If D$RightScroll = 0
         dec D$CaretRow
@@ -1261,9 +1258,9 @@ EraseLastChar:
     .End_If
 
     ...If D$CaretRow = 0
-        mov esi D$CurrentWritingPos
+        Mov esi D$CurrentWritingPos
         If D$CaretLine = 0
-            call UpOneLine
+            Call UpOneLine
         Else
             dec D$CaretLine
         End_If
@@ -1274,7 +1271,7 @@ L0:         lodsb | cmp al LF | jne L0<
 L0:     lodsb | inc D$CaretRow | cmp al tab | jne L1>
         or D$CaretRow 00_111 | inc D$CaretRow | jmp L0<
 L1:     cmp al CR | ja L0<
-        mov ebx BACK | call DoStoreCharDelete | call StripBackSpace | call TryToMove
+        Mov ebx BACK | Call DoStoreCharDelete | Call StripBackSpace | Call TryToMove
     ...Else
 ;;
   When called from 'SimulateBlockForBackIndent' / 'IsItBlockIndent' / 'RetrieveBlockIndent'
@@ -1283,10 +1280,10 @@ L1:     cmp al CR | ja L0<
 ;;
         ..If B$keys+&VK_SHIFT = &TRUE
             .If B$OldBlockInside = &FALSE
-                mov eax D$CaretRow | dec eax | mov ebx D$TabIs | dec ebx | and eax ebx
+                Mov eax D$CaretRow | dec eax | Mov ebx D$TabIs | dec ebx | and eax ebx
                 If eax <> 0
-                    call AskForRedrawNow
-                    mov eax D$CurrentWritingPos
+                    Call AskForRedrawNow
+                    Mov eax D$CurrentWritingPos
                     On B$eax-1 = ' ', jmp BackSpace
                 End_If
             .End_If
@@ -1296,12 +1293,12 @@ ret
 
 
 KeyDown:
-    mov eax D$LineNumber
+    Mov eax D$LineNumber
 
     If D$CaretLine >= eax
-        call DownOneLine
+        Call DownOneLine
     Else
-        mov esi D$CurrentWritingPos
+        Mov esi D$CurrentWritingPos
 L0:     lodsb | On esi > D$SourceEnd, ret
         cmp al LF | ja L0<
             inc D$CaretLine
@@ -1311,7 +1308,7 @@ ret
 
 KeyUp:
     If D$CaretLine = 0
-      call UpOneLine
+      Call UpOneLine
     Else
       dec D$CaretLine
     End_If
@@ -1320,9 +1317,9 @@ ret
 
 
 StartOfLine:
-    mov D$RightScroll 0, eax 1
+    Mov D$RightScroll 0, eax 1
 
-    mov esi D$CurrentWritingPos | While B$esi-1 <> LF | dec esi | End_While
+    Mov esi D$CurrentWritingPos | While B$esi-1 <> LF | dec esi | End_While
 
     .If B$esi+2 = ':'
         add esi 3 | add eax 3
@@ -1333,11 +1330,11 @@ StartOfLine:
     While B$esi = ' ' | inc esi | inc eax | End_While
 
     If D$CaretRow = 1
-        mov D$CaretRow eax
+        Mov D$CaretRow eax
     Else_If D$CaretRow = eax
-        mov D$CaretRow 1
+        Mov D$CaretRow 1
     Else
-        mov D$CaretRow eax
+        Mov D$CaretRow eax
     End_If
 ret
 
@@ -1363,37 +1360,37 @@ ________________________________________________________________________________
 ; Left Arrow, he does not mean to wait that the Real Carret Col achieves moving back to
 ; the end of the 5 Chars Line, but, directely to unselect the 5th Char. For normal use,
 ; this complicated computation is done both by 'KeyLeft' and by 'PrintCaretAndUnderline',
-; but, with Block Selection, there is no call to 'PrintCaretAndUnderline'? So:
+; but, with Block Selection, there is no Call to 'PrintCaretAndUnderline'? So:
 
 SetPhysicalCaretRow:
-    mov esi D$UpperLine, ecx 0
+    Mov esi D$UpperLine, ecx 0
 
 L0: cmp ecx D$CaretLine | je L2>                    ; search for Caret line (esi)
 L1: lodsb | cmp al LF | jne L1<
     inc ecx | jmp L0<
 
-L2: mov ecx 0
+L2: Mov ecx 0
     On D$RightScroll > 0, sub ecx D$RightScroll
 
 L0: cmp ecx D$CaretRow | je L5>>
 L1: lodsb | cmp al CR | ja L2>                      ; search for Caret col (esi too)
         inc ecx
-         mov D$PhysicalCaretRow ecx | jmp L6>>      ; Caret at end of line
+         Mov D$PhysicalCaretRow ecx | jmp L6>>      ; Caret at end of line
 L2: inc ecx | jmp L0<
 L6: ret
 
 
 StartOfWord:  ; KeyLeft
-    mov esi D$CurrentWritingPos
-    While B$esi-1 = ' ' | call SimpleKeyLeft | dec esi | End_While
-    While B$esi-1 > ' ' | call SimpleKeyLeft | dec esi | End_While
-    mov D$CurrentWritingPos esi
+    Mov esi D$CurrentWritingPos
+    While B$esi-1 = ' ' | Call SimpleKeyLeft | dec esi | End_While
+    While B$esi-1 > ' ' | Call SimpleKeyLeft | dec esi | End_While
+    Mov D$CurrentWritingPos esi
 ret
 
 
 
 EndOfLine:
-    mov esi D$CurrentWritingPos | mov ecx D$ColNumber
+    Mov esi D$CurrentWritingPos | Mov ecx D$ColNumber
 
 L0: While B$esi <> CR
         If D$CaretRow < ecx
@@ -1412,7 +1409,7 @@ KeyRight:
     RealCaretRow
 
 SimpleKeyRight:
-    mov eax D$ColNumber
+    Mov eax D$ColNumber
 
     If D$CaretRow < eax
         inc D$CaretRow
@@ -1434,10 +1431,10 @@ ret
 
 
 EndOfWord:
-    mov esi D$CurrentWritingPos
-    While B$esi = ' ' | call SimpleKeyRight | inc esi | End_While
-    While B$esi > ' ' | call SimpleKeyRight | inc esi | End_While
-    mov D$CurrentWritingPos esi
+    Mov esi D$CurrentWritingPos
+    While B$esi = ' ' | Call SimpleKeyRight | inc esi | End_While
+    While B$esi > ' ' | Call SimpleKeyRight | inc esi | End_While
+    Mov D$CurrentWritingPos esi
 ret
 
 
@@ -1447,10 +1444,10 @@ ret
 
 
 StripOneChar:
-    inc D$CurrentWritingPos | mov ebx FORTH | call DoStoreCharDelete
+    inc D$CurrentWritingPos | Mov ebx FORTH | Call DoStoreCharDelete
     dec D$CurrentWritingPos
-    mov esi D$CurrentWritingPos,  edi esi | inc esi | dec D$SourceLen, D$SourceEnd
-    mov ecx D$SourceEnd | sub ecx D$CurrentWritingPos
+    Mov esi D$CurrentWritingPos,  edi esi | inc esi | dec D$SourceLen, D$SourceEnd
+    Mov ecx D$SourceEnd | sub ecx D$CurrentWritingPos
     add ecx 0100 | rep movsb
 ret
 
@@ -1458,15 +1455,15 @@ ret
 KeyDelete:
     .If B$BlockAutoDelete = &TRUE
         If B$BlockInside = &TRUE
-            call ControlD | ret
+            Call ControlD | ret
         End_If
     .End_If
 
     RealCaretRow | On D$SourceLen = 0, ret
-    mov eax D$CurrentWritingPos
+    Mov eax D$CurrentWritingPos
     If eax < D$SourceEnd
-        call StripOneChar | mov esi D$CurrentWritingPos
-        On B$esi = LF, call StripOneChar
+        Call StripOneChar | Mov esi D$CurrentWritingPos
+        On B$esi = LF, Call StripOneChar
     End_If
 ret
 
@@ -1476,7 +1473,7 @@ ret
 ; output eax = ptr
 
 SearchTxtPtr:
-    mov esi D$UpperLine, ecx 0, edx D$SourceEnd
+    Mov esi D$UpperLine, ecx 0, edx D$SourceEnd
     push eax
 L0:     cmp ecx ebx | je L2>
 L1:
@@ -1484,7 +1481,7 @@ L1:
             cmp al LF | jne L1<
                 inc ecx | jmp L0<
 
-L2: pop eax | mov ebx eax, ecx 0               ; switch eax (col Pos) > ebx
+L2: pop eax | Mov ebx eax, ecx 0               ; switch eax (col Pos) > ebx
     add ebx D$RightScroll
 
 L3: cmp esi edx | ja L9>
@@ -1495,10 +1492,10 @@ L3: lodsb | cmp esi edx | ja L9>
 
 L8: sub ebx ecx | sub D$CaretRow ebx | inc D$CaretRow
 
-L9: dec esi | mov eax esi
+L9: dec esi | Mov eax esi
 
     If D$CaretRow <s 1
-        mov D$CaretRow 1 | mov D$RightScroll 0
+        Mov D$CaretRow 1 | Mov D$RightScroll 0
     End_If
 ret
 
@@ -1510,12 +1507,12 @@ ________________________________________________________________________________
 Proc SetCaret:
     Argument @Location
 
-        mov esi D$UpperLine, D$CaretRow 1, D$CaretLine 0
+        Mov esi D$UpperLine, D$CaretRow 1, D$CaretLine 0
 
       ; Very rude and durty hak: There is a problem when the Search Box is runing and the
       ; user Click on a TITLE Tab... (temporary security >> To do analyze step by step what
       ; is going on when crossing these two...).
-        mov eax D@Location
+        Mov eax D@Location
         If eax < D$CodeSource
             move D@Location D$CodeSource
         Else_If eax > D$SourceEnd
@@ -1524,68 +1521,68 @@ Proc SetCaret:
 
         While esi < D@Location
             If B$esi = LF
-                mov D$CaretRow 1 | inc D$CaretLine
+                Mov D$CaretRow 1 | inc D$CaretLine
             Else
                 inc D$CaretRow
             End_If
             inc esi
         End_While
-        inc D$CaretRow | mov D$CurrentWritingPos esi
+        inc D$CaretRow | Mov D$CurrentWritingPos esi
 EndP
 
 
 [FullRECT: ? ? ? ?  ConfinedRECT: ? ? ? ?  UserClickAfterEnd: ?  TrueCaretRow: ?]
 
 LeftButtonSimulation:
-    mov B$BlockInside &FALSE, B$UserClickAfterEnd &FALSE
-    call MouseTextPos |  | jmp L2>>
+    Mov B$BlockInside &FALSE, B$UserClickAfterEnd &FALSE
+    Call MouseTextPos |  | jmp L2>>
 
 LeftButton:
-    mov B$BlockInside &FALSE, B$UserClickAfterEnd &FALSE, B$ClickOnMargin &FALSE
+    Mov B$BlockInside &FALSE, B$UserClickAfterEnd &FALSE, B$ClickOnMargin &FALSE
 
     If eax = D$EditWindowHandle
-        call MouseTextPos | mov D$CaretRow eax, D$CaretLine ebx
+        Call MouseTextPos | Mov D$CaretRow eax, D$CaretLine ebx
     Else_If eax = D$BpWindowHandle
-        mov B$ClickOnMargin &TRUE
-        call MouseTextPos | mov D$CaretRow 1, eax 1, D$CaretLine ebx
+        Mov B$ClickOnMargin &TRUE
+        Call MouseTextPos | Mov D$CaretRow 1, eax 1, D$CaretLine ebx
     End_If
 
     .If B$ClickOnMargin = &TRUE
 L1:    ;jmp DoubleClickMarginAction
 
-        On D$BreakPointsTables = 0, call InitBreakPointsTables
+        On D$BreakPointsTables = 0, Call InitBreakPointsTables
 
-        call IsBreakPointHere
+        Call IsBreakPointHere
 
         If B$InsideBpTable = &TRUE
-            call DeleteBreakPoint | call DoStoreRemoveBP
+            Call DeleteBreakPoint | Call DoStoreRemoveBP
         Else
-            call SetBreakPoint | call DoStoreBP
+            Call SetBreakPoint | Call DoStoreBP
         End_If
 
-        mov B$UserClickAfterEnd &TRUE | jmp L9>>
+        Mov B$UserClickAfterEnd &TRUE | jmp L9>>
     .End_If
 
-L2: mov D$PhysicalCaretRow eax, D$CaretRow eax
+L2: Mov D$PhysicalCaretRow eax, D$CaretRow eax
 
-    mov D$CaretLine ebx
+    Mov D$CaretLine ebx
 
-L1: call SearchTxtPtr | mov D$ShiftDown eax  ; Ready for Block Selection
+L1: Call SearchTxtPtr | Mov D$ShiftDown eax  ; Ready for Block Selection
 
     If eax < D$SourceEnd
-        mov D$CurrentWritingPos eax
+        Mov D$CurrentWritingPos eax
     Else
-        mov B$UserClickAfterEnd &TRUE
-        call SetCaret D$SourceEnd
-       ; mov eax D$CaretRow, ebx D$CaretLine | dec ebx | mov D$CaretLine ebx | jmp L1<
+        Mov B$UserClickAfterEnd &TRUE
+        Call SetCaret D$SourceEnd
+       ; Mov eax D$CaretRow, ebx D$CaretLine | dec ebx | Mov D$CaretLine ebx | jmp L1<
     End_If
 
-    call 'USER32.GetClientRect' D$EditWindowHandle, ConfinedRECT
-    call 'USER32.ClientToScreen' D$EditWindowHandle, ConfinedRECT
+    Call 'USER32.GetClientRect' D$EditWindowHandle, ConfinedRECT
+    Call 'USER32.ClientToScreen' D$EditWindowHandle, ConfinedRECT
     lea eax D$ConfinedRECT+8
-    call 'USER32.ClientToScreen' D$EditWindowHandle, eax
-    mov eax D$FontWidth | sub D$ConfinedRECT eax
-    call 'USER32.ClipCursor' ConfinedRECT
+    Call 'USER32.ClientToScreen' D$EditWindowHandle, eax
+    Mov eax D$FontWidth | sub D$ConfinedRECT eax
+    Call 'USER32.ClipCursor' ConfinedRECT
 L9: ret
 
 
@@ -1600,81 +1597,81 @@ SetBlock:
    ; Slow down the Block moving up or down (by mouse action). Speed increases while moving:
     .If B$MovingBlock = &TRUE
         If D$BlockMoveTicks = 0
-            call 'KERNEL32.GetTickCount'
-            add eax D$BlockMoveDelay | mov D$BlockMoveTicks eax
+            Call 'KERNEL32.GetTickCount'
+            add eax D$BlockMoveDelay | Mov D$BlockMoveTicks eax
         Else
             Do
-                call 'KERNEL32.GetTickCount'
+                Call 'KERNEL32.GetTickCount'
             Loop_Until eax > D$BlockMoveTicks
-            add eax D$BlockMoveDelay | mov D$BlockMoveTicks eax
+            add eax D$BlockMoveDelay | Mov D$BlockMoveTicks eax
             dec D$BlockMoveDelay | jnz L0>
-                mov D$BlockMoveDelay 1
+                Mov D$BlockMoveDelay 1
         End_If
 
     .Else
-        mov D$BlockMoveTicks 0, D$BlockMoveDelay 60
+        Mov D$BlockMoveTicks 0, D$BlockMoveDelay 60
 
     .End_If
 
   ; Set the new Block:
 L0: If B$BlockInside = &TRUE
         move D$PhysicalCaretRow D$CaretRow
-        mov B$CaretEndOfLine &FALSE
+        Mov B$CaretEndOfLine &FALSE
     Else
       ; D$ShiftDown is now set in 'LeftButton' (from WM_LBUTTONDOWN Case).
-        mov eax D$CurrentWritingPos
-        mov D$BlockStartTextPtr eax, D$BlockEndTextPtr eax
-        call SimpleMouseTextPos
-        mov D$CaretLine ebx, D$CaretRow eax
-        mov D$PreviousMouseLine ebx, D$PreviousMouseCol eax
-        mov D$ShiftBlockLine ebx, D$ShiftBlockCol eax
-        mov B$FirstBlockDraw &TRUE, B$BlockRedraw &TRUE, B$BlockInside &TRUE | ret
+        Mov eax D$CurrentWritingPos
+        Mov D$BlockStartTextPtr eax, D$BlockEndTextPtr eax
+        Call SimpleMouseTextPos
+        Mov D$CaretLine ebx, D$CaretRow eax
+        Mov D$PreviousMouseLine ebx, D$PreviousMouseCol eax
+        Mov D$ShiftBlockLine ebx, D$ShiftBlockCol eax
+        Mov B$FirstBlockDraw &TRUE, B$BlockRedraw &TRUE, B$BlockInside &TRUE | ret
     End_If
 
   ; Do not run for nop with an empty Block:
-    call SimpleMouseTextPos | call SearchTxtPtr
+    Call SimpleMouseTextPos | Call SearchTxtPtr
     If eax = D$ShiftDown
-        mov B$BlockInside &FALSE | ret
+        Mov B$BlockInside &FALSE | ret
     End_If
 
-    call SimpleMouseTextPos | mov D$PhysicalCaretRow eax, D$CaretRow eax
+    Call SimpleMouseTextPos | Mov D$PhysicalCaretRow eax, D$CaretRow eax
 
   ; Vertical Scrolling, if needed:
     push eax, ebx
         If ebx = 0
             push D$UpperLine
-                call UpOneLine
+                Call UpOneLine
             pop eax
-            On D$UpperLine < eax, mov B$MovingBlock &TRUE
+            On D$UpperLine < eax, Mov B$MovingBlock &TRUE
         Else_If ebx >= D$LineNumber
             push D$UpperLine
-                call DownOneLine
+                Call DownOneLine
             pop eax
-            On D$UpperLine > eax, mov B$MovingBlock &TRUE
+            On D$UpperLine > eax, Mov B$MovingBlock &TRUE
         Else
-            mov B$MovingBlock &FALSE
+            Mov B$MovingBlock &FALSE
         End_If
     pop ebx, eax
 
   ; Don't redraw for moves after End-of-Line (lazy reuse of SearchTxtPtr to ajust Row):
-    push ebx | call SearchTxtPtr | pop ebx | mov eax D$CaretRow
+    push ebx | Call SearchTxtPtr | pop ebx | Mov eax D$CaretRow
 
   ; Compute and Redraw only if different:
     If B$FirstBlockDraw = &TRUE
-        mov B$FirstBlockDraw &FALSE | jmp L1>
+        Mov B$FirstBlockDraw &FALSE | jmp L1>
     Else_If B$MovingBlock = &TRUE
         jmp L1>
     Else_If eax <> D$PreviousMouseCol
         jmp L1>
     Else_If ebx <> D$PreviousMouseLine
-L1:     mov D$PreviousMouseLine ebx, D$PreviousMouseCol eax
-        mov D$CaretRow eax, D$CaretLine ebx
+L1:     Mov D$PreviousMouseLine ebx, D$PreviousMouseCol eax
+        Mov D$CaretRow eax, D$CaretLine ebx
 
-            call SetShiftBlock | mov B$ShiftBlockInside &FALSE
+            Call SetShiftBlock | Mov B$ShiftBlockInside &FALSE
 
-        mov B$BlockRedraw &TRUE
+        Mov B$BlockRedraw &TRUE
     Else
-        mov B$BlockRedraw &FALSE
+        Mov B$BlockRedraw &FALSE
     End_If
 ret
 ____________________________________________________________________________________________
@@ -1684,24 +1681,24 @@ ________________________________________________________________________________
 ; that, but it is normal. If it was a simple Caret, this would really be the good place.
 
 LeftButtonUp:
-    call 'USER32.IsMenu' D$FloatHandle
-    On eax = &TRUE, call 'USER32.DestroyMenu' D$FloatHandle
+    Call 'USER32.IsMenu' D$FloatHandle
+    On eax = &TRUE, Call 'USER32.DestroyMenu' D$FloatHandle
 
-    call 'USER32.ClipCursor' &NULL
+    Call 'USER32.ClipCursor' &NULL
     On B$BlockInside = &FALSE, ret
     If B$UserClickAfterEnd = &TRUE
-        mov B$BlockInside &FALSE | ret
+        Mov B$BlockInside &FALSE | ret
     End_If
 
-    mov B$MovingBlock &FALSE
+    Mov B$MovingBlock &FALSE
 ret
 ; Should be no more use, with new Block Routines:
-    mov eax D$BlockStartTextPtr
+    Mov eax D$BlockStartTextPtr
     cmp eax D$BlockEndTextPtr | jna L5>
         push eax, D$BlockEndTextPtr | pop D$BlockStartTextPtr D$BlockEndTextPtr
-L5: mov ebx D$BlockEndTextPtr
+L5: Mov ebx D$BlockEndTextPtr
     On B$ebx = CR, dec D$BlockEndTextPtr
-    mov eax D$RightScroll | add D$BlockStartTextPtr eax | add D$BlockEndTextPtr eax
+    Mov eax D$RightScroll | add D$BlockStartTextPtr eax | add D$BlockEndTextPtr eax
 ret
 ____________________________________________________________________________________________
 
@@ -1712,41 +1709,41 @@ ________________________________________________________________________________
 ControlC:
     cmp B$BlockInside &FALSE | je L9>>
 
-    call 'USER32.OpenClipboard' D$hwnd | cmp eax 0 | je L9>>
-    call 'USER32.EmptyClipboard' | cmp eax 0 | je L8>>
-    mov ecx D$BlockEndTextPtr | sub ecx D$BlockStartTextPtr | inc ecx
-    mov D$BlockSize ecx | mov ebx ecx | inc ebx
-    call 'KERNEL32.GlobalAlloc' &GMEM_DDESHARE, ebx | cmp eax 0 | je L8>  ; > eax = handle
-    mov D$hBlock eax
-    call 'KERNEL32.GlobalLock' eax                                       ; > eax = adress
-    mov edi eax, esi D$BlockStartTextPtr, ecx D$BlockSize
-    rep movsb | mov al 0 | stosb
-    call 'KERNEL32.GlobalUnlock' D$hBlock
-    call 'USER32.SetClipboardData' &CF_TEXT, D$hBlock
+    Call 'USER32.OpenClipboard' D$H.MainWindow | cmp eax 0 | je L9>>
+    Call 'USER32.EmptyClipboard' | cmp eax 0 | je L8>>
+    Mov ecx D$BlockEndTextPtr | sub ecx D$BlockStartTextPtr | inc ecx
+    Mov D$BlockSize ecx | Mov ebx ecx | inc ebx
+    Call 'KERNEL32.GlobalAlloc' &GMEM_DDESHARE, ebx | cmp eax 0 | je L8>  ; > eax = handle
+    Mov D$hBlock eax
+    Call 'KERNEL32.GlobalLock' eax                                       ; > eax = adress
+    Mov edi eax, esi D$BlockStartTextPtr, ecx D$BlockSize
+    rep movsb | Mov al 0 | stosb
+    Call 'KERNEL32.GlobalUnlock' D$hBlock
+    Call 'USER32.SetClipboardData' &CF_TEXT, D$hBlock
 
-L8: call 'USER32.CloseClipboard'
+L8: Call 'USER32.CloseClipboard'
 L9: ret
 
 
 ControlY:
     If D$DebugDialogHandle <> 0
-        call KillDebugger | On eax = &IDNO, jmp L9>>
+        Call KillDebugger | On eax = &IDNO, jmp L9>>
     End_If
 
-    mov esi D$CurrentWritingPos
+    Mov esi D$CurrentWritingPos
     While esi > D$CodeSource
         dec esi | cmp B$esi CR | je L1>
     End_While
 
-L1: mov D$BlockStartTextPtr esi
+L1: Mov D$BlockStartTextPtr esi
     While esi < D$SourceEnd
         inc esi | cmp B$esi CR | je L1>
     End_While
 
-L1: dec esi | mov D$BlockEndTextPtr esi
+L1: dec esi | Mov D$BlockEndTextPtr esi
     If esi > D$BlockStartTextPtr
         push D$CaretRow
-            mov B$BlockInside &TRUE | call ControlD | call KeyDown
+            Mov B$BlockInside &TRUE | Call ControlD | Call KeyDown
         pop D$CaretRow
     End_If
 ret
@@ -1758,20 +1755,20 @@ ControlD:
 
 ControlX:
     cmp B$BlockInside &FALSE | je L9>>
-    call ControlC
+    Call ControlC
 
 L0: If D$DebugDialogHandle <> 0
-        call KillDebugger | On eax = &IDNO, jmp L9>>
+        Call KillDebugger | On eax = &IDNO, jmp L9>>
     End_If
 
-    call WriteUndoBlockFileFromBlock | call StoreUserActionOfBlockDeletion
+    Call WriteUndoBlockFileFromBlock | Call StoreUserActionOfBlockDeletion
 
-    mov eax D$CaretRow, ebx D$CaretLine | call SearchTxtPtr
+    Mov eax D$CaretRow, ebx D$CaretLine | Call SearchTxtPtr
 
     ...If eax <> D$BlockStartTextPtr
 
         std                                         ; reset cursor at "BlockStartText":
-            mov esi D$BlockEndTextPtr
+            Mov esi D$BlockEndTextPtr
 L0:         cmp esi D$BlockStartTextPtr | je L2>
                 lodsb
                 cmp al LF | jne L0<
@@ -1779,9 +1776,9 @@ L0:         cmp esi D$BlockStartTextPtr | je L2>
                     sub D$CaretLine 1 | jc L1>      ; than screen "upward drawn" by user
                 End_If
                 jmp L0<
-L1:         mov D$CaretLine 0 | jmp L0<             ; same, but "downward drawn" by user
+L1:         Mov D$CaretLine 0 | jmp L0<             ; same, but "downward drawn" by user
 
-L2:         mov D$CaretRow 1 | dec esi              ; search for Col:
+L2:         Mov D$CaretRow 1 | dec esi              ; search for Col:
 L3:         lodsb | cmp al LF | je L4>              ; count how many chars between start of block
                 ;cmp esi D$CodeSource | jbe L4>      ; and left edge
                 If esi <= D$CodeSource
@@ -1790,11 +1787,11 @@ L3:         lodsb | cmp al LF | je L4>              ; count how many chars betwe
                 inc D$CaretRow | jmp L3<
 
 L4:         .If esi < D$Upperline                   ; rePos screen if block greater than screen:
-                mov eax D$UpperLine
+                Mov eax D$UpperLine
                 If eax > D$CodeSource
                     add esi 2
-                    mov D$Upperline esi
-                    mov D$CaretLine 0
+                    Mov D$Upperline esi
+                    Mov D$CaretLine 0
                 Else
                     inc D$CaretRow
                 End_If
@@ -1809,20 +1806,20 @@ L4:         .If esi < D$Upperline                   ; rePos screen if block grea
 
 UndoControlV:                                   ; strip text:
 
-    mov edi D$BlockStartTextPtr, esi D$BlockEndTextPtr | inc esi
+    Mov edi D$BlockStartTextPtr, esi D$BlockEndTextPtr | inc esi
 
-    mov eax esi | sub eax edi                   ; eax = Block-to-strip-out length
+    Mov eax esi | sub eax edi                   ; eax = Block-to-strip-out length
     push eax
-        mov ecx D$SourceEnd | add ecx 100 | sub ecx esi | rep movsb
+        Mov ecx D$SourceEnd | add ecx 100 | sub ecx esi | rep movsb
     pop eax
     sub D$SourceEnd eax | sub D$SourceLen eax | jnc L0>
-        mov D$SourceLen 0
+        Mov D$SourceLen 0
 
   ; Should be no use. just to be absolutely sure no wrong CR/LF after End Of Source:
-L0: mov edi D$SourceEnd | mov eax 0A0D0A0D, ecx 100 | rep stosd
-    call TryToMove                              ; ensure screen Pos in all cases.
+L0: Mov edi D$SourceEnd | Mov eax 0A0D0A0D, ecx 100 | rep stosd
+    Call TryToMove                              ; ensure screen Pos in all cases.
 
-    mov B$BlockInside &FALSE
+    Mov B$BlockInside &FALSE
 
 ;;
   This rebuild should be no use (???), and switches to the Next TITLE, in case of
@@ -1834,56 +1831,56 @@ L0: mov edi D$SourceEnd | mov eax 0A0D0A0D, ecx 100 | rep stosd
   immidiately after the Block Deletion, above, in 'ControlX'. It is already "done",
   but seems to be ineffective... :( :(( :(((
 ;;
-L9: ;call RestoreRealSource | call SetPartialEditionFromPos
+L9: ;Call RestoreRealSource | Call SetPartialEditionFromPos
 ret
 
 
 OpenClipBoard:
-    mov D$ClipBoardLen 0
-    call 'USER32.IsClipboardFormatAvailable' &CF_TEXT | cmp eax 0 | je L9>>
-    call 'USER32.OpenClipboard' D$hwnd | cmp eax 0 | je L9>>
-    call 'USER32.GetClipboardData' &CF_TEXT  | cmp eax 0 | je L8>>    ; > eax = handle
-    mov D$hBlock eax
-    call 'KERNEL32.GlobalLock' eax                          ; > eax = pointer
+    Mov D$ClipBoardLen 0
+    Call 'USER32.IsClipboardFormatAvailable' &CF_TEXT | cmp eax 0 | je L9>>
+    Call 'USER32.OpenClipboard' D$H.MainWindow | cmp eax 0 | je L9>>
+    Call 'USER32.GetClipboardData' &CF_TEXT  | cmp eax 0 | je L8>>    ; > eax = handle
+    Mov D$hBlock eax
+    Call 'KERNEL32.GlobalLock' eax                          ; > eax = pointer
 
-    mov D$ClipBoardPtr eax
-    mov edi eax, al 0, ecx 0-1 | repne scasb
-    mov ecx edi | sub ecx D$ClipBoardPtr | dec ecx          ; len
-    mov D$ClipBoardLen ecx
-    call ClipBordCleaner
+    Mov D$ClipBoardPtr eax
+    Mov edi eax, al 0, ecx 0-1 | repne scasb
+    Mov ecx edi | sub ecx D$ClipBoardPtr | dec ecx          ; len
+    Mov D$ClipBoardLen ecx
+    Call ClipBordCleaner
 L9: ret
-L8: call 'USER32.CloseClipboard' | ret
+L8: Call 'USER32.CloseClipboard' | ret
 
 
 ClipBordCleaner:
-    mov esi D$ClipBoardPtr
+    Mov esi D$ClipBoardPtr
 BlockCleaner:
 L0: lodsb | If al = CR
-                On B$esi <> LF, mov B$esi-1 ' '
+                On B$esi <> LF, Mov B$esi-1 ' '
                 inc esi | dec ecx | jecxz L9>
             Else_If al = LF
-                mov B$esi-1 ' '
+                Mov B$esi-1 ' '
             Else_If al < ' '
-                mov B$esi-1 ' '
+                Mov B$esi-1 ' '
             Else_If al = 255      ;> 127
-                mov B$esi-1 ' '
+                Mov B$esi-1 ' '
             End_If
     loop L0<
 L9: ret
 
 
 KillTabs:
-    mov esi D$CodeSource, ecx D$SourceLen
+    Mov esi D$CodeSource, ecx D$SourceLen
 KillTab:
 L0: lodsb | cmp al tab | jne L1>
-        mov B$esi-1 ' '
+        Mov B$esi-1 ' '
 L1: loop L0<
 ret
 
 
 CloseClipBoard:
-    call 'KERNEL32.GlobalUnlock' D$hBlock
-    call 'USER32.CloseClipboard'
+    Call 'KERNEL32.GlobalUnlock' D$hBlock
+    Call 'USER32.CloseClipboard'
 ret
 
 
@@ -1902,47 +1899,47 @@ CloseToMemoryEnd: "
   Close RosAsm and re-run, to enable more Memory", 0]
 
 ControlV:
-    call OpenClipBoard | On D$ClipBoardLen = 0, jmp L7>>
+    Call OpenClipBoard | On D$ClipBoardLen = 0, jmp L7>>
 
     If D$DebugDialogHandle <> 0
-        call KillDebugger | On eax = &IDNO, jmp L9>>
+        Call KillDebugger | On eax = &IDNO, jmp L9>>
     End_If
 
-    call ReMapSourceMemoryIfNeeded D$ClipBoardLen | On eax = &IDNO, jmp L7>>
+    Call ReMapSourceMemoryIfNeeded D$ClipBoardLen | On eax = &IDNO, jmp L7>>
 
     If B$BlockAutoDelete = &TRUE
-        On B$BlockInside = &TRUE, call ControlD
+        On B$BlockInside = &TRUE, Call ControlD
     End_If
 
-    call DoStoreBlockPaste
+    Call DoStoreBlockPaste
 
   ; Make room inside our text:
-    mov esi D$SourceEnd | add esi 400
-    mov edi esi | add edi D$ClipBoardLen
-    mov ecx esi | sub ecx D$CurrentWritingPos | inc ecx
+    Mov esi D$SourceEnd | add esi 400
+    Mov edi esi | add edi D$ClipBoardLen
+    Mov ecx esi | sub ecx D$CurrentWritingPos | inc ecx
     std | rep movsb | cld | inc esi
 
   ; Write from clipboard:
-    mov edi esi, esi D$ClipBoardPtr, ecx D$ClipBoardLen
+    Mov edi esi, esi D$ClipBoardPtr, ecx D$ClipBoardLen
     pushad | rep movsb | popad
 
   ; Search for the new Caret Position:
-    mov esi edi, ebx D$CaretLine
+    Mov esi edi, ebx D$CaretLine
 L0: lodsb | inc D$CaretRow | cmp al CR | jne L1>
-        inc ebx | mov D$CaretRow 1 | lodsb | dec ecx | jz L0>
+        inc ebx | Mov D$CaretRow 1 | lodsb | dec ecx | jz L0>
 L1: loop L0<
 
 L0: cmp ebx D$LineNumber | jna L6>
-        mov esi D$UpperLine | mov ecx ebx | sub ecx D$CaretLine
+        Mov esi D$UpperLine | Mov ecx ebx | sub ecx D$CaretLine
 L1:     lodsb | cmp al LF | ja L1<
-            mov D$UpperLine esi | dec ebx | jmp L0<
+            Mov D$UpperLine esi | dec ebx | jmp L0<
 
-L6: mov D$CaretLine ebx
+L6: Mov D$CaretLine ebx
 
-    mov eax D$ClipBoardLen
+    Mov eax D$ClipBoardLen
     add D$SourceLen eax | add D$SourceEnd eax | add D$CurrentWritingPos eax
-L7: call 'KERNEL32.GlobalUnlock' D$hBlock
-L8: call 'USER32.CloseClipboard'
+L7: Call 'KERNEL32.GlobalUnlock' D$hBlock
+L8: Call 'USER32.CloseClipboard'
 L9: ret
 ____________________________________________________________________________________________
 
@@ -1959,24 +1956,24 @@ Proc ReMapSourceMemoryIfNeeded:
         shl D@Added 1
       ; (to care about Tabs-partial-editions !!!)
 
-        mov eax D$CodeSource, ebx D$UserPeStart
+        Mov eax D$CodeSource, ebx D$UserPeStart
         and eax 0_FFFF_FFF0 | and ebx 0_FFFF_FFF0
 
         If eax = ebx
-            mov B$UserPeStartEqualCodeSource &TRUE
+            Mov B$UserPeStartEqualCodeSource &TRUE
         Else
-            mov B$UserPeStartEqualCodeSource &FALSE
+            Mov B$UserPeStartEqualCodeSource &FALSE
         End_If
 
         add eax D$SourceLen | add eax D@Added | add eax 400
 
         ...If eax >= D$EndOfSourceMemory
-            call 'USER32.MessageBoxA' D$hwnd, ExtendMemoryString, Argh, &MB_YESNO
+            Call 'USER32.MessageBoxA' D$H.MainWindow, ExtendMemoryString, Argh, &MB_YESNO
             .If eax = &IDYES
-                call RestoreRealSource
+                Call RestoreRealSource
 
               ; New User PE Memory size:
-                mov ecx D$EndOfSourceMemory | sub ecx D$UserPeStart
+                Mov ecx D$EndOfSourceMemory | sub ecx D$UserPeStart
                 add ecx D@Added | shl ecx 1 | add ecx 0100_000
 
                 push ecx
@@ -1984,19 +1981,19 @@ Proc ReMapSourceMemoryIfNeeded:
                     VirtualAlloc @TempoPointer, ecx
 
                   ; Copy it all:
-                    mov esi D$UserPeStart, edi D@TempoPointer
+                    Mov esi D$UserPeStart, edi D@TempoPointer
 
                     If B$UserPeStartEqualCodeSource = &TRUE
-                        mov D$edi CRLF2, D$edi+4 CRLF2 | add edi 4 | add D@TempoPointer 4
+                        Mov D$edi CRLF2, D$edi+4 CRLF2 | add edi 4 | add D@TempoPointer 4
                     End_If
 
-                    mov ecx D$EndOfSourceMemory | sub ecx D$UserPeStart
+                    Mov ecx D$EndOfSourceMemory | sub ecx D$UserPeStart
                     shr ecx 2 | rep movsd
                 pop ecx
-                add ecx D@TempoPointer | mov D$EndOfSourceMemory ecx
+                add ecx D@TempoPointer | Mov D$EndOfSourceMemory ecx
 
               ; New 'CodeSource', 'SourceEnd', 'CurrentWritingPos', 'UpperLine':
-                mov eax D@TempoPointer | sub eax D$UserPeStart
+                Mov eax D@TempoPointer | sub eax D$UserPeStart
                 add D$CodeSource eax
                 add D$CurrentWritingPos eax
                 add D$UpperLine eax
@@ -2009,21 +2006,21 @@ Proc ReMapSourceMemoryIfNeeded:
                     VirtualFree D@TempoPointer
 
                   ; SourceLen may be = 0, when pasting after a [File]/[New]:
-                    On D$Sourcelen > 0, call StartEdition
+                    On D$Sourcelen > 0, Call StartEdition
 
-                    mov eax &IDOK
+                    Mov eax &IDOK
 
                 pop D$CaretRow, D$CaretLine, D$UpperLine, D$CurrentWritingPos
 
-                call SetPartialEditionFromPos
+                Call SetPartialEditionFromPos
 
-                mov eax &IDYES
+                Mov eax &IDYES
             .End_If
 
           ; eax = &IDNO if not &IDYES
 
         ...Else
-            mov eax &IDOK
+            Mov eax &IDOK
 
         ...End_If
 EndP
@@ -2034,20 +2031,20 @@ ________________________________________________________________________________
 DrawOneLine:
     RealCaretRow
 
-    mov esi D$SourceEnd | add esi 400 | mov edi esi      ; 400 is security 13/10/...
-    mov ecx esi, ebx DRAWLINELEN | sub ecx D$CurrentWritingPos | inc ecx
+    Mov esi D$SourceEnd | add esi 400 | Mov edi esi      ; 400 is security 13/10/...
+    Mov ecx esi, ebx DRAWLINELEN | sub ecx D$CurrentWritingPos | inc ecx
 
     add edi ebx
         std
           rep movsb
-          mov al '_', ecx ebx | rep stosb
+          Mov al '_', ecx ebx | rep stosb
         cld
 
     add D$SourceLen ebx | add D$CurrentWritingPos ebx | add D$SourceEnd ebx
 
-    mov D$InsertedChar '_'
+    Mov D$InsertedChar '_'
 
-    call DoStoreInsert | call CarriageReturn
+    Call DoStoreInsert | Call CarriageReturn
 ret
 
 ____________________________________________________________________________________________
@@ -2060,23 +2057,23 @@ ControlA:
         move D$BlockEndTextPtr D$SourceEnd
       ; SourceEnd is the Byte _after_ // BlockEndTextPtr is the last Byte:
         dec D$BlockEndTextPtr
-        mov B$BlockInside &TRUE
+        Mov B$BlockInside &TRUE
     End_If
 ret
 ____________________________________________________________________________________________
 
 AskForRedraw:
-    mov B$CaretOnlyRedraw &FALSE
-    call 'USER32.RedrawWindow' D$BpWindowHandle, 0, 0, &RDW_INVALIDATE+&RDW_INTERNALPAINT
-    call 'USER32.RedrawWindow' D$EditWindowHandle, 0, 0, &RDW_INVALIDATE+&RDW_INTERNALPAINT
+    Mov B$CaretOnlyRedraw &FALSE
+    Call 'USER32.RedrawWindow' D$BpWindowHandle, 0, 0, &RDW_INVALIDATE+&RDW_INTERNALPAINT
+    Call 'USER32.RedrawWindow' D$EditWindowHandle, 0, 0, &RDW_INVALIDATE+&RDW_INTERNALPAINT
 ret
 
 
 AskForRedrawNow:
-    mov B$CaretOnlyRedraw &FALSE
-    call 'USER32.RedrawWindow' D$BpWindowHandle, 0, 0,
+    Mov B$CaretOnlyRedraw &FALSE
+    Call 'USER32.RedrawWindow' D$BpWindowHandle, 0, 0,
                                &RDW_INVALIDATE+&RDW_INTERNALPAINT+&RDW_UPDATENOW
-    call 'USER32.RedrawWindow' D$EditWindowHandle, 0, 0,
+    Call 'USER32.RedrawWindow' D$EditWindowHandle, 0, 0,
                                &RDW_INVALIDATE+&RDW_INTERNALPAINT+&RDW_UPDATENOW
 ret
 
@@ -2103,49 +2100,49 @@ ________________________________________________________________________________
 [TestCodeSource: ?]
 
 TextPos:
-    mov edi D$CodeSource, ecx 0-1, al CR, D$StatusLine 0, D$StatusCol 0
+    Mov edi D$CodeSource, ecx 0-1, al CR, D$StatusLine 0, D$StatusCol 0
     Align 32
 
-    mov ebx D$UpperLine
+    Mov ebx D$UpperLine
     If ebx < D$CodeSource
         move D$UpperLine D$CodeSource, D$CurrentWritingPos D$CodeSource
-        mov D$CaretRow 1, D$CaretLine 0, D$PhysicalCaretRow 1
+        Mov D$CaretRow 1, D$CaretLine 0, D$PhysicalCaretRow 1
 
     Else_If ebx > D$SourceEnd
         move D$UpperLine D$CodeSource, D$CurrentWritingPos D$CodeSource
-        mov D$CaretRow 1, D$CaretLine 0, D$PhysicalCaretRow 1
+        Mov D$CaretRow 1, D$CaretLine 0, D$PhysicalCaretRow 1
 
     End_If
 
 L0: repne scasb | inc D$StatusLine | cmp edi D$UpperLine | jb L0<
 
     move D$TotalNumberOfLines D$StatusLine
-    mov eax D$CaretLine | add D$StatusLine eax
+    Mov eax D$CaretLine | add D$StatusLine eax
 
-    mov al CR
+    Mov al CR
 L0: repne scasb | inc D$TotalNumberOfLines | cmp edi D$SourceEnd | jb L0<
-    mov eax D$TotalNumberOfLines | dec eax
+    Mov eax D$TotalNumberOfLines | dec eax
 
     move D$VScroll.nMax eax
     move D$VScroll.nPage D$LineNumber
-    mov eax D$statusLine | sub eax D$CaretLine | inc eax
-    mov D$VScroll.nPos eax
+    Mov eax D$statusLine | sub eax D$CaretLine | inc eax
+    Mov D$VScroll.nPos eax
 
 RedrawScrollBar:
     On B$ScrollBarWanted = &TRUE,
-        call 'USER32.SetScrollInfo' D$ScrollWindowHandle, &SB_VERT, VScroll, &TRUE
+        Call 'USER32.SetScrollInfo' D$ScrollWindowHandle, &SB_VERT, VScroll, &TRUE
 ret
 
 
 RePosFromScroll:    ; called with eax = Line Number Wanted by user Bar Scrolling.
-    mov edi D$CodeSource, ecx 0-1, al CR, D$StatusLine 0, D$StatusCol 0
+    Mov edi D$CodeSource, ecx 0-1, al CR, D$StatusLine 0, D$StatusCol 0
    ; Align 32
-    mov ecx D$SourceLen
+    Mov ecx D$SourceLen
 L0: cmp edx 1 | je L1>
 L0: repne scasb | dec edx | cmp edx 1 | ja L0<
    ; jz L9>
     inc edi
-L1: mov D$UpperLine edi
+L1: Mov D$UpperLine edi
 
 L9: ret
 
@@ -2162,9 +2159,9 @@ ________________________________________________________________________________
 ;;
 
 KillTrailingSpaces:
-    call CorrectCRLFs D$CodeSource, D$SourceEnd
+    Call CorrectCRLFs D$CodeSource, D$SourceEnd
 
-    mov esi D$CodeSource, edi esi, ecx 0, edx D$SourceEnd
+    Mov esi D$CodeSource, edi esi, ecx 0, edx D$SourceEnd
 
     .While esi < edx
         lodsb
@@ -2201,23 +2198,23 @@ L1:         While B$edi-1 = ' '
     dec edi ; jE! no more src-increment
 L9: inc edi
     If B$edi-1 = CR
-        mov B$edi LF | inc D$SourceEnd | inc D$SourceLen | inc edi
+        Mov B$edi LF | inc D$SourceEnd | inc D$SourceLen | inc edi
     End_If
 
-    shr ecx 2 | add ecx 10 | mov eax CRLF2 | rep stosd
+    shr ecx 2 | add ecx 10 | Mov eax CRLF2 | rep stosd
 ret
 ____________________________________________________________________________________________
 
 Proc CorrectCRLFs:
     Arguments @Start, @End
 
-        mov esi D@Start, edx D@End
+        Mov esi D@Start, edx D@End
 
         While esi < edx
             If B$esi = CR
-                On B$esi+1 = CR, mov B$esi+1 LF
+                On B$esi+1 = CR, Mov B$esi+1 LF
             Else_If B$esi = LF
-                On B$esi-1 = LF, mov B$esi-1 CR
+                On B$esi-1 = LF, Mov B$esi-1 CR
             End_If
 
             inc esi
@@ -2231,27 +2228,27 @@ ________________________________________________________________________________
 ; return FALSE even if a Wheel Mouse *is* present.
 
 GetWheelInfo:
-    call 'USER32.GetSystemMetrics' &SM_MOUSEWHEELPRESENT
+    Call 'USER32.GetSystemMetrics' &SM_MOUSEWHEELPRESENT
     .If eax = &TRUE
-        call 'USER32.SystemParametersInfoA' &SPI_GETWHEELSCROLLLINES, 0,
+        Call 'USER32.SystemParametersInfoA' &SPI_GETWHEELSCROLLLINES, 0,
                                             LineToWheelScroll, 0
         If D$LineToWheelScroll = 0
-            mov D$LineToWheelScroll 3
+            Mov D$LineToWheelScroll 3
         Else_If D$LineToWheelScroll > 30
-            mov D$LineToWheelScroll 3
+            Mov D$LineToWheelScroll 3
         End_If
     .End_If
 ret
 
 
 WheelMsg:
-    mov ecx D$LineToWheelScroll | shr eax 16 | jecxz L9>
+    Mov ecx D$LineToWheelScroll | shr eax 16 | jecxz L9>
     If ax >s 0
-L0:    call UpOneLine | loop L0<
+L0:    Call UpOneLine | loop L0<
     Else
-L0:    call DownOneLine | loop L0<
+L0:    Call DownOneLine | loop L0<
     End_if
-    call AskForRedraw
+    Call AskForRedraw
 L9: ret
 
 ____________________________________________________________________________________________
@@ -2260,31 +2257,31 @@ ________________________________________________________________________________
 ; Positioning Edition at 'MainWindowProc' or at 'Main' or at Top:
 
 StartEdition:
-    call GetEditWindowClientRectangle
+    Call GetEditWindowClientRectangle
 
-    ;call ScanSourceForBadChars
+    ;Call ScanSourceForBadChars
 
-    mov edx CallBackName, ebx D$CallBackNameLen
+    Mov edx CallBackName, ebx D$CallBackNameLen
 
-    call InternSearch
+    Call InternSearch
 
     On B$BlockInside = &TRUE, jmp L9>
-        mov edx EntryPointLabel, ebx 0, eax edx
+        Mov edx EntryPointLabel, ebx 0, eax edx
         While B$eax <> 0 | inc ebx | inc eax | End_While
 
-        call InternSearch
+        Call InternSearch
 
-L9: mov B$OnReplaceAll &FALSE, B$BlocKInside &FALSE, B$DownSearch &TRUE, B$ReadyToRun &FALSE
-    call StorePosInBackTable
+L9: Mov B$OnReplaceAll &FALSE, B$BlocKInside &FALSE, B$DownSearch &TRUE, B$ReadyToRun &FALSE
+    Call StorePosInBackTable
 
-    mov D$TitleTable 0, D$PreviousPartialSourceLen 0
+    Mov D$TitleTable 0, D$PreviousPartialSourceLen 0
 
-    call ReplaceParagraphByDollar
+    Call ReplaceParagraphByDollar
 ret
 
 
 ScanSourceForBadChars:
-    mov esi D$CodeSource, edx D$SourceEnd
+    Mov esi D$CodeSource, edx D$SourceEnd
 
     sub edx 100
     showme edx
@@ -2296,7 +2293,7 @@ ret
         If al < LF
            ; hexprint 1
         Else_If al > 127
-            mov edi TrashString, ecx 100
+            Mov edi TrashString, ecx 100
             dec esi
             rep movsb
             showme TrashString
@@ -2306,17 +2303,17 @@ ret
 
 
 GetEditWindowClientRectangle:
-    call 'USER32.GetClientRect' D$EditWindowHandle RECT
-      mov eax D$RECTright | sub eax D$RECTleft
-      shr eax 3 | dec eax | mov D$ColNumber eax
-        mov eax D$RECTbottom | sub eax D$RECTtop
+    Call 'USER32.GetClientRect' D$EditWindowHandle RECT
+      Mov eax D$RECTright | sub eax D$RECTleft
+      shr eax 3 | dec eax | Mov D$ColNumber eax
+        Mov eax D$RECTbottom | sub eax D$RECTtop
           or eax 00111 | xor eax 00111
-            shr eax 4 | dec eax | mov D$LineNumber eax
+            shr eax 4 | dec eax | Mov D$LineNumber eax
 ret
 
 
 ReplaceParagraphByDollar:
-    mov eax D$CodeSource, ecx D$SourceEnd
+    Mov eax D$CodeSource, ecx D$SourceEnd
 
     While eax < ecx
       ; 167 = Code of Paragraph Char (yet available as keyboard input, but no more
@@ -2347,7 +2344,7 @@ ReplaceParagraphByDollar:
             End_While
 
         Else_If B$eax = 167
-            mov B$eax '$'
+            Mov B$eax '$'
 
         End_If
 
@@ -2364,15 +2361,15 @@ ________________________________________________________________________________
 ; We close B_U_Asm if run from RosAsm:
 
 CloseHelp:
-    call 'KERNEL32.CreateMutexA' &NULL &TRUE HelpMutexName         ; Someone?
-    call 'KERNEL32.GetLastError'
+    Call 'KERNEL32.CreateMutexA' &NULL &TRUE HelpMutexName         ; Someone?
+    Call 'KERNEL32.GetLastError'
     .If eax = &ERROR_ALREADY_EXISTS
-        call 'User32.FindWindowA' RosAsmHelpClassName &NULL | mov D$HelpHandle eax
+        Call 'User32.FindWindowA' RosAsmHelpClassName &NULL | Mov D$HelpHandle eax
 
-        call 'User32.GetWindowLongA' D$HelpHandle &GWL_EXSTYLE
+        Call 'User32.GetWindowLongA' D$HelpHandle &GWL_EXSTYLE
 
         If eax <> &WS_EX_WINDOWEDGE                                 ; WS_EX value if auto-run
-            call 'User32.SendMessageA' D$HelpHandle  &WM_CLOSE  0  0 ; If run from RosAsm
+            Call 'User32.SendMessageA' D$HelpHandle  &WM_CLOSE  0  0 ; If run from RosAsm
         End_If
 
     .End_If
@@ -2385,13 +2382,13 @@ ________________________________________________________________________________
 ; MainWindowProc:
 
 InternSearch:
-    mov B$InsideMLC &FALSE, B$InsideComment &FALSE
-    mov ah B$edx | or ah 32                           ; ah = first char
+    Mov B$InsideMLC &FALSE, B$InsideComment &FALSE
+    Mov ah B$edx | or ah 32                           ; ah = first char
     inc edx                                           ; edx > second char (> edi)
     sub ebx 1
 
     ; Now, edi (edx) > start+1 of right clicked word; ebx = len-1. Search fitting:
-L0: mov esi D$CodeSource, ecx D$SourceLen, B$InsideBracket &FALSE, B$InsideComment &FALSE
+L0: Mov esi D$CodeSource, ecx D$SourceLen, B$InsideBracket &FALSE, B$InsideComment &FALSE
 
     jmp L0>
 
@@ -2407,56 +2404,56 @@ L2: loop L0<
 
 L1: cmp B$InsideMLC &TRUE | jne L1>
       cmp D$esi-2 MLC | jne T1<          ; (LF ; ; CR)
-        mov B$InsideMLC &FALSE | jmp L2<
+        Mov B$InsideMLC &FALSE | jmp L2<
 L1: cmp B$InsideComment &TRUE | jne L1>
       cmp al LF  | jne T1<
-        mov B$InsideComment &FALSE | jmp L2<
+        Mov B$InsideComment &FALSE | jmp L2<
 L1: cmp B$InsideText &FALSE | je L1>
       cmp al B$InsideText | jne T1<
-        mov B$InsideText &FALSE | jmp L2<
+        Mov B$InsideText &FALSE | jmp L2<
 L1: cmp al "'" | jne L1>
-      mov B$InsideText al | jmp T1<
+      Mov B$InsideText al | jmp T1<
 L1: cmp al '"' | jne L1>
-      mov B$InsideText al | jmp T1<
+      Mov B$InsideText al | jmp T1<
 L1: cmp al '[' | jne L1>
-      mov B$InsideBracket &TRUE, B$DataDeclaration &FALSE    ;;;, B$OddWord 1
+      Mov B$InsideBracket &TRUE, B$DataDeclaration &FALSE    ;;;, B$OddWord 1
 S0:   cmp B$esi ' ' | jne L2<
         inc esi | sub ecx 1 | jnc S0<        ; strip double spaces
           ret
 L1: cmp al ']' | jne L1>
-      mov B$InsideBracket &FALSE, B$DataDeclaration &FALSE | jmp L2<<
+      Mov B$InsideBracket &FALSE, B$DataDeclaration &FALSE | jmp L2<<
 L1: cmp al ';' | jne L1>                     ; jmp over comments
         If D$esi-2 = MLC   ; (LF ; ; CR)
-            mov B$InsideMLC &TRUE | jmp T1<<
+            Mov B$InsideMLC &TRUE | jmp T1<<
         Else
-            mov B$InsideComment &TRUE | jmp T1<<
+            Mov B$InsideComment &TRUE | jmp T1<<
         End_If
 L1: cmp al '|' | jne L1>
-      mov B$InsideBracket &FALSE | jmp L2<<
+      Mov B$InsideBracket &FALSE | jmp L2<<
 L1: cmp al ':' | jne L2<<
-      mov B$DataDeclaration &TRUE
+      Mov B$DataDeclaration &TRUE
 
             jmp L2<<                     ; (avoids pointing equates datas).
 
-L3: mov al B$esi-2 | call WordEdge | cmp B$Edge &FALSE | je L2<<     ; left edge?
+L3: Mov al B$esi-2 | Call WordEdge | cmp B$Edge &FALSE | je L2<<     ; left edge?
 
-        mov D$NumberDashLines 0
+        Mov D$NumberDashLines 0
 
-        pushad | mov ecx ebx, edi edx
-C0:       lodsb | mov ah B$edi | inc edi | or ax 02020     ; case insensitive comparison
+        pushad | Mov ecx ebx, edi edx
+C0:       lodsb | Mov ah B$edi | inc edi | or ax 02020     ; case insensitive comparison
 
             While B$esi-1 = '_'
                 lodsb | or al 020 | inc D$NumberDashLines
             End_While
 
             While B$edi-1 = '_'
-                mov ah B$edi | or ah 020 | inc edi | dec ecx | jz C1>
+                Mov ah B$edi | or ah 020 | inc edi | dec ecx | jz C1>
             End_While
 
           cmp ah al | jne C1>
             loop C0<
 
-            mov al B$esi | call WordEdge
+            Mov al B$esi | Call WordEdge
             If B$Edge = &FALSE
                 popad | jmp L2<<
             End_If
@@ -2464,7 +2461,7 @@ C0:       lodsb | mov ah B$edi | inc edi | or ax 02020     ; case insensitive co
 
 C1:     popad | jne L2<<
 
-   ; mov al B$esi+ebx | call WordEdge | cmp B$Edge &FALSE | je L2<<    ; right edge?
+   ; Mov al B$esi+ebx | Call WordEdge | cmp B$Edge &FALSE | je L2<<    ; right edge?
 
 ; as we have tested for '|' (> InsideBracket = FALSE), "test B$OddWord 1" applies either
 ; uppon first word of macro def. or odd word of equate def. But data body could still
@@ -2479,19 +2476,19 @@ C2: push ebx
           cmp B$DataDeclaration &TRUE | je L2<<  ; avoid pointing data body instead of Equate
 
 L4: dec esi                                                    ; found
-    mov D$BlockStartTextPtr esi, D$RCstart esi                 ; RCstart/End used by
-    add esi ebx | mov D$BlockEndTextPtr esi, D$RCend esi       ; 'BackClick'
-    mov B$BlockInside &TRUE
-    inc esi | mov D$CurrentWritingPos esi
+    Mov D$BlockStartTextPtr esi, D$RCstart esi                 ; RCstart/End used by
+    add esi ebx | Mov D$BlockEndTextPtr esi, D$RCend esi       ; 'BackClick'
+    Mov B$BlockInside &TRUE
+    inc esi | Mov D$CurrentWritingPos esi
 
-    std | mov ecx 0
+    std | Mov ecx 0
 L5:     lodsb | inc ecx | cmp al LF | jne L5<                  ; search for start of line
     cld | dec ecx
 
-    add esi 2 | mov D$UpperLine esi                            ; and set all needed
-    call UpOneLine | call UpOneLine | call UpOneLine           ; variables for Pos, in
-    mov D$CaretLine 3, D$CaretRow ecx, D$PhysicalCaretRow ecx  ; case user wish editing
-    call TryToMove
+    add esi 2 | Mov D$UpperLine esi                            ; and set all needed
+    Call UpOneLine | Call UpOneLine | Call UpOneLine           ; variables for Pos, in
+    Mov D$CaretLine 3, D$CaretRow ecx, D$PhysicalCaretRow ecx  ; case user wish editing
+    Call TryToMove
 
 L9: ret
 ____________________________________________________________________________________________
@@ -2501,11 +2498,11 @@ ________________________________________________________________________________
 [F11Upperline: ?    F11CurrentWritingPos: ?    F11CaretLine: ?    F11CaretRow: ?]
 
 SavePosOnF11:
-    call ClearF12
-    call RestoreRealSource
+    Call ClearF12
+    Call RestoreRealSource
     move D$F11Upperline D$Upperline, D$F11CurrentWritingPos D$CurrentWritingPos,
          D$F11CaretLine D$CaretLine, D$F11CaretRow D$CaretRow
-    call SetPartialEditionFromPos
+    Call SetPartialEditionFromPos
 ret
 
 
@@ -2513,9 +2510,9 @@ ret
 
 SetPosOnF12:
     ..If D$F11Upperline <> 0
-        call RestoreRealSource
+        Call RestoreRealSource
 
-        mov eax D$Upperline
+        Mov eax D$Upperline
 
       ; If we are not already at the saved F11 Pos, we go to it:
         .If eax <> D$F11Upperline
@@ -2535,20 +2532,20 @@ SetPosOnF12:
 
         .End_If
 
-        call SetPartialEditionFromPos
+        Call SetPartialEditionFromPos
 
-        mov esi D$Upperline
+        Mov esi D$Upperline
         While B$esi-1 <> LF | dec esi | End_While
-        mov D$Upperline esi
+        Mov D$Upperline esi
 
     ..End_If
 ret
 
 
 ClearF11F12:
-    mov edi F11Upperline, eax 0, ecx 4 | rep stosd
+    Mov edi F11Upperline, eax 0, ecx 4 | rep stosd
 ClearF12:
-    mov edi F12Upperline, eax 0, ecx 4 | rep stosd
+    Mov edi F12Upperline, eax 0, ecx 4 | rep stosd
 ret
 ____________________________________________________________________________________________
 ____________________________________________________________________________________________
@@ -2619,44 +2616,44 @@ ________________________________________________________________________________
 ; React to the [Apply] Button (&CF_APPLY__&CF_ENABLEHOOK, in EditorCHOOSEFONT@Flags):
 
 Proc ChooseFontHook:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
-            .If D@Message = &WM_COMMAND
+            .If D@msg = &WM_COMMAND
                 If D@wParam = 0402
-                    call LoadFont | call AskForRedrawNow
-                    mov eax &TRUE | ExitP
+                    Call LoadFont | Call AskForRedrawNow
+                    Mov eax &TRUE | ExitP
                 End_If
             .End_If
 
-    mov eax &FALSE
+    Mov eax &FALSE
 EndP
 
 
 SelectFont:
     move D$EditorCHOOSEFONT@hwndOwner D$ConfigDialogHandle
-    call 'Comdlg32.ChooseFontA' EditorCHOOSEFONT
+    Call 'Comdlg32.ChooseFontA' EditorCHOOSEFONT
 
     If eax = &TRUE
-        call LoadFont | call AskForRedrawNow | call MainResize
+        Call LoadFont | Call AskForRedrawNow | Call MainResize
     End_If
 ret
 
 
 LoadFont:
-    On D$Font1Handle <> 0, call 'GDI32.DeleteObject' D$Font1Handle
-    call 'GDI32.CreateFontIndirectA' EditorLOGFONT | mov D$Font1Handle eax
-    call 'USER32.GetDC' D$EditWindowHandle | mov D$EditFontHdc eax
-    call 'GDI32.SetMapMode' eax &MM_TEXT
-    call 'GDI32.SelectObject' D$EditFontHdc, D$Font1Handle
-    call 'GDI32.GetTextMetricsA' D$EditFonthdc, TEXTMETRICA
+    On D$Font1Handle <> 0, Call 'GDI32.DeleteObject' D$Font1Handle
+    Call 'GDI32.CreateFontIndirectA' EditorLOGFONT | Mov D$Font1Handle eax
+    Call 'USER32.GetDC' D$EditWindowHandle | Mov D$EditFontHdc eax
+    Call 'GDI32.SetMapMode' eax &MM_TEXT
+    Call 'GDI32.SelectObject' D$EditFontHdc, D$Font1Handle
+    Call 'GDI32.GetTextMetricsA' D$EditFonthdc, TEXTMETRICA
 
-    mov eax D$tmAveCharWidth | mov D$FontWidth eax
-    mov eax D$tmHeight | mov D$FontHeight eax
+    Mov eax D$tmAveCharWidth | Mov D$FontWidth eax
+    Mov eax D$tmHeight | Mov D$FontHeight eax
 ret
 
 
 LoadNationalFont:
-    call 'GDI32.CreateFontIndirectA' NATION_LOGFONT | mov D$NationalFontHandle eax
+    Call 'GDI32.CreateFontIndirectA' NATION_LOGFONT | Mov D$NationalFontHandle eax
 ret
 
 

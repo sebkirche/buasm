@@ -111,18 +111,18 @@ ________________________________________________________________________________
 ; these setting use the same Dialog Box data for both options:
 
 SetFindReplaceBox:
-    mov B$Replace &TRUE
-    mov edi FRdialog | add edi 8
-    mov ax 0C | stosw | mov eax 0 | stosd | mov eax 06A_00CB | stosd  ; U$ 0C 0 0 0CB 06A
+    Mov B$Replace &TRUE
+    Mov edi FRdialog | add edi 8
+    Mov ax 0C | stosw | Mov eax 0 | stosd | Mov eax 06A_00CB | stosd  ; U$ 0C 0 0 0CB 06A
     jmp L9>
 
 SetSimpleSearchBox:
-    mov B$Replace &FALSE
-    mov edi FRdialog | add edi 8
-    mov ax 08 | stosw | mov eax 0 | stosd | mov eax 0_3D_00CB | stosd  ; U$ 04 0 0 0CB 03D
+    Mov B$Replace &FALSE
+    Mov edi FRdialog | add edi 8
+    Mov ax 08 | stosw | Mov eax 0 | stosd | Mov eax 0_3D_00CB | stosd  ; U$ 04 0 0 0CB 03D
 
 L9: If D$FindReplaceHandle = 0
-        call 'User32.CreateDialogIndirectParamA' D$hinstance, FRdialog, D$hwnd, FRproc, 0
+        Call 'User32.CreateDialogIndirectParamA' D$hinstance, FRdialog, D$H.MainWindow, FRproc, 0
     Else
         Beep
     End_If
@@ -135,48 +135,48 @@ ret
 [StringChange: ?]
 
 GetUserSearchString:
-    mov edi ControlString, esi SearchString, ecx 120 | rep movsb
-    mov edi SearchString, al 0, ecx 120 | rep stosb
-    call 'User32.SendMessageA' D$UserSearchStringHandle &WM_GETTEXTLENGTH 0 0
-    mov D$LenOfSearchedString eax
+    Mov edi ControlString, esi SearchString, ecx 120 | rep movsb
+    Mov edi SearchString, al 0, ecx 120 | rep stosb
+    Call 'User32.SendMessageA' D$UserSearchStringHandle &WM_GETTEXTLENGTH 0 0
+    Mov D$LenOfSearchedString eax
     On eax = 0, ret
-    mov D$LenOfSearchedString eax
+    Mov D$LenOfSearchedString eax
  ; "WM_GETTEXTLENGTH" message does not include end mark. "WM_GETTEXT" does >>> inc eax
     inc eax
-    call 'User32.SendMessageA' D$UserSearchStringHandle &WM_GETTEXT eax SearchString
-    mov B$OnReplace &FALSE
+    Call 'User32.SendMessageA' D$UserSearchStringHandle &WM_GETTEXT eax SearchString
+    Mov B$OnReplace &FALSE
 
   ; Control if user changed the string for FindOrReplace flag in FRproc. (if he changed
   ; between a Find and a Replace, we have to reset to search again):
-    mov B$StringChange &FALSE
-    mov edi ControlString, esi SearchString, ecx 120 | rep cmpsb | je L5>
-      mov B$StringChange &TRUE
+    Mov B$StringChange &FALSE
+    Mov edi ControlString, esi SearchString, ecx 120 | rep cmpsb | je L5>
+      Mov B$StringChange &TRUE
 
   ; add (only new) string to List and delete last one (limit=15 strings):
 
-L5: call 'User32.SendMessageA' D$UserSearchStringHandle  &CB_FINDSTRINGEXACT 0-1 SearchString
+L5: Call 'User32.SendMessageA' D$UserSearchStringHandle  &CB_FINDSTRINGEXACT 0-1 SearchString
     If eax = &CB_ERR
-        call 'User32.SendMessageA' D$UserSearchStringHandle &CB_INSERTSTRING 0  SearchString
-        call 'User32.SendMessageA' D$UserSearchStringHandle &CB_DELETESTRING 15 0
+        Call 'User32.SendMessageA' D$UserSearchStringHandle &CB_INSERTSTRING 0  SearchString
+        Call 'User32.SendMessageA' D$UserSearchStringHandle &CB_DELETESTRING 15 0
     End_If
 ret
 
 GetUserReplaceString:
-    mov edi ReplaceWithString, al 0, ecx 120 | rep stosb
-    call 'User32.SendMessageA' D$UserReplaceStringHandle, &WM_GETTEXTLENGTH, 0, 0
-    mov D$LenOfReplaceString eax
+    Mov edi ReplaceWithString, al 0, ecx 120 | rep stosb
+    Call 'User32.SendMessageA' D$UserReplaceStringHandle, &WM_GETTEXTLENGTH, 0, 0
+    Mov D$LenOfReplaceString eax
     On eax = 0, ret
     inc eax
-    call 'User32.SendMessageA' D$UserReplaceStringHandle, &WM_GETTEXT, eax, ReplaceWithString
-    mov B$OnReplace &TRUE
+    Call 'User32.SendMessageA' D$UserReplaceStringHandle, &WM_GETTEXT, eax, ReplaceWithString
+    Mov B$OnReplace &TRUE
 
   ; add (only new) string to List and delete last one (limit=15 strings):
-    call 'User32.SendMessageA' D$UserReplaceStringHandle, &CB_FINDSTRINGEXACT, 0-1,
+    Call 'User32.SendMessageA' D$UserReplaceStringHandle, &CB_FINDSTRINGEXACT, 0-1,
                                ReplaceWithString
     If eax = &CB_ERR
-      call 'User32.SendMessageA' D$UserReplaceStringHandle, &CB_INSERTSTRING, 0,
+      Call 'User32.SendMessageA' D$UserReplaceStringHandle, &CB_INSERTSTRING, 0,
                                  ReplaceWithString
-      call 'User32.SendMessageA' D$UserReplaceStringHandle, &CB_DELETESTRING, 15, 0
+      Call 'User32.SendMessageA' D$UserReplaceStringHandle, &CB_DELETESTRING, 15, 0
     End_If
 ret
 
@@ -184,18 +184,18 @@ ret
 ; Set them all to previous state (third parameter) at initialisation time:
 
 SetSearchFlagButtons:
-    call 'User32.GetDlgItem' D$FindReplaceHandle, FR_DOWN
-    call 'User32.SendMessageA' eax, &BM_SETCHECK, D$DownSearch, 0
+    Call 'User32.GetDlgItem' D$FindReplaceHandle, FR_DOWN
+    Call 'User32.SendMessageA' eax, &BM_SETCHECK, D$DownSearch, 0
 
-    call 'User32.GetDlgItem' D$FindReplaceHandle, FR_UP
-    mov ebx D$DownSearch | xor ebx &TRUE
-    call 'User32.SendMessageA' eax, &BM_SETCHECK, ebx, 0
+    Call 'User32.GetDlgItem' D$FindReplaceHandle, FR_UP
+    Mov ebx D$DownSearch | xor ebx &TRUE
+    Call 'User32.SendMessageA' eax, &BM_SETCHECK, ebx, 0
 
-    call 'User32.GetDlgItem' D$FindReplaceHandle, FR_MATCHCASE
-    call 'User32.SendMessageA' eax, &BM_SETCHECK, D$CaseSearch, 0
+    Call 'User32.GetDlgItem' D$FindReplaceHandle, FR_MATCHCASE
+    Call 'User32.SendMessageA' eax, &BM_SETCHECK, D$CaseSearch, 0
 
-    call 'User32.GetDlgItem' D$FindReplaceHandle, FR_WHOLEWORD
-    call 'User32.SendMessageA' eax, &BM_SETCHECK, D$WholeWordSearch, 0
+    Call 'User32.GetDlgItem' D$FindReplaceHandle, FR_WHOLEWORD
+    Call 'User32.SendMessageA' eax, &BM_SETCHECK, D$WholeWordSearch, 0
 ret
 
 
@@ -210,27 +210,27 @@ ret
 
 StoreSearchStrings:
   ; ecx = [(120 bytes * 30) / 4] + 2 (edges) = 902
-    mov edi STR01, eax 0, ecx D$STR_RTR_len | rep stosb                  ; clear all tables
-    call 'User32.SendMessageA' D$UserSearchStringHandle, &CB_GETCOUNT, 0, 0
+    Mov edi STR01, eax 0, ecx D$STR_RTR_len | rep stosb                  ; clear all tables
+    Call 'User32.SendMessageA' D$UserSearchStringHandle, &CB_GETCOUNT, 0, 0
     On eax = &CB_ERR, ret
 
-    mov edi STR01, ebx 0
+    Mov edi STR01, ebx 0
 
     While eax > 0
       push eax, ebx, edi
-        call 'User32.SendMessageA' D$UserSearchStringHandle, &CB_GETLBTEXT, ebx, edi
+        Call 'User32.SendMessageA' D$UserSearchStringHandle, &CB_GETLBTEXT, ebx, edi
       pop edi, ebx, eax
       dec eax | inc ebx | add edi 120
     End_While
 
-    call 'User32.SendMessageA' D$UserReplaceStringHandle, &CB_GETCOUNT, 0, 0
+    Call 'User32.SendMessageA' D$UserReplaceStringHandle, &CB_GETCOUNT, 0, 0
     On eax = &CB_ERR, ret
 
-    mov edi RTR01, ebx 0
+    Mov edi RTR01, ebx 0
 
     While eax > 0
       push eax, ebx, edi
-        call 'User32.SendMessageA' D$UserReplaceStringHandle, &CB_GETLBTEXT, ebx, edi
+        Call 'User32.SendMessageA' D$UserReplaceStringHandle, &CB_GETLBTEXT, ebx, edi
       pop edi, ebx, eax
       dec eax | inc ebx | add edi 120
     End_While
@@ -238,18 +238,18 @@ ret
 
 
 RestoreSearchStrings:
-    mov esi STR01, ebx 0
+    Mov esi STR01, ebx 0
     While B$esi > 0
         push ebx, esi
-            call 'User32.SendMessageA' D$UserSearchStringHandle, &CB_INSERTSTRING, ebx, esi
+            Call 'User32.SendMessageA' D$UserSearchStringHandle, &CB_INSERTSTRING, ebx, esi
         pop esi, ebx
         inc ebx | add esi 120
     End_While
 
-    mov esi RTR01, ebx 0
+    Mov esi RTR01, ebx 0
     While B$esi > 0
         push ebx, esi
-            call 'User32.SendMessageA' D$UserReplaceStringHandle, &CB_INSERTSTRING, ebx, esi
+            Call 'User32.SendMessageA' D$UserReplaceStringHandle, &CB_INSERTSTRING, ebx, esi
         pop esi, ebx
         inc ebx | add esi 120
     End_While
@@ -260,88 +260,88 @@ ________________________________________________________________________________
 [FinfOrReplace: ?    FindReplaceHandle: ?]
 
 Proc FRproc:
-    Arguments @Adressee, @Message, @wParam, @lParam
+    Arguments @hwnd, @msg, @wParam, @lParam
 
     pushad
 
-    ...If D@Message  = &WM_INITDIALOG
-        mov B$ShiftBlockInside &FALSE
+    ...If D@msg  = &WM_INITDIALOG
+        Mov B$ShiftBlockInside &FALSE
 
-        move D$FindReplaceHandle D@Adressee
-        mov B$FinfOrReplace &FALSE                  ; flag 0 for Search / 1 Replace
-        call 'User32.GetDlgItem' D@Adressee 012C     ; 012C = our Find Edit Box
-        mov D$UserSearchStringHandle eax
-        call 'User32.GetDlgItem' D@Adressee 0136     ; 0136 = our Replace Edit Box
-        mov D$UserReplaceStringHandle eax
-        call RestoreSearchStrings
-        call SetSearchFlagButtons
-        call 'User32.SetFocus' D$UserSearchStringHandle  ; return 0  to
-        call 'USER32.SetClassLongA' D$FindReplaceHandle &GCL_HICON D$wc_hIcon
+        move D$FindReplaceHandle D@hwnd
+        Mov B$FinfOrReplace &FALSE                  ; flag 0 for Search / 1 Replace
+        Call 'User32.GetDlgItem' D@hwnd 012C     ; 012C = our Find Edit Box
+        Mov D$UserSearchStringHandle eax
+        Call 'User32.GetDlgItem' D@hwnd 0136     ; 0136 = our Replace Edit Box
+        Mov D$UserReplaceStringHandle eax
+        Call RestoreSearchStrings
+        Call SetSearchFlagButtons
+        Call 'User32.SetFocus' D$UserSearchStringHandle  ; return 0  to
+        Call 'USER32.SetClassLongA' D$FindReplaceHandle &GCL_HICON D$wc_hIcon
         jmp L8>>                                        ; keep focus to first edit control
 
-    ...Else_If D@Message = &WM_COMMAND
-        mov eax D@wParam
+    ...Else_If D@msg = &WM_COMMAND
+        Mov eax D@wParam
         .If eax = &FR_DIALOGTERM
-L0:         call StoreSearchStrings
-            mov D$FindReplaceHandle 0
-            call 'User32.DestroyWindow' D@Adressee
+L0:         Call StoreSearchStrings
+            Mov D$FindReplaceHandle 0
+            Call 'User32.DestroyWindow' D@hwnd
         .Else_If eax = &FR_FINDNEXT
-L1:         call GetUserSearchString
+L1:         Call GetUserSearchString
             On D$LenOfSearchedString = 0, jmp L8>>
-                call RestoreRealSource
-                    call StringSearch
-                    On B$BlockInside = &TRUE, mov B$FinfOrReplace &TRUE ; ready for Replace if whished
-                call SetPartialEditionFromPos
+                Call RestoreRealSource
+                    Call StringSearch
+                    On B$BlockInside = &TRUE, Mov B$FinfOrReplace &TRUE ; ready for Replace if whished
+                Call SetPartialEditionFromPos
         .Else_If eax = &IDCANCEL
             jmp L0<
         .Else_If eax = &IDOK
             jmp L1<
         .Else_If eax = FR_DOWN
-            mov B$DownSearch &TRUE, B$FinfOrReplace &FALSE
+            Mov B$DownSearch &TRUE, B$FinfOrReplace &FALSE
         .Else_If eax = FR_UP
-           mov B$DownSearch &FALSE, B$FinfOrReplace &FALSE
+           Mov B$DownSearch &FALSE, B$FinfOrReplace &FALSE
         .Else_If eax = FR_MATCHCASE
-           xor B$CaseSearch &TRUE | mov B$FinfOrReplace &FALSE
+           xor B$CaseSearch &TRUE | Mov B$FinfOrReplace &FALSE
         .Else_If eax = FR_WHOLEWORD
-           xor B$WholeWordSearch &TRUE | mov B$FinfOrReplace &FALSE
+           xor B$WholeWordSearch &TRUE | Mov B$FinfOrReplace &FALSE
         .Else_If eax = FR_REPLACE
-           call GetUserSearchString | call GetUserReplaceString
+           Call GetUserSearchString | Call GetUserReplaceString
            ..If B$FinfOrReplace = &TRUE
                 If B$StringChange = &TRUE   ; see "StringChange" comment in GetUserSearchString
-                    mov B$FinfOrReplace &FALSE
-                    call RestoreRealSource
-                        call StringSearch
-                    call SetPartialEditionFromPos
+                    Mov B$FinfOrReplace &FALSE
+                    Call RestoreRealSource
+                        Call StringSearch
+                    Call SetPartialEditionFromPos
                 Else
-                  On D$LenOfSearchedString > 0, call StringReplace  ; &TRUE > Replace
+                  On D$LenOfSearchedString > 0, Call StringReplace  ; &TRUE > Replace
                 End_If
            ..Else
-                call RestoreRealSource
-                    call StringSearch                               ; false > Search
-                call SetPartialEditionFromPos
+                Call RestoreRealSource
+                    Call StringSearch                               ; false > Search
+                Call SetPartialEditionFromPos
            ..End_If
            xor B$FinfOrReplace &TRUE
         .Else_If eax = FR_REPLACEALL
-           call RestoreRealSource
-                call GetUserReplaceString | call GetUserSearchString
-                On D$LenOfSearchedString > 0,  call StringReplaceAll
-           call SetPartialEditionFromPos
+           Call RestoreRealSource
+                Call GetUserReplaceString | Call GetUserSearchString
+                On D$LenOfSearchedString > 0,  Call StringReplaceAll
+           Call SetPartialEditionFromPos
         .Else
            jmp L8>
         .End_If
 
-        call 'USER32.SetFocus' D@Adressee
+        Call 'USER32.SetFocus' D@hwnd
 
-    ...Else_If D@Message = &WM_CTLCOLOREDIT
-        call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
-        popad | mov eax D$DialogsBackGroundBrushHandle | jmp L9>
+    ...Else_If D@msg = &WM_CTLCOLOREDIT
+        Call 'GDI32.SetBkColor' D@wParam D$DialogsBackColor
+        popad | Mov eax D$DialogsBackGroundBrushHandle | jmp L9>
 
     ...Else
-L8:     popad | mov eax &FALSE | jmp L9>
+L8:     popad | Mov eax &FALSE | jmp L9>
 
     ...End_If
 
-    popad | mov eax &TRUE
+    popad | Mov eax &TRUE
 
 L9: EndP
 
@@ -362,26 +362,26 @@ L9: EndP
 ; the "FindOrReplace" flag in FRproc:
 
 StringSearch:
-    mov B$ShiftBlockInside &FALSE, B$StringFound &TRUE
+    Mov B$ShiftBlockInside &FALSE, B$StringFound &TRUE
 
     On D$LenOfSearchedString = 0, ret
-    mov B$BlockInside &FALSE
+    Mov B$BlockInside &FALSE
 
-L0: mov edi SearchString, esi edi, edx D$LenOfSearchedString
+L0: Mov edi SearchString, esi edi, edx D$LenOfSearchedString
     dec edx                                                     ; - first tested char
     If B$DownSearch = &TRUE
-        mov ah B$edi | inc edi | mov ebx 1
+        Mov ah B$edi | inc edi | Mov ebx 1
     Else
-        add edi edx | mov ah B$edi | dec edi | std | mov ebx 0-1; ebx > inc/dec edi in L4 loop
+        add edi edx | Mov ah B$edi | dec edi | std | Mov ebx 0-1; ebx > inc/dec edi in L4 loop
     End_If
 
     On B$CaseSearch = &FALSE, LowCase ah
 
     If D$NextSearchPos = 0
-        mov esi D$CurrentWritingPos
+        Mov esi D$CurrentWritingPos
     Else
-        mov esi D$NextSearchPos
-        On esi > D$SourceEnd, mov esi D$CurrentWritingPos       ; case of massive block delete
+        Mov esi D$NextSearchPos
+        On esi > D$SourceEnd, Mov esi D$CurrentWritingPos       ; case of massive block delete
     End_If
 
 L2: cmp esi D$SourceEnd | ja L8>>                               ; search for fitting first Char:
@@ -390,20 +390,20 @@ L2: cmp esi D$SourceEnd | ja L8>>                               ; search for fit
         cmp al ah | jne L2<
 
     ..If edx = 0                                                ; len = 1 > string found
-        mov D$NextSearchPos esi
+        Mov D$NextSearchPos esi
     ..Else
-       mov ecx edx                                              ; first letter found:
+       Mov ecx edx                                              ; first letter found:
        push eax, esi, edi
 L4:      .If esi > D$SourceEnd
              pop edi, esi, eax | jmp L8>>
          .Else_If esi < D$CodeSource
              pop edi, esi, eax | jmp L8>>
          .Else
-K0:          lodsb | mov ah al
+K0:          lodsb | Mov ah al
              If B$SkipDashLines = &TRUE
                 cmp ah '_' | je K0<
              End_If
-K0:          mov al B$edi | add edi ebx
+K0:          Mov al B$edi | add edi ebx
              If B$SkipDashLines = &TRUE
                 cmp al '_' | je K0<
              End_If
@@ -416,80 +416,80 @@ K0:          mov al B$edi | add edi ebx
              Else
                  pop edi, esi, eax | jmp L2<<
              End_If
-             mov D$NextSearchPos esi
+             Mov D$NextSearchPos esi
          .End_If
 L5:   pop edi, esi, eax
     ..End_If
 
-    mov eax D$NextSearchPos                                 ; string found
+    Mov eax D$NextSearchPos                                 ; string found
     If B$DownSearch = &TRUE
-        mov bl B$eax | dec eax | mov D$BlockEndTextPtr eax
-        sub eax edx | mov D$CurrentWritingPos eax | mov D$BlockStartTextPtr eax
-        mov bh B$eax-1
+        Mov bl B$eax | dec eax | Mov D$BlockEndTextPtr eax
+        sub eax edx | Mov D$CurrentWritingPos eax | Mov D$BlockStartTextPtr eax
+        Mov bh B$eax-1
     Else
-        mov bl B$eax | inc eax | mov D$CurrentWritingPos eax | mov D$BlockStartTextPtr eax
-        mov D$NextSearchPos eax
-        add eax edx | mov D$BlockEndTextPtr eax
-        mov bh B$eax+1
+        Mov bl B$eax | inc eax | Mov D$CurrentWritingPos eax | Mov D$BlockStartTextPtr eax
+        Mov D$NextSearchPos eax
+        add eax edx | Mov D$BlockEndTextPtr eax
+        Mov bh B$eax+1
     End_If
 
     .If B$WholeWordSearch = &TRUE
-        mov al bl | call WordEdge
+        Mov al bl | Call WordEdge
         If B$Edge = &TRUE
-            mov al bh | call WordEdge
+            Mov al bh | Call WordEdge
         End_If
         If B$Edge = &FALSE
             jmp L0<<
         End_If
     .End_If
 
-    std | mov B$BlockInside &TRUE, D$RightScroll 0
+    std | Mov B$BlockInside &TRUE, D$RightScroll 0
 L6: lodsb | cmp al LF | ja L6<
-        dec esi | mov ebx esi | add ebx 2                     ; for caret h. Pos. count
+        dec esi | Mov ebx esi | add ebx 2                     ; for caret h. Pos. count
 L6: lodsb | cmp al LF | ja L6<                              ; start printing 2 lines upper
         dec esi
 L6: lodsb | cmp al LF | ja L6<
         add esi 2
 
     If esi >= D$CodeSource
-        mov D$UpperLine esi
+        Mov D$UpperLine esi
     Else
         move D$UpperLine D$CodeSource
     End_If
 
-    call SetCaret D$BlockEndtextPtr | jmp L9>
+    Call SetCaret D$BlockEndtextPtr | jmp L9>
 
 L8: cld
     If B$OnReplaceAll = &FALSE
-        mov eax StringNotFound | call MessageBox            ; if not found
-        mov B$StringFound &FALSE
+        Mov eax StringNotFound | Call MessageBox            ; if not found
+        Mov B$StringFound &FALSE
     End_If
-    mov D$NextSearchPos 0
+    Mov D$NextSearchPos 0
 
-L9: cld | On B$Disassembling = &FALSE, call AskForRedrawNow
+L9: cld | On B$Disassembling = &FALSE, Call AskForRedrawNow
 ret
 
 
 [ReplaceStart: ?]
 
 StringReplace:
-    mov B$ShiftBlockInside &FALSE
+    Mov B$ShiftBlockInside &FALSE
 
     .If B$BlockInside = &TRUE
-        call ControlX
-        mov ecx D$BlockEndTextPtr
-        mov D$ReplaceStart ecx
+        Call ControlX
+        Mov ecx D$BlockEndTextPtr
+        Mov D$ReplaceStart ecx
         sub ecx D$BlockStartTextPtr | inc ecx
         dec D$CaretRow | dec D$PhysicalCaretRow
-        mov esi ReplaceWithString
+        Mov esi ReplaceWithString
         While B$esi <> 0
             lodsb
             pushad
-                movzx eax al | call InsertSource
+                movzx eax al | Call InsertSource
             popad
             inc D$CaretRow | inc D$PhysicalCaretRow
             If al = LF
-                mov D$CaretRow 1
+                Mov D$CaretRow 1
             End_If
         End_While
     .Else
@@ -502,7 +502,7 @@ StringReplace:
         move D$NextSearchPos D$ReplaceStart
     End_If
 
-    call AskForRedrawNow
+    Call AskForRedrawNow
 ret
 
 
@@ -515,39 +515,39 @@ ret
 [OnReplaceAll: SilentSearch: ?]
 
 StringReplaceAll:
-    call 'USER32.MessageBoxA' D$hwnd, AllDanger, AllTitle,
+    Call 'USER32.MessageBoxA' D$H.MainWindow, AllDanger, AllTitle,
                               &MB_ICONQUESTION+&MB_YESNO+&MB_SYSTEMMODAL
 
     ..If eax = &IDYES
-        mov B$OnReplaceAll &TRUE
+        Mov B$OnReplaceAll &TRUE
 
-L0:     call RestoreRealSource
-            call StringSearch
-        call SetPartialEditionFromPos
+L0:     Call RestoreRealSource
+            Call StringSearch
+        Call SetPartialEditionFromPos
 
         cmp B$BlockInside &TRUE | jne L9>
 
-        call AskForRedrawNow | call StringReplace | jmp L0<
+        Call AskForRedrawNow | Call StringReplace | jmp L0<
 
-L9:     mov B$OnReplaceAll &FALSE
+L9:     Mov B$OnReplaceAll &FALSE
     ..End_If
 ret
 
 ;StringReplaceAll:
-    mov B$ShiftBlockInside &FALSE
+    Mov B$ShiftBlockInside &FALSE
 
-    call 'USER32.MessageBoxA' D$hwnd, AllDanger, AllTitle,
+    Call 'USER32.MessageBoxA' D$H.MainWindow, AllDanger, AllTitle,
                               &MB_ICONQUESTION+&MB_YESNO+&MB_SYSTEMMODAL
 
     ..If eax = &IDYES
-        mov B$OnReplaceAll &TRUE
-L0:     call RestoreRealSource
-        call StringSearch | cmp B$BlockInside &TRUE | jne L9>
-        call StringReplace
-        call SetPartialEditionFromPos | jmp L0<
+        Mov B$OnReplaceAll &TRUE
+L0:     Call RestoreRealSource
+        Call StringSearch | cmp B$BlockInside &TRUE | jne L9>
+        Call StringReplace
+        Call SetPartialEditionFromPos | jmp L0<
 
-L9:     mov B$OnReplaceAll &FALSE
-        call SetPartialEditionFromPos
+L9:     Mov B$OnReplaceAll &FALSE
+        Call SetPartialEditionFromPos
     ..End_If
 ret
 
