@@ -815,7 +815,7 @@ L3: If ebx = 0
 
 L0: Mov eax ebx | shr ebx 4 | and eax 0F
 
-    Mov al B$HexaTable+eax
+    Mov al B$STR.A.Hexa+eax
     push eax
     cmp ebx 0 | ja L0<
     Mov W$edi '0' | add edi 2

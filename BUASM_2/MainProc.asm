@@ -61,7 +61,7 @@ ________________________________________________________________________________
 ; size of buffer for filename:
 [cch: D$ &MAXPATH]
 
-[STR.A.AppName: "  BUAsm, The Bottom-Up Assembler -V.0.00.002-" EOS]
+[STR.A.AppName: "  BUAsm, The Bottom-Up Assembler -V.0.00.003-" EOS]
 
 Proc MainWindowProc:
 
@@ -72,39 +72,36 @@ Proc MainWindowProc:
     
     [MAIN]
   
-    ErrorMessageTitlePtr -> STR.A.MessageWindowTitleError
-    ErrorMessageTitle -> STR.A.ErrorMessageTitle
-
-    TITLE COMMUN:
-    (en prévision de l'automate général)
-    [WM_CLOSE] pour la fermeture des dialogs
-    [WM_CTLCOLOREDIT] pour la gestion des couleur de fond et des fontes
-    [SetIconDialog] pour l'attribution de l'icône de BUAsm aux rsc
+    Correction du bug H.Icone au lieu de h.cursor dans la debugg window
     
-    [MessageBox] routine universelle pour tous les MsgBox (pour faciliter l'internationalisation et l'habillage)
-    (les chaînes utilisée sont mise au format de la convention:
-    [Label: 'Blabla',0] -> [Label: B$ "Blabla" EOS] les ' ' sont réservés aux API et " " aux chaînes
-    la forme STR.A/B sera implémentée par les divers mainteneurs..)
+    MEM_TABLE_SIZE en BYTEs et plus en DWORDs
+    ajout des Equates:
+    MEM_LP             (0*DWORD)
+    MEM_CHUNK_SIZE     (1*DWORD)
+    MEM_MOTHER_LP      (2*DWORD)
+    MEM_RECORD         (3*DWORD)
 
-    Commencement de la MAJ de la GUI 
-    Création du TITLE INIT:
-    [INIT]
-    [INIT_Instance]
-    [INIT_Colors]
-    [INIT_MainWindow]
-    [INIT_Cursors]  
+    Réécriture complète du TITLE MemView [ViewBUAsmMems]
 
-    Création du premier [MSG_PUMP]
+    Premier changement dans [VirtAlloc]:
+    Call 'KERNEL32.VirtualAlloc' &NULL,
+                                 eax,
+                                 &MEM_RESERVE ->>>> +&MEM_TOP_DOWN,
+                                 &PAGE_READWRITE
+
+
+    Début ré-écriture et simplification gestion de la WHEEL mouse
+    WheelMsg ->  WM_MOUSEWHEEL
+
 ;;
 
 ;;
-    At the attention of all RosAsm contributors ---> 'Rules'
     
   'CreateTitleTab'
     
   'NewReplaceMacAndEqu', 'GetFileNameFromPath'
   
-  'CheckMRUFile', 'RightClick', 'WheelMsg'
+  'CheckMRUFile', 'RightClick', 
   'ShowUnfoldMacro', 'UnfoldMacro', 'ShowUnfoldDialog'
   'StructDialog'; 'NewFileNameDialog'
   'EncodeLines', 'StoreFlatData', 'UpdateTitlesFromIncludeFiles'
@@ -572,7 +569,9 @@ Proc MainWindowProc:
 
         ..Else_If eax = M00_GUIDs | Call ViewGUIDs
 
-        ..Else_If eax = M00_Show_RosAsm_Mems | Call ViewRosAsmMems
+        ..Else_If eax = M00_Show_RosAsm_Mems
+
+            Call ViewBUAsmMems
 
         ..Else_If eax = M00_Show_Symbols_Repartition | Call TestRepartition
 
@@ -710,7 +709,7 @@ L5: If B$SourceReady = &FALSE
         .End_If
 
     ...Else_If eax = &WM_MOUSEWHEEL
-        Mov eax D@wParam | Call WheelMsg | Call KillCompletionList
+        Mov eax D@wParam | Call WM_MOUSEWHEEL | Call KillCompletionList
 
     ...Else_If eax = &WM_XBUTTONDOWN
         ..If W@Wparam+2 = &XBUTTON1

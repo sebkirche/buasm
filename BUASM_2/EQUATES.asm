@@ -93,12 +93,13 @@ ___________________
         <s l    >s g    =<s le  <=s le  =>s ge  >=s ge
         s< l    s> g    s=< le  s<= le  s=> ge  s>= ge
 
- FIND_EOS z   NOT_EOS  nz ; End Of String Search
- ZERO     z   NOT_ZERO nz ; Numérique
- NULL     z   NOT_NULL nz ; Lp
- FALSE    z   TRUE     nz ; Flags
- ODD      po  EVEN     pe ; Parité Impair/Pair
- NEGATIVE s   POSITIVE ns]; Sign
+ FIND_EOS     z     NOT_EOS      nz  ; End Of String Search
+ ZERO         z     NOT_ZERO     nz  ; Numérique
+ NULL         z     NOT_NULL     nz  ; Lp
+ FALSE        z     TRUE         nz  ; Flags
+ ODD          po    EVEN         pe  ; Parité Impair/Pair
+ NEGATIVE     s     POSITIVE     ns  ; Sign
+ NOT_POSITIVE s     NOT_NEGATIVE ns] ; Sign
 ______________________________________
 
 ; Coordinates equate structures

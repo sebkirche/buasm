@@ -968,4 +968,5 @@ Main Implementations to be entirely done:
 
 
 w
-krn
+krn
+tmgn
