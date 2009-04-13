@@ -4101,7 +4101,7 @@ CreateDebugWindow:
     move D$DebugWindowClass@hInstance D$H.Instance
     move D$DebugWindowClass@hIcon D$H.MainIcon
     move D$DebugWindowClass@hIconSm D$H.MainIcon
-    move D$DebugWindowClass@hCursor D$H.MainIcon
+    move D$DebugWindowClass@hCursor D$H.CursorARROW
 
     Call 'User32.RegisterClassExA' DebugWindowClass
 

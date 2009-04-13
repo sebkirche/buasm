@@ -142,7 +142,8 @@ L1:         Call MessageBox Argh,
                             MustHaveEquatesPath,
                             &MB_SYSTEMMODAL+&MB_USERICON
 
-            Call 'KERNEL32.ExitProcess' 0
+             jmp END
+
         End_If
 
         Mov eax 0-1
@@ -1781,7 +1782,8 @@ WhateverConfig:  ; 'Main'
             If D$UserConfig = 0FF
                 Call CloseRegistry
                 Call 'ADVAPI32.RegDeleteKeyA' &HKEY_CURRENT_USER, RosAsmKey
-                Call 'KERNEL32.ExitProcess', 0
+
+                jmp END
 
             Else_If D$UserConfig = REGISTRY
               ; "Read" assumes create when none:

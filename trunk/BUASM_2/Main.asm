@@ -68,11 +68,15 @@ ACCELNUMBER 2    FLAGLAST 080]
  H.RichEdit: D$ ?]
 ____________________________________________________________________________________________
 
-Main:
+MAIN:
 
     Call INIT
 
     Call MSG_PUMP
+
+END:
+
+    On D$H.MainWindow <> &NULL Call 'USER32.DestroyWindow' D$H.MainWindow
 
     Call 'KERNEL32.ExitProcess' D$STRUC.MSG@wParam
 ____________________________________________________________________________________________
@@ -177,7 +181,8 @@ SetUndoDirectory:
                                 UndoExist,
                                 &MB_SYSTEMMODAL+&MB_OKCANCEL+&MB_USERICON
 
-                On D$FL.MsgBoxReturn = &IDCANCEL, Call 'KERNEL32.ExitProcess' 0
+                On D$FL.MsgBoxReturn = &IDCANCEL jmp END
+
             End_If
 
             Call DeleteOldUndoFiles

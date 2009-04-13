@@ -6170,14 +6170,14 @@ ________________________________________________________________________________
 ; Reads a Byte, returns the Hexa in ax. If The Hexa is greater than '0F', writes the
 ; wanted leading '0'.
 
-[HexaTable: '0123456789ABCDEF']
+[STR.A.Hexa: '0123456789ABCDEF']
 
 OpToHexa:
     movzx eax B$esi | inc esi
 LoadedOpToHexa:             ; If the Byte has already been loaded for some caller test.
     Mov ebx eax | shr ebx 4
     and eax 0F | and ebx 0F
-    Mov al B$HexaTable+eax, bl B$HexaTable+ebx
+    Mov al B$STR.A.Hexa+eax, bl B$STR.A.Hexa+ebx
     If ebx > '0'
         Mov B$edi '0' | inc edi
     End_If
@@ -8055,11 +8055,11 @@ L0:         Mov al B$ebx
             If al = 0
               ; Done above
             Else_If al > 0F
-                shr al 4 | and eax 0F | Mov al B$HexaTable+eax | stosb
+                shr al 4 | and eax 0F | Mov al B$STR.A.Hexa+eax | stosb
                 Mov al B$ebx
-                and eax 0F | Mov al B$HexaTable+eax | stosb
+                and eax 0F | Mov al B$STR.A.Hexa+eax | stosb
             Else
-                and eax 0F | Mov al B$HexaTable+eax | stosb
+                and eax 0F | Mov al B$STR.A.Hexa+eax | stosb
             End_If
 
             Mov W$edi ', ' | add edi 2
@@ -9607,7 +9607,7 @@ WriteEcxByte:
 L0: movzx eax B$esi | inc esi
     Mov ebx eax | shr ebx 4
     and eax 0F | and ebx 0F
-    Mov al B$HexaTable+eax, bl B$HexaTable+ebx
+    Mov al B$STR.A.Hexa+eax, bl B$STR.A.Hexa+ebx
     shl eax 8 | or eax ebx | or eax 020200000 | Mov D$edi eax | add edi 3 | loop L0<
 
 ret
@@ -9642,7 +9642,7 @@ L3: If ebx = 0
 
 L0: Mov eax ebx | shr ebx 4 | and eax 0F
 
-    Mov al B$HexaTable+eax
+    Mov al B$STR.A.Hexa+eax
     push eax
     cmp ebx 0 | ja L0<
     Mov B$edi '0' | inc edi
@@ -9666,7 +9666,7 @@ L0: push 0-1
         End_If
         neg ebx
 L0: Mov eax ebx | shr ebx 4 | and eax 0F
-    Mov al B$HexaTable+eax
+    Mov al B$STR.A.Hexa+eax
     push eax
     cmp ebx 0 | ja L0<
     Mov B$edi '0' | inc edi
@@ -10494,7 +10494,7 @@ L0: movzx eax B$esi | inc esi | Call D$DisOp1+eax*4
         movzx eax B$esi | inc esi
         Mov ebx eax | shr ebx 4
         and eax 0F | and ebx 0F
-        Mov al B$HexaTable+eax, bl B$HexaTable+ebx
+        Mov al B$STR.A.Hexa+eax, bl B$STR.A.Hexa+ebx
         shl eax 8 | or eax ebx | or eax 020200000 | stosd
     End_While
     Mov D$edi 0

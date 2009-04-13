@@ -32,8 +32,6 @@ INIT:
 
     Call INIT_MainWindow
 
-    Call GetWheelInfo
-
     Call AddUserMenu
 
     Call NewBuildWin32Equates
