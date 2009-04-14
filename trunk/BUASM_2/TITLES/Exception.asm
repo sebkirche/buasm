@@ -18,6 +18,7 @@ Proc FinalExceptionHandler:
     Uses ebx esi edi
 
   ; Save whole source
+    Call 'KERNEL32.SetUnhandledExceptionFilter' LastFinalException
     On B$RealSourceRestored = &FALSE, Call RestoreRealSource
     Mov B$WeAreSavingPart &FALSE | Call SaveSource
 
@@ -31,7 +32,14 @@ Proc FinalExceptionHandler:
     Call 'KERNEL32.SetErrorMode' &SEM_NOGPFAULTERRORBOX
 
     Mov eax &EXCEPTION_CONTINUE_SEARCH
+
 EndP
+
+LastFinalException:
+
+    Call 'USER32.DestroyWindow' D$H.MainWindow
+
+    Call 'KERNEL32.ExitProcess' NA
 ____________________________________________________________________________________________
 
 

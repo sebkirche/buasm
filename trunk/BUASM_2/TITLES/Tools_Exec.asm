@@ -259,7 +259,7 @@ LicenseView:
                     &MB_SYSTEMMODAL+&MB_USERICON+&MB_YESNO
 
 
-    On D$FL.MsgBoxReturn = &IDNO, Call 'KERNEL32.ExitProcess' 0
+    On D$FL.MsgBoxReturn = &IDNO jmp END
 ret
 
 

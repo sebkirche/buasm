@@ -454,12 +454,11 @@ BadEquatesFile:
     While B$esi > ' ' | movsb | End_While
     Mov D$edi '...', B$edi+4 0
 
-   Call MessageBox BadEquatesFileTitle,
+    Call MessageBox BadEquatesFileTitle,
                    BadEquatesFileMessage,
                    &MB_SYSTEMMODAL+&MB_USERICON
 
-    Call 'KERNEL32.ExitProcess', 0
-
+     jmp END
 
 BadEquatesFileEnd:
 
@@ -467,8 +466,7 @@ BadEquatesFileEnd:
                     BadEquatesFileEndMessage,
                     &MB_SYSTEMMODAL+&MB_USERICON
 
-    Call 'KERNEL32.ExitProcess', 0
-
+    jmp END
 
 [EquatesNumber: ?     WinEquTableLenght: ?
  NamesTable: ?    ValuesTable: ?

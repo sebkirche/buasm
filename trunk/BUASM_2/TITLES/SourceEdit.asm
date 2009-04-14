@@ -2226,36 +2226,21 @@ Proc CorrectCRLFs:
 EndP
 
 ____________________________________________________________________________________________
-____________________________________________________________________________________________
 
-[LineToWheelScroll: D$ 1] ; Default to 1 Line per Message. 'SM_MOUSEWHEELPRESENT' may
-; return FALSE even if a Wheel Mouse *is* present.
+WM_MOUSEWHEEL:
 
-GetWheelInfo:
-    Call 'USER32.GetSystemMetrics' &SM_MOUSEWHEELPRESENT
-    .If eax = &TRUE
-        Call 'USER32.SystemParametersInfoA' &SPI_GETWHEELSCROLLLINES, 0,
-                                            LineToWheelScroll, 0
-        If D$LineToWheelScroll = 0
-            Mov D$LineToWheelScroll 3
-        Else_If D$LineToWheelScroll > 30
-            Mov D$LineToWheelScroll 3
-        End_If
-    .End_If
+    Test W$Wparam+(1*WORD) NA NEGATIVE S1>
+
+        Call UpOneLine
+
+;        Call AskForRedraw
 ret
 
+S1: Call DownOneLine
 
-WheelMsg:
-    Mov ecx D$LineToWheelScroll | shr eax 16 | jecxz L9>
-    If ax >s 0
-L0:    Call UpOneLine | loop L0<
-    Else
-L0:    Call DownOneLine | loop L0<
-    End_if
-    Call AskForRedraw
-L9: ret
+;    Call AskForRedraw
 
-____________________________________________________________________________________________
+ret
 ____________________________________________________________________________________________
 
 ; Positioning Edition at 'MainWindowProc' or at 'Main' or at Top:
