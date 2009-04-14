@@ -5766,7 +5766,7 @@ CommentHexa:
         movzx eax B$ebx | inc ebx
         Mov ecx eax | shr ecx 4
         and eax 0F | and ecx 0F
-        Mov al B$HexaTable+eax, cl B$HexaTable+ecx
+        Mov al B$STR.A.Hexa+eax, cl B$STR.A.Hexa+ecx
         shl eax 8 | or eax ecx | or eax 020200000 | stosd | dec edi
     End_While
 ret

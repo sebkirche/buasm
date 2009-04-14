@@ -1981,7 +1981,7 @@ EncodeDecode:
             movzx eax B$esi | inc esi
             Mov ebx eax | shr ebx 4
             and eax 0F | and ebx 0F
-            Mov al B$HexaTable+eax, bl B$HexaTable+ebx
+            Mov al B$STR.A.Hexa+eax, bl B$STR.A.Hexa+ebx
             shl eax 8 | or eax ebx | or eax 020200000 | stosd
         End_While
         Mov D$edi 0

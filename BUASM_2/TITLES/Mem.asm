@@ -23,7 +23,7 @@ ________________________________________________________________________________
  When small Chunks are wanted, the Memory Manager reuse free Chunks that may be found
  inside already Reserved 01_0000 aligned Chunks.
 
- All Chunks are recorded in a 'MemTable'. Each Record is:
+ All Chunks are recorded in a 'TABLE.MemBUAsm'. Each Record is:
 
  Pointer / Size / Mother_Pointer
 
@@ -37,12 +37,12 @@ ________________________________________________________________________________
  the 'VirtualFree' calls, even if the 'VirtualFree D$MotherChunk' is called first and
  the 'VirtualFree D$ThirdChildChunk' last.
 
- If more than expected (here 'MEMTABLESIZE') Chunks are required, this is to say,
+ If more than expected (here ' MEM_TABLE_SIZE') Chunks are required, this is to say,
  if too much Mems are not released (in other words, if i have forgotten to release
  some Allocated Memories), i should also see an error Message ('NoMoreMem') if the
- 'MemTable' is overflowed. Added to this i set a Menu Item in [Tools] to see how
+ 'TABLE.MemBUAsm' is overflowed. Added to this i set a Menu Item in [Tools] to see how
  much Memory Chunks are activated at any time ('ViewRosAsmMems'). This does not tell
- how much Mem is used. This only tells how much Chunks are recorded in the 'MemTable',
+ how much Mem is used. This only tells how much Chunks are recorded in the 'TABLE.MemBUAsm',
  no matter what Size.
 
  When releasing, if the Pointer value is corrupted, we should also see an error
@@ -70,7 +70,7 @@ ________________________________________________________________________________
  error Message is sent.
 
 
- A 'LastMemRecord' is also managed in order to save from scaning wide 'MenTable' for
+ A 'LP.LastMemRecord' is also managed in order to save from scaning wide 'MenTable' for
  nop, as we cannot rely on zeroed Records to know if we have finished scaning.
 ;;
 ____________________________________________________________________________________________
@@ -78,17 +78,21 @@ ________________________________________________________________________________
 [GUARDPAGE 01000]   ; Comment / unComment these 2 Equates for
 ;[GUARDPAGE 0]      ; having / not having hand made Guard Pages.
 
-; MemTable is 3 dWords per record: pointer-to-Mem / MemChunkSize / Mother Pointer// ...
-[MEMTABLESIZE ((MAXRESOURCE+50)*3) ] ; room for 50 Chunks + Resources Chunks.
-[MEMRECORD (4*3)]
+; TABLE.MemBUAsm is 3 dWords per record: pointer-to-Mem / MemChunkSize / Mother Pointer// ...
+[MEM_LP             (0*DWORD)
+ MEM_CHUNK_SIZE     (1*DWORD)
+ MEM_MOTHER_LP      (2*DWORD)
+ MEM_RECORD         (3*DWORD)
+ MEM_TABLE_SIZE (((MAXRESOURCE+50)*3)*DWORD) ] ; room for 50 Chunks + Resources Chunks.
 
-[MemTable: ? #MEMTABLESIZE] [MemTableEnd: ?    MemChunSize: ?]
+[TABLE.MemBUAsm: B$ ? # MEM_TABLE_SIZE] [MemTableEnd: ?    MemChunSize: ?]
 
 [MemAlert: 'Memory attribution failure', 0
  MemInternalAlert: 'Error inside RosAsm Memory Management', 0
  MemAlertText: "   RosAsm is going to close. Shut down some Aplications and re-run      " 0]
 
-[LastMemRecord: ?    TempoMemPointer: ?]    ; used when no named Pointer is used by
+[LP.LastMemRecord: D$ ?
+ TempoMemPointer: D$ ?]    ; used when no named Pointer is used by
                                             ; caller (cases of Tables of Memory Pointers,
                                             ; for example).
 [VirtAllocOverFlowString: 'VirtualAlloc Buffer overflowed', 0]
@@ -96,20 +100,21 @@ ________________________________________________________________________________
 
 VirtAlloc:                                  ; In: ebx = Pointer, edx = size
     push ebx
-        Mov edi MemTable                    ; Search an empty Record.
+        Mov edi TABLE.MemBUAsm                    ; Search an empty Record.
         While D$edi > 0
-            add edi MEMRECORD
+            add edi MEM_RECORD
           ; This Alert can only happend if i completly corrupt a Mem Pointer Value
-          ; so that it is no more founded in the 'MemTable':
+          ; so that it is no more founded in the 'TABLE.MemBUAsm':
             If edi = MemTableEnd
 
                 Call MessageBox MemAlert,
                                 MemAlertText,
                                 &MB_SYSTEMMODAL+&MB_ICONSTOP
 
-                Call ViewRosAsmMems
-                ShowMe VirtAllocOverFlowString
-                Call 'KERNEL32.ExitProcess' 0
+                Call ViewBUAsmMems
+
+                ShowMe VirtAllocOverFlowString | jmp END
+
             End_If
         End_While
 
@@ -132,7 +137,12 @@ VirtAlloc:                                  ; In: ebx = Pointer, edx = size
         If eax = 0
             push edi
                 Mov eax D$MemChunSize | Align_On 010_000 eax
-                Call 'KERNEL32.VirtualAlloc' &NULL, eax, &MEM_RESERVE, &PAGE_READWRITE
+
+                Call 'KERNEL32.VirtualAlloc' &NULL,
+                                             eax,
+                                             &MEM_RESERVE+&MEM_TOP_DOWN,
+                                             &PAGE_READWRITE
+
                 On eax = 0, hexprint D$MemChunSize
                 ;hexprint eax
             pop edi
@@ -141,7 +151,7 @@ VirtAlloc:                                  ; In: ebx = Pointer, edx = size
             Mov D$edi eax, D$edi+8 ebx      ; D$edi+8 = MotherPointer ('IsThereSomeRoom' ebx)
         End_If
 
-        On edi > D$LastMemRecord, Mov D$LastMemRecord edi
+        On edi > D$LP.LastMemRecord, Mov D$LP.LastMemRecord edi
         Mov ecx D$MemChunSize | sub ecx GUARDPAGE
       ;  push eax, ecx                      ; For my Tests
         Call 'KERNEL32.VirtualAlloc' eax, ecx, &MEM_COMMIT, &PAGE_READWRITE
@@ -152,10 +162,10 @@ VirtAlloc:                                  ; In: ebx = Pointer, edx = size
                             MemInternalAlert,
                             &MB_SYSTEMMODAL+&MB_ICONSTOP
 
-            Call ViewRosAsmMems
-            ShowMe VirtAllocFailureString
+            Call ViewBUAsmMems
 
-            Call 'KERNEL32.ExitProcess' 0
+            ShowMe VirtAllocFailureString | jmp END
+
         End_If
     pop ebx
     Mov D$ebx eax                           ; Return Pointer Value to caller.
@@ -174,19 +184,13 @@ VirtFree:       ; eax = D$Pointer
   ; computation begining by 'If D$esi-4 = ...", for example >>> Restore origin:
     and eax 0_FFFF_F000                 ; (Chunks are always Page-aligned).
 
-    Mov esi MemTable
+    Mov esi TABLE.MemBUAsm
     While D$esi <> eax
-        add esi MEMRECORD
-        If esi = MemTableEnd
 
-            Call MessageBox MemInternalAlert,
-                            MemInternalAlert,
-                            &MB_SYSTEMMODAL+&MB_ICONSTOP
+        add esi MEM_RECORD
 
-            Call ViewRosAsmMems
-            ShowMe VirtFreeOverFlowString
-            Call 'KERNEL32.ExitProcess' 0
-        End_If
+        Comp esi MemTableEnd = S2>
+
     End_While
 
     push esi
@@ -196,22 +200,32 @@ VirtFree:       ; eax = D$Pointer
 
   ; Now, we can Release the whole Memory Block only if no other Chunk is Committed.
   ; If so, no other Block whith the same origin (Third dWord of records) can be
-  ; found in the 'MemTable':
+  ; found in the 'TABLE.MemBUAsm':
     Mov ebx D$esi+8, ecx 0
     Mov D$esi 0, D$esi+4 0, D$esi+8 0       ; Clear the record, anyway.
     push esi
-        Mov esi MemTable
-        While esi <= D$LastMemRecord
+        Mov esi TABLE.MemBUAsm
+        While esi <= D$LP.LastMemRecord
             If D$esi+8 = ebx
                 inc ecx
             End_If
-            add esi MEMRECORD
+            add esi MEM_RECORD
         End_While
         On ecx = 0, Call 'KERNEL32.VirtualFree' ebx, &NULL, &MEM_RELEASE
     pop esi
-    On esi = D$LastMemRecord, sub D$LastMemRecord MEMRECORD
+    On esi = D$LP.LastMemRecord, sub D$LP.LastMemRecord MEM_RECORD
 L9: popad
 ret
+
+S2: Call MessageBox MemInternalAlert,
+                    MemInternalAlert,
+                    &MB_SYSTEMMODAL+&MB_ICONSTOP
+
+    Call ViewBUAsmMems
+
+    ShowMe VirtFreeOverFlowString
+
+    jmp END
 
 [VirtualFree | cmp #1 0 | je V9> | Mov eax #1
                     Call VirtFree
@@ -224,8 +238,8 @@ ________________________________________________________________________________
 ; holds the size of the wanted Block + one Page:
 
 IsThereSomeRoom:
-    Mov esi MemTable
-    .While esi <= D$LastMemRecord
+    Mov esi TABLE.MemBUAsm
+    .While esi <= D$LP.LastMemRecord
         ..If D$esi > 0
             Mov eax D$esi | add eax D$esi+4
             Mov ebx eax | Align_On 01_0000 eax | sub eax ebx
@@ -241,7 +255,7 @@ IsThereSomeRoom:
                 End_If
             .End_If
         ..End_If
-        add esi MEMRECORD
+        add esi MEM_RECORD
     .End_While
     Mov eax 0
 L9: ret
@@ -256,8 +270,8 @@ L9: ret
 ;;
 IsThisRoomFree:
     push esi
-        Mov esi MemTable
-        While esi <= D$LastMemRecord
+        Mov esi TABLE.MemBUAsm
+        While esi <= D$LP.LastMemRecord
             Mov ecx D$esi, edx ecx | add edx D$esi+4
             If ebx <= ecx
                 ; OK
@@ -266,7 +280,7 @@ IsThisRoomFree:
             Else
                 Mov eax &FALSE | jmp L9>
             End_If
-            add esi MEMRECORD
+            add esi MEM_RECORD
         End_While
         Mov eax &TRUE
 L9: pop esi

@@ -939,11 +939,20 @@ ________________________________________________________________________________
 ;;
 
 KillCompletionList:
-    If D$CompletionListHandle <> 0
-        Call 'USER32.SendMessageA' D$CompletionListHandle, &WM_COMMAND, &IDCANCEL, 0
+
+    If D$CompletionListHandle <> &NULL
+
+        Call 'USER32.SendMessageA' D$CompletionListHandle,
+                                   &WM_COMMAND,
+                                   &IDCANCEL,
+                                   0
+
     End_If
+
     Mov B$Underline &FALSE
+
     Call AskForRedraw
+
 ret
 
 
