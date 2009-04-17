@@ -99,9 +99,8 @@ ________________________________________________________________________________
 [VirtAllocFailureString:  'VirtualAlloc Function failure' 0]
 
 Proc VirtAlloc:
-  Arguments @sz, @ptr
-  USES ecx edx ebx esi edi
-
+   Arguments @sz, @ptr
+   USES ecx edx ebx esi edi
         Mov edi TABLE.MemBUAsm                    ; Search an empty Record.
         While D$edi > 0
             add edi MEM_RECORD
@@ -170,10 +169,10 @@ Proc VirtAlloc:
 
         End_If
     Mov ebx D@ptr
-    Mov D$ebx eax                           ; Writes Value in Pointer & in EAX!
+    Mov D$ebx eax                           ; Writes value in pointer & in eax!
 EndP
 
-[VirtualAlloc | push #1 | push #2 | call VirtAlloc | #+2]
+[VirtualAlloc | push #1 | push #2 | Call VirtAlloc | #+2]
 ; Evocation: VirtualAlloc Pointer, Size
 ____________________________________________________________________________________________
 
