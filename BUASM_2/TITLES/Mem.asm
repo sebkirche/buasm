@@ -98,8 +98,10 @@ ________________________________________________________________________________
 [VirtAllocOverFlowString: 'VirtualAlloc Buffer overflowed', 0]
 [VirtAllocFailureString:  'VirtualAlloc Function failure' 0]
 
-VirtAlloc:                                  ; In: ebx = Pointer, edx = size
-    push ebx
+Proc VirtAlloc:
+  Arguments @sz, @ptr
+  USES ecx edx ebx esi edi
+
         Mov edi TABLE.MemBUAsm                    ; Search an empty Record.
         While D$edi > 0
             add edi MEM_RECORD
@@ -120,7 +122,7 @@ VirtAlloc:                                  ; In: ebx = Pointer, edx = size
 
       ; The 'add eax GUARDPAGE' is to reserve a never Committed Page (allow Win
       ; error if i overflow write to a Buffer):
-        Mov eax edx | Align_On PAGESIZE eax | add eax GUARDPAGE
+        Mov eax D@sz | Align_On PAGESIZE eax | add eax GUARDPAGE
         Mov D$MemChunSize eax, D$edi+4 eax
 
       ; VirtualAlloc Reserves by 01_0000 Octets Block (16 Pages). So, as any previous
@@ -167,11 +169,11 @@ VirtAlloc:                                  ; In: ebx = Pointer, edx = size
             ShowMe VirtAllocFailureString | jmp END
 
         End_If
-    pop ebx
-    Mov D$ebx eax                           ; Return Pointer Value to caller.
-ret
+    Mov ebx D@ptr
+    Mov D$ebx eax                           ; Writes Value in Pointer & in EAX!
+EndP
 
-[VirtualAlloc | Mov ebx #1, edx #2 | Call VirtAlloc | #+2]
+[VirtualAlloc | push #1 | push #2 | call VirtAlloc | #+2]
 ; Evocation: VirtualAlloc Pointer, Size
 ____________________________________________________________________________________________
 
